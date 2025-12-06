@@ -69,80 +69,83 @@ export async function generateQuizFromPrompt(
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
 	const cloudflareDocsMcp = await getCloudflareDocsMCP();
-	waitUntil(cloudflareDocsMcp.close());
 
-	const researchAgent = await createResearchAgent(model, [cloudflareDocsMcp], onStatusUpdate);
+	try {
+		const researchAgent = await createResearchAgent(model, [cloudflareDocsMcp], onStatusUpdate);
 
-	const { output: researchOutput } = await researchAgent.generate({
-		messages: [
-			{
-				role: 'user',
-				content: stripIndent`
-					Research the following topic and provide detailed information:
-					${prompt}
-				`,
-			},
-		],
-		abortSignal,
-	});
+		const { output: researchOutput } = await researchAgent.generate({
+			messages: [
+				{
+					role: 'user',
+					content: stripIndent`
+						Research the following topic and provide detailed information:
+						${prompt}
+					`,
+				},
+			],
+			abortSignal,
+		});
 
-	onStatusUpdate?.({ stage: 'generating', detail: 'Creating quiz questions' });
+		onStatusUpdate?.({ stage: 'generating', detail: 'Creating quiz questions' });
 
-	const { output: quizOutput } = await generateText({
-		model,
-		output: Output.object({
-			schema: QuizSchema,
-		}),
-		messages: [
-			{
-				role: 'system',
-				content: stripIndent`
-					You are an expert quiz maker.
-					
-					Create exactly ${numQuestions} multiple-choice questions. Each question should:
-					- Have exactly 4 answer options
-					- Have one clearly correct answer
-					- Be interesting and educational
-					- Vary in difficulty
+		const { output: quizOutput } = await generateText({
+			model,
+			output: Output.object({
+				schema: QuizSchema,
+			}),
+			messages: [
+				{
+					role: 'system',
+					content: stripIndent`
+						You are an expert quiz maker.
+						
+						Create exactly ${numQuestions} multiple-choice questions. Each question should:
+						- Have exactly 4 answer options
+						- Have one clearly correct answer
+						- Be interesting and educational
+						- Vary in difficulty
 
-					- The quiz question must be a single sentence with less than 120 characters
-					- The quiz options should be as concise as possible and must have less than 75 characters
-					- Make sure there are no full stops at the end of the sentences
-					
-					Also create a catchy title for the quiz that reflects the topic.
-				`,
-			},
-			{
-				role: 'user',
-				content: stripIndent`
-					Create a quiz based on the following topic:
+						- The quiz question must be a single sentence with less than 120 characters
+						- The quiz options should be as concise as possible and must have less than 75 characters
+						- Make sure there are no full stops at the end of the sentences
+						
+						Also create a catchy title for the quiz that reflects the topic.
+					`,
+				},
+				{
+					role: 'user',
+					content: stripIndent`
+						Create a quiz based on the following topic:
 
-					${prompt}
-				`,
-			},
-			{
-				role: 'assistant',
-				content: stripIndent`
-					Information about the topic:
+						${prompt}
+					`,
+				},
+				{
+					role: 'assistant',
+					content: stripIndent`
+						Information about the topic:
 
-					${researchOutput}
-				`,
-			},
-		],
-		abortSignal,
-	});
+						${researchOutput}
+					`,
+				},
+			],
+			abortSignal,
+		});
 
-	if (!quizOutput) {
-		throw new Error('Failed to generate quiz - no output returned');
+		if (!quizOutput) {
+			throw new Error('Failed to generate quiz - no output returned');
+		}
+
+		// Randomly select one question to be double points
+		if (quizOutput.questions.length > 0) {
+			const doublePointsIndex = Math.floor(Math.random() * quizOutput.questions.length);
+			quizOutput.questions[doublePointsIndex].isDoublePoints = true;
+		}
+
+		return quizOutput;
+	} finally {
+		waitUntil(cloudflareDocsMcp.close());
 	}
-
-	// Randomly select one question to be double points
-	if (quizOutput.questions.length > 0) {
-		const doublePointsIndex = Math.floor(Math.random() * quizOutput.questions.length);
-		quizOutput.questions[doublePointsIndex].isDoublePoints = true;
-	}
-
-	return quizOutput;
 }
 
 async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[], onStatusUpdate?: OnStatusUpdate) {
@@ -172,8 +175,8 @@ async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[]
 	const instructions = stripIndent`
 		You are a professional researcher.
 		
-		Use the tools to look up information if they are relevant to the topic.
 		Generate an information-rich response based on the information you have found and your own knowledge.
+		Use the tools to look up additional information, but only if they are very relevant to the research prompt.
 	`;
 
 	const agent = new ToolLoopAgent({

@@ -103,7 +103,7 @@ export function HomePage() {
 			const res = await fetch(`/api/quizzes/custom/${quizToDelete}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
-			fetchQuizzes();
+			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
 		} catch (err) {
 			toast.error('Could not delete quiz.');
 		} finally {
@@ -358,19 +358,21 @@ export function HomePage() {
 											ref={generatingCardRef}
 											key="generating"
 											initial={{ opacity: 0, scale: 0.9 }}
-											animate={{
-												opacity: 1,
-												scale: 1,
-												boxShadow: ['0 0 0 0 rgba(251, 146, 60, 0)', '0 0 0 8px rgba(251, 146, 60, 0.3)', '0 0 0 0 rgba(251, 146, 60, 0)'],
-											}}
+											animate={{ opacity: 1, scale: 1 }}
 											transition={{
 												opacity: { duration: 0.3 },
 												scale: { type: 'spring', stiffness: 300, damping: 25 },
-												boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
 											}}
-											className="rounded-2xl"
+											className="relative rounded-2xl p-[2px]"
+											style={{
+												background: 'linear-gradient(90deg, #f97316, #fbbf24, #a3e635, #22d3d1, #818cf8, #e879f9, #fb7185, #f97316)',
+												backgroundSize: '400% 100%',
+												animation: 'border-beam 4s linear infinite',
+											}}
 										>
-											<Card className="rounded-2xl border-2 border-quiz-orange/50 bg-gradient-to-br from-quiz-orange/5 to-quiz-gold/5 h-full">
+											{/* Ambient glow */}
+											<div className="absolute -inset-2 rounded-3xl bg-quiz-orange/15 blur-xl pointer-events-none" />
+											<Card className="relative rounded-[14px] border-0 bg-white h-full">
 												<CardHeader className="pb-3">
 													<div className="flex items-start justify-between">
 														<CardTitle className="text-xl text-quiz-orange line-clamp-2">{generatingPrompt}</CardTitle>
