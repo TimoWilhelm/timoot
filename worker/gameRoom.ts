@@ -2,17 +2,23 @@ import { DurableObject } from 'cloudflare:workers';
 import type { GameState, Question, Player, Answer, ClientMessage, ServerMessage, ClientRole } from '@shared/types';
 import { z } from 'zod';
 import { wsClientMessageSchema, nicknameSchema, LIMITS } from '@shared/validation';
+import {
+	QUESTION_TIME_LIMIT_MS,
+	CLEANUP_DELAY_MS,
+	processAnswersAndUpdateScores,
+	buildLobbyMessage,
+	buildQuestionMessage,
+	buildRevealMessage,
+	buildLeaderboardMessage,
+	buildGameEndMessage,
+} from './game';
 
-// WebSocket attachment data stored per connection
+/** WebSocket attachment data stored per connection */
 interface WebSocketAttachment {
 	role: ClientRole;
 	playerId?: string;
 	authenticated: boolean;
 }
-
-const QUESTION_TIME_LIMIT_MS = 20000;
-// Cleanup delay after game ends or all disconnect (5 minutes)
-const CLEANUP_DELAY_MS = 5 * 60 * 1000;
 
 /**
  * GameRoomDurableObject - One instance per game room
@@ -356,25 +362,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	}
 
 	private async advanceToReveal(state: GameState): Promise<void> {
-		const currentQuestion = state.questions[state.currentQuestionIndex];
-		const pointMultiplier = currentQuestion.isDoublePoints ? 2 : 1;
-
-		// Calculate scores
-		state.answers.forEach((answer) => {
-			const player = state.players.find((p) => p.id === answer.playerId);
-			if (player) {
-				const isCorrect = currentQuestion.correctAnswerIndex === answer.answerIndex;
-				let score = 0;
-				if (isCorrect) {
-					const timeFactor = 1 - answer.time / (QUESTION_TIME_LIMIT_MS * 2);
-					score = Math.floor(1000 * timeFactor * pointMultiplier);
-				}
-				player.score += score;
-				answer.isCorrect = isCorrect;
-				answer.score = score;
-			}
-		});
-
+		processAnswersAndUpdateScores(state);
 		state.phase = 'REVEAL';
 		await this.ctx.storage.put('game_state', state);
 
@@ -413,118 +401,51 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	}
 
 	private broadcastLobbyUpdate(state: GameState): void {
-		this.broadcastToAll(this.buildLobbyMessage(state));
+		this.broadcastToAll(buildLobbyMessage(state));
 	}
 
 	private broadcastQuestionStart(state: GameState): void {
-		this.broadcastToAll(this.buildQuestionMessage(state));
+		this.broadcastToAll(buildQuestionMessage(state));
 	}
 
 	private broadcastReveal(state: GameState): void {
 		// Send to host (no player-specific result)
-		this.broadcastToRole('host', this.buildRevealMessage(state));
+		this.broadcastToRole('host', buildRevealMessage(state));
 
 		// Send to each player with their individual result
 		const sockets = this.ctx.getWebSockets();
 		for (const ws of sockets) {
 			const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
 			if (attachment?.authenticated && attachment.role === 'player' && attachment.playerId) {
-				this.sendMessage(ws, this.buildRevealMessage(state, attachment.playerId));
+				this.sendMessage(ws, buildRevealMessage(state, attachment.playerId));
 			}
 		}
 	}
 
 	private broadcastLeaderboard(state: GameState): void {
-		this.broadcastToAll(this.buildLeaderboardMessage(state));
+		this.broadcastToAll(buildLeaderboardMessage(state));
 	}
 
 	private broadcastGameEnd(state: GameState): void {
-		this.broadcastToAll(this.buildGameEndMessage(state));
-	}
-
-	// ============ Shared State Builders ============
-
-	private buildLeaderboard(state: GameState): { id: string; name: string; score: number; rank: number }[] {
-		return [...state.players].sort((a, b) => b.score - a.score).map((p, i) => ({ id: p.id, name: p.name, score: p.score, rank: i + 1 }));
-	}
-
-	private buildLobbyMessage(state: GameState): ServerMessage {
-		return {
-			type: 'lobbyUpdate',
-			players: state.players.map((p) => ({ id: p.id, name: p.name })),
-			pin: state.pin,
-			gameId: state.id,
-		};
-	}
-
-	private buildQuestionMessage(state: GameState): ServerMessage {
-		const question = state.questions[state.currentQuestionIndex];
-		return {
-			type: 'questionStart',
-			questionIndex: state.currentQuestionIndex,
-			totalQuestions: state.questions.length,
-			questionText: question.text,
-			options: question.options,
-			startTime: state.questionStartTime,
-			timeLimitMs: QUESTION_TIME_LIMIT_MS,
-			isDoublePoints: question.isDoublePoints,
-		};
-	}
-
-	private buildAnswerCounts(state: GameState): number[] {
-		const question = state.questions[state.currentQuestionIndex];
-		const answerCounts = new Array(question.options.length).fill(0);
-		state.answers.forEach((a) => {
-			if (a.answerIndex >= 0 && a.answerIndex < answerCounts.length) {
-				answerCounts[a.answerIndex]++;
-			}
-		});
-		return answerCounts;
-	}
-
-	private buildRevealMessage(state: GameState, playerId?: string): ServerMessage {
-		const question = state.questions[state.currentQuestionIndex];
-		const answerCounts = this.buildAnswerCounts(state);
-		const playerAnswer = playerId ? state.answers.find((a) => a.playerId === playerId) : undefined;
-
-		return {
-			type: 'reveal',
-			correctAnswerIndex: question.correctAnswerIndex,
-			playerResult: playerAnswer
-				? { isCorrect: playerAnswer.isCorrect ?? false, score: playerAnswer.score ?? 0, answerIndex: playerAnswer.answerIndex }
-				: undefined,
-			answerCounts,
-		};
-	}
-
-	private buildLeaderboardMessage(state: GameState): ServerMessage {
-		return {
-			type: 'leaderboard',
-			leaderboard: this.buildLeaderboard(state),
-			isLastQuestion: state.currentQuestionIndex >= state.questions.length - 1,
-		};
-	}
-
-	private buildGameEndMessage(state: GameState): ServerMessage {
-		return { type: 'gameEnd', finalLeaderboard: this.buildLeaderboard(state) };
+		this.broadcastToAll(buildGameEndMessage(state));
 	}
 
 	private async sendCurrentStateToHost(ws: WebSocket, state: GameState): Promise<void> {
 		switch (state.phase) {
 			case 'LOBBY':
-				this.sendMessage(ws, this.buildLobbyMessage(state));
+				this.sendMessage(ws, buildLobbyMessage(state));
 				break;
 			case 'QUESTION':
-				this.sendMessage(ws, this.buildQuestionMessage(state));
+				this.sendMessage(ws, buildQuestionMessage(state));
 				break;
 			case 'REVEAL':
-				this.sendMessage(ws, this.buildRevealMessage(state));
+				this.sendMessage(ws, buildRevealMessage(state));
 				break;
 			case 'LEADERBOARD':
-				this.sendMessage(ws, this.buildLeaderboardMessage(state));
+				this.sendMessage(ws, buildLeaderboardMessage(state));
 				break;
 			case 'END':
-				this.sendMessage(ws, this.buildGameEndMessage(state));
+				this.sendMessage(ws, buildGameEndMessage(state));
 				break;
 		}
 	}
@@ -532,10 +453,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	private async sendCurrentStateToPlayer(ws: WebSocket, state: GameState, playerId: string): Promise<void> {
 		switch (state.phase) {
 			case 'LOBBY':
-				this.sendMessage(ws, this.buildLobbyMessage(state));
+				this.sendMessage(ws, buildLobbyMessage(state));
 				break;
 			case 'QUESTION': {
-				this.sendMessage(ws, this.buildQuestionMessage(state));
+				this.sendMessage(ws, buildQuestionMessage(state));
 				// Check if player already answered
 				const existingAnswer = state.answers.find((a) => a.playerId === playerId);
 				if (existingAnswer) {
@@ -544,13 +465,13 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				break;
 			}
 			case 'REVEAL':
-				this.sendMessage(ws, this.buildRevealMessage(state, playerId));
+				this.sendMessage(ws, buildRevealMessage(state, playerId));
 				break;
 			case 'LEADERBOARD':
-				this.sendMessage(ws, this.buildLeaderboardMessage(state));
+				this.sendMessage(ws, buildLeaderboardMessage(state));
 				break;
 			case 'END':
-				this.sendMessage(ws, this.buildGameEndMessage(state));
+				this.sendMessage(ws, buildGameEndMessage(state));
 				break;
 		}
 	}
@@ -682,23 +603,8 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		state.answers.push(answer);
 
 		if (state.answers.length === state.players.length) {
+			processAnswersAndUpdateScores(state);
 			state.phase = 'REVEAL';
-			const currentQuestion = state.questions[state.currentQuestionIndex];
-			const pointMultiplier = currentQuestion.isDoublePoints ? 2 : 1;
-			state.answers.forEach((ans) => {
-				const p = state.players.find((p) => p.id === ans.playerId);
-				if (p) {
-					const isCorrect = currentQuestion.correctAnswerIndex === ans.answerIndex;
-					let score = 0;
-					if (isCorrect) {
-						const timeFactor = 1 - ans.time / (QUESTION_TIME_LIMIT_MS * 2);
-						score = Math.floor(1000 * timeFactor * pointMultiplier);
-					}
-					p.score += score;
-					ans.isCorrect = isCorrect;
-					ans.score = score;
-				}
-			});
 		}
 
 		await this.ctx.storage.put('game_state', state);
@@ -717,26 +623,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		}
 
 		switch (state.phase) {
-			case 'QUESTION': {
-				const currentQuestion = state.questions[state.currentQuestionIndex];
-				const pointMultiplier = currentQuestion.isDoublePoints ? 2 : 1;
-				state.answers.forEach((answer) => {
-					const player = state.players.find((p) => p.id === answer.playerId);
-					if (player) {
-						const isCorrect = currentQuestion.correctAnswerIndex === answer.answerIndex;
-						let score = 0;
-						if (isCorrect) {
-							const timeFactor = 1 - answer.time / (QUESTION_TIME_LIMIT_MS * 2);
-							score = Math.floor(1000 * timeFactor * pointMultiplier);
-						}
-						player.score += score;
-						answer.isCorrect = isCorrect;
-						answer.score = score;
-					}
-				});
+			case 'QUESTION':
+				processAnswersAndUpdateScores(state);
 				state.phase = 'REVEAL';
 				break;
-			}
 			case 'REVEAL':
 				state.phase = 'LEADERBOARD';
 				state.players.sort((a, b) => b.score - a.score);
