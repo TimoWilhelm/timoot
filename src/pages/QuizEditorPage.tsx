@@ -18,7 +18,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Loader2, Save, ArrowLeft, ChevronUp, ChevronDown, Wand2, Zap, ImageIcon, X } from 'lucide-react';
+import { PlusCircle, Trash2, Loader2, Save, ArrowLeft, ChevronUp, ChevronDown, Wand2, Zap, ImageIcon, ImageOff } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import type { ApiResponse, Quiz, Question } from '@shared/types';
 import { quizFormSchema, LIMITS, type QuizFormInput } from '@shared/validation';
@@ -49,6 +49,7 @@ export function QuizEditorPage() {
 	});
 	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
 	const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
+	const [openImagePopover, setOpenImagePopover] = useState<number | null>(null);
 	useEffect(() => {
 		if (quizId) {
 			const fetchQuiz = async () => {
@@ -261,7 +262,7 @@ export function QuizEditorPage() {
 										control={control}
 										name={`questions.${qIndex}.backgroundImage`}
 										render={({ field: bgField }) => (
-											<Popover>
+											<Popover open={openImagePopover === qIndex} onOpenChange={(open) => setOpenImagePopover(open ? qIndex : null)}>
 												<PopoverTrigger asChild>
 													<button
 														type="button"
@@ -281,31 +282,33 @@ export function QuizEditorPage() {
 												</PopoverTrigger>
 												<PopoverContent className="w-80 p-3" align="end">
 													<div className="space-y-3">
-														<div className="flex h-7 items-center justify-between">
-															<h4 className="text-sm font-semibold">Background Image</h4>
-															{bgField.value && (
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="sm"
-																	onClick={(e) => {
-																		e.preventDefault();
-																		e.stopPropagation();
-																		bgField.onChange('');
-																	}}
-																	className="h-7 px-2 text-muted-foreground hover:text-destructive"
-																>
-																	<X className="mr-1 h-4 w-4" />
-																	Remove
-																</Button>
-															)}
-														</div>
+														<h4 className="text-sm font-semibold">Background Image</h4>
 														<div className="grid grid-cols-2 gap-3">
+															<button
+																type="button"
+																onClick={() => {
+																	bgField.onChange('');
+																	setOpenImagePopover(null);
+																}}
+																className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted transition-all ${
+																	!bgField.value
+																		? 'ring-2 ring-quiz-orange ring-offset-2'
+																		: 'hover:ring-2 hover:ring-muted-foreground/30'
+																}`}
+															>
+																<div className="flex flex-col items-center gap-1 text-muted-foreground">
+																	<ImageOff className="h-6 w-6" />
+																	<span className="text-xs">No Image</span>
+																</div>
+															</button>
 															{DEFAULT_BACKGROUND_IMAGES.map((img) => (
 																<button
 																	key={img.id}
 																	type="button"
-																	onClick={() => bgField.onChange(img.path)}
+																	onClick={() => {
+																		bgField.onChange(img.path);
+																		setOpenImagePopover(null);
+																	}}
 																	className={`relative aspect-video overflow-hidden rounded-lg transition-all ${
 																		bgField.value === img.path
 																			? 'ring-2 ring-quiz-orange ring-offset-2'
