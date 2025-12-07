@@ -28,6 +28,7 @@ export function buildQuestionMessage(state: GameState): ServerMessage {
 		startTime: state.questionStartTime,
 		timeLimitMs: QUESTION_TIME_LIMIT_MS,
 		isDoublePoints: question.isDoublePoints,
+		backgroundImage: question.backgroundImage,
 	};
 }
 
@@ -64,6 +65,8 @@ export function buildRevealMessage(state: GameState, playerId?: string): ServerM
 			? { isCorrect: playerAnswer.isCorrect ?? false, score: playerAnswer.score ?? 0, answerIndex: playerAnswer.answerIndex }
 			: undefined,
 		answerCounts,
+		questionText: question.text,
+		options: question.options,
 	};
 }
 

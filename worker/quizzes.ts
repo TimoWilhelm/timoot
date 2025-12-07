@@ -1,10 +1,12 @@
 import type { Question, Quiz } from '@shared/types';
+import { getBackgroundImagePath } from '@shared/background-images';
 
 export const GENERAL_KNOWLEDGE_QUIZ: Question[] = [
 	{
 		text: 'What is the capital of France?',
 		options: ['Berlin', 'Madrid', 'Paris', 'Rome'],
 		correctAnswerIndex: 2,
+		backgroundImage: getBackgroundImagePath('party'),
 	},
 	{
 		text: 'Which planet is known as the Red Planet?',
@@ -16,6 +18,7 @@ export const GENERAL_KNOWLEDGE_QUIZ: Question[] = [
 		options: ['Atlantic', 'Indian', 'Arctic', 'Pacific'],
 		correctAnswerIndex: 3,
 		isDoublePoints: true,
+		backgroundImage: getBackgroundImagePath('sunset'),
 	},
 	{
 		text: "Who wrote 'To Kill a Mockingbird'?",
@@ -29,17 +32,20 @@ const TECH_QUIZ: Question[] = [
 		text: "What does 'CPU' stand for?",
 		options: ['Central Processing Unit', 'Computer Personal Unit', 'Central Processor Unit', 'Control Processing Unit'],
 		correctAnswerIndex: 0,
+		backgroundImage: getBackgroundImagePath('tech'),
 	},
 	{
 		text: 'Which company developed the JavaScript programming language?',
 		options: ['Microsoft', 'Apple', 'Netscape', 'Sun Microsystems'],
 		correctAnswerIndex: 2,
+		backgroundImage: getBackgroundImagePath('tech'),
 	},
 	{
 		text: 'What is the main function of a DNS server?',
 		options: ['To store websites', 'To resolve domain names to IP addresses', 'To send emails', 'To secure network connections'],
 		correctAnswerIndex: 1,
 		isDoublePoints: true,
+		backgroundImage: getBackgroundImagePath('tech'),
 	},
 ];
 
@@ -48,17 +54,20 @@ const GEOGRAPHY_QUIZ: Question[] = [
 		text: 'What is the longest river in the world?',
 		options: ['Amazon River', 'Nile River', 'Yangtze River', 'Mississippi River'],
 		correctAnswerIndex: 1,
+		backgroundImage: getBackgroundImagePath('sunset'),
 	},
 	{
 		text: 'Which desert is the largest in the world?',
 		options: ['Sahara Desert', 'Arabian Desert', 'Gobi Desert', 'Antarctic Polar Desert'],
 		correctAnswerIndex: 3,
+		backgroundImage: getBackgroundImagePath('sunset'),
 	},
 	{
 		text: 'What is the capital of Australia?',
 		options: ['Sydney', 'Melbourne', 'Canberra', 'Perth'],
 		correctAnswerIndex: 2,
 		isDoublePoints: true,
+		backgroundImage: getBackgroundImagePath('sunset'),
 	},
 ];
 

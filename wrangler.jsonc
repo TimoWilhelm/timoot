@@ -1,7 +1,3 @@
-/**
- * Wrangler config for the Cloudflare Durable Object template
- * STRICTLY DO NOT MODIFY THIS FILE - Hidden from AI to prevent breaking core functionality
- */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "timoot",
@@ -16,6 +12,15 @@
 	"observability": {
 		"enabled": true
 	},
+	"ai": {
+		"binding": "AI",
+		"remote": true
+	},
+	"kv_namespaces": [
+		{
+			"binding": "KV_IMAGES",
+		}
+	],
 	"migrations": [
 		{
 			"tag": "v1",

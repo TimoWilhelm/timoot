@@ -31,6 +31,9 @@ export function PlayerPage() {
 	const pendingNicknameRef = useRef<string>(nickname ?? '');
 	const [answerResult, setAnswerResult] = useState<{ isCorrect: boolean; score: number } | null>(null);
 	const [totalScore, setTotalScore] = useState(0);
+	// For reconnecting players, skip score animation until initial sync is complete
+	// For new players (no stored ID), allow animations immediately
+	const [hasInitialScoreSync, setHasInitialScoreSync] = useState(!storedPlayerId);
 	const { playSound } = useSound();
 
 	// Determine initial view
@@ -123,9 +126,13 @@ export function PlayerPage() {
 			const myLeaderboardScore = gameState.leaderboard.find((p) => p.id === currentPlayerId)?.score;
 			if (myLeaderboardScore !== undefined) {
 				setTotalScore(myLeaderboardScore);
+				// Mark initial sync as done after a short delay to skip animation
+				if (!hasInitialScoreSync) {
+					setTimeout(() => setHasInitialScoreSync(true), 100);
+				}
 			}
 		}
-	}, [gameState.leaderboard, currentPlayerId]);
+	}, [gameState.leaderboard, currentPlayerId, hasInitialScoreSync]);
 
 	// Reset answer result on new question
 	useEffect(() => {
@@ -241,7 +248,7 @@ export function PlayerPage() {
 			<header className="flex justify-between items-center text-2xl font-bold">
 				<span>{currentNickname}</span>
 				<span>
-					Score: <AnimatedNumber value={myScore} />
+					Score: <AnimatedNumber value={myScore} instant={!hasInitialScoreSync} />
 				</span>
 			</header>
 			<main className="flex-grow flex items-center justify-center">

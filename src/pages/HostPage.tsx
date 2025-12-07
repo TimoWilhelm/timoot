@@ -61,6 +61,7 @@ export function HostPage() {
 						answeredCount={gameState.answeredCount}
 						totalPlayers={gameState.players.length}
 						isDoublePoints={gameState.isDoublePoints}
+						backgroundImage={gameState.backgroundImage}
 					/>
 				);
 			case 'REVEAL':

@@ -23,6 +23,7 @@ export interface WebSocketGameState {
 	startTime: number;
 	timeLimitMs: number;
 	isDoublePoints: boolean;
+	backgroundImage: string | undefined;
 	// Answer tracking (for host)
 	answeredCount: number;
 	// Reveal phase
@@ -56,6 +57,7 @@ const initialGameState: WebSocketGameState = {
 	startTime: 0,
 	timeLimitMs: 20000,
 	isDoublePoints: false,
+	backgroundImage: undefined,
 	answeredCount: 0,
 	correctAnswerIndex: null,
 	playerResult: null,
@@ -121,6 +123,7 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 							startTime: message.startTime,
 							timeLimitMs: message.timeLimitMs,
 							isDoublePoints: message.isDoublePoints ?? false,
+							backgroundImage: message.backgroundImage,
 							answeredCount: 0,
 							correctAnswerIndex: null,
 							playerResult: null,
@@ -146,6 +149,8 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 							correctAnswerIndex: message.correctAnswerIndex,
 							playerResult: message.playerResult ?? null,
 							answerCounts: message.answerCounts,
+							questionText: message.questionText,
+							options: message.options,
 						}));
 						break;
 

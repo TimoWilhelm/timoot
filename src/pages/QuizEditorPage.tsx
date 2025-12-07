@@ -18,11 +18,13 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Loader2, Save, ArrowLeft, ChevronUp, ChevronDown, Wand2, Zap } from 'lucide-react';
+import { PlusCircle, Trash2, Loader2, Save, ArrowLeft, ChevronUp, ChevronDown, Wand2, Zap, ImageIcon, X } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import type { ApiResponse, Quiz, Question } from '@shared/types';
 import { quizFormSchema, LIMITS, type QuizFormInput } from '@shared/validation';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
 
 type QuizFormData = {
 	title: string;
@@ -59,6 +61,7 @@ export function QuizEditorPage() {
 							questions: result.data.questions.map((q) => ({
 								...q,
 								correctAnswerIndex: String(q.correctAnswerIndex),
+								backgroundImage: q.backgroundImage,
 							})),
 						};
 						reset(formData);
@@ -72,7 +75,7 @@ export function QuizEditorPage() {
 			};
 			fetchQuiz();
 		} else {
-			reset({ title: '', questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false }] });
+			reset({ title: '', questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined }] });
 		}
 	}, [quizId, reset, navigate]);
 	const onSubmit: SubmitHandler<QuizFormInput> = async (data) => {
@@ -84,6 +87,7 @@ export function QuizEditorPage() {
 					options: q.options,
 					correctAnswerIndex: parseInt(q.correctAnswerIndex, 10),
 					isDoublePoints: q.isDoublePoints,
+					backgroundImage: q.backgroundImage,
 				})),
 			};
 			const url = quizId ? `/api/quizzes/custom/${quizId}` : '/api/quizzes/custom';
@@ -107,7 +111,7 @@ export function QuizEditorPage() {
 			}
 		}
 	};
-	const addQuestion = () => append({ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false });
+	const addQuestion = () => append({ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined });
 
 	const generateQuestion = async () => {
 		const title = getValues('title');
@@ -249,6 +253,79 @@ export function QuizEditorPage() {
 							<CardHeader className="flex flex-row items-center justify-between">
 								<CardTitle>Question {qIndex + 1}</CardTitle>
 								<div className="flex items-center gap-2">
+									<Controller
+										control={control}
+										name={`questions.${qIndex}.backgroundImage`}
+										render={({ field: bgField }) => (
+											<Popover>
+												<PopoverTrigger asChild>
+													<button
+														type="button"
+														className={`relative flex items-center justify-center w-20 h-8 rounded-full text-sm font-semibold transition-all overflow-hidden ${
+															bgField.value
+																? 'shadow-md'
+																: 'bg-muted text-muted-foreground hover:bg-muted/80'
+														}`}
+													>
+														{bgField.value ? (
+															<img
+																src={bgField.value}
+																alt=""
+																className="absolute inset-0 w-full h-full object-cover"
+															/>
+														) : (
+															<span className="flex items-center gap-1.5">
+																<ImageIcon className="h-4 w-4" />
+																Image
+															</span>
+														)}
+													</button>
+												</PopoverTrigger>
+												<PopoverContent className="w-80 p-3" align="end">
+													<div className="space-y-3">
+														<div className="flex items-center justify-between h-7">
+															<h4 className="font-semibold text-sm">Background Image</h4>
+															{bgField.value && (
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size="sm"
+																	onClick={(e) => { e.preventDefault(); e.stopPropagation(); bgField.onChange(''); }}
+																	className="h-7 px-2 text-muted-foreground hover:text-destructive"
+																>
+																	<X className="h-4 w-4 mr-1" />
+																	Remove
+																</Button>
+															)}
+														</div>
+														<div className="grid grid-cols-2 gap-3">
+															{DEFAULT_BACKGROUND_IMAGES.map((img) => (
+																<button
+																	key={img.id}
+																	type="button"
+																	onClick={() => bgField.onChange(img.path)}
+																	className={`relative aspect-video rounded-lg overflow-hidden transition-all ${
+																		bgField.value === img.path
+																			? 'ring-2 ring-quiz-orange ring-offset-2'
+																			: 'hover:ring-2 hover:ring-muted-foreground/30'
+																	}`}
+																>
+																	<img
+																		src={img.path}
+																		alt={img.name}
+																		className="w-full h-full object-cover"
+																	/>
+																</button>
+															))}
+														</div>
+														<p className="text-xs text-muted-foreground">
+															AI image generation coming soon!
+														</p>
+													</div>
+												</PopoverContent>
+											</Popover>
+										)}
+									/>
 									<Controller
 										control={control}
 										name={`questions.${qIndex}.isDoublePoints`}

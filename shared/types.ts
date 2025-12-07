@@ -8,6 +8,7 @@ export interface Question {
 	options: string[];
 	correctAnswerIndex: number;
 	isDoublePoints?: boolean;
+	backgroundImage?: string;
 }
 export interface Player {
 	id: string;
@@ -68,6 +69,7 @@ export type ServerMessage =
 			startTime: number;
 			timeLimitMs: number;
 			isDoublePoints?: boolean;
+			backgroundImage?: string;
 	  }
 	| { type: 'answerReceived'; answerIndex: number }
 	| { type: 'playerAnswered'; playerId: string; answeredCount: number; totalPlayers: number }
@@ -76,6 +78,8 @@ export type ServerMessage =
 			correctAnswerIndex: number;
 			playerResult?: { isCorrect: boolean; score: number; answerIndex: number };
 			answerCounts: number[]; // count per option for host display
+			questionText: string;
+			options: string[];
 	  }
 	| {
 			type: 'leaderboard';

@@ -79,7 +79,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProps) {
 					className="bg-quiz-orange text-white text-2xl font-bold px-12 py-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
 					disabled={players.length < 1}
 				>
-					Start Game
+					{players.length < 1 ? 'Waiting for players...' : 'Start Game'}
 				</Button>
 			</motion.div>
 		</div>

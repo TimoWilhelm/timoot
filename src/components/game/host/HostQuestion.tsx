@@ -255,19 +255,19 @@ function DoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
 	);
 }
 
-// 2x Badge component for during the question
+// 2x Badge component for during the question - displayed in header
 function DoublePointsBadge() {
 	return (
 		<motion.div
-			initial={{ scale: 0, rotate: -12 }}
-			animate={{ scale: 1, rotate: -12 }}
+			initial={{ scale: 0, x: 20 }}
+			animate={{ scale: 1, x: 0 }}
 			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-			className="absolute -top-2 -right-2 bg-gradient-to-r from-quiz-orange to-amber-500 text-white px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-10"
+			className="bg-gradient-to-r from-quiz-orange to-amber-500 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2"
 		>
 			<motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
-				<Zap className="w-5 h-5 fill-current" />
+				<Zap className="w-7 h-7 sm:w-8 sm:h-8 fill-current" />
 			</motion.div>
-			<span className="font-bold text-lg">2×</span>
+			<span className="font-bold text-xl sm:text-2xl">2× Points</span>
 		</motion.div>
 	);
 }
@@ -283,6 +283,7 @@ interface HostQuestionProps {
 	answeredCount: number;
 	totalPlayers: number;
 	isDoublePoints?: boolean;
+	backgroundImage?: string;
 }
 
 export function HostQuestion({
@@ -296,6 +297,7 @@ export function HostQuestion({
 	answeredCount,
 	totalPlayers,
 	isDoublePoints,
+	backgroundImage,
 }: HostQuestionProps) {
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
@@ -333,11 +335,33 @@ export function HostQuestion({
 						{answeredCount}/{totalPlayers} answered
 					</span>
 				</div>
-				<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
+				<div className="flex items-center gap-4">
+					{isDoublePoints && <DoublePointsBadge />}
+					<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
+				</div>
 			</div>
-			<div className="relative flex-grow center bg-white rounded-2xl shadow-lg p-4 sm:p-8 mb-4 sm:mb-8">
-				{isDoublePoints && <DoublePointsBadge />}
-				<h2 className="text-3xl sm:text-5xl font-bold text-center">{questionText}</h2>
+			<div className="relative flex-grow center rounded-2xl shadow-lg mb-4 sm:mb-8 overflow-hidden">
+				{/* Background image layer */}
+				{backgroundImage ? (
+					<div
+						className="absolute inset-0 bg-cover bg-center"
+						style={{ backgroundImage: `url(${backgroundImage})` }}
+					/>
+				) : (
+					<div className="absolute inset-0 bg-white" />
+				)}
+				{/* Content layer */}
+				<div className="relative z-10 flex items-center justify-center w-full h-full p-4 sm:p-8">
+					<div
+						className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${
+							backgroundImage
+								? 'bg-white/85 backdrop-blur-lg shadow-xl'
+								: ''
+						}`}
+					>
+						<h2 className="text-3xl sm:text-5xl font-bold text-center text-gray-900">{questionText}</h2>
+					</div>
+				</div>
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4">
 				{options.map((option, i) => (
