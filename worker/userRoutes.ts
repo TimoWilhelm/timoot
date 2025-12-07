@@ -218,6 +218,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 			);
 		}
 	});
+	// Check if a game exists
+	app.get('/api/games/:gameId/exists', async (c) => {
+		const { gameId } = c.req.param();
+		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+		const state = await gameRoomStub.getFullGameState();
+
+		if (!state) {
+			return c.json({ success: false, error: 'Game not found' } satisfies ApiResponse, 404);
+		}
+
+		return c.json({ success: true, data: { exists: true, phase: state.phase } } satisfies ApiResponse<{ exists: boolean; phase: string }>);
+	});
+
 	app.post('/api/games', async (c) => {
 		const body = await c.req.json();
 		const result = createGameRequestSchema.safeParse(body);

@@ -28,6 +28,9 @@ export function JoinGameDialog() {
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const [autoCompleteFlash, setAutoCompleteFlash] = useState(false);
 	const [showInvalidTooltip, setShowInvalidTooltip] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('Please check the game code');
+	const [isValidating, setIsValidating] = useState(false);
+	const [gameNotFound, setGameNotFound] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(-1); // -1 means nothing selected
 	const [placeholder] = useState(generateRandomPlaceholder);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -39,9 +42,11 @@ export function JoinGameDialog() {
 	const wordInfo = useMemo(() => getWordListForPosition(parts), [partsCount]); // eslint-disable-line react-hooks/exhaustive-deps
 	const suggestions = useMemo(() => (wordInfo ? findMatches(currentPart, wordInfo.list).slice(0, 8) : []), [currentPart, wordInfo]);
 
-	// Reset selection when user types (currentPart changes)
+	// Reset selection, gameNotFound, and error tooltip when user types (currentPart changes)
 	useEffect(() => {
 		setSelectedIndex(-1);
+		setGameNotFound(false);
+		setShowInvalidTooltip(false);
 	}, [currentPart]);
 
 	const isComplete = isValidGameId(value);
@@ -53,14 +58,19 @@ export function JoinGameDialog() {
 		animal: parts[2] ? isValidWord(parts[2], animals) : null,
 	};
 
-	const showInvalidInput = useCallback(() => {
+	const showError = useCallback((message: string) => {
 		// Clear any existing timeout
 		if (tooltipTimeoutRef.current) {
 			clearTimeout(tooltipTimeoutRef.current);
 		}
+		setErrorMessage(message);
 		setShowInvalidTooltip(true);
-		tooltipTimeoutRef.current = setTimeout(() => setShowInvalidTooltip(false), 2000);
+		tooltipTimeoutRef.current = setTimeout(() => setShowInvalidTooltip(false), 3000);
 	}, []);
+
+	const showInvalidInput = useCallback(() => {
+		showError('Please check the game code');
+	}, [showError]);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,6 +136,25 @@ export function JoinGameDialog() {
 		[parts],
 	);
 
+	const handleJoin = useCallback(async () => {
+		if (!isComplete || isValidating || gameNotFound) return;
+
+		setIsValidating(true);
+		try {
+			const response = await fetch(`/api/games/${value}/exists`);
+			if (response.ok) {
+				navigate(`/play?gameId=${value}`);
+			} else {
+				setGameNotFound(true);
+				showError('Game not found. Please check the code.');
+			}
+		} catch {
+			showError('Could not verify game. Please try again.');
+		} finally {
+			setIsValidating(false);
+		}
+	}, [isComplete, isValidating, gameNotFound, value, navigate, showError]);
+
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent<HTMLInputElement>) => {
 			// Allow Ctrl+A for select-all
@@ -135,7 +164,7 @@ export function JoinGameDialog() {
 
 			if (e.key === 'Enter') {
 				if (isComplete) {
-					navigate(`/play?gameId=${value}`);
+					handleJoin();
 				} else if (selectedIndex >= 0 && suggestions[selectedIndex]) {
 					// Auto-complete with selected suggestion
 					handleSelectSuggestion(suggestions[selectedIndex]);
@@ -186,7 +215,7 @@ export function JoinGameDialog() {
 				e.preventDefault();
 			}
 		},
-		[isComplete, value, suggestions, navigate, handleSelectSuggestion, wordInfo, currentPart, selectedIndex],
+		[isComplete, value, suggestions, handleJoin, handleSelectSuggestion, wordInfo, currentPart, selectedIndex],
 	);
 
 	// Keep cursor at end of input (but allow full selection)
@@ -198,12 +227,6 @@ export function JoinGameDialog() {
 			input.setSelectionRange(input.value.length, input.value.length);
 		}
 	}, []);
-
-	const handleJoin = () => {
-		if (isComplete) {
-			navigate(`/play?gameId=${value}`);
-		}
-	};
 
 	const handleGoHome = () => {
 		navigate('/');
@@ -259,7 +282,7 @@ export function JoinGameDialog() {
 
 				{/* Game Code Input */}
 				<div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-900/50 p-6">
-					<Popover open={showSuggestions && suggestions.length > 0 && !isComplete}>
+					<Popover open={showSuggestions && suggestions.length > 0 && !isComplete && currentPart.length > 0}>
 						<PopoverAnchor asChild>
 							<div className="relative">
 								<input
@@ -304,7 +327,7 @@ export function JoinGameDialog() {
 									)}
 								>
 									<AlertCircle className="h-4 w-4" />
-									Please check the game code
+									{errorMessage}
 								</div>
 							</div>
 						</PopoverAnchor>
@@ -378,10 +401,12 @@ export function JoinGameDialog() {
 				<div className="space-y-3">
 					<Button
 						onClick={handleJoin}
-						disabled={!isComplete}
+						disabled={!isComplete || isValidating || gameNotFound}
 						className={cn(
 							'h-14 w-full rounded-xl text-lg font-semibold transition-all',
-							isComplete ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'cursor-not-allowed bg-slate-700 text-slate-500',
+							isComplete && !isValidating && !gameNotFound
+								? 'bg-indigo-600 text-white hover:bg-indigo-700'
+								: 'cursor-not-allowed bg-slate-700 text-slate-500',
 						)}
 					>
 						Join Game
