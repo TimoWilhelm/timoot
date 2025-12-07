@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Loader2, Pencil, Trash2, PlusCircle, Wand2, BookOpen, HelpCircle, Zap } from 'lucide-react';
+import { Sparkles, Loader2, Pencil, Trash2, PlusCircle, Wand2, BookOpen, HelpCircle, Zap, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -221,6 +221,22 @@ export function HomePage() {
 							<p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
 								Select a quiz to begin the fun, or create your own!
 							</p>
+						</div>
+						{/* Join Game Button */}
+						<div className="pt-6">
+							<Button
+								size="lg"
+								onClick={() => navigate('/play')}
+								className="group relative h-16 sm:h-20 px-12 sm:px-16 text-xl sm:text-2xl font-bold rounded-2xl bg-gradient-to-r from-quiz-orange to-quiz-gold text-white shadow-2xl shadow-quiz-orange/30 transition-all duration-300 hover:shadow-[0_20px_50px_-12px] hover:shadow-quiz-orange/50 hover:-translate-y-1.5 hover:scale-105 active:scale-95 overflow-hidden"
+							>
+								<span className="absolute inset-0 bg-gradient-to-r from-quiz-gold to-quiz-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+								<span className="relative flex items-center gap-3">
+									<span className="wiggle-on-hover">
+										<Gamepad2 style={{ width: 40, height: 40 }} />
+									</span>
+									Join Game
+								</span>
+							</Button>
 						</div>
 					</header>
 					{isLoading ? (

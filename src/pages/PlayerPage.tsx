@@ -8,10 +8,11 @@ import { AnimatePresence } from 'framer-motion';
 import { PlayerNicknameForm } from '@/components/game/player/PlayerNicknameForm';
 import { PlayerAnswerScreen } from '@/components/game/player/PlayerAnswerScreen';
 import { PlayerWaitingScreen } from '@/components/game/player/PlayerWaitingScreen';
+import { JoinGameDialog } from '@/components/game/player/JoinGameDialog';
 import { useSound } from '@/hooks/useSound';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
 
-type View = 'LOADING' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND';
+type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND';
 
 export function PlayerPage() {
 	const navigate = useNavigate();
@@ -39,8 +40,7 @@ export function PlayerPage() {
 	// Determine initial view
 	useEffect(() => {
 		if (!urlGameId) {
-			toast.error('No game ID found. Returning to home page.');
-			navigate('/');
+			setView('JOIN_GAME');
 			return;
 		}
 
@@ -160,6 +160,10 @@ export function PlayerPage() {
 		},
 		[submitAnswer],
 	);
+
+	if (view === 'JOIN_GAME') {
+		return <JoinGameDialog />;
+	}
 
 	if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
 		return (

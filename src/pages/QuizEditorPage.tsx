@@ -75,7 +75,10 @@ export function QuizEditorPage() {
 			};
 			fetchQuiz();
 		} else {
-			reset({ title: '', questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined }] });
+			reset({
+				title: '',
+				questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined }],
+			});
 		}
 	}, [quizId, reset, navigate]);
 	const onSubmit: SubmitHandler<QuizFormInput> = async (data) => {
@@ -111,7 +114,8 @@ export function QuizEditorPage() {
 			}
 		}
 	};
-	const addQuestion = () => append({ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined });
+	const addQuestion = () =>
+		append({ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined });
 
 	const generateQuestion = async () => {
 		const title = getValues('title');
@@ -262,17 +266,11 @@ export function QuizEditorPage() {
 													<button
 														type="button"
 														className={`relative flex items-center justify-center w-20 h-8 rounded-full text-sm font-semibold transition-all overflow-hidden ${
-															bgField.value
-																? 'shadow-md'
-																: 'bg-muted text-muted-foreground hover:bg-muted/80'
+															bgField.value ? 'shadow-md' : 'bg-muted text-muted-foreground hover:bg-muted/80'
 														}`}
 													>
 														{bgField.value ? (
-															<img
-																src={bgField.value}
-																alt=""
-																className="absolute inset-0 w-full h-full object-cover"
-															/>
+															<img src={bgField.value} alt="" className="absolute inset-0 w-full h-full object-cover" />
 														) : (
 															<span className="flex items-center gap-1.5">
 																<ImageIcon className="h-4 w-4" />
@@ -290,7 +288,11 @@ export function QuizEditorPage() {
 																	type="button"
 																	variant="ghost"
 																	size="sm"
-																	onClick={(e) => { e.preventDefault(); e.stopPropagation(); bgField.onChange(''); }}
+																	onClick={(e) => {
+																		e.preventDefault();
+																		e.stopPropagation();
+																		bgField.onChange('');
+																	}}
 																	className="h-7 px-2 text-muted-foreground hover:text-destructive"
 																>
 																	<X className="h-4 w-4 mr-1" />
@@ -310,17 +312,11 @@ export function QuizEditorPage() {
 																			: 'hover:ring-2 hover:ring-muted-foreground/30'
 																	}`}
 																>
-																	<img
-																		src={img.path}
-																		alt={img.name}
-																		className="w-full h-full object-cover"
-																	/>
+																	<img src={img.path} alt={img.name} className="w-full h-full object-cover" />
 																</button>
 															))}
 														</div>
-														<p className="text-xs text-muted-foreground">
-															AI image generation coming soon!
-														</p>
+														<p className="text-xs text-muted-foreground">AI image generation coming soon!</p>
 													</div>
 												</PopoverContent>
 											</Popover>

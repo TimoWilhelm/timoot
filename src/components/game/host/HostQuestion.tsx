@@ -343,22 +343,13 @@ export function HostQuestion({
 			<div className="relative flex-grow center rounded-2xl shadow-lg mb-4 sm:mb-8 overflow-hidden">
 				{/* Background image layer */}
 				{backgroundImage ? (
-					<div
-						className="absolute inset-0 bg-cover bg-center"
-						style={{ backgroundImage: `url(${backgroundImage})` }}
-					/>
+					<div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }} />
 				) : (
 					<div className="absolute inset-0 bg-white" />
 				)}
 				{/* Content layer */}
 				<div className="relative z-10 flex items-center justify-center w-full h-full p-4 sm:p-8">
-					<div
-						className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${
-							backgroundImage
-								? 'bg-white/85 backdrop-blur-lg shadow-xl'
-								: ''
-						}`}
-					>
+					<div className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${backgroundImage ? 'bg-white/85 backdrop-blur-lg shadow-xl' : ''}`}>
 						<h2 className="text-3xl sm:text-5xl font-bold text-center text-gray-900">{questionText}</h2>
 					</div>
 				</div>

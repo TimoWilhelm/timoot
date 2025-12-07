@@ -18,7 +18,7 @@
 	},
 	"kv_namespaces": [
 		{
-			"binding": "KV_IMAGES",
+			"binding": "KV_IMAGES"
 		}
 	],
 	"migrations": [
