@@ -22,7 +22,7 @@ interface PlayerWaitingScreenProps {
 function ConfettiParticle({ delay, x, color }: { delay: number; x: number; color: string }) {
 	return (
 		<motion.div
-			className="absolute w-3 h-3 rounded-sm"
+			className="absolute h-3 w-3 rounded-sm"
 			style={{ backgroundColor: color, left: `${x}%` }}
 			initial={{ y: -20, opacity: 1, rotate: 0, scale: 1 }}
 			animate={{
@@ -53,7 +53,7 @@ function CelebrationConfetti() {
 	}, []);
 
 	return (
-		<div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
+		<div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
 			{particles.map((p) => (
 				<ConfettiParticle key={p.id} delay={p.delay} x={p.x} color={p.color} />
 			))}
@@ -81,7 +81,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 			<motion.span
 				animate={{ scale: [1, 1.1, 1] }}
 				transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-				className="text-8xl mb-4"
+				className="mb-4 text-8xl"
 			>
 				{config.emoji}
 			</motion.span>
@@ -130,8 +130,8 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 						<div
 							className={`flex flex-col items-center justify-center text-center ${answerResult.isCorrect ? 'text-green-300' : 'text-red-300'}`}
 						>
-							{answerResult.isCorrect ? <CheckCircle className="w-24 h-24" /> : <XCircle className="w-24 h-24" />}
-							<h2 className="text-5xl font-bold mt-4">{answerResult.isCorrect ? 'Correct!' : 'Incorrect'}</h2>
+							{answerResult.isCorrect ? <CheckCircle className="h-24 w-24" /> : <XCircle className="h-24 w-24" />}
+							<h2 className="mt-4 text-5xl font-bold">{answerResult.isCorrect ? 'Correct!' : 'Incorrect'}</h2>
 							<p className="text-3xl">+ {answerResult.score} points</p>
 						</div>
 					);
@@ -148,18 +148,18 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 				const top3 = leaderboard.slice(0, 3);
 				return (
 					<div className="text-center">
-						<h2 className="text-4xl font-bold mb-4">Current Standings</h2>
+						<h2 className="mb-4 text-4xl font-bold">Current Standings</h2>
 						{myRank > 0 && (
-							<p className="text-2xl mb-6">
+							<p className="mb-6 text-2xl">
 								You are in <span className="font-bold text-quiz-gold">#{myRank}</span> place!
 							</p>
 						)}
 						<ul className="space-y-2 text-lg">
 							{top3.map((player, i) => (
-								<li key={player.id} className="flex justify-between w-64 mx-auto">
+								<li key={player.id} className="mx-auto flex w-64 justify-between">
 									<span>
 										<Trophy
-											className={`inline w-5 h-5 mr-2 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-400' : 'text-yellow-600'}`}
+											className={`mr-2 inline h-5 w-5 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-400' : 'text-yellow-600'}`}
 										/>
 										{player.name}
 									</span>
@@ -174,7 +174,7 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 				return (
 					<div className="text-center">
 						{showConfetti && <CelebrationConfetti />}
-						<motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-bold mb-6">
+						<motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 text-4xl font-bold">
 							Game Over!
 						</motion.h2>
 
@@ -187,21 +187,21 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 								transition={{ delay: 0.2 }}
 								className="mb-4"
 							>
-								<span className="text-5xl block mb-2">⭐</span>
+								<span className="mb-2 block text-5xl">⭐</span>
 								<span className="text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
-								<p className="text-xl text-slate-300 mt-2">Thanks for playing!</p>
+								<p className="mt-2 text-xl text-slate-300">Thanks for playing!</p>
 							</motion.div>
 						) : null}
 
-						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-2xl mt-4">
+						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-4 text-2xl">
 							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
 						</motion.p>
 					</div>
 				);
 			default:
 				return (
-					<div className="text-center flex flex-col items-center">
-						<Loader2 className="w-12 h-12 animate-spin mb-4" />
+					<div className="flex flex-col items-center text-center">
+						<Loader2 className="mb-4 h-12 w-12 animate-spin" />
 						<h2 className="text-4xl font-bold">Waiting...</h2>
 					</div>
 				);
@@ -213,7 +213,7 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 			initial={{ opacity: 0, scale: 0.8 }}
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 0.8 }}
-			className="w-full h-full flex items-center justify-center"
+			className="flex h-full w-full items-center justify-center"
 		>
 			{renderContent()}
 		</motion.div>

@@ -13,7 +13,7 @@ export function ThemeToggle({ className = 'absolute top-4 right-4' }: ThemeToggl
 			onClick={toggleTheme}
 			variant="ghost"
 			size="icon"
-			className={`${className} text-2xl hover:scale-110 hover:rotate-12 transition-all duration-200 active:scale-90 z-50`}
+			className={`${className} z-50 text-2xl transition-all duration-200 hover:rotate-12 hover:scale-110 active:scale-90`}
 		>
 			{isDark ? '☀️' : '🌙'}
 		</Button>

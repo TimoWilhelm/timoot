@@ -31,8 +31,8 @@ export function DemoPage() {
 
 	if (loading) {
 		return (
-			<main className="min-h-screen flex items-center justify-center bg-background">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+			<main className="flex min-h-screen items-center justify-center bg-background">
+				<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
 			</main>
 		);
 	}
@@ -42,11 +42,11 @@ export function DemoPage() {
 			<main className="min-h-screen bg-background p-6">
 				<ThemeToggle />
 
-				<div className="max-w-4xl mx-auto space-y-6">
+				<div className="mx-auto max-w-4xl space-y-6">
 					<header className="space-y-2">
 						<Link to="/">
 							<Button variant="ghost" size="sm">
-								<ArrowLeft className="h-4 w-4 mr-2" />
+								<ArrowLeft className="mr-2 h-4 w-4" />
 								Back to Home
 							</Button>
 						</Link>

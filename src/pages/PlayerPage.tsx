@@ -167,7 +167,7 @@ export function PlayerPage() {
 
 	if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
 		return (
-			<div className="min-h-screen w-full flex items-center justify-center bg-slate-800">
+			<div className="flex min-h-screen w-full items-center justify-center bg-slate-800">
 				<Loader2 className="h-16 w-16 animate-spin text-white" />
 			</div>
 		);
@@ -184,15 +184,15 @@ export function PlayerPage() {
 
 	if (view === 'GAME_IN_PROGRESS') {
 		return (
-			<div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-800 text-white p-8">
-				<div className="text-6xl mb-6">🎮</div>
-				<h1 className="text-3xl font-bold mb-4 text-center">Game Already In Progress</h1>
-				<p className="text-lg text-slate-300 text-center max-w-md mb-8">
+			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+				<div className="mb-6 text-6xl">🎮</div>
+				<h1 className="mb-4 text-center text-3xl font-bold">Game Already In Progress</h1>
+				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
 					Sorry, this game has already started. You can wait for the next round or join a different game.
 				</p>
 				<button
 					onClick={() => navigate('/')}
-					className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold transition-colors"
+					className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
 				>
 					Back to Home
 				</button>
@@ -202,15 +202,15 @@ export function PlayerPage() {
 
 	if (view === 'ROOM_NOT_FOUND') {
 		return (
-			<div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-800 text-white p-8">
-				<div className="text-6xl mb-6">🔍</div>
-				<h1 className="text-3xl font-bold mb-4 text-center">Game Not Found</h1>
-				<p className="text-lg text-slate-300 text-center max-w-md mb-8">
+			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+				<div className="mb-6 text-6xl">🔍</div>
+				<h1 className="mb-4 text-center text-3xl font-bold">Game Not Found</h1>
+				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
 					We couldn't find a game with that code. It may have ended or the link might be incorrect.
 				</p>
 				<button
 					onClick={() => navigate('/')}
-					className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold transition-colors"
+					className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
 				>
 					Back to Home
 				</button>
@@ -248,14 +248,14 @@ export function PlayerPage() {
 	};
 
 	return (
-		<div className="min-h-screen w-full bg-slate-800 text-white flex flex-col p-4">
-			<header className="flex justify-between items-center text-2xl font-bold">
+		<div className="flex min-h-screen w-full flex-col bg-slate-800 p-4 text-white">
+			<header className="flex items-center justify-between text-2xl font-bold">
 				<span>{currentNickname}</span>
 				<span>
 					Score: <AnimatedNumber value={myScore} instant={!hasInitialScoreSync} />
 				</span>
 			</header>
-			<main className="flex-grow flex items-center justify-center">
+			<main className="flex flex-grow items-center justify-center">
 				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
 			</main>
 			<Toaster richColors theme="dark" />

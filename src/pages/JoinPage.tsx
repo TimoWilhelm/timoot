@@ -19,10 +19,10 @@ export function JoinPage() {
 		}
 	};
 	return (
-		<div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4">
-			<Card className="w-full max-w-md shadow-2xl rounded-2xl animate-scale-in">
+		<div className="flex min-h-screen w-full items-center justify-center bg-slate-50 p-4">
+			<Card className="w-full max-w-md animate-scale-in rounded-2xl shadow-2xl">
 				<CardHeader className="text-center">
-					<CardTitle className="text-4xl font-display">Join a Game</CardTitle>
+					<CardTitle className="font-display text-4xl">Join a Game</CardTitle>
 					<CardDescription>Enter the PIN shown on the host's screen.</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -32,10 +32,10 @@ export function JoinPage() {
 							placeholder="Game PIN"
 							value={pin}
 							onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-							className="text-center text-4xl h-20 font-bold tracking-[1em]"
+							className="h-20 text-center text-4xl font-bold tracking-[1em]"
 							maxLength={6}
 						/>
-						<Button type="submit" className="w-full text-xl py-6 rounded-xl bg-quiz-orange hover:bg-quiz-orange/90" size="lg">
+						<Button type="submit" className="w-full rounded-xl bg-quiz-orange py-6 text-xl hover:bg-quiz-orange/90" size="lg">
 							Enter
 						</Button>
 					</form>

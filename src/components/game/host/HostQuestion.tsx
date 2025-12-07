@@ -81,7 +81,7 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProps) {
 			</AnimatePresence>
 
 			{/* Background circle container */}
-			<div className="relative bg-white rounded-full shadow-lg flex items-center justify-center" style={{ width: size, height: size }}>
+			<div className="relative flex items-center justify-center rounded-full bg-white shadow-lg" style={{ width: size, height: size }}>
 				{/* SVG Progress Ring */}
 				<svg className="absolute inset-0 -rotate-90" width={size} height={size}>
 					{/* Background track */}
@@ -110,7 +110,7 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProps) {
 						animate={{ scale: 1, opacity: 1, y: 0 }}
 						exit={{ scale: 0.8, opacity: 0, y: 10 }}
 						transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-						className={`text-4xl sm:text-5xl font-bold tabular-nums ${colors.text} transition-colors duration-300`}
+						className={`text-4xl font-bold tabular-nums sm:text-5xl ${colors.text} transition-colors duration-300`}
 					>
 						{timeLeft}
 					</motion.span>
@@ -194,7 +194,7 @@ function DoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
 						repeat: 2,
 					}}
 				>
-					<Zap className="w-12 h-12 text-yellow-300 fill-yellow-300" />
+					<Zap className="h-12 w-12 fill-yellow-300 text-yellow-300" />
 				</motion.div>
 			))}
 
@@ -211,7 +211,7 @@ function DoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
 				}}
 			>
 				<motion.div
-					className="text-[12rem] font-black text-white drop-shadow-2xl leading-none"
+					className="text-[12rem] font-black leading-none text-white drop-shadow-2xl"
 					animate={{
 						scale: [1, 1.1, 1],
 						textShadow: ['0 0 20px rgba(255,255,255,0.5)', '0 0 60px rgba(255,255,255,0.8)', '0 0 20px rgba(255,255,255,0.5)'],
@@ -221,7 +221,7 @@ function DoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
 					2×
 				</motion.div>
 				<motion.div
-					className="text-4xl font-bold text-white/90 uppercase tracking-widest"
+					className="text-4xl font-bold uppercase tracking-widest text-white/90"
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.6 }}
@@ -234,7 +234,7 @@ function DoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
 			{[...Array(20)].map((_, i) => (
 				<motion.div
 					key={`sparkle-${i}`}
-					className="absolute w-2 h-2 bg-yellow-200 rounded-full"
+					className="absolute h-2 w-2 rounded-full bg-yellow-200"
 					style={{
 						left: `${Math.random() * 100}%`,
 						top: `${Math.random() * 100}%`,
@@ -262,12 +262,12 @@ function DoublePointsBadge() {
 			initial={{ scale: 0, x: 20 }}
 			animate={{ scale: 1, x: 0 }}
 			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-			className="bg-gradient-to-r from-quiz-orange to-amber-500 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2"
+			className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-quiz-orange to-amber-500 px-4 py-2 text-white shadow-lg"
 		>
 			<motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
-				<Zap className="w-7 h-7 sm:w-8 sm:h-8 fill-current" />
+				<Zap className="h-7 w-7 fill-current sm:h-8 sm:w-8" />
 			</motion.div>
-			<span className="font-bold text-xl sm:text-2xl">2× Points</span>
+			<span className="text-xl font-bold sm:text-2xl">2× Points</span>
 		</motion.div>
 	);
 }
@@ -325,10 +325,10 @@ export function HostQuestion({
 	}
 
 	return (
-		<div className="flex-grow flex flex-col p-4 sm:p-8">
-			<div className="flex justify-between items-center mb-4">
+		<div className="flex flex-grow flex-col p-4 sm:p-8">
+			<div className="mb-4 flex items-center justify-between">
 				<div className="flex flex-col">
-					<span className="text-xl sm:text-2xl font-bold">
+					<span className="text-xl font-bold sm:text-2xl">
 						Question {questionIndex + 1}/{totalQuestions}
 					</span>
 					<span className="text-sm text-muted-foreground">
@@ -340,7 +340,7 @@ export function HostQuestion({
 					<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
 				</div>
 			</div>
-			<div className="relative flex-grow center rounded-2xl shadow-lg mb-4 sm:mb-8 overflow-hidden">
+			<div className="center relative mb-4 flex-grow overflow-hidden rounded-2xl shadow-lg sm:mb-8">
 				{/* Background image layer */}
 				{backgroundImage ? (
 					<div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }} />
@@ -348,22 +348,22 @@ export function HostQuestion({
 					<div className="absolute inset-0 bg-white" />
 				)}
 				{/* Content layer */}
-				<div className="relative z-10 flex items-center justify-center w-full h-full p-4 sm:p-8">
-					<div className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${backgroundImage ? 'bg-white/85 backdrop-blur-lg shadow-xl' : ''}`}>
-						<h2 className="text-3xl sm:text-5xl font-bold text-center text-gray-900">{questionText}</h2>
+				<div className="relative z-10 flex h-full w-full items-center justify-center p-4 sm:p-8">
+					<div className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${backgroundImage ? 'bg-white/85 shadow-xl backdrop-blur-lg' : ''}`}>
+						<h2 className="text-center text-3xl font-bold text-gray-900 sm:text-5xl">{questionText}</h2>
 					</div>
 				</div>
 			</div>
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4">
+			<div className="grid grid-cols-1 gap-2 sm:gap-4 md:grid-cols-2">
 				{options.map((option, i) => (
 					<motion.div
 						key={i}
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: i * 0.1 }}
-						className={`flex items-center p-4 sm:p-6 rounded-2xl text-white font-bold text-xl sm:text-3xl shadow-md ${shapeColors[i]}`}
+						className={`flex items-center rounded-2xl p-4 text-xl font-bold text-white shadow-md sm:p-6 sm:text-3xl ${shapeColors[i]}`}
 					>
-						<svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-12 sm:h-12 mr-4 fill-current">
+						<svg viewBox="0 0 24 24" className="mr-4 h-8 w-8 fill-current sm:h-12 sm:w-12">
 							<path d={shapePaths[i]} />
 						</svg>
 						{option}

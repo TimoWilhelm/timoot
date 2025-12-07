@@ -13,8 +13,8 @@ interface HostRevealProps {
 export function HostReveal({ onNext, questionText, options, correctAnswerIndex, answerCounts }: HostRevealProps) {
 	const totalAnswers = answerCounts.reduce((a, b) => a + b, 0);
 	return (
-		<div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 space-y-6">
-			<h2 className="text-3xl sm:text-5xl font-bold text-center mb-4">{questionText}</h2>
+		<div className="flex flex-grow flex-col items-center justify-center space-y-6 p-4 sm:p-8">
+			<h2 className="mb-4 text-center text-3xl font-bold sm:text-5xl">{questionText}</h2>
 			<div className="w-full max-w-4xl space-y-4">
 				{options.map((option, i) => {
 					const isCorrect = i === correctAnswerIndex;
@@ -39,18 +39,18 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 									},
 								}),
 							}}
-							className={`p-4 rounded-lg shadow-md relative overflow-hidden ${isCorrect ? 'bg-green-100 border-2 border-green-500' : 'bg-white'}`}
+							className={`relative overflow-hidden rounded-lg p-4 shadow-md ${isCorrect ? 'border-2 border-green-500 bg-green-100' : 'bg-white'}`}
 						>
 							<motion.div
-								className="absolute top-0 left-0 h-full bg-green-300/50"
+								className="absolute left-0 top-0 h-full bg-green-300/50"
 								initial={{ width: 0 }}
 								animate={{ width: `${percentage}%` }}
 								transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }}
 							/>
-							<div className="relative flex justify-between items-center gap-4 font-bold text-lg sm:text-2xl">
+							<div className="relative flex items-center justify-between gap-4 text-lg font-bold sm:text-2xl">
 								<span className="flex items-center gap-2">
 									<span>{option}</span>
-									<CheckCircle className={`w-6 h-6 flex-shrink-0 ${isCorrect ? 'text-green-600' : 'invisible'}`} />
+									<CheckCircle className={`h-6 w-6 flex-shrink-0 ${isCorrect ? 'text-green-600' : 'invisible'}`} />
 								</span>
 								<span className="flex-shrink-0">{count}</span>
 							</div>
@@ -59,7 +59,7 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 				})}
 			</div>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
-				<Button onClick={onNext} size="lg" className="bg-quiz-orange text-white text-2xl font-bold px-12 py-8 rounded-2xl">
+				<Button onClick={onNext} size="lg" className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white">
 					Next
 				</Button>
 			</motion.div>

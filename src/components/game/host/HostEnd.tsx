@@ -8,15 +8,15 @@ function PodiumPlace({ player, rank }: { player: LeaderboardEntry; rank: number 
 	const delay = rank === 1 ? 0.4 : rank === 2 ? 0.2 : 0.6;
 	return (
 		<motion.div
-			className="text-center flex flex-col items-center"
+			className="flex flex-col items-center text-center"
 			initial={{ opacity: 0, y: 100 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ type: 'spring', stiffness: 100, delay }}
 		>
-			<p className="text-2xl sm:text-4xl font-bold">{player.name}</p>
+			<p className="text-2xl font-bold sm:text-4xl">{player.name}</p>
 			<p className="text-lg sm:text-2xl">{player.score}</p>
 			<div
-				className={`${height} w-32 sm:w-48 ${color} rounded-t-lg flex items-center justify-center text-5xl sm:text-6xl font-bold text-white shadow-lg`}
+				className={`${height} w-32 sm:w-48 ${color} flex items-center justify-center rounded-t-lg text-5xl font-bold text-white shadow-lg sm:text-6xl`}
 			>
 				{rank}
 			</div>
@@ -33,8 +33,8 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 	// Reorder for visual podium: 2nd, 1st, 3rd
 	const podiumOrder = [top3[1], top3[0], top3[2]];
 	return (
-		<div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 space-y-8">
-			<motion.h1 initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} className="text-5xl sm:text-7xl font-bold">
+		<div className="flex flex-grow flex-col items-center justify-center space-y-8 p-4 sm:p-8">
+			<motion.h1 initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} className="text-5xl font-bold sm:text-7xl">
 				Final Podium
 			</motion.h1>
 			<div className="flex items-end gap-2 sm:gap-4">
@@ -46,7 +46,7 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 				<Button
 					onClick={() => (window.location.href = '/')}
 					size="lg"
-					className="bg-quiz-orange text-white text-2xl font-bold px-12 py-8 rounded-2xl"
+					className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white"
 				>
 					Play Again
 				</Button>

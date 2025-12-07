@@ -99,7 +99,7 @@
 	}
 
 	.btn-gradient {
-		@apply btn text-white shadow-primary hover:shadow-glow hover:scale-105 active:scale-95;
+		@apply btn text-white shadow-primary hover:scale-105 hover:shadow-glow active:scale-95;
 		background: linear-gradient(135deg, #f38020 0%, #e55a1b 100%);
 	}
 
@@ -126,11 +126,11 @@
 
 	/* Glass Morphism */
 	.glass {
-		@apply bg-white/10 backdrop-blur-md border border-white/20 shadow-glass;
+		@apply border border-white/20 bg-white/10 shadow-glass backdrop-blur-md;
 	}
 
 	.glass-dark {
-		@apply bg-black/10 backdrop-blur-md border border-white/10 shadow-glass;
+		@apply border border-white/10 bg-black/10 shadow-glass backdrop-blur-md;
 	}
 
 	/* Interactive Effects */
@@ -216,10 +216,10 @@
 
 	/* Responsive Typography */
 	.text-display {
-		@apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold leading-tight;
+		@apply font-display text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl;
 	}
 
 	.text-body {
-		@apply text-base sm:text-lg text-muted-foreground leading-relaxed;
+		@apply text-base leading-relaxed text-muted-foreground sm:text-lg;
 	}
 }

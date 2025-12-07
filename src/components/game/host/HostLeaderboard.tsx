@@ -62,7 +62,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				<motion.span
 					initial={{ opacity: 0, scale: 0 }}
 					animate={{ opacity: 1, scale: 1 }}
-					className="ml-2 text-sm bg-green-500 text-white px-1.5 py-0.5 rounded-full"
+					className="ml-2 rounded-full bg-green-500 px-1.5 py-0.5 text-sm text-white"
 				>
 					NEW
 				</motion.span>
@@ -75,7 +75,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 			// Moved up
 			return (
 				<motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="ml-2 flex items-center text-green-500">
-					<ChevronUp className="w-5 h-5" />
+					<ChevronUp className="h-5 w-5" />
 					<span className="text-sm font-medium">{diff}</span>
 				</motion.span>
 			);
@@ -83,7 +83,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 			// Moved down
 			return (
 				<motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="ml-2 flex items-center text-red-500">
-					<ChevronDown className="w-5 h-5" />
+					<ChevronDown className="h-5 w-5" />
 					<span className="text-sm font-medium">{Math.abs(diff)}</span>
 				</motion.span>
 			);
@@ -93,15 +93,15 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 	};
 
 	return (
-		<div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 space-y-8">
+		<div className="flex flex-grow flex-col items-center justify-center space-y-8 p-4 sm:p-8">
 			<motion.h1
 				initial={{ opacity: 0, y: -30 }}
 				animate={{ opacity: 1, y: 0 }}
-				className="text-5xl sm:text-6xl font-bold flex items-center gap-4"
+				className="flex items-center gap-4 text-5xl font-bold sm:text-6xl"
 			>
-				<Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-quiz-gold" /> Leaderboard
+				<Trophy className="h-12 w-12 text-quiz-gold sm:h-16 sm:w-16" /> Leaderboard
 			</motion.h1>
-			<Card className="w-full max-w-2xl shadow-lg rounded-2xl overflow-hidden">
+			<Card className="w-full max-w-2xl overflow-hidden rounded-2xl shadow-lg">
 				<CardContent className="p-0">
 					<LayoutGroup>
 						<ul className="divide-y">
@@ -117,7 +117,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 										<motion.li
 											key={player.id}
 											layout
-											className="flex items-center justify-between p-4 text-xl sm:text-2xl font-bold bg-card"
+											className="flex items-center justify-between bg-card p-4 text-xl font-bold sm:text-2xl"
 											initial={{ opacity: 0, x: -100 }}
 											animate={{
 												opacity: 1,
@@ -136,12 +136,12 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 												<span className="w-10 text-center">
 													{displayRank <= 3 ? (
 														<Crown
-															className={`w-8 h-8 mr-4 ${
+															className={`mr-4 h-8 w-8 ${
 																displayRank === 1 ? 'text-yellow-400' : displayRank === 2 ? 'text-gray-400' : 'text-yellow-600'
 															}`}
 														/>
 													) : (
-														<span className="text-2xl font-bold mr-4">{displayRank}</span>
+														<span className="mr-4 text-2xl font-bold">{displayRank}</span>
 													)}
 												</span>
 												{player.name}
@@ -157,7 +157,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				</CardContent>
 			</Card>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-				<Button onClick={onNext} size="lg" className="bg-quiz-orange text-white text-2xl font-bold px-12 py-8 rounded-2xl">
+				<Button onClick={onNext} size="lg" className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white">
 					{isLastQuestion ? 'Final Results' : 'Next Question'}
 				</Button>
 			</motion.div>

@@ -25,7 +25,7 @@ export function HostPage() {
 
 	if (isConnecting && !isConnected) {
 		return (
-			<div className="min-h-screen w-full flex items-center justify-center bg-slate-100">
+			<div className="flex min-h-screen w-full items-center justify-center bg-slate-100">
 				<Loader2 className="h-16 w-16 animate-spin text-quiz-orange" />
 			</div>
 		);
@@ -33,10 +33,10 @@ export function HostPage() {
 
 	if (error && !isConnected) {
 		return (
-			<div className="min-h-screen w-full flex flex-col items-center justify-center bg-red-100 text-red-800 p-4">
-				<ShieldAlert className="h-16 w-16 mb-4" />
-				<h1 className="text-3xl font-bold mb-2">Access Denied</h1>
-				<p className="text-center mb-6">{error}</p>
+			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-red-100 p-4 text-red-800">
+				<ShieldAlert className="mb-4 h-16 w-16" />
+				<h1 className="mb-2 text-3xl font-bold">Access Denied</h1>
+				<p className="mb-6 text-center">{error}</p>
 				<Button asChild>
 					<Link to="/">Return to Home</Link>
 				</Button>
@@ -84,7 +84,7 @@ export function HostPage() {
 	};
 
 	return (
-		<div className="min-h-screen w-full bg-slate-100 text-slate-900 flex flex-col">
+		<div className="flex min-h-screen w-full flex-col bg-slate-100 text-slate-900">
 			<AnimatePresence mode="wait">
 				<motion.main
 					key={gameState.phase}
@@ -92,7 +92,7 @@ export function HostPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="flex-grow flex flex-col"
+					className="flex flex-grow flex-col"
 				>
 					{renderContent()}
 				</motion.main>

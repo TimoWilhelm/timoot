@@ -39,18 +39,18 @@ export function ErrorFallback({
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-background p-4">
+		<div className="flex min-h-screen items-center justify-center bg-background p-4">
 			<div className="w-full max-w-md">
 				{/* Animated background gradient */}
 				<div className="absolute inset-0 bg-gradient-rainbow opacity-5 dark:opacity-10" />
 
 				{/* Error card */}
-				<Card className="relative backdrop-blur-sm shadow-2xl">
-					<CardContent className="p-8 space-y-6">
+				<Card className="relative shadow-2xl backdrop-blur-sm">
+					<CardContent className="space-y-6 p-8">
 						{/* Icon and title */}
-						<div className="text-center space-y-4">
-							<div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center">
-								<AlertTriangle className="w-8 h-8 text-destructive" />
+						<div className="space-y-4 text-center">
+							<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+								<AlertTriangle className="h-8 w-8 text-destructive" />
 							</div>
 							<h1 className="text-2xl font-bold">{title}</h1>
 							<p className="text-muted-foreground">{message}</p>
@@ -59,7 +59,7 @@ export function ErrorFallback({
 						{/* Status indicator */}
 						{statusMessage && (
 							<div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-								<div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+								<div className="h-2 w-2 animate-pulse rounded-full bg-orange-500" />
 								<span>{statusMessage}</span>
 							</div>
 						)}
@@ -67,22 +67,22 @@ export function ErrorFallback({
 						{/* Action buttons */}
 						<div className="space-y-3">
 							<Button onClick={handleRetry} className="w-full">
-								<RefreshCw className="w-4 h-4 mr-2" />
+								<RefreshCw className="mr-2 h-4 w-4" />
 								Try Again
 							</Button>
 							<Button onClick={handleGoHome} variant="secondary" className="w-full">
-								<Home className="w-4 h-4 mr-2" />
+								<Home className="mr-2 h-4 w-4" />
 								Go to Homepage
 							</Button>
 						</div>
 
 						{/* Error details (collapsible) */}
 						{process.env.NODE_ENV === 'development' && showErrorDetails && error && (
-							<details className="mt-6 p-4 bg-muted/50 rounded-lg">
-								<summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+							<details className="mt-6 rounded-lg bg-muted/50 p-4">
+								<summary className="cursor-pointer text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
 									Error details (Development only)
 								</summary>
-								<pre className="mt-3 text-xs overflow-auto max-h-40 text-muted-foreground">
+								<pre className="mt-3 max-h-40 overflow-auto text-xs text-muted-foreground">
 									{error.message || error.toString()}
 									{error.stack && '\n\n' + error.stack + '\n\n' + error.componentStack}
 								</pre>
@@ -92,7 +92,7 @@ export function ErrorFallback({
 				</Card>
 
 				{/* Support text */}
-				<p className="text-center text-sm text-muted-foreground mt-6">If this problem persists, please contact our support team</p>
+				<p className="mt-6 text-center text-sm text-muted-foreground">If this problem persists, please contact our support team</p>
 			</div>
 		</div>
 	);

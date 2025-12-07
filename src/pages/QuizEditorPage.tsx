@@ -215,16 +215,16 @@ export function QuizEditorPage() {
 	};
 	return (
 		<div className="min-h-screen bg-slate-50">
-			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+			<div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-					<div className="flex justify-between items-center">
+					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-4">
 							<Link to="/">
 								<Button type="button" variant="outline" size="icon">
 									<ArrowLeft className="h-5 w-5" />
 								</Button>
 							</Link>
-							<h1 className="text-2xl sm:text-4xl font-display font-bold">{quizId ? 'Edit Quiz' : 'Create a New Quiz'}</h1>
+							<h1 className="font-display text-2xl font-bold sm:text-4xl">{quizId ? 'Edit Quiz' : 'Create a New Quiz'}</h1>
 						</div>
 						<Button type="submit" disabled={isSubmitting} size="lg" className="bg-quiz-orange hover:bg-quiz-orange/90">
 							{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
@@ -242,14 +242,14 @@ export function QuizEditorPage() {
 									id="title"
 									{...register('title')}
 									placeholder="e.g., 'Fun Facts Friday'"
-									className="text-lg pr-16"
+									className="pr-16 text-lg"
 									maxLength={LIMITS.QUIZ_TITLE_MAX}
 								/>
-								<span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+								<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
 									{watch('title')?.length || 0}/{LIMITS.QUIZ_TITLE_MAX}
 								</span>
 							</div>
-							{errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+							{errors.title && <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>}
 						</CardContent>
 					</Card>
 					{fields.map((field, qIndex) => (
@@ -265,12 +265,12 @@ export function QuizEditorPage() {
 												<PopoverTrigger asChild>
 													<button
 														type="button"
-														className={`relative flex items-center justify-center w-20 h-8 rounded-full text-sm font-semibold transition-all overflow-hidden ${
+														className={`relative flex h-8 w-20 items-center justify-center overflow-hidden rounded-full text-sm font-semibold transition-all ${
 															bgField.value ? 'shadow-md' : 'bg-muted text-muted-foreground hover:bg-muted/80'
 														}`}
 													>
 														{bgField.value ? (
-															<img src={bgField.value} alt="" className="absolute inset-0 w-full h-full object-cover" />
+															<img src={bgField.value} alt="" className="absolute inset-0 h-full w-full object-cover" />
 														) : (
 															<span className="flex items-center gap-1.5">
 																<ImageIcon className="h-4 w-4" />
@@ -281,8 +281,8 @@ export function QuizEditorPage() {
 												</PopoverTrigger>
 												<PopoverContent className="w-80 p-3" align="end">
 													<div className="space-y-3">
-														<div className="flex items-center justify-between h-7">
-															<h4 className="font-semibold text-sm">Background Image</h4>
+														<div className="flex h-7 items-center justify-between">
+															<h4 className="text-sm font-semibold">Background Image</h4>
 															{bgField.value && (
 																<Button
 																	type="button"
@@ -295,7 +295,7 @@ export function QuizEditorPage() {
 																	}}
 																	className="h-7 px-2 text-muted-foreground hover:text-destructive"
 																>
-																	<X className="h-4 w-4 mr-1" />
+																	<X className="mr-1 h-4 w-4" />
 																	Remove
 																</Button>
 															)}
@@ -306,13 +306,13 @@ export function QuizEditorPage() {
 																	key={img.id}
 																	type="button"
 																	onClick={() => bgField.onChange(img.path)}
-																	className={`relative aspect-video rounded-lg overflow-hidden transition-all ${
+																	className={`relative aspect-video overflow-hidden rounded-lg transition-all ${
 																		bgField.value === img.path
 																			? 'ring-2 ring-quiz-orange ring-offset-2'
 																			: 'hover:ring-2 hover:ring-muted-foreground/30'
 																	}`}
 																>
-																	<img src={img.path} alt={img.name} className="w-full h-full object-cover" />
+																	<img src={img.path} alt={img.name} className="h-full w-full object-cover" />
 																</button>
 															))}
 														</div>
@@ -329,7 +329,7 @@ export function QuizEditorPage() {
 											<button
 												type="button"
 												onClick={() => field.onChange(!field.value)}
-												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
+												className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
 													field.value
 														? 'bg-gradient-to-r from-quiz-orange to-amber-500 text-white shadow-md'
 														: 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -340,7 +340,7 @@ export function QuizEditorPage() {
 											</button>
 										)}
 									/>
-									<div className="flex items-center gap-1 border-l pl-2 ml-1">
+									<div className="ml-1 flex items-center gap-1 border-l pl-2">
 										<Button
 											type="button"
 											variant="ghost"
@@ -393,12 +393,12 @@ export function QuizEditorPage() {
 											maxLength={LIMITS.QUESTION_TEXT_MAX}
 											className="pr-16"
 										/>
-										<span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+										<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
 											{watch(`questions.${qIndex}.text`)?.length || 0}/{LIMITS.QUESTION_TEXT_MAX}
 										</span>
 									</div>
 									{errors.questions?.[qIndex]?.text && (
-										<p className="text-red-500 text-sm mt-1">{errors.questions[qIndex]?.text?.message}</p>
+										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.text?.message}</p>
 									)}
 								</div>
 								<div>
@@ -407,7 +407,7 @@ export function QuizEditorPage() {
 										control={control}
 										name={`questions.${qIndex}.correctAnswerIndex`}
 										render={({ field: { onChange, value } }) => (
-											<RadioGroup onValueChange={onChange} value={String(value)} className="space-y-2 mt-2">
+											<RadioGroup onValueChange={onChange} value={String(value)} className="mt-2 space-y-2">
 												{getValues(`questions.${qIndex}.options`).map((_, oIndex) => (
 													<div key={`${field.id}-option-${oIndex}`} className="flex items-center gap-2">
 														<div className="flex flex-col">
@@ -433,14 +433,14 @@ export function QuizEditorPage() {
 															</Button>
 														</div>
 														<RadioGroupItem value={String(oIndex)} id={`q${qIndex}o${oIndex}`} />
-														<div className="flex-grow relative">
+														<div className="relative flex-grow">
 															<Input
 																{...register(`questions.${qIndex}.options.${oIndex}`)}
 																placeholder={`Option ${oIndex + 1}`}
 																maxLength={LIMITS.OPTION_TEXT_MAX}
 																className="pr-14"
 															/>
-															<span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+															<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
 																{watch(`questions.${qIndex}.options.${oIndex}`)?.length || 0}/{LIMITS.OPTION_TEXT_MAX}
 															</span>
 														</div>
@@ -452,7 +452,7 @@ export function QuizEditorPage() {
 																onClick={() => removeOption(qIndex, oIndex)}
 																className="text-muted-foreground hover:text-destructive"
 															>
-																<Trash2 className="w-4 h-4" />
+																<Trash2 className="h-4 w-4" />
 															</Button>
 														)}
 													</div>
@@ -460,9 +460,9 @@ export function QuizEditorPage() {
 											</RadioGroup>
 										)}
 									/>
-									{errors.questions?.[qIndex]?.options && <p className="text-red-500 text-sm mt-1">Each option must have text.</p>}
+									{errors.questions?.[qIndex]?.options && <p className="mt-1 text-sm text-red-500">Each option must have text.</p>}
 									{errors.questions?.[qIndex]?.correctAnswerIndex && (
-										<p className="text-red-500 text-sm mt-1">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
+										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
 									)}
 								</div>
 								{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (

@@ -28,7 +28,7 @@ function PlayerDoublePointsAnimation({ onComplete }: { onComplete: () => void })
 
 	return (
 		<motion.div
-			className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-quiz-orange/95 to-amber-600/95 rounded-2xl"
+			className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-gradient-to-br from-quiz-orange/95 to-amber-600/95"
 			initial={{ opacity: 0, scale: 0.9 }}
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 1.1 }}
@@ -73,7 +73,7 @@ function PlayerDoublePointsAnimation({ onComplete }: { onComplete: () => void })
 						repeat: 2,
 					}}
 				>
-					<Zap className="w-8 h-8 text-yellow-300 fill-yellow-300" />
+					<Zap className="h-8 w-8 fill-yellow-300 text-yellow-300" />
 				</motion.div>
 			))}
 
@@ -90,14 +90,14 @@ function PlayerDoublePointsAnimation({ onComplete }: { onComplete: () => void })
 				}}
 			>
 				<motion.div
-					className="text-8xl font-black text-white drop-shadow-xl leading-none"
+					className="text-8xl font-black leading-none text-white drop-shadow-xl"
 					animate={{ scale: [1, 1.1, 1] }}
 					transition={{ duration: 0.5, repeat: Infinity }}
 				>
 					2×
 				</motion.div>
 				<motion.div
-					className="text-xl font-bold text-white/90 uppercase tracking-wider mt-2"
+					className="mt-2 text-xl font-bold uppercase tracking-wider text-white/90"
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.5 }}
@@ -143,7 +143,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 	const canAnswer = !showDoublePointsAnimation && submittedAnswer === null;
 
 	return (
-		<div className="w-[calc(100vw-2rem)] h-[calc(100vh-10rem)] max-w-2xl max-h-[500px] relative overflow-hidden">
+		<div className="relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl overflow-hidden">
 			{/* 2x Points animation overlay */}
 			<AnimatePresence>
 				{showDoublePointsAnimation && <PlayerDoublePointsAnimation onComplete={() => setShowDoublePointsAnimation(false)} />}
@@ -156,7 +156,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 						initial={{ opacity: 0, scale: 0 }}
 						animate={{ opacity: 0.4, scale: 3 }}
 						transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-						className="absolute rounded-full blur-3xl pointer-events-none"
+						className="pointer-events-none absolute rounded-full blur-3xl"
 						style={{
 							left: '25%',
 							top: '25%',
@@ -240,7 +240,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 											delay: displayIndex * 0.03,
 										}
 						}
-						className="absolute rounded-2xl flex items-center justify-center overflow-hidden cursor-pointer"
+						className="absolute flex cursor-pointer items-center justify-center overflow-hidden rounded-2xl"
 						style={{
 							top: pos.top,
 							left: pos.left,
@@ -252,7 +252,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 					>
 						{/* Inner glow */}
 						<motion.div
-							className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/10 rounded-2xl"
+							className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-transparent to-white/10"
 							animate={isSelected && showPulse ? { opacity: [0.1, 0.3, 0.1] } : {}}
 							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
 						/>
@@ -288,7 +288,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 						{/* Shape icon */}
 						<motion.svg
 							viewBox="0 0 24 24"
-							className="w-1/2 h-1/2 text-white fill-current drop-shadow-lg"
+							className="h-1/2 w-1/2 fill-current text-white drop-shadow-lg"
 							animate={
 								isSelected
 									? {
@@ -313,7 +313,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 						{/* Shimmer effect on hover */}
 						{canAnswer && (
 							<motion.div
-								className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+								className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent"
 								initial={{ x: '-200%' }}
 								whileHover={{ x: '200%' }}
 								transition={{ duration: 0.6 }}
@@ -326,7 +326,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 								{[...Array(6)].map((_, i) => (
 									<motion.div
 										key={i}
-										className="absolute w-2 h-2 bg-white rounded-full"
+										className="absolute h-2 w-2 rounded-full bg-white"
 										initial={{
 											x: 0,
 											y: 0,
