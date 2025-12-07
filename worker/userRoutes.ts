@@ -4,14 +4,7 @@ import { PREDEFINED_QUIZZES, GENERAL_KNOWLEDGE_QUIZ } from './quizzes';
 import type { ApiResponse, GameState, Quiz } from '@shared/types';
 import { generateQuizFromPrompt, generateSingleQuestion, type GenerationStatus, type GeneratedQuestion } from './ai';
 import { z } from 'zod';
-import {
-	aiGenerateRequestSchema,
-	quizSchema,
-	playerJoinRequestSchema,
-	submitAnswerRequestSchema,
-	hostAuthRequestSchema,
-	createGameRequestSchema,
-} from '@shared/validation';
+import { aiGenerateRequestSchema, quizSchema, createGameRequestSchema } from '@shared/validation';
 import { exports } from 'cloudflare:workers';
 import { generateGameId } from './words';
 
@@ -196,107 +189,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 			return c.json({ success: false, error: data.error }, 400);
 		}
 
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
-	app.get('/api/games/:gameId', async (c) => {
-		const { gameId } = c.req.param();
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
-		const data = await gameRoomStub.getGameState();
-		if (!data) {
-			return c.json({ success: false, error: 'Game not found' }, 404);
-		}
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
-	app.post('/api/games/:gameId/host', async (c) => {
-		const { gameId } = c.req.param();
-		const body = await c.req.json();
-		const result = hostAuthRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const { hostSecret } = result.data;
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
-		const data = await gameRoomStub.getFullGameState();
-		if (!data) {
-			return c.json({ success: false, error: 'Game not found' }, 404);
-		}
-		if (data.hostSecret !== hostSecret) {
-			return c.json({ success: false, error: 'Forbidden' }, 403);
-		}
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
-	app.post('/api/games/:gameId/players', async (c) => {
-		const { gameId } = c.req.param();
-		const body = await c.req.json();
-		const result = playerJoinRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const { name, playerId } = result.data;
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
-		const data = await gameRoomStub.addPlayer(name, playerId);
-		if ('error' in data) {
-			return c.json({ success: false, error: data.error }, 400);
-		}
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
-	app.post('/api/games/:gameId/start', async (c) => {
-		const { gameId } = c.req.param();
-		const body = await c.req.json();
-		const result = hostAuthRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const { hostSecret } = result.data;
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
-		const state = await gameRoomStub.getFullGameState();
-		if (!state) {
-			return c.json({ success: false, error: 'Game not found' }, 404);
-		}
-		if (state.hostSecret !== hostSecret) {
-			return c.json({ success: false, error: 'Forbidden' }, 403);
-		}
-		const data = await gameRoomStub.startGame();
-		if ('error' in data) {
-			return c.json({ success: false, error: data.error }, 400);
-		}
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
-	app.post('/api/games/:gameId/answer', async (c) => {
-		const { gameId } = c.req.param();
-		const body = await c.req.json();
-		const result = submitAnswerRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const { playerId, answerIndex } = result.data;
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
-		const data = await gameRoomStub.submitAnswer(playerId, answerIndex);
-		if ('error' in data) {
-			return c.json({ success: false, error: data.error }, 400);
-		}
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
-	app.post('/api/games/:gameId/next', async (c) => {
-		const { gameId } = c.req.param();
-		const body = await c.req.json();
-		const result = hostAuthRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const { hostSecret } = result.data;
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
-		const state = await gameRoomStub.getFullGameState();
-		if (!state) {
-			return c.json({ success: false, error: 'Game not found' }, 404);
-		}
-		if (state.hostSecret !== hostSecret) {
-			return c.json({ success: false, error: 'Forbidden' }, 403);
-		}
-		const data = await gameRoomStub.nextState();
-		if ('error' in data) {
-			return c.json({ success: false, error: data.error }, 400);
-		}
 		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
 	});
 }

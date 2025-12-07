@@ -124,6 +124,13 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 	async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
 		console.error('WebSocket error:', error);
+
+		// Check if all connections are closed, schedule cleanup
+		const sockets = this.ctx.getWebSockets();
+		if (sockets.length === 0) {
+			// Schedule cleanup alarm
+			await this.ctx.storage.setAlarm(Date.now() + CLEANUP_DELAY_MS);
+		}
 	}
 
 	/**
@@ -514,145 +521,8 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		return newGame;
 	}
 
-	async getGameState(): Promise<GameState | null> {
-		const state = await this.ctx.storage.get<GameState>('game_state');
-		if (!state) return null;
-		const publicState = { ...state };
-		delete publicState.hostSecret;
-		return publicState;
-	}
-
 	async getFullGameState(): Promise<GameState | null> {
 		const state = await this.ctx.storage.get<GameState>('game_state');
 		return state ?? null;
-	}
-
-	async addPlayer(name: string, playerId: string): Promise<GameState | { error: string }> {
-		// Validate nickname
-		const nicknameResult = nicknameSchema.safeParse(name);
-		if (!nicknameResult.success) {
-			return { error: z.prettifyError(nicknameResult.error) };
-		}
-		const validatedName = nicknameResult.data;
-
-		const state = await this.getFullGameState();
-		if (!state || state.phase !== 'LOBBY') {
-			return { error: 'Game not in LOBBY phase or does not exist.' };
-		}
-
-		// Handle reconnection: if player already exists, just return the state
-		if (state.players.some((p) => p.id === playerId)) {
-			const gameState = await this.getGameState();
-			if (!gameState) return { error: 'Game not found.' };
-			return gameState;
-		}
-
-		if (state.players.some((p) => p.name.toLowerCase() === validatedName.toLowerCase())) {
-			return { error: 'Player name already taken.' };
-		}
-
-		const newPlayer: Player = { id: playerId, name: validatedName, score: 0, answered: false };
-		state.players.push(newPlayer);
-		await this.ctx.storage.put('game_state', state);
-
-		const gameState = await this.getGameState();
-		if (!gameState) {
-			return { error: 'Game not found.' };
-		}
-		return gameState;
-	}
-
-	async startGame(): Promise<GameState | { error: string }> {
-		const state = await this.getFullGameState();
-		if (!state || state.phase !== 'LOBBY') {
-			return { error: 'Game not in LOBBY phase.' };
-		}
-
-		state.phase = 'QUESTION';
-		state.questionStartTime = Date.now();
-		await this.ctx.storage.put('game_state', state);
-
-		const gameState = await this.getGameState();
-		if (!gameState) {
-			return { error: 'Game not found.' };
-		}
-		return gameState;
-	}
-
-	async submitAnswer(playerId: string, answerIndex: number): Promise<GameState | { error: string }> {
-		const state = await this.getFullGameState();
-		if (!state || state.phase !== 'QUESTION') {
-			return { error: 'Not in QUESTION phase.' };
-		}
-
-		const player = state.players.find((p) => p.id === playerId);
-		if (!player) {
-			return { error: 'Player not found.' };
-		}
-
-		if (state.answers.some((a) => a.playerId === playerId)) {
-			return { error: 'Player has already answered.' };
-		}
-
-		const timeTaken = Date.now() - state.questionStartTime;
-		if (timeTaken > QUESTION_TIME_LIMIT_MS) {
-			return { error: 'Time is up for this question.' };
-		}
-
-		const answer: Answer = { playerId, answerIndex, time: timeTaken };
-		state.answers.push(answer);
-
-		if (state.answers.length === state.players.length) {
-			processAnswersAndUpdateScores(state);
-			state.phase = 'REVEAL';
-		}
-
-		await this.ctx.storage.put('game_state', state);
-
-		const gameState = await this.getGameState();
-		if (!gameState) {
-			return { error: 'Game not found.' };
-		}
-		return gameState;
-	}
-
-	async nextState(): Promise<GameState | { error: string }> {
-		const state = await this.getFullGameState();
-		if (!state) {
-			return { error: 'Game not found.' };
-		}
-
-		switch (state.phase) {
-			case 'QUESTION':
-				processAnswersAndUpdateScores(state);
-				state.phase = 'REVEAL';
-				break;
-			case 'REVEAL':
-				state.phase = 'LEADERBOARD';
-				state.players.sort((a, b) => b.score - a.score);
-				break;
-			case 'LEADERBOARD':
-				if (state.currentQuestionIndex < state.questions.length - 1) {
-					state.currentQuestionIndex++;
-					state.phase = 'QUESTION';
-					state.questionStartTime = Date.now();
-					state.answers = [];
-				} else {
-					state.phase = 'END';
-					// Schedule cleanup after game ends
-					await this.ctx.storage.setAlarm(Date.now() + CLEANUP_DELAY_MS);
-				}
-				break;
-			default:
-				return { error: 'Invalid state transition.' };
-		}
-
-		await this.ctx.storage.put('game_state', state);
-
-		const gameState = await this.getGameState();
-		if (!gameState) {
-			return { error: 'Game not found.' };
-		}
-		return gameState;
 	}
 }
