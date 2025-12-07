@@ -18,6 +18,8 @@ export const LIMITS = {
 	AI_PROMPT_MAX: 300,
 	AI_NUM_QUESTIONS_MIN: 1,
 	AI_NUM_QUESTIONS_MAX: 10,
+	AI_IMAGE_PROMPT_MIN: 1,
+	AI_IMAGE_PROMPT_MAX: 100,
 } as const;
 
 // ============ Base Schemas ============
@@ -67,6 +69,15 @@ export const aiPromptSchema = z
 	.trim()
 	.min(LIMITS.AI_PROMPT_MIN, `Prompt must be at least ${LIMITS.AI_PROMPT_MIN} characters`)
 	.max(LIMITS.AI_PROMPT_MAX, `Prompt must be at most ${LIMITS.AI_PROMPT_MAX} characters`);
+
+/**
+ * AI image prompt validation
+ */
+export const imagePromptSchema = z
+	.string()
+	.trim()
+	.min(LIMITS.AI_IMAGE_PROMPT_MIN, 'Prompt is required')
+	.max(LIMITS.AI_IMAGE_PROMPT_MAX, `Prompt must be at most ${LIMITS.AI_IMAGE_PROMPT_MAX} characters`);
 
 /**
  * Number of questions for AI generation

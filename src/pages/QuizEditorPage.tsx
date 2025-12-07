@@ -18,7 +18,21 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Loader2, Save, ArrowLeft, ChevronUp, ChevronDown, Wand2, Zap, ImageIcon, ImageOff } from 'lucide-react';
+import {
+	PlusCircle,
+	Trash2,
+	Loader2,
+	Save,
+	ArrowLeft,
+	ChevronUp,
+	ChevronDown,
+	Wand2,
+	Zap,
+	ImageIcon,
+	ImageOff,
+	Sparkles,
+	X,
+} from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import type { ApiResponse, Quiz, Question } from '@shared/types';
 import { quizFormSchema, LIMITS, type QuizFormInput } from '@shared/validation';
@@ -32,6 +46,14 @@ type QuizFormData = {
 };
 
 type QuestionFormInput = QuizFormInput['questions'][number];
+
+interface AIImage {
+	id: string;
+	name: string;
+	path: string;
+	prompt?: string;
+	createdAt?: string;
+}
 export function QuizEditorPage() {
 	const { quizId } = useParams<{ quizId?: string }>();
 	const navigate = useNavigate();
@@ -50,6 +72,45 @@ export function QuizEditorPage() {
 	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
 	const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
 	const [openImagePopover, setOpenImagePopover] = useState<number | null>(null);
+	const [aiImages, setAiImages] = useState<AIImage[]>([]);
+	const [aiImagesCursor, setAiImagesCursor] = useState<string | undefined>(undefined);
+	const [isLoadingMoreImages, setIsLoadingMoreImages] = useState(false);
+	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+	const [imagePrompt, setImagePrompt] = useState('');
+
+	// Fetch AI-generated images on mount
+	useEffect(() => {
+		const fetchAiImages = async () => {
+			try {
+				const response = await fetch('/api/images');
+				const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
+				if (result.success && result.data) {
+					setAiImages(result.data.images);
+					setAiImagesCursor(result.data.nextCursor);
+				}
+			} catch (error) {
+				console.error('Failed to fetch AI images:', error);
+			}
+		};
+		fetchAiImages();
+	}, []);
+
+	const loadMoreImages = async () => {
+		if (!aiImagesCursor || isLoadingMoreImages) return;
+		setIsLoadingMoreImages(true);
+		try {
+			const response = await fetch(`/api/images?cursor=${encodeURIComponent(aiImagesCursor)}`);
+			const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
+			if (result.success && result.data) {
+				setAiImages((prev) => [...prev, ...result.data!.images]);
+				setAiImagesCursor(result.data.nextCursor);
+			}
+		} catch (error) {
+			console.error('Failed to load more images:', error);
+		} finally {
+			setIsLoadingMoreImages(false);
+		}
+	};
 	useEffect(() => {
 		if (quizId) {
 			const fetchQuiz = async () => {
@@ -164,6 +225,55 @@ export function QuizEditorPage() {
 			setIsGeneratingQuestion(false);
 		}
 	};
+
+	const deleteImage = async (imageId: string, e: React.MouseEvent) => {
+		e.stopPropagation();
+		try {
+			const response = await fetch(`/api/images/${imageId}`, { method: 'DELETE' });
+			const result = (await response.json()) as ApiResponse<{ id: string }>;
+			if (!response.ok || !result.success) {
+				throw new Error(result.error || 'Failed to delete image');
+			}
+			setAiImages((prev) => prev.filter((img) => img.id !== imageId));
+			toast.success('Image deleted');
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to delete image');
+		}
+	};
+
+	const generateImage = async (onImageGenerated: (path: string) => void) => {
+		if (!imagePrompt.trim()) {
+			toast.error('Please enter a prompt for the image');
+			return;
+		}
+
+		setIsGeneratingImage(true);
+		try {
+			const response = await fetch('/api/images/generate', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ prompt: imagePrompt }),
+			});
+
+			const result = (await response.json()) as ApiResponse<AIImage>;
+			if (!response.ok || !result.success || !result.data) {
+				throw new Error(result.error || 'Failed to generate image');
+			}
+
+			// Add to AI images list
+			setAiImages((prev) => [result.data!, ...prev]);
+			// Set as the selected image
+			onImageGenerated(result.data.path);
+			setImagePrompt('');
+			setOpenImagePopover(null);
+			toast.success('Image generated!');
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to generate image');
+		} finally {
+			setIsGeneratingImage(false);
+		}
+	};
+
 	const addOption = (qIndex: number) => {
 		const currentQuestion = getValues(`questions.${qIndex}`);
 		if (currentQuestion.options.length < LIMITS.OPTIONS_MAX) {
@@ -280,46 +390,133 @@ export function QuizEditorPage() {
 														)}
 													</button>
 												</PopoverTrigger>
-												<PopoverContent className="w-80 p-3" align="end">
-													<div className="space-y-3">
-														<h4 className="text-sm font-semibold">Background Image</h4>
-														<div className="grid grid-cols-2 gap-3">
-															<button
-																type="button"
-																onClick={() => {
-																	bgField.onChange('');
-																	setOpenImagePopover(null);
-																}}
-																className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted transition-all ${
-																	!bgField.value
-																		? 'ring-2 ring-quiz-orange ring-offset-2'
-																		: 'hover:ring-2 hover:ring-muted-foreground/30'
-																}`}
-															>
-																<div className="flex flex-col items-center gap-1 text-muted-foreground">
-																	<ImageOff className="h-6 w-6" />
-																	<span className="text-xs">No Image</span>
-																</div>
-															</button>
-															{DEFAULT_BACKGROUND_IMAGES.map((img) => (
+												<PopoverContent className="w-96 p-3" align="end">
+													<div className="max-h-[70vh] space-y-4">
+														{/* Default Images */}
+														<div className="space-y-2">
+															<h4 className="text-sm font-semibold">Background Image</h4>
+															<div className="grid grid-cols-2 gap-2">
 																<button
-																	key={img.id}
 																	type="button"
 																	onClick={() => {
-																		bgField.onChange(img.path);
+																		bgField.onChange('');
 																		setOpenImagePopover(null);
 																	}}
-																	className={`relative aspect-video overflow-hidden rounded-lg transition-all ${
-																		bgField.value === img.path
-																			? 'ring-2 ring-quiz-orange ring-offset-2'
-																			: 'hover:ring-2 hover:ring-muted-foreground/30'
+																	className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted transition-all ${
+																		!bgField.value ? 'ring-2 ring-quiz-orange ring-offset-2' : 'hover:ring-2 hover:ring-muted-foreground/30'
 																	}`}
 																>
-																	<img src={img.path} alt={img.name} className="h-full w-full object-cover" />
+																	<div className="flex flex-col items-center gap-1 text-muted-foreground">
+																		<ImageOff className="h-6 w-6" />
+																		<span className="text-xs">No Image</span>
+																	</div>
 																</button>
-															))}
+																{DEFAULT_BACKGROUND_IMAGES.map((img) => (
+																	<button
+																		key={img.id}
+																		type="button"
+																		onClick={() => {
+																			bgField.onChange(img.path);
+																			setOpenImagePopover(null);
+																		}}
+																		className={`relative aspect-video overflow-hidden rounded-lg transition-all ${
+																			bgField.value === img.path
+																				? 'ring-2 ring-quiz-orange ring-offset-2'
+																				: 'hover:ring-2 hover:ring-muted-foreground/30'
+																		}`}
+																	>
+																		<img src={img.path} alt={img.name} className="h-full w-full object-cover" />
+																	</button>
+																))}
+															</div>
 														</div>
-														<p className="text-xs text-muted-foreground">AI image generation coming soon!</p>
+
+														{/* AI Generated Images */}
+														{aiImages.length > 0 && (
+															<div className="space-y-2">
+																<h4 className="text-sm font-semibold text-muted-foreground">AI Generated</h4>
+																<div className="grid grid-cols-2 gap-2">
+																	{aiImages.map((img) => (
+																		<div key={img.id} className="group relative">
+																			<button
+																				type="button"
+																				onClick={() => {
+																					bgField.onChange(img.path);
+																					setOpenImagePopover(null);
+																				}}
+																				className={`relative aspect-video w-full overflow-hidden rounded-lg transition-all ${
+																					bgField.value === img.path
+																						? 'ring-2 ring-quiz-orange ring-offset-2'
+																						: 'hover:ring-2 hover:ring-muted-foreground/30'
+																				}`}
+																				title={img.prompt}
+																			>
+																				<img src={img.path} alt={img.name} className="h-full w-full object-cover" />
+																			</button>
+																			<button
+																				type="button"
+																				onClick={(e) => deleteImage(img.id, e)}
+																				className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
+																				title="Delete image"
+																			>
+																				<X className="h-3 w-3" />
+																			</button>
+																		</div>
+																	))}
+																</div>
+																{aiImagesCursor && (
+																	<Button
+																		type="button"
+																		variant="outline"
+																		size="sm"
+																		className="w-full"
+																		onClick={loadMoreImages}
+																		disabled={isLoadingMoreImages}
+																	>
+																		{isLoadingMoreImages ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+																		Load More
+																	</Button>
+																)}
+															</div>
+														)}
+
+														{/* AI Image Generation */}
+														<div className="space-y-2">
+															<h4 className="flex items-center gap-1.5 text-sm font-semibold">
+																<Sparkles className="h-4 w-4 text-quiz-orange" />
+																Generate with AI
+															</h4>
+															<div className="flex gap-2">
+																<div className="relative flex-1">
+																	<Input
+																		placeholder="Describe the image..."
+																		value={imagePrompt}
+																		onChange={(e) => setImagePrompt(e.target.value)}
+																		className="pr-14 text-sm"
+																		maxLength={LIMITS.AI_IMAGE_PROMPT_MAX}
+																		disabled={isGeneratingImage}
+																		onKeyDown={(e) => {
+																			if (e.key === 'Enter') {
+																				e.preventDefault();
+																				generateImage(bgField.onChange);
+																			}
+																		}}
+																	/>
+																	<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+																		{imagePrompt.length}/{LIMITS.AI_IMAGE_PROMPT_MAX}
+																	</span>
+																</div>
+																<Button
+																	type="button"
+																	size="sm"
+																	onClick={() => generateImage(bgField.onChange)}
+																	disabled={isGeneratingImage || !imagePrompt.trim()}
+																	className="shrink-0 bg-quiz-orange hover:bg-quiz-orange/90"
+																>
+																	{isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+																</Button>
+															</div>
+														</div>
 													</div>
 												</PopoverContent>
 											</Popover>

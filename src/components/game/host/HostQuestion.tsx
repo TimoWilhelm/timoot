@@ -302,6 +302,12 @@ export function HostQuestion({
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
 	const [showDoublePointsAnimation, setShowDoublePointsAnimation] = useState(isDoublePoints ?? false);
+	const [imageError, setImageError] = useState(false);
+
+	// Reset image error state when backgroundImage changes
+	useEffect(() => {
+		setImageError(false);
+	}, [backgroundImage]);
 
 	useEffect(() => {
 		// Don't start timer until animation is done
@@ -341,15 +347,17 @@ export function HostQuestion({
 				</div>
 			</div>
 			<div className="center relative mb-4 flex-grow overflow-hidden rounded-2xl shadow-lg sm:mb-8">
-				{/* Background image layer */}
-				{backgroundImage ? (
-					<div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }} />
-				) : (
-					<div className="absolute inset-0 bg-white" />
+				{/* Fallback white background layer (always present) */}
+				<div className="absolute inset-0 bg-white" />
+				{/* Background image layer (layered on top, hidden if error) */}
+				{backgroundImage && !imageError && (
+					<img src={backgroundImage} alt="" className="absolute inset-0 h-full w-full object-cover" onError={() => setImageError(true)} />
 				)}
 				{/* Content layer */}
 				<div className="relative z-10 flex h-full w-full items-center justify-center p-4 sm:p-8">
-					<div className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${backgroundImage ? 'bg-white/85 shadow-xl backdrop-blur-lg' : ''}`}>
+					<div
+						className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${backgroundImage && !imageError ? 'bg-white/85 shadow-xl backdrop-blur-lg' : ''}`}
+					>
 						<h2 className="text-center text-3xl font-bold text-gray-900 sm:text-5xl">{questionText}</h2>
 					</div>
 				</div>
