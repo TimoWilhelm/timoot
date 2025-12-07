@@ -37,7 +37,40 @@ interface AIImageListResponse {
 }
 
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-	// WebSocket upgrade endpoint - forwards to GameRoom Durable Object
+	// Host WebSocket upgrade endpoint - requires token validation BEFORE connection
+	app.get('/api/games/:gameId/host-ws', async (c) => {
+		const { gameId } = c.req.param();
+		const token = c.req.query('token');
+		const upgradeHeader = c.req.header('Upgrade');
+
+		if (!upgradeHeader || upgradeHeader !== 'websocket') {
+			return c.text('Expected WebSocket upgrade', 426);
+		}
+
+		if (!token) {
+			return c.text('Token required', 401);
+		}
+
+		// Get the GameRoom DO instance and validate the token
+		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+		const isValid = await gameRoomStub.validateHostSecret(token);
+
+		if (!isValid) {
+			return c.text('Invalid host token', 403);
+		}
+
+		// Token is valid - forward to DO with host path
+		const url = new URL(c.req.url);
+		url.pathname = '/websocket/host';
+
+		return gameRoomStub.fetch(
+			new Request(url.toString(), {
+				headers: c.req.raw.headers,
+			}),
+		);
+	});
+
+	// Player WebSocket upgrade endpoint - no token required
 	app.get('/api/games/:gameId/ws', async (c) => {
 		const { gameId } = c.req.param();
 		const upgradeHeader = c.req.header('Upgrade');
@@ -50,7 +83,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
 		// Forward the WebSocket upgrade request to the Durable Object
 		const url = new URL(c.req.url);
-		url.pathname = '/websocket';
+		url.pathname = '/websocket/player';
 
 		return gameRoomStub.fetch(
 			new Request(url.toString(), {

@@ -16,30 +16,39 @@ export function HostPage() {
 	const getSecret = useHostStore((s) => s.getSecret);
 	const hostSecret = getSecret(gameId!);
 
+	// Early check for missing host secret - don't even try to connect
+	const hasMissingSecret = !hostSecret;
+
 	const { isConnecting, isConnected, error, gameState, startGame, nextState } = useGameWebSocket({
-		gameId: gameId!,
+		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
 		onError: (msg) => toast.error(msg),
 	});
 
-	if (isConnecting && !isConnected) {
+	// Show error immediately for missing secret (before loading check)
+	if (hasMissingSecret || (error && !isConnected)) {
+		const errorTitle = hasMissingSecret ? 'Session Expired' : 'Access Denied';
+		const errorMessage = hasMissingSecret
+			? 'Your host session for this game was not found. This can happen if you cleared your browser data or are using a different browser.'
+			: 'Unable to connect as host. The game may have ended or your session is no longer valid.';
+
 		return (
-			<div className="flex min-h-screen w-full items-center justify-center bg-slate-100">
-				<Loader2 className="h-16 w-16 animate-spin text-quiz-orange" />
+			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-red-100 p-4 text-red-800">
+				<ShieldAlert className="mb-4 h-16 w-16" />
+				<h1 className="mb-2 text-3xl font-bold">{errorTitle}</h1>
+				<p className="mb-6 max-w-md text-center">{errorMessage}</p>
+				<Button asChild>
+					<Link to="/">Return to Home</Link>
+				</Button>
 			</div>
 		);
 	}
 
-	if (error && !isConnected) {
+	if (isConnecting && !isConnected) {
 		return (
-			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-red-100 p-4 text-red-800">
-				<ShieldAlert className="mb-4 h-16 w-16" />
-				<h1 className="mb-2 text-3xl font-bold">Access Denied</h1>
-				<p className="mb-6 text-center">{error}</p>
-				<Button asChild>
-					<Link to="/">Return to Home</Link>
-				</Button>
+			<div className="flex min-h-screen w-full items-center justify-center bg-slate-100">
+				<Loader2 className="h-16 w-16 animate-spin text-quiz-orange" />
 			</div>
 		);
 	}

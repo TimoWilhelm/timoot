@@ -205,19 +205,25 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 		setError(null);
 
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-		const wsUrl = `${protocol}//${window.location.host}/api/games/${gameId}/ws`;
+
+		// Use separate endpoints for host vs player
+		// Host endpoint requires token in query params and pre-authenticates
+		// Player endpoint requires a connect message after connection
+		const wsUrl =
+			role === 'host'
+				? `${protocol}//${window.location.host}/api/games/${gameId}/host-ws?token=${encodeURIComponent(hostSecret!)}`
+				: `${protocol}//${window.location.host}/api/games/${gameId}/ws`;
 
 		const ws = new WebSocket(wsUrl);
 		wsRef.current = ws;
 
 		ws.onopen = () => {
-			// Send connect message for authentication
-			const connectMsg: ClientMessage =
-				role === 'host'
-					? { type: 'connect', role: 'host', gameId, hostSecret: hostSecret! }
-					: { type: 'connect', role: 'player', gameId, playerId };
-
-			ws.send(JSON.stringify(connectMsg));
+			// Host is pre-authenticated via the URL token - no connect message needed
+			// Players must send a connect message for authentication
+			if (role === 'player') {
+				const connectMsg: ClientMessage = { type: 'connect', role: 'player', gameId, playerId };
+				ws.send(JSON.stringify(connectMsg));
+			}
 		};
 
 		ws.onmessage = handleMessage;
@@ -251,6 +257,12 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 
 	// Connect on mount - use empty deps to run only once
 	useEffect(() => {
+		// Skip connection if no gameId provided
+		if (!gameId) {
+			setIsConnecting(false);
+			return;
+		}
+
 		connectRef.current();
 
 		return () => {

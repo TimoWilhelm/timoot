@@ -37,8 +37,43 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	async fetch(request: Request): Promise<Response> {
 		const url = new URL(request.url);
 
-		// Handle WebSocket upgrade requests
-		if (url.pathname === '/websocket') {
+		// Handle WebSocket upgrade requests - host path (pre-authenticated)
+		if (url.pathname === '/websocket/host') {
+			const upgradeHeader = request.headers.get('Upgrade');
+			if (!upgradeHeader || upgradeHeader !== 'websocket') {
+				return new Response('Expected WebSocket upgrade', { status: 426 });
+			}
+
+			const webSocketPair = new WebSocketPair();
+			const [client, server] = Object.values(webSocketPair);
+
+			// Accept the WebSocket with hibernation support
+			this.ctx.acceptWebSocket(server);
+
+			// Host is pre-authenticated via token validation in the route
+			server.serializeAttachment({
+				role: 'host',
+				authenticated: true,
+			} as WebSocketAttachment);
+
+			// Cancel any pending cleanup alarm since we have a new connection
+			await this.ctx.storage.deleteAlarm();
+
+			// Send connected message and current state immediately
+			const state = await this.getFullGameState();
+			if (state) {
+				this.sendMessage(server, { type: 'connected', role: 'host' });
+				await this.sendCurrentStateToHost(server, state);
+			} else {
+				this.sendMessage(server, { type: 'error', message: 'Game not found' });
+				server.close(4004, 'Game not found');
+			}
+
+			return new Response(null, { status: 101, webSocket: client });
+		}
+
+		// Handle WebSocket upgrade requests - player path
+		if (url.pathname === '/websocket/player') {
 			const upgradeHeader = request.headers.get('Upgrade');
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				return new Response('Expected WebSocket upgrade', { status: 426 });
@@ -76,9 +111,14 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			const data = parseResult.data as ClientMessage;
 			const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
 
-			// Handle connection/authentication
+			// Handle connection/authentication (only for players now)
 			if (data.type === 'connect') {
-				await this.handleConnect(ws, data);
+				// Hosts are pre-authenticated via the host-ws endpoint, so reject connect messages from them
+				if (attachment?.role === 'host' && attachment.authenticated) {
+					this.sendMessage(ws, { type: 'error', message: 'Host already authenticated' });
+					return;
+				}
+				await this.handlePlayerConnect(ws, data);
 				return;
 			}
 
@@ -149,7 +189,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 	// ============ WebSocket Message Handlers ============
 
-	private async handleConnect(ws: WebSocket, data: Extract<ClientMessage, { type: 'connect' }>): Promise<void> {
+	/**
+	 * Handle player connect message - hosts are pre-authenticated via /websocket/host
+	 */
+	private async handlePlayerConnect(ws: WebSocket, data: Extract<ClientMessage, { type: 'connect' }>): Promise<void> {
 		const state = await this.getFullGameState();
 		if (!state) {
 			this.sendMessage(ws, { type: 'error', message: 'Game not found' });
@@ -157,50 +200,39 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			return;
 		}
 
+		// Only handle player connections - hosts use the pre-authenticated /websocket/host path
 		if (data.role === 'host') {
-			// Verify host secret
-			if (data.hostSecret !== state.hostSecret) {
-				this.sendMessage(ws, { type: 'error', message: 'Invalid host secret' });
-				ws.close(4003, 'Forbidden');
-				return;
-			}
+			this.sendMessage(ws, { type: 'error', message: 'Hosts must use the host WebSocket endpoint' });
+			ws.close(4003, 'Forbidden');
+			return;
+		}
 
+		// Player connection
+		const playerId = data.playerId;
+		const existingPlayer = playerId ? state.players.find((p) => p.id === playerId) : null;
+
+		// If reconnecting with valid playerId
+		if (existingPlayer) {
 			ws.serializeAttachment({
-				role: 'host',
+				role: 'player',
+				playerId: playerId,
 				authenticated: true,
 			} as WebSocketAttachment);
 
-			this.sendMessage(ws, { type: 'connected', role: 'host' });
-			// Send current state based on phase
-			await this.sendCurrentStateToHost(ws, state);
+			this.sendMessage(ws, { type: 'connected', role: 'player', playerId });
+			await this.sendCurrentStateToPlayer(ws, state, playerId!);
 		} else {
-			// Player connection
-			const playerId = data.playerId;
-			const existingPlayer = playerId ? state.players.find((p) => p.id === playerId) : null;
+			// New player - needs to join
+			ws.serializeAttachment({
+				role: 'player',
+				authenticated: true, // Authenticated but not yet joined
+			} as WebSocketAttachment);
 
-			// If reconnecting with valid playerId
-			if (existingPlayer) {
-				ws.serializeAttachment({
-					role: 'player',
-					playerId: playerId,
-					authenticated: true,
-				} as WebSocketAttachment);
+			this.sendMessage(ws, { type: 'connected', role: 'player' });
 
-				this.sendMessage(ws, { type: 'connected', role: 'player', playerId });
-				await this.sendCurrentStateToPlayer(ws, state, playerId!);
-			} else {
-				// New player - needs to join
-				ws.serializeAttachment({
-					role: 'player',
-					authenticated: true, // Authenticated but not yet joined
-				} as WebSocketAttachment);
-
-				this.sendMessage(ws, { type: 'connected', role: 'player' });
-
-				// If game not in lobby, can't join
-				if (state.phase !== 'LOBBY') {
-					this.sendMessage(ws, { type: 'error', message: 'Game has already started' });
-				}
+			// If game not in lobby, can't join
+			if (state.phase !== 'LOBBY') {
+				this.sendMessage(ws, { type: 'error', message: 'Game has already started' });
 			}
 		}
 	}
@@ -524,5 +556,16 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	async getFullGameState(): Promise<GameState | null> {
 		const state = await this.ctx.storage.get<GameState>('game_state');
 		return state ?? null;
+	}
+
+	/**
+	 * Validate the host secret - used by the route to authenticate before WebSocket upgrade
+	 */
+	async validateHostSecret(token: string): Promise<boolean> {
+		const state = await this.getFullGameState();
+		if (!state || !state.hostSecret) {
+			return false;
+		}
+		return state.hostSecret === token;
 	}
 }
