@@ -21,19 +21,22 @@ export const getCloudflareDocsMCP: () => Promise<MCPClient> = async () => {
 	});
 };
 
-const gateway = createOpenAICompatible({
-	name: 'cloudflare-ai-gateway',
-	baseURL: `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/compat`,
-	supportsStructuredOutputs: true,
-	includeUsage: true,
-	headers: {
-		'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_API_TOKEN}`,
-		'cf-aig-metadata': JSON.stringify({
-			hello: 'world',
-		}),
-	},
-});
-const model = gateway.chatModel(`dynamic/${env.CLOUDFLARE_AI_GATEWAY_MODEL}`);
+function createModel(metadata?: Record<string, string>) {
+	const gateway = createOpenAICompatible({
+		name: 'cloudflare-ai-gateway',
+		baseURL: `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/compat`,
+		supportsStructuredOutputs: true,
+		includeUsage: true,
+		headers: {
+			'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_API_TOKEN}`,
+			'cf-aig-metadata': JSON.stringify(metadata ?? {}),
+		},
+	});
+	return gateway.chatModel(`dynamic/${env.CLOUDFLARE_AI_GATEWAY_MODEL}`);
+}
+
+// Default model for cases where metadata isn't available
+const model = createModel();
 
 // Schema for AI-generated quiz questions
 const QuestionSchema = z.object({
@@ -66,12 +69,14 @@ export async function generateQuizFromPrompt(
 	numQuestions: number = 5,
 	abortSignal: AbortSignal,
 	onStatusUpdate?: OnStatusUpdate,
+	metadata?: Record<string, string>,
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
 	const cloudflareDocsMcp = await getCloudflareDocsMCP();
+	const activeModel = metadata ? createModel(metadata) : model;
 
 	try {
-		const researchAgent = await createResearchAgent(model, [cloudflareDocsMcp], onStatusUpdate);
+		const researchAgent = await createResearchAgent(activeModel, [cloudflareDocsMcp], onStatusUpdate);
 
 		const { output: researchOutput } = await researchAgent.generate({
 			messages: [
@@ -89,7 +94,7 @@ export async function generateQuizFromPrompt(
 		onStatusUpdate?.({ stage: 'generating', detail: 'Creating quiz questions' });
 
 		const { output: quizOutput } = await generateText({
-			model,
+			model: activeModel,
 			output: Output.object({
 				schema: QuizSchema,
 			}),
@@ -198,6 +203,7 @@ export async function generateSingleQuestion(
 	title: string,
 	existingQuestions: { text: string; options: string[]; correctAnswerIndex: number }[],
 	abortSignal?: AbortSignal,
+	metadata?: Record<string, string>,
 ): Promise<GeneratedQuestion> {
 	const existingContext =
 		existingQuestions.length > 0
@@ -207,8 +213,9 @@ export async function generateSingleQuestion(
 				${existingQuestions.map((q, i) => `${i + 1}. ${q.text}\n   Options: ${q.options.map((opt, idx) => (idx === q.correctAnswerIndex ? `${opt} (correct)` : opt)).join(', ')}`).join('\n')}`
 			: '';
 
+	const activeModel = metadata ? createModel(metadata) : model;
 	const { output } = await generateText({
-		model,
+		model: activeModel,
 		output: Output.object({
 			schema: QuestionSchema,
 		}),

@@ -156,7 +156,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 					stream.writeSSE({ event: 'status', data: JSON.stringify(status) });
 				};
 
-				const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate);
+				const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {
+					client_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
+				});
 
 				// Save the generated quiz as a custom quiz
 				const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
@@ -205,7 +207,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
 		try {
 			const { title, existingQuestions } = result.data;
-			const question = await generateSingleQuestion(title, existingQuestions, c.req.raw.signal);
+			const question = await generateSingleQuestion(title, existingQuestions, c.req.raw.signal, {
+				client_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
+			});
 			return c.json({ success: true, data: question } satisfies ApiResponse<GeneratedQuestion>);
 		} catch (error) {
 			console.error('[AI Question Generation Error]', error);
