@@ -360,7 +360,7 @@ export function PlayerPage() {
 			<Toaster richColors theme="dark" />
 
 			{/* Leave game confirmation dialog */}
-			<AlertDialog open={blocker.state === 'blocked'}>
+			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Leave Game?</AlertDialogTitle>

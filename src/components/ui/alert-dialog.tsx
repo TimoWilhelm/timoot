@@ -3,8 +3,32 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { useDialogBackHandler } from '@/hooks/useDialogBackHandler';
 
-const AlertDialog = AlertDialogPrimitive.Root;
+interface AlertDialogProps extends React.ComponentProps<typeof AlertDialogPrimitive.Root> {
+	/** Disable browser back button closing this dialog (use for navigation confirmation dialogs) */
+	preventBackClose?: boolean;
+}
+
+const AlertDialog = ({
+	open,
+	onOpenChange,
+	preventBackClose,
+	...props
+}: AlertDialogProps) => {
+	const { wrappedOnOpenChange } = useDialogBackHandler(
+		preventBackClose ? undefined : open,
+		preventBackClose ? undefined : onOpenChange,
+	);
+
+	return (
+		<AlertDialogPrimitive.Root
+			open={open}
+			onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange}
+			{...props}
+		/>
+	);
+};
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 

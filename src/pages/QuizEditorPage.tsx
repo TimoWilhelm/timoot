@@ -709,7 +709,7 @@ export function QuizEditorPage() {
 			<Toaster richColors />
 
 			{/* Unsaved changes dialog */}
-			<AlertDialog open={blocker.state === 'blocked'}>
+			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Unsaved Changes</AlertDialogTitle>

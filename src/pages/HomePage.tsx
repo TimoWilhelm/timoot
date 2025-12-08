@@ -37,6 +37,7 @@ export function HomePage() {
 	const [generationStatus, setGenerationStatus] = useState<{ stage: string; detail?: string } | null>(null);
 	const [generatingPrompt, setGeneratingPrompt] = useState<string | null>(null);
 	const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
+	const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
 	const addSecret = useHostStore((s) => s.addSecret);
 	const generatingCardRef = useRef<HTMLDivElement>(null);
 
@@ -265,7 +266,7 @@ export function HomePage() {
 											transition={{ delay: index * 0.08 }}
 										>
 											<Card
-												onClick={() => handleStartGame(quiz.id)}
+												onClick={() => setSelectedQuiz(quiz)}
 												className={cn(
 													'group h-full cursor-pointer rounded-2xl border-2 transition-all duration-300',
 													'hover:-translate-y-1 hover:shadow-xl hover:shadow-quiz-orange/10',
@@ -313,7 +314,7 @@ export function HomePage() {
 											transition={{ delay: index * 0.08 }}
 										>
 											<Card
-												onClick={() => handleStartGame(quiz.id)}
+												onClick={() => setSelectedQuiz(quiz)}
 												className={cn(
 													'group flex h-full cursor-pointer flex-col rounded-2xl border-2 transition-all duration-300',
 													'hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10',
@@ -506,6 +507,59 @@ export function HomePage() {
 			<footer className="relative z-10 border-t border-slate-200/50 py-6 text-center text-muted-foreground/80">
 				<p className="text-sm">Built with ❤️ at Cloudflare</p>
 			</footer>
+
+			{/* Start Quiz Confirmation Dialog */}
+			<Dialog open={!!selectedQuiz} onOpenChange={(open) => !open && setSelectedQuiz(null)}>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2 text-2xl">
+							<Sparkles className="h-6 w-6 text-quiz-orange" />
+							{selectedQuiz?.title}
+						</DialogTitle>
+						<DialogDescription>Ready to start this quiz?</DialogDescription>
+					</DialogHeader>
+					<div className="py-4">
+						<div className="rounded-xl bg-slate-50 p-4 space-y-3">
+							<div className="flex items-center gap-2 text-sm">
+								<HelpCircle className="h-4 w-4 text-muted-foreground" />
+								<span className="text-muted-foreground">Questions:</span>
+								<span className="font-medium">{selectedQuiz?.questions.length}</span>
+							</div>
+							{/* Future game options will go here */}
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setSelectedQuiz(null)}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => {
+								if (selectedQuiz) {
+									handleStartGame(selectedQuiz.id);
+									setSelectedQuiz(null);
+								}
+							}}
+							disabled={isGameStarting}
+							className="bg-quiz-orange hover:bg-quiz-orange/90"
+						>
+							{isGameStarting ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Starting...
+								</>
+							) : (
+								<>
+									<Gamepad2 className="mr-2 h-4 w-4" />
+									Start Game
+								</>
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			{/* Delete Quiz Confirmation Dialog */}
 			<AlertDialog open={!!quizToDelete} onOpenChange={(open) => !open && setQuizToDelete(null)}>

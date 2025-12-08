@@ -5,8 +5,32 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useDialogBackHandler } from '@/hooks/useDialogBackHandler';
 
-const Dialog = DialogPrimitive.Root;
+interface DialogProps extends React.ComponentProps<typeof DialogPrimitive.Root> {
+	/** Disable browser back button closing this dialog (use for navigation confirmation dialogs) */
+	preventBackClose?: boolean;
+}
+
+const Dialog = ({
+	open,
+	onOpenChange,
+	preventBackClose,
+	...props
+}: DialogProps) => {
+	const { wrappedOnOpenChange } = useDialogBackHandler(
+		preventBackClose ? undefined : open,
+		preventBackClose ? undefined : onOpenChange,
+	);
+
+	return (
+		<DialogPrimitive.Root
+			open={open}
+			onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange}
+			{...props}
+		/>
+	);
+};
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
