@@ -1,108 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Zap } from 'lucide-react';
 import { shapePaths, shapeGradients, shapeGlowColors } from '@/components/game/shapes';
-
-// Compact 2x animation for player screen
-function PlayerDoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
-	useEffect(() => {
-		const timer = setTimeout(onComplete, 2500);
-		return () => clearTimeout(timer);
-	}, [onComplete]);
-
-	return (
-		<motion.div
-			className="absolute inset-0 z-50 flex select-none items-center justify-center rounded-2xl bg-gradient-to-br from-quiz-orange/95 to-amber-600/95"
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			exit={{ opacity: 0, scale: 1.1 }}
-			transition={{ duration: 0.3 }}
-		>
-			{/* Pulse rings */}
-			{[...Array(3)].map((_, i) => (
-				<motion.div
-					key={i}
-					className="absolute rounded-full border-2 border-white/30"
-					initial={{ width: 50, height: 50, opacity: 0.8 }}
-					animate={{
-						width: [50, 300],
-						height: [50, 300],
-						opacity: [0.8, 0],
-					}}
-					transition={{
-						duration: 1.2,
-						delay: i * 0.25,
-						repeat: Infinity,
-						ease: 'easeOut',
-					}}
-				/>
-			))}
-
-			{/* Lightning bolts */}
-			{[...Array(6)].map((_, i) => (
-				<motion.div
-					key={`bolt-${i}`}
-					className="absolute"
-					style={{
-						transform: `rotate(${i * 60}deg) translateY(-80px)`,
-					}}
-					initial={{ opacity: 0, scale: 0 }}
-					animate={{
-						opacity: [0, 1, 0],
-						scale: [0.5, 1, 0.8],
-					}}
-					transition={{
-						duration: 0.5,
-						delay: 0.4 + i * 0.06,
-						repeat: 2,
-					}}
-				>
-					<Zap className="h-8 w-8 fill-yellow-300 text-yellow-300" />
-				</motion.div>
-			))}
-
-			{/* Main content */}
-			<motion.div
-				className="relative flex flex-col items-center"
-				initial={{ scale: 0, rotate: -180 }}
-				animate={{ scale: 1, rotate: 0 }}
-				transition={{
-					type: 'spring',
-					stiffness: 200,
-					damping: 15,
-					delay: 0.15,
-				}}
-			>
-				<motion.div
-					className="text-8xl font-black leading-none text-white drop-shadow-xl"
-					animate={{ scale: [1, 1.1, 1] }}
-					transition={{ duration: 0.5, repeat: Infinity }}
-				>
-					2×
-				</motion.div>
-				<motion.div
-					className="mt-2 text-xl font-bold uppercase tracking-wider text-white/90"
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.5 }}
-				>
-					Double Points!
-				</motion.div>
-			</motion.div>
-		</motion.div>
-	);
-}
 
 interface PlayerAnswerScreenProps {
 	onAnswer: (index: number) => void;
 	submittedAnswer: number | null;
 	optionIndices: number[];
-	isDoublePoints?: boolean;
 }
 
-export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, isDoublePoints }: PlayerAnswerScreenProps) {
+export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerScreenProps) {
 	const [showPulse, setShowPulse] = useState(false);
-	const [showDoublePointsAnimation, setShowDoublePointsAnimation] = useState(isDoublePoints ?? false);
 
 	// Trigger pulse animation after selection
 	useEffect(() => {
@@ -123,16 +30,10 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 		};
 	};
 
-	// Don't allow answering while animation is playing
-	const canAnswer = !showDoublePointsAnimation && submittedAnswer === null;
+	const canAnswer = submittedAnswer === null;
 
 	return (
 		<div className="relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl overflow-hidden">
-			{/* 2x Points animation overlay */}
-			<AnimatePresence>
-				{showDoublePointsAnimation && <PlayerDoublePointsAnimation onComplete={() => setShowDoublePointsAnimation(false)} />}
-			</AnimatePresence>
-
 			{/* Background glow effect when selected */}
 			<AnimatePresence>
 				{submittedAnswer !== null && (

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import type { ClientMessage, ServerMessage, ClientRole, GamePhase } from '@shared/types';
+import type { ClientMessage, ServerMessage, ClientRole, GamePhase, QuestionModifier } from '@shared/types';
 import type { ErrorCodeType } from '@shared/errors';
 
 // Game state derived from WebSocket messages
@@ -18,6 +18,8 @@ export interface WebSocketGameState {
 	players: { id: string; name: string }[];
 	// Get Ready phase
 	getReadyCountdownMs: number;
+	// Question Modifier phase
+	modifiers: QuestionModifier[];
 	// Question phase
 	questionIndex: number;
 	totalQuestions: number;
@@ -55,6 +57,7 @@ const initialGameState: WebSocketGameState = {
 	pin: '',
 	players: [],
 	getReadyCountdownMs: 0,
+	modifiers: [],
 	questionIndex: 0,
 	totalQuestions: 0,
 	questionText: '',
@@ -123,6 +126,16 @@ export function useGameWebSocket({
 							phase: 'GET_READY',
 							getReadyCountdownMs: message.countdownMs,
 							totalQuestions: message.totalQuestions,
+						}));
+						break;
+
+					case 'questionModifier':
+						setGameState((prev) => ({
+							...prev,
+							phase: 'QUESTION_MODIFIER',
+							questionIndex: message.questionIndex,
+							totalQuestions: message.totalQuestions,
+							modifiers: message.modifiers,
 						}));
 						break;
 

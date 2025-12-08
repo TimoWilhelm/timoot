@@ -7,11 +7,14 @@ import {
 	QUESTION_TIME_LIMIT_MS,
 	CLEANUP_DELAY_MS,
 	GET_READY_COUNTDOWN_MS,
+	QUESTION_MODIFIER_DURATION_MS,
 	MAX_PLAYERS,
 	processAnswersAndUpdateScores,
 	buildLobbyMessage,
 	buildGetReadyMessage,
 	buildQuestionMessage,
+	buildQuestionModifierMessage,
+	questionHasModifiers,
 	buildRevealMessage,
 	buildLeaderboardMessage,
 	buildGameEndMessage,
@@ -178,14 +181,31 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	}
 
 	/**
-	 * Alarm handler - triggered for GET_READY->QUESTION transition or cleanup
+	 * Alarm handler - triggered for phase transitions or cleanup
 	 */
 	async alarm(): Promise<void> {
 		const sockets = this.ctx.getWebSockets();
 		const state = await this.getFullGameState();
 
-		// Handle GET_READY -> QUESTION transition
+		// Handle GET_READY -> QUESTION_MODIFIER or QUESTION transition
 		if (state?.phase === 'GET_READY') {
+			if (questionHasModifiers(state)) {
+				state.phase = 'QUESTION_MODIFIER';
+				await this.ctx.storage.put('game_state', state);
+				this.broadcastQuestionModifier(state);
+				// Schedule transition to QUESTION after modifier display
+				await this.ctx.storage.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
+			} else {
+				state.phase = 'QUESTION';
+				state.questionStartTime = Date.now();
+				await this.ctx.storage.put('game_state', state);
+				this.broadcastQuestionStart(state);
+			}
+			return;
+		}
+
+		// Handle QUESTION_MODIFIER -> QUESTION transition
+		if (state?.phase === 'QUESTION_MODIFIER') {
 			state.phase = 'QUESTION';
 			state.questionStartTime = Date.now();
 			await this.ctx.storage.put('game_state', state);
@@ -412,12 +432,21 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			case 'LEADERBOARD':
 				if (state.currentQuestionIndex < state.questions.length - 1) {
 					state.currentQuestionIndex++;
-					state.phase = 'QUESTION';
-					state.questionStartTime = Date.now();
 					state.answers = [];
 					state.players.forEach((p) => (p.answered = false));
-					await this.ctx.storage.put('game_state', state);
-					this.broadcastQuestionStart(state);
+					// Check if next question has modifiers
+					if (questionHasModifiers(state)) {
+						state.phase = 'QUESTION_MODIFIER';
+						await this.ctx.storage.put('game_state', state);
+						this.broadcastQuestionModifier(state);
+						// Schedule automatic transition to QUESTION after modifier display
+						await this.ctx.storage.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
+					} else {
+						state.phase = 'QUESTION';
+						state.questionStartTime = Date.now();
+						await this.ctx.storage.put('game_state', state);
+						this.broadcastQuestionStart(state);
+					}
 				} else {
 					state.phase = 'END';
 					await this.ctx.storage.put('game_state', state);
@@ -478,6 +507,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		this.broadcastToAll(buildGetReadyMessage(state));
 	}
 
+	private broadcastQuestionModifier(state: GameState): void {
+		this.broadcastToAll(buildQuestionModifierMessage(state));
+	}
+
 	private broadcastQuestionStart(state: GameState): void {
 		this.broadcastToAll(buildQuestionMessage(state));
 	}
@@ -512,6 +545,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			case 'GET_READY':
 				this.sendMessage(ws, buildGetReadyMessage(state));
 				break;
+			case 'QUESTION_MODIFIER':
+				this.sendMessage(ws, buildQuestionModifierMessage(state));
+				break;
 			case 'QUESTION':
 				this.sendMessage(ws, buildQuestionMessage(state));
 				break;
@@ -534,6 +570,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				break;
 			case 'GET_READY':
 				this.sendMessage(ws, buildGetReadyMessage(state));
+				break;
+			case 'QUESTION_MODIFIER':
+				this.sendMessage(ws, buildQuestionModifierMessage(state));
 				break;
 			case 'QUESTION': {
 				this.sendMessage(ws, buildQuestionMessage(state));

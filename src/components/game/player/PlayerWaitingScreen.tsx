@@ -1,7 +1,7 @@
-import { CheckCircle, XCircle, Loader2, Trophy } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Trophy, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
-import type { GamePhase } from '@shared/types';
+import type { GamePhase, QuestionModifier } from '@shared/types';
 
 interface LeaderboardEntry {
 	id: string;
@@ -16,6 +16,92 @@ interface PlayerWaitingScreenProps {
 	finalScore?: number;
 	playerId: string | null;
 	leaderboard?: LeaderboardEntry[];
+	modifiers?: QuestionModifier[];
+}
+
+// Double Points animation for player screen
+function PlayerDoublePointsAnimation() {
+	return (
+		<motion.div
+			className="flex h-full w-full select-none flex-col items-center justify-center"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.3 }}
+		>
+			{/* Pulse rings */}
+			{[...Array(3)].map((_, i) => (
+				<motion.div
+					key={i}
+					className="absolute rounded-full border-2 border-white/30"
+					initial={{ width: 50, height: 50, opacity: 0.8 }}
+					animate={{
+						width: [50, 300],
+						height: [50, 300],
+						opacity: [0.8, 0],
+					}}
+					transition={{
+						duration: 1.2,
+						delay: i * 0.25,
+						repeat: Infinity,
+						ease: 'easeOut',
+					}}
+				/>
+			))}
+
+			{/* Lightning bolts */}
+			{[...Array(6)].map((_, i) => (
+				<motion.div
+					key={`bolt-${i}`}
+					className="absolute"
+					style={{
+						transform: `rotate(${i * 60}deg) translateY(-80px)`,
+					}}
+					initial={{ opacity: 0, scale: 0 }}
+					animate={{
+						opacity: [0, 1, 0],
+						scale: [0.5, 1, 0.8],
+					}}
+					transition={{
+						duration: 0.5,
+						delay: 0.4 + i * 0.06,
+						repeat: 2,
+					}}
+				>
+					<Zap className="h-8 w-8 fill-yellow-300 text-yellow-300" />
+				</motion.div>
+			))}
+
+			{/* Main content */}
+			<motion.div
+				className="relative flex flex-col items-center"
+				initial={{ scale: 0, rotate: -180 }}
+				animate={{ scale: 1, rotate: 0 }}
+				transition={{
+					type: 'spring',
+					stiffness: 200,
+					damping: 15,
+					delay: 0.15,
+				}}
+			>
+				<motion.div
+					className="text-8xl font-black leading-none text-white drop-shadow-xl"
+					animate={{ scale: [1, 1.1, 1] }}
+					transition={{ duration: 0.5, repeat: Infinity }}
+				>
+					2×
+				</motion.div>
+				<motion.div
+					className="mt-2 text-xl font-bold uppercase tracking-wider text-white/90"
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.5 }}
+				>
+					Double Points!
+				</motion.div>
+			</motion.div>
+		</motion.div>
+	);
 }
 
 // Confetti particle component
@@ -97,7 +183,14 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 	);
 }
 
-export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId, leaderboard = [] }: PlayerWaitingScreenProps) {
+export function PlayerWaitingScreen({
+	phase,
+	answerResult,
+	finalScore,
+	playerId,
+	leaderboard = [],
+	modifiers = [],
+}: PlayerWaitingScreenProps) {
 	const [showConfetti, setShowConfetti] = useState(false);
 
 	// Find player's final rank
@@ -138,6 +231,20 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 						<p className="mt-2 text-lg text-slate-300">Look at the main screen</p>
 					</div>
 				);
+			case 'QUESTION_MODIFIER': {
+				// Show modifier animation based on the modifiers
+				const hasDoublePoints = modifiers.includes('doublePoints');
+				if (hasDoublePoints) {
+					return <PlayerDoublePointsAnimation />;
+				}
+				// Fallback for unknown modifiers
+				return (
+					<div className="flex flex-col items-center text-center">
+						<Loader2 className="mb-4 h-12 w-12 animate-spin" />
+						<h2 className="text-4xl font-bold">Special Round!</h2>
+					</div>
+				);
+			}
 			case 'REVEAL':
 				if (answerResult) {
 					return (

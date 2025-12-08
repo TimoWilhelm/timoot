@@ -323,17 +323,10 @@ export function PlayerPage() {
 		// Show answer buttons only during QUESTION phase (not GET_READY)
 		if (gameState.phase === 'QUESTION' && gameState.options.length > 0) {
 			const optionIndices = Array.from({ length: gameState.options.length }, (_, i) => i);
-			return (
-				<PlayerAnswerScreen
-					onAnswer={handleAnswer}
-					submittedAnswer={submittedAnswer}
-					optionIndices={optionIndices}
-					isDoublePoints={gameState.isDoublePoints}
-				/>
-			);
+			return <PlayerAnswerScreen onAnswer={handleAnswer} submittedAnswer={submittedAnswer} optionIndices={optionIndices} />;
 		}
 
-		// Show waiting screen for all other phases including GET_READY
+		// Show waiting screen for all other phases including GET_READY and QUESTION_MODIFIER
 		return (
 			<PlayerWaitingScreen
 				phase={gameState.phase}
@@ -341,6 +334,7 @@ export function PlayerPage() {
 				finalScore={myScore}
 				playerId={currentPlayerId ?? null}
 				leaderboard={gameState.leaderboard}
+				modifiers={gameState.modifiers}
 			/>
 		);
 	};

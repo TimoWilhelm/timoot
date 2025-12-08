@@ -27,7 +27,10 @@ export interface Answer {
 	isCorrect?: boolean;
 	score?: number;
 }
-export type GamePhase = 'LOBBY' | 'GET_READY' | 'QUESTION' | 'REVEAL' | 'LEADERBOARD' | 'END';
+export type GamePhase = 'LOBBY' | 'GET_READY' | 'QUESTION_MODIFIER' | 'QUESTION' | 'REVEAL' | 'LEADERBOARD' | 'END';
+
+// Question modifiers that can be applied
+export type QuestionModifier = 'doublePoints';
 export interface GameState {
 	id: string;
 	pin: string;
@@ -65,6 +68,12 @@ export type ServerMessage =
 	| { type: 'error'; code: ErrorCodeType; message: string }
 	| { type: 'lobbyUpdate'; players: { id: string; name: string }[]; pin: string; gameId: string }
 	| { type: 'getReady'; countdownMs: number; totalQuestions: number }
+	| {
+			type: 'questionModifier';
+			questionIndex: number;
+			totalQuestions: number;
+			modifiers: QuestionModifier[];
+	  }
 	| {
 			type: 'questionStart';
 			questionIndex: number;

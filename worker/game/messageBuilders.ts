@@ -1,4 +1,4 @@
-import type { GameState, ServerMessage } from '@shared/types';
+import type { GameState, ServerMessage, QuestionModifier } from '@shared/types';
 import { QUESTION_TIME_LIMIT_MS, GET_READY_COUNTDOWN_MS } from './constants';
 import { buildLeaderboard } from './scoring';
 
@@ -23,6 +23,31 @@ export function buildGetReadyMessage(state: GameState): ServerMessage {
 		countdownMs: GET_READY_COUNTDOWN_MS,
 		totalQuestions: state.questions.length,
 	};
+}
+
+/**
+ * Build a question modifier message for broadcasting when a question has modifiers.
+ */
+export function buildQuestionModifierMessage(state: GameState): ServerMessage {
+	const question = state.questions[state.currentQuestionIndex];
+	const modifiers: QuestionModifier[] = [];
+	if (question.isDoublePoints) {
+		modifiers.push('doublePoints');
+	}
+	return {
+		type: 'questionModifier',
+		questionIndex: state.currentQuestionIndex,
+		totalQuestions: state.questions.length,
+		modifiers,
+	};
+}
+
+/**
+ * Check if the current question has any modifiers.
+ */
+export function questionHasModifiers(state: GameState): boolean {
+	const question = state.questions[state.currentQuestionIndex];
+	return !!question.isDoublePoints;
 }
 
 /**

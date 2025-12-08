@@ -161,11 +161,12 @@ const sounds: Record<SoundType, SoundDefinition> = {
 	},
 };
 
-type MusicTrack = 'lobby' | 'getReady' | 'question' | 'reveal' | 'leaderboard' | 'celebration';
+type MusicTrack = 'lobby' | 'getReady' | 'questionModifier' | 'question' | 'reveal' | 'leaderboard' | 'celebration';
 
 const MUSIC_TRACKS: Record<MusicTrack, string> = {
 	lobby: '/music/Your Call.mp3',
 	getReady: '/music/Funky Chunk.mp3',
+	questionModifier: '/music/Hustle.mp3',
 	question: '/music/Hustle.mp3',
 	reveal: '/music/Private Eye.mp3',
 	leaderboard: '/music/Private Eye.mp3',

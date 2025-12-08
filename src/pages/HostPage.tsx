@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
 import { HostLobby } from '@/components/game/host/HostLobby';
 import { HostQuestion } from '@/components/game/host/HostQuestion';
+import { HostQuestionModifier } from '@/components/game/host/HostQuestionModifier';
 import { HostReveal } from '@/components/game/host/HostReveal';
 import { HostLeaderboard } from '@/components/game/host/HostLeaderboard';
 import { HostEnd } from '@/components/game/host/HostEnd';
@@ -51,6 +52,8 @@ export function HostPage() {
 				return 'lobby' as const;
 			case 'GET_READY':
 				return 'getReady' as const;
+			case 'QUESTION_MODIFIER':
+				return 'questionModifier' as const;
 			case 'QUESTION':
 				return 'question' as const;
 			case 'REVEAL':
@@ -95,6 +98,9 @@ export function HostPage() {
 				case 'GET_READY':
 					startBackgroundMusic('getReady');
 					break;
+				case 'QUESTION_MODIFIER':
+					startBackgroundMusic('questionModifier');
+					break;
 				case 'QUESTION':
 					startBackgroundMusic('question');
 					break;
@@ -114,10 +120,15 @@ export function HostPage() {
 				case 'GET_READY':
 					playSound('gameStart');
 					break;
-				case 'QUESTION':
-					if (gameState.isDoublePoints) {
+				case 'QUESTION_MODIFIER':
+					// Play double points sound when entering modifier phase
+					if (gameState.modifiers.includes('doublePoints')) {
 						playSound('doublePoints');
-					} else {
+					}
+					break;
+				case 'QUESTION':
+					// Only play question start sound if coming from non-modifier phase
+					if (prevPhase !== 'QUESTION_MODIFIER') {
 						playSound('questionStart');
 					}
 					break;
@@ -133,7 +144,7 @@ export function HostPage() {
 			}
 			prevPhaseRef.current = currentPhase;
 		}
-	}, [isConnected, gameState.phase, gameState.isDoublePoints, playSound, startBackgroundMusic, stopBackgroundMusic]);
+	}, [isConnected, gameState.phase, gameState.modifiers, playSound, startBackgroundMusic, stopBackgroundMusic]);
 
 	// Play sound when new player joins lobby
 	useEffect(() => {
@@ -203,6 +214,14 @@ export function HostPage() {
 						countdownMs={gameState.getReadyCountdownMs}
 						totalQuestions={gameState.totalQuestions}
 						onCountdownBeep={() => playSound('countdown321')}
+					/>
+				);
+			case 'QUESTION_MODIFIER':
+				return (
+					<HostQuestionModifier
+						questionIndex={gameState.questionIndex}
+						totalQuestions={gameState.totalQuestions}
+						modifiers={gameState.modifiers}
 					/>
 				);
 			case 'QUESTION':
