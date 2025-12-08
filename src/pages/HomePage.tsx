@@ -509,7 +509,7 @@ export function HomePage() {
 			</footer>
 
 			{/* Start Quiz Confirmation Dialog */}
-			<Dialog open={!!selectedQuiz} onOpenChange={(open) => !open && setSelectedQuiz(null)}>
+			<Dialog open={!!selectedQuiz} onOpenChange={(open) => !open && !isGameStarting && setSelectedQuiz(null)}>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2 text-2xl">
@@ -529,18 +529,17 @@ export function HomePage() {
 						</div>
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setSelectedQuiz(null)}>
+						<Button variant="outline" onClick={() => setSelectedQuiz(null)} disabled={isGameStarting}>
 							Cancel
 						</Button>
 						<Button
 							onClick={() => {
 								if (selectedQuiz) {
 									handleStartGame(selectedQuiz.id);
-									setSelectedQuiz(null);
 								}
 							}}
 							disabled={isGameStarting}
-							className="bg-quiz-orange hover:bg-quiz-orange/90"
+							className="min-w-[130px] bg-quiz-orange hover:bg-quiz-orange/90"
 						>
 							{isGameStarting ? (
 								<>
