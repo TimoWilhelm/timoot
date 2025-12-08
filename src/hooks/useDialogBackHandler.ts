@@ -66,14 +66,10 @@ export function useDialogBackHandler(controlledOpen: boolean | undefined, onOpen
 		return () => window.removeEventListener('popstate', handlePopState);
 	}, []);
 
-	// Cleanup on unmount
-	useEffect(() => {
-		return () => {
-			if (historyStateRef.current === 'pushed') {
-				window.history.back();
-			}
-		};
-	}, []);
+	// Note: We intentionally do NOT clean up history on unmount.
+	// If we called history.back() during unmount, it would interfere with
+	// programmatic navigation (e.g., navigate('/host/...') after starting a game).
+	// Orphaned history entries are harmless.
 
 	return { wrappedOnOpenChange };
 }

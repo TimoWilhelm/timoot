@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link, useParams, useBlocker } from 'react-router-dom';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -22,6 +22,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { SoundToggle } from '@/components/SoundToggle';
+import { useHostSound } from '@/hooks/useHostSound';
 
 export function HostPage() {
 	const { gameId } = useParams<{ gameId: string }>();
@@ -31,6 +33,10 @@ export function HostPage() {
 	// Early check for missing host secret - don't even try to connect
 	const hasMissingSecret = !hostSecret;
 
+	const { playSound, playCountdownTick, initAudio, startBackgroundMusic, stopBackgroundMusic } = useHostSound();
+	const prevPhaseRef = useRef<string | null>(null);
+	const prevPlayersCountRef = useRef<number>(0);
+
 	const { isConnecting, isConnected, error, gameState, startGame, nextState } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
@@ -38,9 +44,107 @@ export function HostPage() {
 		onError: (msg) => toast.error(msg),
 	});
 
-	// Block navigation when game is active (not in LOBBY or END)
+	// Helper to get the music track for current phase
+	const getMusicTrackForPhase = (phase: string) => {
+		switch (phase) {
+			case 'LOBBY':
+				return 'lobby' as const;
+			case 'GET_READY':
+				return 'getReady' as const;
+			case 'QUESTION':
+				return 'question' as const;
+			case 'REVEAL':
+				return 'reveal' as const;
+			case 'LEADERBOARD':
+				return 'leaderboard' as const;
+			case 'END':
+				return 'celebration' as const;
+			default:
+				return null;
+		}
+	};
+
+	// Initialize audio and start music for current phase
+	const handleAudioInit = () => {
+		initAudio();
+		const track = getMusicTrackForPhase(gameState.phase);
+		if (track) {
+			startBackgroundMusic(track);
+		}
+	};
+
+	// Track if game is in an active phase
 	const isGameActive = isConnected && gameState.phase !== 'LOBBY' && gameState.phase !== 'END';
+
+	// Block navigation when game is active (not in LOBBY or END)
 	const blocker = useBlocker(isGameActive);
+
+	// Play sounds on game phase changes
+	useEffect(() => {
+		if (!isConnected) return;
+
+		const currentPhase = gameState.phase;
+		const prevPhase = prevPhaseRef.current;
+
+		if (prevPhase !== currentPhase) {
+			// Handle background music for different phases
+			switch (currentPhase) {
+				case 'LOBBY':
+					startBackgroundMusic('lobby');
+					break;
+				case 'GET_READY':
+					startBackgroundMusic('getReady');
+					break;
+				case 'QUESTION':
+					startBackgroundMusic('question');
+					break;
+				case 'REVEAL':
+					startBackgroundMusic('reveal');
+					break;
+				case 'LEADERBOARD':
+					startBackgroundMusic('leaderboard');
+					break;
+				case 'END':
+					startBackgroundMusic('celebration');
+					break;
+			}
+
+			// Play sound effects
+			switch (currentPhase) {
+				case 'GET_READY':
+					playSound('gameStart');
+					break;
+				case 'QUESTION':
+					if (gameState.isDoublePoints) {
+						playSound('doublePoints');
+					} else {
+						playSound('questionStart');
+					}
+					break;
+				case 'REVEAL':
+					playSound('reveal');
+					break;
+				case 'LEADERBOARD':
+					playSound('leaderboard');
+					break;
+				case 'END':
+					playSound('gameEnd');
+					break;
+			}
+			prevPhaseRef.current = currentPhase;
+		}
+	}, [isConnected, gameState.phase, gameState.isDoublePoints, playSound, startBackgroundMusic, stopBackgroundMusic]);
+
+	// Play sound when new player joins lobby
+	useEffect(() => {
+		if (!isConnected || gameState.phase !== 'LOBBY') return;
+
+		const currentCount = gameState.players.length;
+		if (currentCount > prevPlayersCountRef.current && prevPlayersCountRef.current > 0) {
+			playSound('playerJoin');
+		}
+		prevPlayersCountRef.current = currentCount;
+	}, [isConnected, gameState.phase, gameState.players.length, playSound]);
 
 	// Warn before browser/tab close when game is active
 	useEffect(() => {
@@ -83,9 +187,24 @@ export function HostPage() {
 	const renderContent = () => {
 		switch (gameState.phase) {
 			case 'LOBBY':
-				return <HostLobby onStart={startGame} players={gameState.players} gameId={gameState.gameId} />;
+				return (
+					<HostLobby
+						onStart={() => {
+							handleAudioInit();
+							startGame();
+						}}
+						players={gameState.players}
+						gameId={gameState.gameId}
+					/>
+				);
 			case 'GET_READY':
-				return <HostGetReady countdownMs={gameState.getReadyCountdownMs} totalQuestions={gameState.totalQuestions} />;
+				return (
+					<HostGetReady
+						countdownMs={gameState.getReadyCountdownMs}
+						totalQuestions={gameState.totalQuestions}
+						onCountdownBeep={() => playSound('countdown321')}
+					/>
+				);
 			case 'QUESTION':
 				return (
 					<HostQuestion
@@ -100,6 +219,8 @@ export function HostPage() {
 						totalPlayers={gameState.players.length}
 						isDoublePoints={gameState.isDoublePoints}
 						backgroundImage={gameState.backgroundImage}
+						onCountdownTick={playCountdownTick}
+						onTimeUp={() => playSound('timeUp')}
 					/>
 				);
 			case 'REVEAL':
@@ -123,6 +244,11 @@ export function HostPage() {
 
 	return (
 		<div className="flex min-h-screen w-full flex-col bg-slate-100 text-slate-900">
+			{/* Sound toggle button - fixed position */}
+			<div className="fixed right-4 top-4 z-50">
+				<SoundToggle onToggle={handleAudioInit} />
+			</div>
+
 			<AnimatePresence mode="wait">
 				<motion.main
 					key={gameState.phase}

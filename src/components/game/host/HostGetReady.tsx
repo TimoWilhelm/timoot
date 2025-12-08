@@ -6,9 +6,10 @@ import { shapeColors, shapePaths } from '@/components/game/shapes';
 interface HostGetReadyProps {
 	countdownMs: number;
 	totalQuestions: number;
+	onCountdownBeep?: () => void;
 }
 
-export function HostGetReady({ countdownMs, totalQuestions }: HostGetReadyProps) {
+export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: HostGetReadyProps) {
 	const [countdown, setCountdown] = useState(Math.ceil(countdownMs / 1000));
 
 	useEffect(() => {
@@ -16,12 +17,15 @@ export function HostGetReady({ countdownMs, totalQuestions }: HostGetReadyProps)
 			return;
 		}
 
+		// Play beep sound for countdown
+		onCountdownBeep?.();
+
 		const timer = setTimeout(() => {
 			setCountdown((c) => c - 1);
 		}, 1000);
 
 		return () => clearTimeout(timer);
-	}, [countdown]);
+	}, [countdown, onCountdownBeep]);
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white">

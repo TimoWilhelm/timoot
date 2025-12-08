@@ -271,6 +271,8 @@ interface HostQuestionProps {
 	totalPlayers: number;
 	isDoublePoints?: boolean;
 	backgroundImage?: string;
+	onCountdownTick?: (timeLeft: number) => void;
+	onTimeUp?: () => void;
 }
 
 export function HostQuestion({
@@ -285,6 +287,8 @@ export function HostQuestion({
 	totalPlayers,
 	isDoublePoints,
 	backgroundImage,
+	onCountdownTick,
+	onTimeUp,
 }: HostQuestionProps) {
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
@@ -300,18 +304,27 @@ export function HostQuestion({
 		// Don't start timer until animation is done
 		if (showDoublePointsAnimation) return;
 
+		let lastTickedSecond = -1;
 		const timer = setInterval(() => {
 			const elapsedMs = Date.now() - startTime;
 			const elapsedSeconds = Math.floor(elapsedMs / 1000);
 			const remaining = Math.max(0, timeLimitSec - elapsedSeconds);
 			setTimeLeft(remaining);
+
+			// Play countdown tick sounds (once per second change)
+			if (remaining !== lastTickedSecond && remaining <= 5 && remaining > 0) {
+				onCountdownTick?.(remaining);
+				lastTickedSecond = remaining;
+			}
+
 			if (elapsedMs >= timeLimitMs) {
 				clearInterval(timer);
+				onTimeUp?.();
 				onNext();
 			}
 		}, 100);
 		return () => clearInterval(timer);
-	}, [startTime, timeLimitSec, timeLimitMs, onNext, showDoublePointsAnimation]);
+	}, [startTime, timeLimitSec, timeLimitMs, onNext, showDoublePointsAnimation, onCountdownTick, onTimeUp]);
 	// Show fullscreen animation for 2x questions
 	if (showDoublePointsAnimation) {
 		return <DoublePointsAnimation onComplete={() => setShowDoublePointsAnimation(false)} />;
