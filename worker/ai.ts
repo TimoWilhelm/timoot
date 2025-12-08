@@ -21,6 +21,12 @@ export const getCloudflareDocsMCP: () => Promise<MCPClient> = async () => {
 	});
 };
 
+export const webSearchMCP: () => Promise<MCPClient> = async () => {
+	return await createMCPClient({
+		transport: new StreamableHTTPClientTransport(new URL('https://mcp.exa.ai/mcp')),
+	});
+};
+
 function createModel(metadata?: Record<string, string>) {
 	const gateway = createOpenAICompatible({
 		name: 'cloudflare-ai-gateway',
@@ -55,7 +61,7 @@ export type GeneratedQuiz = z.infer<typeof QuizSchema>;
 export type GeneratedQuestion = z.infer<typeof QuestionSchema>;
 
 export type GenerationStatus = {
-	stage: 'researching' | 'reading_docs' | 'generating';
+	stage: 'researching' | 'reading_docs' | 'searching_web' | 'generating';
 	detail?: string;
 };
 
@@ -72,11 +78,11 @@ export async function generateQuizFromPrompt(
 	metadata?: Record<string, string>,
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
-	const cloudflareDocsMcp = await getCloudflareDocsMCP();
+	const mcpServers = await Promise.all([getCloudflareDocsMCP(), webSearchMCP()]);
 	const activeModel = metadata ? createModel(metadata) : model;
 
 	try {
-		const researchAgent = await createResearchAgent(activeModel, [cloudflareDocsMcp], onStatusUpdate);
+		const researchAgent = await createResearchAgent(activeModel, mcpServers, onStatusUpdate);
 
 		const { output: researchOutput } = await researchAgent.generate({
 			messages: [
@@ -149,7 +155,7 @@ export async function generateQuizFromPrompt(
 
 		return quizOutput;
 	} finally {
-		waitUntil(cloudflareDocsMcp.close());
+		waitUntil(Promise.allSettled(mcpServers.map((mcp) => mcp.close())));
 	}
 }
 
@@ -169,6 +175,9 @@ async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[]
 						if (name === 'search_cloudflare_documentation') {
 							const query = (args as { query?: string })?.query;
 							onStatusUpdate?.({ stage: 'reading_docs', detail: query || 'Cloudflare docs' });
+						} else if (name === 'web_search_exa') {
+							const query = (args as { query?: string })?.query;
+							onStatusUpdate?.({ stage: 'searching_web', detail: query || 'the web' });
 						}
 						return typedTool.execute(args, options);
 					},

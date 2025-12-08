@@ -121,6 +121,8 @@ export function HomePage() {
 				return `Researching ${status.detail || 'topic'}...`;
 			case 'reading_docs':
 				return `Reading documentation for ${status.detail || 'topic'}...`;
+			case 'searching_web':
+				return `Searching the web for ${status.detail || 'relevant information'}...`;
 			case 'generating':
 				return 'Generating quiz questions...';
 			default:
