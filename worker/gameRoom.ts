@@ -7,6 +7,7 @@ import {
 	QUESTION_TIME_LIMIT_MS,
 	CLEANUP_DELAY_MS,
 	GET_READY_COUNTDOWN_MS,
+	MAX_PLAYERS,
 	processAnswersAndUpdateScores,
 	buildLobbyMessage,
 	buildGetReadyMessage,
@@ -280,6 +281,11 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		const state = await this.getFullGameState();
 		if (!state || state.phase !== 'LOBBY') {
 			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_IN_LOBBY) });
+			return;
+		}
+
+		if (state.players.length >= MAX_PLAYERS) {
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_FULL) });
 			return;
 		}
 

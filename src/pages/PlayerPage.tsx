@@ -23,7 +23,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED';
+type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
 
 export function PlayerPage() {
 	const navigate = useNavigate();
@@ -123,6 +123,9 @@ export function PlayerPage() {
 					pendingNicknameRef.current = '';
 					setCurrentNickname('');
 					setView('SESSION_EXPIRED');
+					break;
+				case ErrorCode.GAME_FULL:
+					setView('GAME_FULL');
 					break;
 				default:
 					toast.error(message);
@@ -289,6 +292,25 @@ export function PlayerPage() {
 						Back to Home
 					</button>
 				</div>
+			</div>
+		);
+	}
+
+	if (view === 'GAME_FULL') {
+		return (
+			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+				<div className="mb-6 text-6xl">👥</div>
+				<h1 className="mb-4 text-center text-3xl font-bold">Game is Full</h1>
+				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
+					Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the
+					next round.
+				</p>
+				<button
+					onClick={() => navigate('/')}
+					className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
+				>
+					Back to Home
+				</button>
 			</div>
 		);
 	}
