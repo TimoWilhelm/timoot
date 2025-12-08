@@ -36,7 +36,7 @@ export function HostPage() {
 
 	const { playSound, playCountdownTick, initAudio, startBackgroundMusic, stopBackgroundMusic } = useHostSound();
 	const prevPhaseRef = useRef<string | null>(null);
-	const prevPlayersCountRef = useRef<number>(0);
+	const prevPlayersCountRef = useRef<number | null>(null);
 
 	const { isConnecting, isConnected, error, gameState, startGame, nextState } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
@@ -151,7 +151,8 @@ export function HostPage() {
 		if (!isConnected || gameState.phase !== 'LOBBY') return;
 
 		const currentCount = gameState.players.length;
-		if (currentCount > prevPlayersCountRef.current && prevPlayersCountRef.current > 0) {
+		// Only play sound if we have a previous count to compare against (not initial render)
+		if (prevPlayersCountRef.current !== null && currentCount > prevPlayersCountRef.current) {
 			playSound('playerJoin');
 		}
 		prevPlayersCountRef.current = currentCount;
@@ -262,7 +263,7 @@ export function HostPage() {
 	};
 
 	return (
-		<div className="flex min-h-screen w-full flex-col bg-slate-100 text-slate-900">
+		<div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-100 text-slate-900">
 			{/* Sound toggle button - fixed position */}
 			<div className="fixed left-4 top-4 z-50">
 				<SoundToggle onToggle={handleAudioInit} />

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,7 @@ interface PlayerNicknameFormProps {
 	isLoading: boolean;
 }
 export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProps) {
+	const formRef = useRef<HTMLFormElement>(null);
 	const {
 		register,
 		handleSubmit,
@@ -33,14 +34,23 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 	const onSubmit = (data: FormData) => {
 		onJoin(data.nickname);
 	};
+
+	// Scroll the form into view when input is focused (handles mobile keyboard)
+	const handleInputFocus = () => {
+		// Small delay to let keyboard appear first
+		setTimeout(() => {
+			formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}, 300);
+	};
+
 	return (
-		<div className="flex min-h-screen w-full items-center justify-center bg-slate-800 p-4">
+		<div className="flex min-h-dvh w-full items-center justify-center overflow-auto bg-slate-800 p-4">
 			<Card className="w-full max-w-md animate-scale-in rounded-2xl border-slate-600 bg-slate-700 shadow-2xl">
 				<CardHeader className="text-center">
 					<CardTitle className="font-display text-4xl text-white">Enter a Nickname</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+					<form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 						<div>
 							<Input
 								{...register('nickname')}
@@ -49,6 +59,7 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 								disabled={isLoading}
 								maxLength={LIMITS.NICKNAME_MAX}
 								autoComplete="off"
+								onFocus={handleInputFocus}
 							/>
 							{errors.nickname && <p className="mt-2 text-center text-sm text-red-400">{errors.nickname.message}</p>}
 						</div>

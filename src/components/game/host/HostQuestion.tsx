@@ -208,7 +208,7 @@ export function HostQuestion({
 	}, [startTime, timeLimitSec, timeLimitMs, onNext, onCountdownTick, onTimeUp]);
 
 	return (
-		<div className="flex flex-grow flex-col p-4 sm:p-8">
+		<div className="flex h-full max-h-screen flex-grow flex-col overflow-hidden p-4 sm:p-8">
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex flex-col">
 					<span className="text-xl font-bold sm:text-2xl">
@@ -218,12 +218,14 @@ export function HostQuestion({
 						{answeredCount}/{totalPlayers} answered
 					</span>
 				</div>
-				<div className="flex items-center gap-4">
+				<div className="flex items-center gap-4 overflow-visible">
 					{isDoublePoints && <DoublePointsBadge />}
-					<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
+					<div className="relative overflow-hidden rounded-full p-6">
+						<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
+					</div>
 				</div>
 			</div>
-			<div className="center relative mb-4 flex-grow overflow-hidden rounded-2xl shadow-lg sm:mb-8">
+			<div className="center relative mb-4 min-h-0 flex-grow overflow-hidden rounded-2xl shadow-lg sm:mb-8">
 				{/* Fallback white background layer (always present) */}
 				<div className="absolute inset-0 bg-white" />
 				{/* Background image layer (layered on top, hidden if error) */}

@@ -49,29 +49,6 @@ function PlayerDoublePointsAnimation() {
 				/>
 			))}
 
-			{/* Lightning bolts */}
-			{[...Array(6)].map((_, i) => (
-				<motion.div
-					key={`bolt-${i}`}
-					className="absolute"
-					style={{
-						transform: `rotate(${i * 60}deg) translateY(-80px)`,
-					}}
-					initial={{ opacity: 0, scale: 0 }}
-					animate={{
-						opacity: [0, 1, 0],
-						scale: [0.5, 1, 0.8],
-					}}
-					transition={{
-						duration: 0.5,
-						delay: 0.4 + i * 0.06,
-						repeat: 2,
-					}}
-				>
-					<Zap className="h-8 w-8 fill-yellow-300 text-yellow-300" />
-				</motion.div>
-			))}
-
 			{/* Main content */}
 			<motion.div
 				className="relative flex flex-col items-center"
