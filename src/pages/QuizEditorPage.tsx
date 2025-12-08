@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useBlocker } from 'react-router-dom';
 import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -64,7 +64,7 @@ export function QuizEditorPage() {
 		reset,
 		getValues,
 		watch,
-		formState: { errors, isSubmitting },
+		formState: { errors, isSubmitting, isDirty },
 	} = useForm<QuizFormInput>({
 		resolver: zodResolver(quizFormSchema),
 		defaultValues: { title: '', questions: [] },
@@ -77,6 +77,20 @@ export function QuizEditorPage() {
 	const [isLoadingMoreImages, setIsLoadingMoreImages] = useState(false);
 	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 	const [imagePrompt, setImagePrompt] = useState('');
+
+	// Block navigation when there are unsaved changes
+	const blocker = useBlocker(isDirty);
+
+	// Warn before browser/tab close when there are unsaved changes
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (isDirty) {
+				e.preventDefault();
+			}
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [isDirty]);
 
 	// Fetch AI-generated images on mount
 	useEffect(() => {
@@ -167,6 +181,7 @@ export function QuizEditorPage() {
 				throw new Error(result.error || 'Failed to save quiz');
 			}
 			toast.success(`Quiz "${result.data?.title}" saved successfully!`);
+			reset(data); // Reset form to mark as not dirty before navigating
 			navigate('/');
 		} catch (error) {
 			if (error instanceof Error) {
@@ -692,6 +707,24 @@ export function QuizEditorPage() {
 				</form>
 			</div>
 			<Toaster richColors />
+
+			{/* Unsaved changes dialog */}
+			<AlertDialog open={blocker.state === 'blocked'}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+						<AlertDialogDescription>
+							You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay on Page</AlertDialogCancel>
+						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
+							Leave Page
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

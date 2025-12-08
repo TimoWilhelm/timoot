@@ -157,7 +157,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 				};
 
 				const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {
-					client_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
+					connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
 				});
 
 				// Save the generated quiz as a custom quiz
@@ -208,7 +208,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 		try {
 			const { title, existingQuestions } = result.data;
 			const question = await generateSingleQuestion(title, existingQuestions, c.req.raw.signal, {
-				client_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
+				connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
 			});
 			return c.json({ success: true, data: question } satisfies ApiResponse<GeneratedQuestion>);
 		} catch (error) {
