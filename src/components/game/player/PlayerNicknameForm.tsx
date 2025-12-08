@@ -35,14 +35,6 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 		onJoin(data.nickname);
 	};
 
-	// Scroll the form into view when input is focused (handles mobile keyboard)
-	const handleInputFocus = () => {
-		// Small delay to let keyboard appear first
-		setTimeout(() => {
-			formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		}, 300);
-	};
-
 	return (
 		<div className="flex min-h-dvh w-full items-center justify-center overflow-auto bg-slate-800 p-4">
 			<Card className="w-full max-w-md animate-scale-in rounded-2xl border-slate-600 bg-slate-700 shadow-2xl">
@@ -59,7 +51,6 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 								disabled={isLoading}
 								maxLength={LIMITS.NICKNAME_MAX}
 								autoComplete="off"
-								onFocus={handleInputFocus}
 							/>
 							{errors.nickname && <p className="mt-2 text-center text-sm text-red-400">{errors.nickname.message}</p>}
 						</div>

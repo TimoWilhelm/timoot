@@ -8,7 +8,7 @@ interface EmojiPickerProps {
 
 export function EmojiPicker({ onEmojiSelect, disabled }: EmojiPickerProps) {
 	return (
-		<div className="flex justify-center gap-3">
+		<div className="flex justify-center gap-4">
 			{EMOJI_REACTIONS.map((emoji) => (
 				<motion.button
 					key={emoji}
@@ -16,7 +16,7 @@ export function EmojiPicker({ onEmojiSelect, disabled }: EmojiPickerProps) {
 					whileHover={{ scale: 1.1 }}
 					onClick={() => onEmojiSelect(emoji)}
 					disabled={disabled}
-					className="text-5xl transition-opacity disabled:opacity-50"
+					className="text-4xl transition-opacity disabled:opacity-50"
 					aria-label={`Send ${emoji} reaction`}
 				>
 					{emoji}
