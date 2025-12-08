@@ -108,7 +108,7 @@
 		"preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",
 		"deploy": "bun run build && wrangler deploy",
 		"cf-typegen": "wrangler types",
-		"prepare": "bun .bootstrap.js || true"
+		"typecheck": "bunx tsc --noEmit"
 	},
 	"type": "module"
 }

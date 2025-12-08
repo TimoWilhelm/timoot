@@ -275,8 +275,8 @@ export function PlayerPage() {
 				<div className="mb-6 text-6xl">🔑</div>
 				<h1 className="mb-4 text-center text-3xl font-bold">Session Expired</h1>
 				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
-					Your session could not be restored. This can happen if you cleared your browser data or if too much time has
-					passed. Please rejoin the game with a new nickname.
+					Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please rejoin
+					the game with a new nickname.
 				</p>
 				<div className="flex gap-4">
 					<button
@@ -302,8 +302,7 @@ export function PlayerPage() {
 				<div className="mb-6 text-6xl">👥</div>
 				<h1 className="mb-4 text-center text-3xl font-bold">Game is Full</h1>
 				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
-					Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the
-					next round.
+					Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
 				</p>
 				<button
 					onClick={() => navigate('/')}
@@ -364,9 +363,7 @@ export function PlayerPage() {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Leave Game?</AlertDialogTitle>
-						<AlertDialogDescription>
-							Are you sure you want to leave the game?
-						</AlertDialogDescription>
+						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>

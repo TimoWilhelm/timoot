@@ -12,24 +12,10 @@ interface DialogProps extends React.ComponentProps<typeof DialogPrimitive.Root> 
 	preventBackClose?: boolean;
 }
 
-const Dialog = ({
-	open,
-	onOpenChange,
-	preventBackClose,
-	...props
-}: DialogProps) => {
-	const { wrappedOnOpenChange } = useDialogBackHandler(
-		preventBackClose ? undefined : open,
-		preventBackClose ? undefined : onOpenChange,
-	);
+const Dialog = ({ open, onOpenChange, preventBackClose, ...props }: DialogProps) => {
+	const { wrappedOnOpenChange } = useDialogBackHandler(preventBackClose ? undefined : open, preventBackClose ? undefined : onOpenChange);
 
-	return (
-		<DialogPrimitive.Root
-			open={open}
-			onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange}
-			{...props}
-		/>
-	);
+	return <DialogPrimitive.Root open={open} onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange} {...props} />;
 };
 
 const DialogTrigger = DialogPrimitive.Trigger;

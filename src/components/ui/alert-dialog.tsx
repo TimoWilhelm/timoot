@@ -10,24 +10,10 @@ interface AlertDialogProps extends React.ComponentProps<typeof AlertDialogPrimit
 	preventBackClose?: boolean;
 }
 
-const AlertDialog = ({
-	open,
-	onOpenChange,
-	preventBackClose,
-	...props
-}: AlertDialogProps) => {
-	const { wrappedOnOpenChange } = useDialogBackHandler(
-		preventBackClose ? undefined : open,
-		preventBackClose ? undefined : onOpenChange,
-	);
+const AlertDialog = ({ open, onOpenChange, preventBackClose, ...props }: AlertDialogProps) => {
+	const { wrappedOnOpenChange } = useDialogBackHandler(preventBackClose ? undefined : open, preventBackClose ? undefined : onOpenChange);
 
-	return (
-		<AlertDialogPrimitive.Root
-			open={open}
-			onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange}
-			{...props}
-		/>
-	);
+	return <AlertDialogPrimitive.Root open={open} onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange} {...props} />;
 };
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;

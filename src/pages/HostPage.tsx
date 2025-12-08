@@ -142,9 +142,7 @@ export function HostPage() {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Leave Game?</AlertDialogTitle>
-						<AlertDialogDescription>
-							Are you sure you want to leave the game?
-						</AlertDialogDescription>
+						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>

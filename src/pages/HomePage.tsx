@@ -519,7 +519,7 @@ export function HomePage() {
 						<DialogDescription>Ready to start this quiz?</DialogDescription>
 					</DialogHeader>
 					<div className="py-4">
-						<div className="rounded-xl bg-slate-50 p-4 space-y-3">
+						<div className="space-y-3 rounded-xl bg-slate-50 p-4">
 							<div className="flex items-center gap-2 text-sm">
 								<HelpCircle className="h-4 w-4 text-muted-foreground" />
 								<span className="text-muted-foreground">Questions:</span>
@@ -529,10 +529,7 @@ export function HomePage() {
 						</div>
 					</div>
 					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setSelectedQuiz(null)}
-						>
+						<Button variant="outline" onClick={() => setSelectedQuiz(null)}>
 							Cancel
 						</Button>
 						<Button

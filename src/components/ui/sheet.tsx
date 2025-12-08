@@ -8,11 +8,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDialogBackHandler } from '@/hooks/useDialogBackHandler';
 
-const Sheet = ({
-	open,
-	onOpenChange,
-	...props
-}: React.ComponentProps<typeof SheetPrimitive.Root>) => {
+const Sheet = ({ open, onOpenChange, ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) => {
 	const { wrappedOnOpenChange } = useDialogBackHandler(open, onOpenChange);
 
 	return <SheetPrimitive.Root open={open} onOpenChange={wrappedOnOpenChange} {...props} />;

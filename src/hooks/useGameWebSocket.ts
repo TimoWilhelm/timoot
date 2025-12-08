@@ -71,7 +71,16 @@ const initialGameState: WebSocketGameState = {
 	isLastQuestion: false,
 };
 
-export function useGameWebSocket({ gameId, role, hostSecret, playerId, playerToken, onError, onConnected, onPlayerJoined }: UseGameWebSocketOptions) {
+export function useGameWebSocket({
+	gameId,
+	role,
+	hostSecret,
+	playerId,
+	playerToken,
+	onError,
+	onConnected,
+	onPlayerJoined,
+}: UseGameWebSocketOptions) {
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [isConnected, setIsConnected] = useState(false);

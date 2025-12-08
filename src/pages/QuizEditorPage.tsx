@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link, useBlocker } from 'react-router-dom';
 import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -78,8 +78,11 @@ export function QuizEditorPage() {
 	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 	const [imagePrompt, setImagePrompt] = useState('');
 
-	// Block navigation when there are unsaved changes
-	const blocker = useBlocker(isDirty);
+	// Track intentional navigation after save to skip the blocker
+	const skipBlockerRef = useRef(false);
+
+	// Block navigation when there are unsaved changes (unless intentionally navigating after save)
+	const blocker = useBlocker(() => isDirty && !skipBlockerRef.current);
 
 	// Warn before browser/tab close when there are unsaved changes
 	useEffect(() => {
@@ -181,7 +184,8 @@ export function QuizEditorPage() {
 				throw new Error(result.error || 'Failed to save quiz');
 			}
 			toast.success(`Quiz "${result.data?.title}" saved successfully!`);
-			reset(data); // Reset form to mark as not dirty before navigating
+			reset(data); // Reset form to mark as not dirty
+			skipBlockerRef.current = true; // Skip blocker for intentional navigation after save
 			navigate('/');
 		} catch (error) {
 			if (error instanceof Error) {
