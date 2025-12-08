@@ -1,3 +1,5 @@
+import type { ErrorCodeType } from './errors';
+
 export interface ApiResponse<T = unknown> {
 	success: boolean;
 	data?: T;
@@ -15,6 +17,8 @@ export interface Player {
 	name: string;
 	score: number;
 	answered: boolean;
+	/** Secure token for session reconnection - never shared with other players */
+	token?: string;
 }
 export interface Answer {
 	playerId: string;
@@ -49,7 +53,7 @@ export type ClientRole = 'host' | 'player';
 // Client -> Server Messages
 export type ClientMessage =
 	| { type: 'connect'; role: 'host'; gameId: string; hostSecret: string }
-	| { type: 'connect'; role: 'player'; gameId: string; playerId?: string; nickname?: string }
+	| { type: 'connect'; role: 'player'; gameId: string; playerId?: string; playerToken?: string; nickname?: string }
 	| { type: 'join'; nickname: string }
 	| { type: 'startGame' }
 	| { type: 'submitAnswer'; answerIndex: number }
@@ -57,8 +61,8 @@ export type ClientMessage =
 
 // Server -> Client Messages
 export type ServerMessage =
-	| { type: 'connected'; role: ClientRole; playerId?: string }
-	| { type: 'error'; message: string }
+	| { type: 'connected'; role: ClientRole; playerId?: string; playerToken?: string }
+	| { type: 'error'; code: ErrorCodeType; message: string }
 	| { type: 'lobbyUpdate'; players: { id: string; name: string }[]; pin: string; gameId: string }
 	| { type: 'getReady'; countdownMs: number; totalQuestions: number }
 	| {

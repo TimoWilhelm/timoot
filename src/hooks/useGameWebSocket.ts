@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { ClientMessage, ServerMessage, ClientRole, GamePhase } from '@shared/types';
+import type { ErrorCodeType } from '@shared/errors';
 
 // Game state derived from WebSocket messages
 export interface LeaderboardEntry {
@@ -42,8 +43,9 @@ interface UseGameWebSocketOptions {
 	role: ClientRole;
 	hostSecret?: string;
 	playerId?: string;
-	onError?: (message: string) => void;
-	onConnected?: (playerId?: string) => void;
+	playerToken?: string;
+	onError?: (code: ErrorCodeType, message: string) => void;
+	onConnected?: (playerId?: string, playerToken?: string) => void;
 	onPlayerJoined?: (player: { id: string; name: string }) => void;
 }
 
@@ -69,7 +71,7 @@ const initialGameState: WebSocketGameState = {
 	isLastQuestion: false,
 };
 
-export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, onConnected, onPlayerJoined }: UseGameWebSocketOptions) {
+export function useGameWebSocket({ gameId, role, hostSecret, playerId, playerToken, onError, onConnected, onPlayerJoined }: UseGameWebSocketOptions) {
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
@@ -88,12 +90,12 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 						setIsConnected(true);
 						setIsConnecting(false);
 						setError(null);
-						onConnected?.(message.playerId);
+						onConnected?.(message.playerId, message.playerToken);
 						break;
 
 					case 'error':
 						setError(message.message);
-						onError?.(message.message);
+						onError?.(message.code, message.message);
 						break;
 
 					case 'lobbyUpdate':
@@ -233,7 +235,7 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 			// Host is pre-authenticated via the URL token - no connect message needed
 			// Players must send a connect message for authentication
 			if (role === 'player') {
-				const connectMsg: ClientMessage = { type: 'connect', role: 'player', gameId, playerId };
+				const connectMsg: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
 				ws.send(JSON.stringify(connectMsg));
 			}
 		};
@@ -261,7 +263,7 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 			// and will decide whether to show loading (reconnecting) or error
 			setError('WebSocket connection error');
 		};
-	}, [gameId, role, hostSecret, playerId, handleMessage]);
+	}, [gameId, role, hostSecret, playerId, playerToken, handleMessage]);
 
 	// Store connect in a ref to avoid effect re-running on connect changes
 	const connectRef = useRef(connect);

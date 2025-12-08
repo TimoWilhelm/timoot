@@ -197,6 +197,7 @@ export const wsConnectPlayerSchema = z.object({
 	role: z.literal('player'),
 	gameId: z.string().min(1),
 	playerId: z.uuid().optional(),
+	playerToken: z.uuid().optional(),
 	nickname: nicknameSchema.optional(),
 });
 

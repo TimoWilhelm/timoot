@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGameStore } from '@/lib/game-store';
+import { ErrorCode } from '@shared/errors';
 import { useGameWebSocket } from '@/hooks/useGameWebSocket';
 import { Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
@@ -12,7 +13,7 @@ import { JoinGameDialog } from '@/components/game/player/JoinGameDialog';
 import { useSound } from '@/hooks/useSound';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
 
-type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND';
+type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED';
 
 export function PlayerPage() {
 	const navigate = useNavigate();
@@ -22,12 +23,14 @@ export function PlayerPage() {
 	// Zustand state for session persistence
 	const sessionGameId = useGameStore((s) => s.gameId);
 	const storedPlayerId = useGameStore((s) => s.playerId);
+	const storedPlayerToken = useGameStore((s) => s.playerToken);
 	const nickname = useGameStore((s) => s.nickname);
 	const setSession = useGameStore((s) => s.setSession);
 	const clearSession = useGameStore((s) => s.clearSession);
 
 	const [view, setView] = useState<View>('LOADING');
 	const [currentPlayerId, setCurrentPlayerId] = useState<string | undefined>(storedPlayerId ?? undefined);
+	const [currentPlayerToken, setCurrentPlayerToken] = useState<string | undefined>(storedPlayerToken ?? undefined);
 	const [currentNickname, setCurrentNickname] = useState<string>(nickname ?? '');
 	const pendingNicknameRef = useRef<string>(nickname ?? '');
 	const [answerResult, setAnswerResult] = useState<{ isCorrect: boolean; score: number } | null>(null);
@@ -45,8 +48,9 @@ export function PlayerPage() {
 		}
 
 		// Case 1: Player has a session for this game -> Reconnect
-		if (storedPlayerId && sessionGameId === urlGameId) {
+		if (storedPlayerId && storedPlayerToken && sessionGameId === urlGameId) {
 			setCurrentPlayerId(storedPlayerId);
+			setCurrentPlayerToken(storedPlayerToken);
 			setCurrentNickname(nickname ?? '');
 			pendingNicknameRef.current = nickname ?? '';
 			setView('GAME');
@@ -55,21 +59,23 @@ export function PlayerPage() {
 		else if (storedPlayerId && sessionGameId && sessionGameId !== urlGameId) {
 			clearSession();
 			setCurrentPlayerId(undefined);
+			setCurrentPlayerToken(undefined);
 			// Stay in LOADING - handleConnected will set to NICKNAME once game is confirmed
 		}
 		// Case 3: New player or cleared session
 		// Stay in LOADING - handleConnected will set to NICKNAME once game is confirmed
-	}, [urlGameId, sessionGameId, storedPlayerId, nickname, navigate, clearSession]);
+	}, [urlGameId, sessionGameId, storedPlayerId, storedPlayerToken, nickname, navigate, clearSession]);
 
 	const handleConnected = useCallback(
-		(playerId?: string) => {
-			if (playerId && urlGameId) {
+		(playerId?: string, playerToken?: string) => {
+			if (playerId && playerToken && urlGameId) {
 				setCurrentPlayerId(playerId);
-				// Update session with server-assigned playerId
+				setCurrentPlayerToken(playerToken);
+				// Update session with server-assigned playerId and secure token
 				// Use ref to get the latest nickname (avoids race condition with state)
 				const nicknameToSave = pendingNicknameRef.current;
 				if (nicknameToSave) {
-					setSession({ gameId: urlGameId, playerId, nickname: nicknameToSave });
+					setSession({ gameId: urlGameId, playerId, playerToken, nickname: nicknameToSave });
 				}
 				setView('GAME');
 			} else if (!playerId) {
@@ -79,6 +85,7 @@ export function PlayerPage() {
 					// Clear the invalid session - user will need to rejoin
 					clearSession();
 					setCurrentPlayerId(undefined);
+					setCurrentPlayerToken(undefined);
 					pendingNicknameRef.current = '';
 					setCurrentNickname('');
 				}
@@ -89,20 +96,36 @@ export function PlayerPage() {
 		[urlGameId, setSession, storedPlayerId, clearSession],
 	);
 
-	const handleError = useCallback((msg: string) => {
-		if (msg === 'Game has already started') {
-			setView('GAME_IN_PROGRESS');
-		} else if (msg === 'Game not found') {
-			setView('ROOM_NOT_FOUND');
-		} else {
-			toast.error(msg);
-		}
-	}, []);
+	const handleError = useCallback(
+		(code: string, message: string) => {
+			switch (code) {
+				case ErrorCode.GAME_ALREADY_STARTED:
+					setView('GAME_IN_PROGRESS');
+					break;
+				case ErrorCode.GAME_NOT_FOUND:
+					setView('ROOM_NOT_FOUND');
+					break;
+				case ErrorCode.INVALID_SESSION_TOKEN:
+					// Session token was invalid or missing - clear session and show friendly message
+					clearSession();
+					setCurrentPlayerId(undefined);
+					setCurrentPlayerToken(undefined);
+					pendingNicknameRef.current = '';
+					setCurrentNickname('');
+					setView('SESSION_EXPIRED');
+					break;
+				default:
+					toast.error(message);
+			}
+		},
+		[clearSession],
+	);
 
 	const { isConnecting, isConnected, error, gameState, submittedAnswer, join, submitAnswer } = useGameWebSocket({
 		gameId: urlGameId!,
 		role: 'player',
 		playerId: currentPlayerId,
+		playerToken: currentPlayerToken,
 		onError: handleError,
 		onConnected: handleConnected,
 	});
@@ -214,6 +237,33 @@ export function PlayerPage() {
 				>
 					Back to Home
 				</button>
+			</div>
+		);
+	}
+
+	if (view === 'SESSION_EXPIRED') {
+		return (
+			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+				<div className="mb-6 text-6xl">🔑</div>
+				<h1 className="mb-4 text-center text-3xl font-bold">Session Expired</h1>
+				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
+					Your session could not be restored. This can happen if you cleared your browser data or if too much time has
+					passed. Please rejoin the game with a new nickname.
+				</p>
+				<div className="flex gap-4">
+					<button
+						onClick={() => setView('NICKNAME')}
+						className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
+					>
+						Rejoin Game
+					</button>
+					<button
+						onClick={() => navigate('/')}
+						className="rounded-lg bg-slate-600 px-6 py-3 font-semibold transition-colors hover:bg-slate-700"
+					>
+						Back to Home
+					</button>
+				</div>
 			</div>
 		);
 	}

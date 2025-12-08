@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { GameState, Question, Player, Answer, ClientMessage, ServerMessage, ClientRole } from '@shared/types';
 import { z } from 'zod';
 import { wsClientMessageSchema, nicknameSchema, LIMITS } from '@shared/validation';
+import { ErrorCode, createError } from '@shared/errors';
 import {
 	QUESTION_TIME_LIMIT_MS,
 	CLEANUP_DELAY_MS,
@@ -67,7 +68,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				this.sendMessage(server, { type: 'connected', role: 'host' });
 				await this.sendCurrentStateToHost(server, state);
 			} else {
-				this.sendMessage(server, { type: 'error', message: 'Game not found' });
+				this.sendMessage(server, { type: 'error', ...createError(ErrorCode.GAME_NOT_FOUND) });
 				server.close(4004, 'Game not found');
 			}
 
@@ -107,7 +108,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			const rawData = JSON.parse(message.toString());
 			const parseResult = wsClientMessageSchema.safeParse(rawData);
 			if (!parseResult.success) {
-				this.sendMessage(ws, { type: 'error', message: z.prettifyError(parseResult.error) });
+				this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.VALIDATION_ERROR, z.prettifyError(parseResult.error)) });
 				return;
 			}
 			const data = parseResult.data as ClientMessage;
@@ -117,7 +118,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			if (data.type === 'connect') {
 				// Hosts are pre-authenticated via the host-ws endpoint, so reject connect messages from them
 				if (attachment?.role === 'host' && attachment.authenticated) {
-					this.sendMessage(ws, { type: 'error', message: 'Host already authenticated' });
+					this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.HOST_ALREADY_AUTHENTICATED) });
 					return;
 				}
 				await this.handlePlayerConnect(ws, data);
@@ -126,7 +127,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 			// All other messages require authentication
 			if (!attachment?.authenticated) {
-				this.sendMessage(ws, { type: 'error', message: 'Not authenticated. Send connect message first.' });
+				this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.NOT_AUTHENTICATED) });
 				return;
 			}
 
@@ -145,11 +146,11 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 					await this.handleNextState(ws, attachment);
 					break;
 				default:
-					this.sendMessage(ws, { type: 'error', message: 'Unknown message type' });
+					this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.UNKNOWN_MESSAGE_TYPE) });
 			}
 		} catch (err) {
 			console.error('WebSocket message error:', err);
-			this.sendMessage(ws, { type: 'error', message: 'Invalid message format' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_MESSAGE_FORMAT) });
 		}
 	}
 
@@ -206,31 +207,40 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	private async handlePlayerConnect(ws: WebSocket, data: Extract<ClientMessage, { type: 'connect' }>): Promise<void> {
 		const state = await this.getFullGameState();
 		if (!state) {
-			this.sendMessage(ws, { type: 'error', message: 'Game not found' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_FOUND) });
 			ws.close(4004, 'Game not found');
 			return;
 		}
 
 		// Only handle player connections - hosts use the pre-authenticated /websocket/host path
 		if (data.role === 'host') {
-			this.sendMessage(ws, { type: 'error', message: 'Hosts must use the host WebSocket endpoint' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.HOST_ENDPOINT_REQUIRED) });
 			ws.close(4003, 'Forbidden');
 			return;
 		}
 
 		// Player connection
 		const playerId = data.playerId;
+		const playerToken = data.playerToken;
 		const existingPlayer = playerId ? state.players.find((p) => p.id === playerId) : null;
 
-		// If reconnecting with valid playerId
+		// If reconnecting with valid playerId, verify the secure token
 		if (existingPlayer) {
+			// Validate player token for reconnection security
+			if (!playerToken || existingPlayer.token !== playerToken) {
+				this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_SESSION_TOKEN) });
+				ws.close(4003, 'Invalid session token');
+				return;
+			}
+
 			ws.serializeAttachment({
 				role: 'player',
 				playerId: playerId,
 				authenticated: true,
 			} as WebSocketAttachment);
 
-			this.sendMessage(ws, { type: 'connected', role: 'player', playerId });
+			// Send back the token so client can verify/restore it
+			this.sendMessage(ws, { type: 'connected', role: 'player', playerId, playerToken: existingPlayer.token });
 			await this.sendCurrentStateToPlayer(ws, state, playerId!);
 		} else {
 			// New player - needs to join
@@ -243,43 +253,44 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 			// If game not in lobby, can't join
 			if (state.phase !== 'LOBBY') {
-				this.sendMessage(ws, { type: 'error', message: 'Game has already started' });
+				this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_ALREADY_STARTED) });
 			}
 		}
 	}
 
 	private async handleJoin(ws: WebSocket, attachment: WebSocketAttachment, nickname: string): Promise<void> {
 		if (attachment.role !== 'player') {
-			this.sendMessage(ws, { type: 'error', message: 'Only players can join' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_PLAYERS_CAN_JOIN) });
 			return;
 		}
 
 		if (attachment.playerId) {
-			this.sendMessage(ws, { type: 'error', message: 'Already joined' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ALREADY_JOINED) });
 			return;
 		}
 
 		// Validate nickname with Zod
 		const nicknameResult = nicknameSchema.safeParse(nickname);
 		if (!nicknameResult.success) {
-			this.sendMessage(ws, { type: 'error', message: z.prettifyError(nicknameResult.error) });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.VALIDATION_ERROR, z.prettifyError(nicknameResult.error)) });
 			return;
 		}
 		const validatedNickname = nicknameResult.data;
 
 		const state = await this.getFullGameState();
 		if (!state || state.phase !== 'LOBBY') {
-			this.sendMessage(ws, { type: 'error', message: 'Cannot join - game not in lobby' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_IN_LOBBY) });
 			return;
 		}
 
 		if (state.players.some((p) => p.name.toLowerCase() === validatedNickname.toLowerCase())) {
-			this.sendMessage(ws, { type: 'error', message: 'Nickname already taken' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.NICKNAME_TAKEN) });
 			return;
 		}
 
 		const playerId = crypto.randomUUID();
-		const newPlayer: Player = { id: playerId, name: validatedNickname, score: 0, answered: false };
+		const playerToken = crypto.randomUUID();
+		const newPlayer: Player = { id: playerId, name: validatedNickname, score: 0, answered: false, token: playerToken };
 		state.players.push(newPlayer);
 		await this.ctx.storage.put('game_state', state);
 
@@ -289,8 +300,8 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			playerId,
 		} as WebSocketAttachment);
 
-		// Send confirmation to the joining player
-		this.sendMessage(ws, { type: 'connected', role: 'player', playerId });
+		// Send confirmation to the joining player with their secure token
+		this.sendMessage(ws, { type: 'connected', role: 'player', playerId, playerToken });
 
 		// Broadcast lobby update to all connected clients
 		this.broadcastLobbyUpdate(state);
@@ -298,13 +309,13 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 	private async handleStartGame(ws: WebSocket, attachment: WebSocketAttachment): Promise<void> {
 		if (attachment.role !== 'host') {
-			this.sendMessage(ws, { type: 'error', message: 'Only host can start the game' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_HOST_CAN_START) });
 			return;
 		}
 
 		const state = await this.getFullGameState();
 		if (!state || state.phase !== 'LOBBY') {
-			this.sendMessage(ws, { type: 'error', message: 'Game not in lobby phase' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_IN_LOBBY) });
 			return;
 		}
 
@@ -321,31 +332,31 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 	private async handleSubmitAnswer(ws: WebSocket, attachment: WebSocketAttachment, answerIndex: number): Promise<void> {
 		if (attachment.role !== 'player' || !attachment.playerId) {
-			this.sendMessage(ws, { type: 'error', message: 'Only players can submit answers' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_PLAYERS_CAN_ANSWER) });
 			return;
 		}
 
 		// Validate answer index
 		if (typeof answerIndex !== 'number' || answerIndex < 0 || answerIndex >= LIMITS.OPTIONS_MAX) {
-			this.sendMessage(ws, { type: 'error', message: 'Invalid answer index' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_ANSWER_INDEX) });
 			return;
 		}
 
 		const state = await this.getFullGameState();
 		if (!state || state.phase !== 'QUESTION') {
-			this.sendMessage(ws, { type: 'error', message: 'Not in question phase' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.NOT_IN_QUESTION_PHASE) });
 			return;
 		}
 
 		const playerId = attachment.playerId;
 		if (state.answers.some((a) => a.playerId === playerId)) {
-			this.sendMessage(ws, { type: 'error', message: 'Already answered' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ALREADY_ANSWERED) });
 			return;
 		}
 
 		const timeTaken = Date.now() - state.questionStartTime;
 		if (timeTaken > QUESTION_TIME_LIMIT_MS) {
-			this.sendMessage(ws, { type: 'error', message: 'Time is up' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.TIME_EXPIRED) });
 			return;
 		}
 
@@ -372,13 +383,13 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 	private async handleNextState(ws: WebSocket, attachment: WebSocketAttachment): Promise<void> {
 		if (attachment.role !== 'host') {
-			this.sendMessage(ws, { type: 'error', message: 'Only host can advance state' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_HOST_CAN_ADVANCE) });
 			return;
 		}
 
 		const state = await this.getFullGameState();
 		if (!state) {
-			this.sendMessage(ws, { type: 'error', message: 'Game not found' });
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_FOUND) });
 			return;
 		}
 
@@ -410,7 +421,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				}
 				break;
 			default:
-				this.sendMessage(ws, { type: 'error', message: 'Invalid state transition' });
+				this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_STATE_TRANSITION) });
 		}
 	}
 
