@@ -1,5 +1,5 @@
 import type { GameState, ServerMessage } from '@shared/types';
-import { QUESTION_TIME_LIMIT_MS } from './constants';
+import { QUESTION_TIME_LIMIT_MS, GET_READY_COUNTDOWN_MS } from './constants';
 import { buildLeaderboard } from './scoring';
 
 /**
@@ -11,6 +11,17 @@ export function buildLobbyMessage(state: GameState): ServerMessage {
 		players: state.players.map((p) => ({ id: p.id, name: p.name })),
 		pin: state.pin,
 		gameId: state.id,
+	};
+}
+
+/**
+ * Build a get ready message for the countdown before first question.
+ */
+export function buildGetReadyMessage(state: GameState): ServerMessage {
+	return {
+		type: 'getReady',
+		countdownMs: GET_READY_COUNTDOWN_MS,
+		totalQuestions: state.questions.length,
 	};
 }
 

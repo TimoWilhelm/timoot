@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap } from 'lucide-react';
-
-// Colorblind-safe palette - vibrant yet readable
-const shapeColors = [
-	'bg-[#F59E0B]', // Triangle - Golden Amber
-	'bg-[#3B82F6]', // Diamond - Sky Blue
-	'bg-[#14B8A6]', // Circle - Cyan Teal
-	'bg-[#EC4899]', // Square - Hot Pink
-];
-const shapePaths = [
-	'M12 2L2 22h20L12 2z', // Triangle
-	'M12 2l10 10-10 10-10-10L12 2z', // Diamond
-	'M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z', // Circle
-	'M2 2h20v20H2V2z', // Square
-];
+import { shapeColors, shapePaths } from '@/components/game/shapes';
 
 interface CountdownTimerProps {
 	timeLeft: number;

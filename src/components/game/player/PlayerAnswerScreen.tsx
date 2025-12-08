@@ -1,23 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Zap } from 'lucide-react';
-
-// Colorblind-safe palette - vibrant yet readable (safe for deuteranopia, protanopia, tritanopia)
-const shapeGradients = [
-	'linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%)', // Triangle - Golden Amber
-	'linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%)', // Diamond - Sky Blue
-	'linear-gradient(135deg, #2DD4BF 0%, #14B8A6 50%, #0D9488 100%)', // Circle - Cyan Teal
-	'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #DB2777 100%)', // Square - Hot Pink
-];
-
-const shapePaths = [
-	'M12 2L2 22h20L12 2z', // Triangle
-	'M12 2l10 10-10 10-10-10L12 2z', // Diamond
-	'M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z', // Circle
-	'M2 2h20v20H2V2z', // Square
-];
-
-const glowColors = ['#F59E0B', '#3B82F6', '#14B8A6', '#EC4899'];
+import { shapePaths, shapeGradients, shapeGlowColors } from '@/components/game/shapes';
 
 // Compact 2x animation for player screen
 function PlayerDoublePointsAnimation({ onComplete }: { onComplete: () => void }) {
@@ -28,7 +12,7 @@ function PlayerDoublePointsAnimation({ onComplete }: { onComplete: () => void })
 
 	return (
 		<motion.div
-			className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-gradient-to-br from-quiz-orange/95 to-amber-600/95"
+			className="absolute inset-0 z-50 flex select-none items-center justify-center rounded-2xl bg-gradient-to-br from-quiz-orange/95 to-amber-600/95"
 			initial={{ opacity: 0, scale: 0.9 }}
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 1.1 }}
@@ -162,7 +146,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices, i
 							top: '25%',
 							width: '50%',
 							height: '50%',
-							background: `radial-gradient(circle, ${glowColors[submittedAnswer]} 0%, transparent 70%)`,
+							background: `radial-gradient(circle, ${shapeGlowColors[submittedAnswer]} 0%, transparent 70%)`,
 						}}
 					/>
 				)}

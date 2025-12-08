@@ -15,6 +15,8 @@ export interface WebSocketGameState {
 	gameId: string;
 	pin: string;
 	players: { id: string; name: string }[];
+	// Get Ready phase
+	getReadyCountdownMs: number;
 	// Question phase
 	questionIndex: number;
 	totalQuestions: number;
@@ -50,6 +52,7 @@ const initialGameState: WebSocketGameState = {
 	gameId: '',
 	pin: '',
 	players: [],
+	getReadyCountdownMs: 0,
 	questionIndex: 0,
 	totalQuestions: 0,
 	questionText: '',
@@ -100,6 +103,15 @@ export function useGameWebSocket({ gameId, role, hostSecret, playerId, onError, 
 							gameId: message.gameId,
 							pin: message.pin,
 							players: message.players,
+						}));
+						break;
+
+					case 'getReady':
+						setGameState((prev) => ({
+							...prev,
+							phase: 'GET_READY',
+							getReadyCountdownMs: message.countdownMs,
+							totalQuestions: message.totalQuestions,
 						}));
 						break;
 

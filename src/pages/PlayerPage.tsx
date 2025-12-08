@@ -224,6 +224,7 @@ export function PlayerPage() {
 	const renderGameContent = () => {
 		if (error && !isConnected) return <div className="text-red-300">{error}</div>;
 
+		// Show answer buttons only during QUESTION phase (not GET_READY)
 		if (gameState.phase === 'QUESTION' && gameState.options.length > 0) {
 			const optionIndices = Array.from({ length: gameState.options.length }, (_, i) => i);
 			return (
@@ -236,6 +237,7 @@ export function PlayerPage() {
 			);
 		}
 
+		// Show waiting screen for all other phases including GET_READY
 		return (
 			<PlayerWaitingScreen
 				phase={gameState.phase}

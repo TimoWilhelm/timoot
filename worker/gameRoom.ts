@@ -5,8 +5,10 @@ import { wsClientMessageSchema, nicknameSchema, LIMITS } from '@shared/validatio
 import {
 	QUESTION_TIME_LIMIT_MS,
 	CLEANUP_DELAY_MS,
+	GET_READY_COUNTDOWN_MS,
 	processAnswersAndUpdateScores,
 	buildLobbyMessage,
+	buildGetReadyMessage,
 	buildQuestionMessage,
 	buildRevealMessage,
 	buildLeaderboardMessage,
@@ -174,11 +176,20 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	}
 
 	/**
-	 * Alarm handler - triggered for cleanup
+	 * Alarm handler - triggered for GET_READY->QUESTION transition or cleanup
 	 */
 	async alarm(): Promise<void> {
 		const sockets = this.ctx.getWebSockets();
 		const state = await this.getFullGameState();
+
+		// Handle GET_READY -> QUESTION transition
+		if (state?.phase === 'GET_READY') {
+			state.phase = 'QUESTION';
+			state.questionStartTime = Date.now();
+			await this.ctx.storage.put('game_state', state);
+			this.broadcastQuestionStart(state);
+			return;
+		}
 
 		// Only cleanup if no active connections or game has ended
 		if (sockets.length === 0 || state?.phase === 'END') {
@@ -297,12 +308,15 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			return;
 		}
 
-		state.phase = 'QUESTION';
-		state.questionStartTime = Date.now();
+		// Transition to GET_READY phase with countdown before first question
+		state.phase = 'GET_READY';
 		await this.ctx.storage.put('game_state', state);
 
-		// Broadcast question to all
-		this.broadcastQuestionStart(state);
+		// Broadcast get ready message to all clients
+		this.broadcastGetReady(state);
+
+		// Schedule automatic transition to QUESTION phase after countdown
+		await this.ctx.storage.setAlarm(Date.now() + GET_READY_COUNTDOWN_MS);
 	}
 
 	private async handleSubmitAnswer(ws: WebSocket, attachment: WebSocketAttachment, answerIndex: number): Promise<void> {
@@ -443,6 +457,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		this.broadcastToAll(buildLobbyMessage(state));
 	}
 
+	private broadcastGetReady(state: GameState): void {
+		this.broadcastToAll(buildGetReadyMessage(state));
+	}
+
 	private broadcastQuestionStart(state: GameState): void {
 		this.broadcastToAll(buildQuestionMessage(state));
 	}
@@ -474,6 +492,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			case 'LOBBY':
 				this.sendMessage(ws, buildLobbyMessage(state));
 				break;
+			case 'GET_READY':
+				this.sendMessage(ws, buildGetReadyMessage(state));
+				break;
 			case 'QUESTION':
 				this.sendMessage(ws, buildQuestionMessage(state));
 				break;
@@ -493,6 +514,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		switch (state.phase) {
 			case 'LOBBY':
 				this.sendMessage(ws, buildLobbyMessage(state));
+				break;
+			case 'GET_READY':
+				this.sendMessage(ws, buildGetReadyMessage(state));
 				break;
 			case 'QUESTION': {
 				this.sendMessage(ws, buildQuestionMessage(state));

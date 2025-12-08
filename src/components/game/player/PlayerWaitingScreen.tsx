@@ -124,6 +124,20 @@ export function PlayerWaitingScreen({ phase, answerResult, finalScore, playerId,
 						<p>See your name on the big screen.</p>
 					</div>
 				);
+			case 'GET_READY':
+				return (
+					<div className="flex flex-col items-center text-center">
+						<motion.div
+							animate={{ scale: [1, 1.1, 1] }}
+							transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+							className="mb-4 text-6xl"
+						>
+							🎮
+						</motion.div>
+						<h2 className="text-4xl font-bold">Get Ready!</h2>
+						<p className="mt-2 text-lg text-slate-300">Look at the main screen</p>
+					</div>
+				);
 			case 'REVEAL':
 				if (answerResult) {
 					return (

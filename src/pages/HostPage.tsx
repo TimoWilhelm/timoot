@@ -7,6 +7,7 @@ import { HostQuestion } from '@/components/game/host/HostQuestion';
 import { HostReveal } from '@/components/game/host/HostReveal';
 import { HostLeaderboard } from '@/components/game/host/HostLeaderboard';
 import { HostEnd } from '@/components/game/host/HostEnd';
+import { HostGetReady } from '@/components/game/host/HostGetReady';
 import { useGameWebSocket } from '@/hooks/useGameWebSocket';
 import { useHostStore } from '@/lib/host-store';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,8 @@ export function HostPage() {
 		switch (gameState.phase) {
 			case 'LOBBY':
 				return <HostLobby onStart={startGame} players={gameState.players} gameId={gameState.gameId} />;
+			case 'GET_READY':
+				return <HostGetReady countdownMs={gameState.getReadyCountdownMs} totalQuestions={gameState.totalQuestions} />;
 			case 'QUESTION':
 				return (
 					<HostQuestion
