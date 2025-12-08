@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Loader2, Pencil, Trash2, PlusCircle, Wand2, BookOpen, HelpCircle, Zap, Gamepad2 } from 'lucide-react';
+import { Sparkles, Loader2, Pencil, Trash2, PlusCircle, Wand2, BookOpen, HelpCircle, Zap, Gamepad2, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { aiPromptSchema, LIMITS } from '@shared/validation';
 import { motion } from 'framer-motion';
 import { useHostStore } from '@/lib/host-store';
+import { musicCredits } from '@shared/music-credits';
 
 export function HomePage() {
 	const navigate = useNavigate();
@@ -38,6 +39,7 @@ export function HomePage() {
 	const [generatingPrompt, setGeneratingPrompt] = useState<string | null>(null);
 	const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
 	const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+	const [isMusicCreditsOpen, setIsMusicCreditsOpen] = useState(false);
 	const addSecret = useHostStore((s) => s.addSecret);
 	const generatingCardRef = useRef<HTMLDivElement>(null);
 
@@ -506,6 +508,13 @@ export function HomePage() {
 			{/* Footer */}
 			<footer className="relative z-10 border-t border-slate-200/50 py-6 text-center text-muted-foreground/80">
 				<p className="text-sm">Built with ❤️ at Cloudflare</p>
+				<button
+					onClick={() => setIsMusicCreditsOpen(true)}
+					className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+				>
+					<Music className="h-3 w-3" />
+					Music Credits
+				</button>
 			</footer>
 
 			{/* Start Quiz Confirmation Dialog */}
@@ -572,6 +581,37 @@ export function HomePage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* Music Credits Dialog */}
+			<Dialog open={isMusicCreditsOpen} onOpenChange={setIsMusicCreditsOpen}>
+				<DialogContent className="sm:max-w-[500px]">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<Music className="h-5 w-5 text-quiz-orange" />
+							Music Credits
+						</DialogTitle>
+						<DialogDescription>Attribution for music used in this application</DialogDescription>
+					</DialogHeader>
+					<div className="max-h-[400px] space-y-4 overflow-y-auto py-4">
+						{musicCredits.map((credit) => (
+							<div key={credit.title} className="rounded-lg bg-slate-50 p-3">
+								<p className="font-medium text-slate-900">
+									"{credit.title}"{' '}
+									<a href={credit.artistUrl} target="_blank" rel="noopener noreferrer" className="text-quiz-orange hover:underline">
+										{credit.artist} ({new URL(credit.artistUrl).hostname})
+									</a>
+								</p>
+								<p className="text-sm text-muted-foreground">
+									Licensed under{' '}
+									<a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+										{credit.license}
+									</a>
+								</p>
+							</div>
+						))}
+					</div>
+				</DialogContent>
+			</Dialog>
 
 			<Toaster richColors closeButton />
 		</div>

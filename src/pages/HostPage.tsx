@@ -264,7 +264,7 @@ export function HostPage() {
 	return (
 		<div className="flex min-h-screen w-full flex-col bg-slate-100 text-slate-900">
 			{/* Sound toggle button - fixed position */}
-			<div className="fixed right-4 top-4 z-50">
+			<div className="fixed left-4 top-4 z-50">
 				<SoundToggle onToggle={handleAudioInit} />
 			</div>
 
