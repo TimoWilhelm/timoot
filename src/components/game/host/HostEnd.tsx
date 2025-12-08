@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import type { LeaderboardEntry } from '@/hooks/useGameWebSocket';
 
 interface PodiumEntry {
@@ -57,24 +59,26 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 				>
 					{/* Player names (handles multiple tied players) */}
 					<div className="mb-1 flex flex-col items-center">
-						{entry.players.map((player, idx) => (
-							<motion.p
-								key={player.name}
-								className="text-lg font-bold leading-tight sm:text-2xl"
-								initial={{ opacity: 0, x: -20 }}
-								animate={{ opacity: 1, x: 0 }}
-								transition={{ delay: delay + 0.2 + idx * 0.1 }}
-							>
-								{player.name}
-							</motion.p>
-						))}
+						{entry.players.map((player, idx) => {
+							const isFirstPlace = entry.rank === 1;
+							return (
+								<motion.p
+									key={player.name}
+									className={`font-bold leading-tight ${
+										isFirstPlace
+											? 'text-2xl text-quiz-orange drop-shadow-[0_0_10px_rgba(244,129,32,0.6)] sm:text-4xl'
+											: 'text-lg sm:text-2xl'
+									}`}
+									initial={isFirstPlace ? { opacity: 0, scale: 0.6, y: 20 } : { opacity: 0, x: -20 }}
+									animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+									transition={{ delay: delay + 0.3 + idx * 0.15, type: 'spring', stiffness: isFirstPlace ? 140 : 80, damping: 12 }}
+								>
+									{player.name}
+								</motion.p>
+							);
+						})}
 					</div>
-					<motion.p
-						className="text-sm sm:text-lg"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ delay: delay + 0.3 }}
-					>
+					<motion.p className="text-sm sm:text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: delay + 0.3 }}>
 						{entry.players[0].score} pts
 					</motion.p>
 					{/* Podium block */}
@@ -85,7 +89,11 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 						transition={{ type: 'spring', stiffness: 100, damping: 15, delay: delay - 0.1 }}
 						style={{ originY: 1 }}
 					>
-						<motion.span initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: delay + 0.2, type: 'spring' }}>
+						<motion.span
+							initial={{ opacity: 0, scale: 0 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ delay: delay + 0.2, type: 'spring' }}
+						>
 							{emoji}
 						</motion.span>
 					</motion.div>
@@ -109,6 +117,50 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 	const firstPlace = podiumEntries.get(1);
 	const secondPlace = podiumEntries.get(2);
 	const thirdPlace = podiumEntries.get(3);
+
+	useEffect(() => {
+		if (!firstPlace) return;
+
+		// Fire confetti shortly after podium entries have animated in
+		const timeout = window.setTimeout(() => {
+			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
+			const count = 220;
+			const defaults = { origin: { y: 0.6 }, colors };
+
+			const fire = (particleRatio: number, opts: confetti.Options) => {
+				confetti({
+					...defaults,
+					...opts,
+					particleCount: Math.floor(count * particleRatio),
+				});
+			};
+
+			fire(0.25, {
+				spread: 26,
+				startVelocity: 55,
+			});
+			fire(0.2, {
+				spread: 60,
+			});
+			fire(0.35, {
+				spread: 100,
+				decay: 0.91,
+				scalar: 0.8,
+			});
+			fire(0.1, {
+				spread: 120,
+				startVelocity: 25,
+				decay: 0.92,
+				scalar: 1.2,
+			});
+			fire(0.1, {
+				spread: 120,
+				startVelocity: 45,
+			});
+		}, 2300);
+
+		return () => window.clearTimeout(timeout);
+	}, [firstPlace]);
 
 	return (
 		<div className="flex flex-grow flex-col items-center justify-center gap-4 p-4 sm:gap-6 sm:p-8">

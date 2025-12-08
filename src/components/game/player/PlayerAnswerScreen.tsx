@@ -34,25 +34,6 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 
 	return (
 		<div className="relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl overflow-hidden">
-			{/* Background glow effect when selected */}
-			<AnimatePresence>
-				{submittedAnswer !== null && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0 }}
-						animate={{ opacity: 0.4, scale: 3 }}
-						transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-						className="pointer-events-none absolute rounded-full blur-3xl"
-						style={{
-							left: '25%',
-							top: '25%',
-							width: '50%',
-							height: '50%',
-							background: `radial-gradient(circle, ${shapeGlowColors[submittedAnswer]} 0%, transparent 70%)`,
-						}}
-					/>
-				)}
-			</AnimatePresence>
-
 			{/* Answer buttons */}
 			{optionIndices.map((originalIndex, displayIndex) => {
 				const isSelected = submittedAnswer === originalIndex;

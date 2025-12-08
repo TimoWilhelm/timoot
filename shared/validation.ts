@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EMOJI_REACTIONS } from './types';
 
 // ============ Validation Constants ============
 export const LIMITS = {
@@ -222,8 +223,20 @@ export const wsSubmitAnswerSchema = z.object({
 export const wsStartGameSchema = z.object({ type: z.literal('startGame') });
 export const wsNextStateSchema = z.object({ type: z.literal('nextState') });
 
+export const wsSendEmojiSchema = z.object({
+	type: z.literal('sendEmoji'),
+	emoji: z.enum(EMOJI_REACTIONS),
+});
+
 // Use union for all messages - discriminatedUnion doesn't support duplicate discriminator values
-export const wsClientMessageSchema = z.union([wsConnectSchema, wsJoinSchema, wsStartGameSchema, wsSubmitAnswerSchema, wsNextStateSchema]);
+export const wsClientMessageSchema = z.union([
+	wsConnectSchema,
+	wsJoinSchema,
+	wsStartGameSchema,
+	wsSubmitAnswerSchema,
+	wsNextStateSchema,
+	wsSendEmojiSchema,
+]);
 
 // ============ Type Exports ============
 

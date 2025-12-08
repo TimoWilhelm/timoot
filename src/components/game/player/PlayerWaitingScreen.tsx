@@ -1,6 +1,8 @@
-import { CheckCircle, XCircle, Loader2, Trophy, Zap } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Trophy, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import type { GamePhase, QuestionModifier } from '@shared/types';
 
 interface LeaderboardEntry {
@@ -81,49 +83,6 @@ function PlayerDoublePointsAnimation() {
 	);
 }
 
-// Confetti particle component
-function ConfettiParticle({ delay, x, color }: { delay: number; x: number; color: string }) {
-	return (
-		<motion.div
-			className="absolute h-3 w-3 rounded-sm"
-			style={{ backgroundColor: color, left: `${x}%` }}
-			initial={{ y: -20, opacity: 1, rotate: 0, scale: 1 }}
-			animate={{
-				y: ['0vh', '100vh'],
-				opacity: [1, 1, 0],
-				rotate: [0, 360, 720],
-				x: [0, Math.random() * 40 - 20],
-			}}
-			transition={{
-				duration: 3 + Math.random() * 2,
-				delay,
-				ease: 'easeOut',
-			}}
-		/>
-	);
-}
-
-// Celebration confetti animation
-function CelebrationConfetti() {
-	const particles = useMemo(() => {
-		const colors = ['#FBBF24', '#F59E0B', '#60A5FA', '#3B82F6', '#2DD4BF', '#14B8A6', '#F472B6', '#EC4899'];
-		return Array.from({ length: 50 }, (_, i) => ({
-			id: i,
-			delay: Math.random() * 0.5,
-			x: Math.random() * 100,
-			color: colors[Math.floor(Math.random() * colors.length)],
-		}));
-	}, []);
-
-	return (
-		<div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
-			{particles.map((p) => (
-				<ConfettiParticle key={p.id} delay={p.delay} x={p.x} color={p.color} />
-			))}
-		</div>
-	);
-}
-
 // Podium rank display component
 function PodiumRankDisplay({ rank }: { rank: number }) {
 	const config = {
@@ -168,8 +127,6 @@ export function PlayerWaitingScreen({
 	leaderboard = [],
 	modifiers = [],
 }: PlayerWaitingScreenProps) {
-	const [showConfetti, setShowConfetti] = useState(false);
-
 	// Find player's final rank
 	const myFinalEntry = leaderboard.find((p) => p.id === playerId);
 	const myFinalRank = myFinalEntry?.rank ?? 0;
@@ -178,10 +135,40 @@ export function PlayerWaitingScreen({
 	// Trigger confetti for podium finishes
 	useEffect(() => {
 		if (phase === 'END' && isOnPodium) {
-			setShowConfetti(true);
-			// Stop confetti after animation completes
-			const timer = setTimeout(() => setShowConfetti(false), 5000);
-			return () => clearTimeout(timer);
+			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
+			const count = 200;
+			const defaults = { origin: { y: 0.6 }, colors };
+
+			const fire = (particleRatio: number, opts: confetti.Options) => {
+				confetti({
+					...defaults,
+					...opts,
+					particleCount: Math.floor(count * particleRatio),
+				});
+			};
+
+			fire(0.25, {
+				spread: 26,
+				startVelocity: 55,
+			});
+			fire(0.2, {
+				spread: 60,
+			});
+			fire(0.35, {
+				spread: 100,
+				decay: 0.91,
+				scalar: 0.8,
+			});
+			fire(0.1, {
+				spread: 120,
+				startVelocity: 25,
+				decay: 0.92,
+				scalar: 1.2,
+			});
+			fire(0.1, {
+				spread: 120,
+				startVelocity: 45,
+			});
 		}
 	}, [phase, isOnPodium]);
 
@@ -271,7 +258,6 @@ export function PlayerWaitingScreen({
 			case 'END':
 				return (
 					<div className="text-center">
-						{showConfetti && <CelebrationConfetti />}
 						<motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 text-4xl font-bold">
 							Game Over!
 						</motion.h2>
@@ -294,6 +280,16 @@ export function PlayerWaitingScreen({
 						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-4 text-2xl">
 							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
 						</motion.p>
+
+						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
+							<Link
+								to="/"
+								className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-600"
+							>
+								<Home className="h-4 w-4" />
+								Back to Home
+							</Link>
+						</motion.div>
 					</div>
 				);
 			default:
@@ -306,14 +302,16 @@ export function PlayerWaitingScreen({
 		}
 	};
 	return (
-		<motion.div
-			key={phase + (answerResult ? 'result' : '')}
-			initial={{ opacity: 0, scale: 0.8 }}
-			animate={{ opacity: 1, scale: 1 }}
-			exit={{ opacity: 0, scale: 0.8 }}
-			className="flex h-full w-full items-center justify-center"
-		>
-			{renderContent()}
-		</motion.div>
+		<>
+			<motion.div
+				key={phase + (answerResult ? 'result' : '')}
+				initial={{ opacity: 0, scale: 0.8 }}
+				animate={{ opacity: 1, scale: 1 }}
+				exit={{ opacity: 0, scale: 0.8 }}
+				className="flex h-full w-full items-center justify-center"
+			>
+				{renderContent()}
+			</motion.div>
+		</>
 	);
 }

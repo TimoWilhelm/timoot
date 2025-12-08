@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import type { GameState, Question, Player, Answer, ClientMessage, ServerMessage, ClientRole } from '@shared/types';
+import type { GameState, Question, Player, Answer, ClientMessage, ServerMessage, ClientRole, EmojiReaction } from '@shared/types';
 import { z } from 'zod';
 import { wsClientMessageSchema, nicknameSchema, LIMITS } from '@shared/validation';
 import { ErrorCode, createError } from '@shared/errors';
@@ -148,6 +148,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 					break;
 				case 'nextState':
 					await this.handleNextState(ws, attachment);
+					break;
+				case 'sendEmoji':
+					await this.handleSendEmoji(ws, attachment, data.emoji);
 					break;
 				default:
 					this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.UNKNOWN_MESSAGE_TYPE) });
@@ -405,6 +408,28 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		if (state.answers.length === state.players.length) {
 			await this.advanceToReveal(state);
 		}
+	}
+
+	private async handleSendEmoji(ws: WebSocket, attachment: WebSocketAttachment, emoji: EmojiReaction): Promise<void> {
+		if (attachment.role !== 'player' || !attachment.playerId) {
+			this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_PLAYERS_CAN_SEND_EMOJI) });
+			return;
+		}
+
+		const state = await this.getFullGameState();
+		if (!state) return;
+
+		// Only allow emojis outside of QUESTION phase
+		if (state.phase === 'QUESTION') {
+			return; // Silently ignore during question phase
+		}
+
+		// Broadcast emoji to host only
+		this.broadcastToRole('host', {
+			type: 'emojiReceived',
+			emoji,
+			playerId: attachment.playerId,
+		});
 	}
 
 	private async handleNextState(ws: WebSocket, attachment: WebSocketAttachment): Promise<void> {

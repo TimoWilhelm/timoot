@@ -5,11 +5,12 @@ import { ErrorCode } from '@shared/errors';
 import { useGameWebSocket } from '@/hooks/useGameWebSocket';
 import { Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PlayerNicknameForm } from '@/components/game/player/PlayerNicknameForm';
 import { PlayerAnswerScreen } from '@/components/game/player/PlayerAnswerScreen';
 import { PlayerWaitingScreen } from '@/components/game/player/PlayerWaitingScreen';
 import { JoinGameDialog } from '@/components/game/player/JoinGameDialog';
+import { EmojiPicker } from '@/components/EmojiPicker';
 import { useSound } from '@/hooks/useSound';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
 import {
@@ -134,7 +135,7 @@ export function PlayerPage() {
 		[clearSession],
 	);
 
-	const { isConnecting, isConnected, error, gameState, submittedAnswer, join, submitAnswer } = useGameWebSocket({
+	const { isConnecting, isConnected, error, gameState, submittedAnswer, join, submitAnswer, sendEmoji } = useGameWebSocket({
 		gameId: urlGameId!,
 		role: 'player',
 		playerId: currentPlayerId,
@@ -350,6 +351,22 @@ export function PlayerPage() {
 			<main className="flex flex-grow items-center justify-center">
 				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
 			</main>
+
+			{/* Emoji picker - fixed at bottom, doesn't affect layout */}
+			<AnimatePresence>
+				{gameState.phase !== 'QUESTION' && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.15 }}
+						className="fixed inset-x-0 bottom-0 z-30 pb-4"
+					>
+						<EmojiPicker onEmojiSelect={sendEmoji} />
+					</motion.div>
+				)}
+			</AnimatePresence>
+
 			<Toaster richColors theme="dark" />
 
 			{/* Leave game confirmation dialog */}

@@ -53,6 +53,10 @@ export interface Quiz {
 
 export type ClientRole = 'host' | 'player';
 
+// Emoji reactions players can send
+export type EmojiReaction = '❤️' | '😂' | '🤔' | '🎉';
+export const EMOJI_REACTIONS: EmojiReaction[] = ['❤️', '😂', '🤔', '🎉'];
+
 // Client -> Server Messages
 export type ClientMessage =
 	| { type: 'connect'; role: 'host'; gameId: string; hostSecret: string }
@@ -60,7 +64,8 @@ export type ClientMessage =
 	| { type: 'join'; nickname: string }
 	| { type: 'startGame' }
 	| { type: 'submitAnswer'; answerIndex: number }
-	| { type: 'nextState' };
+	| { type: 'nextState' }
+	| { type: 'sendEmoji'; emoji: EmojiReaction };
 
 // Server -> Client Messages
 export type ServerMessage =
@@ -105,4 +110,5 @@ export type ServerMessage =
 			finalLeaderboard: { id: string; name: string; score: number; rank: number }[];
 	  }
 	| { type: 'playerJoined'; player: { id: string; name: string } }
-	| { type: 'kicked'; reason: string };
+	| { type: 'kicked'; reason: string }
+	| { type: 'emojiReceived'; emoji: EmojiReaction; playerId: string };

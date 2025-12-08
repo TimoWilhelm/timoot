@@ -20,6 +20,7 @@ export const ErrorCode = {
 	ONLY_HOST_CAN_START: 'ONLY_HOST_CAN_START',
 	ONLY_HOST_CAN_ADVANCE: 'ONLY_HOST_CAN_ADVANCE',
 	ONLY_PLAYERS_CAN_ANSWER: 'ONLY_PLAYERS_CAN_ANSWER',
+	ONLY_PLAYERS_CAN_SEND_EMOJI: 'ONLY_PLAYERS_CAN_SEND_EMOJI',
 
 	// Player action errors
 	GAME_FULL: 'GAME_FULL',
@@ -57,6 +58,7 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
 	[ErrorCode.ONLY_HOST_CAN_START]: 'Only host can start the game',
 	[ErrorCode.ONLY_HOST_CAN_ADVANCE]: 'Only host can advance state',
 	[ErrorCode.ONLY_PLAYERS_CAN_ANSWER]: 'Only players can submit answers',
+	[ErrorCode.ONLY_PLAYERS_CAN_SEND_EMOJI]: 'Only players can send emojis',
 
 	[ErrorCode.GAME_FULL]: 'Game is full',
 	[ErrorCode.ALREADY_JOINED]: 'Already joined',

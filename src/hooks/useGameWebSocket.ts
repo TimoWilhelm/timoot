@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import type { ClientMessage, ServerMessage, ClientRole, GamePhase, QuestionModifier } from '@shared/types';
+import type { ClientMessage, ServerMessage, ClientRole, GamePhase, QuestionModifier, EmojiReaction } from '@shared/types';
 import type { ErrorCodeType } from '@shared/errors';
 
 // Game state derived from WebSocket messages
@@ -49,6 +49,7 @@ interface UseGameWebSocketOptions {
 	onError?: (code: ErrorCodeType, message: string) => void;
 	onConnected?: (playerId?: string, playerToken?: string) => void;
 	onPlayerJoined?: (player: { id: string; name: string }) => void;
+	onEmojiReceived?: (emoji: EmojiReaction, playerId: string) => void;
 }
 
 const initialGameState: WebSocketGameState = {
@@ -83,6 +84,7 @@ export function useGameWebSocket({
 	onError,
 	onConnected,
 	onPlayerJoined,
+	onEmojiReceived,
 }: UseGameWebSocketOptions) {
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -225,12 +227,16 @@ export function useGameWebSocket({
 						setError(message.reason);
 						wsRef.current?.close();
 						break;
+
+					case 'emojiReceived':
+						onEmojiReceived?.(message.emoji, message.playerId);
+						break;
 				}
 			} catch (err) {
 				console.error('Failed to parse WebSocket message:', err);
 			}
 		},
-		[onConnected, onError, onPlayerJoined],
+		[onConnected, onError, onPlayerJoined, onEmojiReceived],
 	);
 
 	const connect = useCallback(() => {
@@ -343,6 +349,14 @@ export function useGameWebSocket({
 		sendMessage({ type: 'nextState' });
 	}, [sendMessage]);
 
+	// Player emoji action
+	const sendEmoji = useCallback(
+		(emoji: EmojiReaction) => {
+			sendMessage({ type: 'sendEmoji', emoji });
+		},
+		[sendMessage],
+	);
+
 	return {
 		isConnected,
 		isConnecting,
@@ -352,6 +366,7 @@ export function useGameWebSocket({
 		// Player actions
 		join,
 		submitAnswer,
+		sendEmoji,
 		// Host actions
 		startGame,
 		nextState,

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useBlocker } from 'react-router-dom';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SoundToggle } from '@/components/SoundToggle';
 import { useHostSound } from '@/hooks/useHostSound';
+import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/FloatingEmojis';
+import type { EmojiReaction } from '@shared/types';
 
 export function HostPage() {
 	const { gameId } = useParams<{ gameId: string }>();
@@ -37,13 +39,27 @@ export function HostPage() {
 	const { playSound, playCountdownTick, initAudio, startBackgroundMusic, stopBackgroundMusic } = useHostSound();
 	const prevPhaseRef = useRef<string | null>(null);
 	const prevPlayersCountRef = useRef<number | null>(null);
+	const floatingEmojisRef = useRef<FloatingEmojisHandle>(null);
+
+	// Handle emoji received from players
+	const handleEmojiReceived = useCallback((emoji: EmojiReaction) => {
+		floatingEmojisRef.current?.addEmoji(emoji);
+	}, []);
 
 	const { isConnecting, isConnected, error, gameState, startGame, nextState } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
 		onError: (msg) => toast.error(msg),
+		onEmojiReceived: handleEmojiReceived,
 	});
+
+	// Clear floating emojis when question starts
+	useEffect(() => {
+		if (gameState.phase === 'QUESTION') {
+			floatingEmojisRef.current?.clearAll();
+		}
+	}, [gameState.phase]);
 
 	// Helper to get the music track for current phase
 	const getMusicTrackForPhase = (phase: string) => {
@@ -282,6 +298,9 @@ export function HostPage() {
 				</motion.main>
 			</AnimatePresence>
 			<Toaster richColors />
+
+			{/* Floating emojis from players */}
+			<FloatingEmojis ref={floatingEmojisRef} />
 
 			{/* Leave game confirmation dialog */}
 			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>
