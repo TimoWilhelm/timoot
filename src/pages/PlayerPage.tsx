@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useBlocker } from 'react-router-dom';
 import { useGameStore } from '@/lib/game-store';
 import { ErrorCode } from '@shared/errors';
 import { useGameWebSocket } from '@/hooks/useGameWebSocket';
@@ -12,6 +12,16 @@ import { PlayerWaitingScreen } from '@/components/game/player/PlayerWaitingScree
 import { JoinGameDialog } from '@/components/game/player/JoinGameDialog';
 import { useSound } from '@/hooks/useSound';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED';
 
@@ -164,6 +174,21 @@ export function PlayerPage() {
 		}
 	}, [gameState.phase, gameState.questionIndex]);
 
+	// Block navigation when game is active (not in LOBBY or END)
+	const isGameActive = view === 'GAME' && isConnected && gameState.phase !== 'LOBBY' && gameState.phase !== 'END';
+	const blocker = useBlocker(isGameActive);
+
+	// Warn before browser/tab close when game is active
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (isGameActive) {
+				e.preventDefault();
+			}
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [isGameActive]);
+
 	const handleJoin = useCallback(
 		(name: string) => {
 			if (!name.trim() || !urlGameId) return;
@@ -311,6 +336,24 @@ export function PlayerPage() {
 				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
 			</main>
 			<Toaster richColors theme="dark" />
+
+			{/* Leave game confirmation dialog */}
+			<AlertDialog open={blocker.state === 'blocked'}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Leave Game?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to leave the game?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
+						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
+							Leave Game
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

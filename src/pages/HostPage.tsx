@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useParams, useBlocker } from 'react-router-dom';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
@@ -11,6 +12,16 @@ import { HostGetReady } from '@/components/game/host/HostGetReady';
 import { useGameWebSocket } from '@/hooks/useGameWebSocket';
 import { useHostStore } from '@/lib/host-store';
 import { Button } from '@/components/ui/button';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function HostPage() {
 	const { gameId } = useParams<{ gameId: string }>();
@@ -26,6 +37,21 @@ export function HostPage() {
 		hostSecret,
 		onError: (msg) => toast.error(msg),
 	});
+
+	// Block navigation when game is active (not in LOBBY or END)
+	const isGameActive = isConnected && gameState.phase !== 'LOBBY' && gameState.phase !== 'END';
+	const blocker = useBlocker(isGameActive);
+
+	// Warn before browser/tab close when game is active
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (isGameActive) {
+				e.preventDefault();
+			}
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [isGameActive]);
 
 	// Show error immediately for missing secret (before loading check)
 	if (hasMissingSecret || (error && !isConnected)) {
@@ -110,6 +136,24 @@ export function HostPage() {
 				</motion.main>
 			</AnimatePresence>
 			<Toaster richColors />
+
+			{/* Leave game confirmation dialog */}
+			<AlertDialog open={blocker.state === 'blocked'}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Leave Game?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to leave the game?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
+						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
+							Leave Game
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
