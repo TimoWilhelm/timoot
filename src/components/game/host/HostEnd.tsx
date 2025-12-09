@@ -188,7 +188,7 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 	}, [firstPlace]);
 
 	return (
-		<div className="flex flex-grow flex-col items-center justify-center gap-4 p-4 sm:gap-6 sm:p-8">
+		<div className="flex flex-grow flex-col items-center justify-center gap-4 whitespace-nowrap p-4 sm:gap-6 sm:p-8">
 			<motion.h1
 				initial={{ opacity: 0, scale: 0.5 }}
 				animate={{ opacity: 1, scale: 1 }}
@@ -201,7 +201,7 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 				>
 					🏆
 				</motion.span>
-				<span className="mx-2 sm:mx-4">Final Podium</span>
+				<span className="mx-2 sm:mx-4">Top Scorers!</span>
 				<motion.span
 					className="inline-block"
 					animate={{ rotate: [-12, 12] }}

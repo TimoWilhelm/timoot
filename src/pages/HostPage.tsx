@@ -98,6 +98,35 @@ export function HostPage() {
 	// Block navigation when game is active (not in LOBBY or END)
 	const blocker = useBlocker(isGameActive);
 
+	// Allow host to advance with common presenter keys (right arrow, page down, space, enter)
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			const { repeat, key } = event;
+
+			if (repeat) return;
+
+			if (key !== 'ArrowRight' && key !== 'PageDown' && key !== ' ' && key !== 'Enter') return;
+
+			// Only allow advancing when connected and in phases that have a manual Next button
+			if (!isConnected) return;
+			if (
+				gameState.phase === 'QUESTION' ||
+				gameState.phase === 'QUESTION_MODIFIER' ||
+				gameState.phase === 'LOBBY' ||
+				gameState.phase === 'GET_READY' ||
+				gameState.phase === 'END'
+			)
+				return;
+
+			// Prevent default scrolling behavior for these keys
+			event.preventDefault();
+			nextState();
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [isConnected, gameState.phase, nextState]);
+
 	// Play sounds on game phase changes
 	useEffect(() => {
 		if (!isConnected) return;
