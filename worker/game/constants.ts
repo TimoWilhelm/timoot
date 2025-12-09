@@ -1,7 +1,7 @@
 /** Time limit for answering each question (20 seconds) */
 export const QUESTION_TIME_LIMIT_MS = 20_000;
 
-/** Countdown duration for GET_READY phase before first question (8 seconds) */
+/** Countdown duration for GET_READY phase before first question (6 seconds) */
 export const GET_READY_COUNTDOWN_MS = 6_000;
 
 /** Duration for QUESTION_MODIFIER phase animation (2.5 seconds) */

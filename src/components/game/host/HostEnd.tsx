@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import type { LeaderboardEntry } from '@/hooks/useGameWebSocket';
 
@@ -118,6 +118,18 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 	const secondPlace = podiumEntries.get(2);
 	const thirdPlace = podiumEntries.get(3);
 
+	const [showPodium, setShowPodium] = useState(false);
+
+	useEffect(() => {
+		const introTimeout = window.setTimeout(() => {
+			setShowPodium(true);
+		}, 1500);
+
+		return () => {
+			window.clearTimeout(introTimeout);
+		};
+	}, []);
+
 	useEffect(() => {
 		if (!firstPlace) return;
 
@@ -189,44 +201,89 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 
 	return (
 		<div className="flex flex-grow flex-col items-center justify-center gap-4 whitespace-nowrap p-4 sm:gap-6 sm:p-8">
-			<motion.h1
-				initial={{ opacity: 0, scale: 0.5 }}
-				animate={{ opacity: 1, scale: 1 }}
-				className="text-3xl font-bold sm:text-5xl md:text-7xl"
-			>
-				<motion.span
-					className="inline-block"
-					animate={{ rotate: [-12, 12] }}
-					transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
-				>
-					🏆
-				</motion.span>
-				<span className="mx-2 sm:mx-4">Top Scorers!</span>
-				<motion.span
-					className="inline-block"
-					animate={{ rotate: [-12, 12] }}
-					transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
-				>
-					🏆
-				</motion.span>
-			</motion.h1>
+			<AnimatePresence mode="wait">
+				{!showPodium ? (
+					<motion.div
+						key="intro"
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 1.05 }}
+						transition={{ duration: 0.5, ease: 'easeOut' }}
+						className="flex flex-col items-center gap-6"
+					>
+						<motion.h1
+							initial={false}
+							animate={{ opacity: [0.6, 1, 0.6] }}
+							transition={{ duration: 1.2, repeat: Infinity }}
+							className="text-center text-3xl font-bold sm:text-5xl md:text-6xl"
+						>
+							<span className="mx-2 sm:mx-4">And the top scorers are...</span>
+						</motion.h1>
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.2 }}
+							className="flex items-center gap-3 rounded-full bg-quiz-orange/10 px-4 py-2 text-sm font-medium text-quiz-orange sm:text-base"
+						>
+							<motion.span
+								animate={{ rotate: [-10, 10] }}
+								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+								className="inline-block text-lg sm:text-xl"
+							>
+								🏆
+							</motion.span>
+							<span>Crunching final scores...</span>
+						</motion.div>
+					</motion.div>
+				) : (
+					<motion.div
+						key="podium"
+						initial={{ opacity: 0, y: 10 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5, ease: 'easeOut' }}
+						className="flex flex-col items-center gap-4 sm:gap-6"
+					>
+						<motion.h1
+							initial={{ opacity: 0, scale: 0.5 }}
+							animate={{ opacity: 1, scale: 1 }}
+							className="text-3xl font-bold sm:text-5xl md:text-7xl"
+						>
+							<motion.span
+								className="inline-block"
+								animate={{ rotate: [-12, 12] }}
+								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+							>
+								🏆
+							</motion.span>
+							<span className="mx-2 sm:mx-4">Top Scorers!</span>
+							<motion.span
+								className="inline-block"
+								animate={{ rotate: [-12, 12] }}
+								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+							>
+								🏆
+							</motion.span>
+						</motion.h1>
 
-			{/* Podium container with fixed layout: 2nd | 1st | 3rd */}
-			<div className="flex items-end justify-center gap-2 sm:gap-4">
-				<PodiumPlace entry={secondPlace} position={2} />
-				<PodiumPlace entry={firstPlace} position={1} />
-				<PodiumPlace entry={thirdPlace} position={3} />
-			</div>
+						{/* Podium container with fixed layout: 2nd | 1st | 3rd */}
+						<div className="flex items-end justify-center gap-2 sm:gap-4">
+							<PodiumPlace entry={secondPlace} position={2} />
+							<PodiumPlace entry={firstPlace} position={1} />
+							<PodiumPlace entry={thirdPlace} position={3} />
+						</div>
 
-			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }}>
-				<Button
-					onClick={() => (window.location.href = '/')}
-					size="lg"
-					className="rounded-2xl bg-quiz-orange px-8 py-6 text-xl font-bold text-white sm:px-12 sm:py-8 sm:text-2xl"
-				>
-					Play Again
-				</Button>
-			</motion.div>
+						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }}>
+							<Button
+								onClick={() => (window.location.href = '/')}
+								size="lg"
+								className="rounded-2xl bg-quiz-orange px-8 py-6 text-xl font-bold text-white sm:px-12 sm:py-8 sm:text-2xl"
+							>
+								Play Again
+							</Button>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }

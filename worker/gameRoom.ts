@@ -448,10 +448,21 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				await this.advanceToReveal(state);
 				break;
 			case 'REVEAL':
-				state.phase = 'LEADERBOARD';
-				state.players.sort((a, b) => b.score - a.score);
-				await this.ctx.storage.put('game_state', state);
-				this.broadcastLeaderboard(state);
+				// After revealing the final question, skip the LEADERBOARD phase
+				// and go straight to END to show the podium screen without spoilers.
+				if (state.currentQuestionIndex >= state.questions.length - 1) {
+					state.phase = 'END';
+					state.players.sort((a, b) => b.score - a.score);
+					await this.ctx.storage.put('game_state', state);
+					this.broadcastGameEnd(state);
+					// Schedule cleanup after game ends
+					await this.ctx.storage.setAlarm(Date.now() + CLEANUP_DELAY_MS);
+				} else {
+					state.phase = 'LEADERBOARD';
+					state.players.sort((a, b) => b.score - a.score);
+					await this.ctx.storage.put('game_state', state);
+					this.broadcastLeaderboard(state);
+				}
 				break;
 			case 'LEADERBOARD':
 				if (state.currentQuestionIndex < state.questions.length - 1) {
