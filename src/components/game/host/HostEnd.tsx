@@ -122,6 +122,8 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 		if (!firstPlace) return;
 
 		// Fire confetti shortly after podium entries have animated in
+		let subtleIntervalId: number | undefined;
+
 		const timeout = window.setTimeout(() => {
 			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
 			const count = 220;
@@ -157,9 +159,32 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 				spread: 120,
 				startVelocity: 45,
 			});
+
+			// Subtle continuous confetti while the podium is visible
+			subtleIntervalId = window.setInterval(() => {
+				confetti({
+					particleCount: 2,
+					angle: 60,
+					spread: 55,
+					origin: { x: 0 },
+					colors: colors,
+				});
+				confetti({
+					particleCount: 2,
+					angle: 120,
+					spread: 55,
+					origin: { x: 1 },
+					colors: colors,
+				});
+			}, 20);
 		}, 2300);
 
-		return () => window.clearTimeout(timeout);
+		return () => {
+			window.clearTimeout(timeout);
+			if (subtleIntervalId !== undefined) {
+				window.clearInterval(subtleIntervalId);
+			}
+		};
 	}, [firstPlace]);
 
 	return (
@@ -169,7 +194,21 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 				animate={{ opacity: 1, scale: 1 }}
 				className="text-3xl font-bold sm:text-5xl md:text-7xl"
 			>
-				🏆 Final Podium 🏆
+				<motion.span
+					className="inline-block"
+					animate={{ rotate: [-12, 12] }}
+					transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+				>
+					🏆
+				</motion.span>
+				<span className="mx-2 sm:mx-4">Final Podium</span>
+				<motion.span
+					className="inline-block"
+					animate={{ rotate: [-12, 12] }}
+					transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+				>
+					🏆
+				</motion.span>
 			</motion.h1>
 
 			{/* Podium container with fixed layout: 2nd | 1st | 3rd */}
