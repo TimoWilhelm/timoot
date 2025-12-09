@@ -24,9 +24,43 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { SoundToggle } from '@/components/SoundToggle';
-import { useHostSound } from '@/hooks/useHostSound';
+import { useHostSound, type MusicTrack } from '@/hooks/useHostSound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/FloatingEmojis';
-import type { EmojiReaction } from '@shared/types';
+import type { EmojiReaction, GamePhase } from '@shared/types';
+
+const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
+	LOBBY: 'lobby',
+	GET_READY: 'getReady',
+	QUESTION_MODIFIER: 'questionModifier',
+	QUESTION: 'question',
+	REVEAL: 'reveal',
+	LEADERBOARD: 'leaderboard',
+	END: 'celebration',
+};
+
+const phaseIsActive: Record<GamePhase, boolean> = {
+	LOBBY: false,
+	GET_READY: true,
+	QUESTION_MODIFIER: true,
+	QUESTION: true,
+	REVEAL: true,
+	LEADERBOARD: true,
+	END: false,
+};
+
+const phaseAllowsManualAdvance: Record<GamePhase, boolean> = {
+	LOBBY: false,
+	GET_READY: false,
+	QUESTION_MODIFIER: false,
+	QUESTION: false,
+	REVEAL: true,
+	LEADERBOARD: true,
+	END: false,
+};
+
+const getMusicTrackForPhase = (phase: GamePhase): MusicTrack | null => {
+	return phaseToMusicTrack[phase];
+};
 
 export function HostPage() {
 	const { gameId } = useParams<{ gameId: string }>();
@@ -37,7 +71,7 @@ export function HostPage() {
 	const hasMissingSecret = !hostSecret;
 
 	const { playSound, playCountdownTick, initAudio, startBackgroundMusic, stopBackgroundMusic } = useHostSound();
-	const prevPhaseRef = useRef<string | null>(null);
+	const prevPhaseRef = useRef<GamePhase | null>(null);
 	const prevPlayersCountRef = useRef<number | null>(null);
 	const floatingEmojisRef = useRef<FloatingEmojisHandle>(null);
 
@@ -61,28 +95,6 @@ export function HostPage() {
 		}
 	}, [gameState.phase]);
 
-	// Helper to get the music track for current phase
-	const getMusicTrackForPhase = (phase: string) => {
-		switch (phase) {
-			case 'LOBBY':
-				return 'lobby' as const;
-			case 'GET_READY':
-				return 'getReady' as const;
-			case 'QUESTION_MODIFIER':
-				return 'questionModifier' as const;
-			case 'QUESTION':
-				return 'question' as const;
-			case 'REVEAL':
-				return 'reveal' as const;
-			case 'LEADERBOARD':
-				return 'leaderboard' as const;
-			case 'END':
-				return 'celebration' as const;
-			default:
-				return null;
-		}
-	};
-
 	// Initialize audio and start music for current phase
 	const handleAudioInit = () => {
 		initAudio();
@@ -93,7 +105,7 @@ export function HostPage() {
 	};
 
 	// Track if game is in an active phase
-	const isGameActive = isConnected && gameState.phase !== 'LOBBY' && gameState.phase !== 'END';
+	const isGameActive = isConnected && phaseIsActive[gameState.phase];
 
 	// Block navigation when game is active (not in LOBBY or END)
 	const blocker = useBlocker(isGameActive);
@@ -109,14 +121,7 @@ export function HostPage() {
 
 			// Only allow advancing when connected and in phases that have a manual Next button
 			if (!isConnected) return;
-			if (
-				gameState.phase === 'QUESTION' ||
-				gameState.phase === 'QUESTION_MODIFIER' ||
-				gameState.phase === 'LOBBY' ||
-				gameState.phase === 'GET_READY' ||
-				gameState.phase === 'END'
-			)
-				return;
+			if (!phaseAllowsManualAdvance[gameState.phase]) return;
 
 			// Prevent default scrolling behavior for these keys
 			event.preventDefault();
@@ -136,32 +141,16 @@ export function HostPage() {
 
 		if (prevPhase !== currentPhase) {
 			// Handle background music for different phases
-			switch (currentPhase) {
-				case 'LOBBY':
-					startBackgroundMusic('lobby');
-					break;
-				case 'GET_READY':
-					startBackgroundMusic('getReady');
-					break;
-				case 'QUESTION_MODIFIER':
-					startBackgroundMusic('questionModifier');
-					break;
-				case 'QUESTION':
-					startBackgroundMusic('question');
-					break;
-				case 'REVEAL':
-					startBackgroundMusic('reveal');
-					break;
-				case 'LEADERBOARD':
-					startBackgroundMusic('leaderboard');
-					break;
-				case 'END':
-					startBackgroundMusic('celebration');
-					break;
+			const track = phaseToMusicTrack[currentPhase];
+			if (track) {
+				startBackgroundMusic(track);
 			}
 
 			// Play sound effects
 			switch (currentPhase) {
+				case 'LOBBY':
+					// No specific sound when entering lobby from another phase
+					break;
 				case 'GET_READY':
 					playSound('gameStart');
 					break;
@@ -186,6 +175,10 @@ export function HostPage() {
 				case 'END':
 					playSound('gameEnd');
 					break;
+				default: {
+					const _exhaustiveCheck: never = currentPhase;
+					return _exhaustiveCheck;
+				}
 			}
 			prevPhaseRef.current = currentPhase;
 		}

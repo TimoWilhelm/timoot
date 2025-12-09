@@ -43,7 +43,7 @@ export type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
  * Human-readable messages for each error code.
  * These are for display purposes only - always match on the code, not the message.
  */
-export const ErrorMessages: Record<ErrorCodeType, string> = {
+const ErrorMessages: Record<ErrorCodeType, string> = {
 	[ErrorCode.GAME_NOT_FOUND]: 'Game not found',
 	[ErrorCode.GAME_ALREADY_STARTED]: 'Game has already started',
 	[ErrorCode.GAME_NOT_IN_LOBBY]: 'Cannot join - game not in lobby',

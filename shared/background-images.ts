@@ -29,7 +29,7 @@ export const DEFAULT_BACKGROUND_IMAGES: BackgroundImage[] = [
 /**
  * Get a background image by its ID
  */
-export function getBackgroundImageById(id: string): BackgroundImage | undefined {
+function getBackgroundImageById(id: string): BackgroundImage | undefined {
 	return DEFAULT_BACKGROUND_IMAGES.find((img) => img.id === id);
 }
 

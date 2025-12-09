@@ -38,7 +38,7 @@ export const nicknameSchema = z
 /**
  * Quiz title validation
  */
-export const quizTitleSchema = z
+const quizTitleSchema = z
 	.string()
 	.trim()
 	.min(LIMITS.QUIZ_TITLE_MIN, 'Quiz title is required')
@@ -47,7 +47,7 @@ export const quizTitleSchema = z
 /**
  * Question text validation
  */
-export const questionTextSchema = z
+const questionTextSchema = z
 	.string()
 	.trim()
 	.min(LIMITS.QUESTION_TEXT_MIN, 'Question text is required')
@@ -56,7 +56,7 @@ export const questionTextSchema = z
 /**
  * Option text validation
  */
-export const optionTextSchema = z
+const optionTextSchema = z
 	.string()
 	.trim()
 	.min(LIMITS.OPTION_TEXT_MIN, 'Option text is required')
@@ -83,7 +83,7 @@ export const imagePromptSchema = z
 /**
  * Number of questions for AI generation
  */
-export const aiNumQuestionsSchema = z
+const aiNumQuestionsSchema = z
 	.number()
 	.int()
 	.min(LIMITS.AI_NUM_QUESTIONS_MIN, `Must generate at least ${LIMITS.AI_NUM_QUESTIONS_MIN} question`)
@@ -94,7 +94,7 @@ export const aiNumQuestionsSchema = z
 /**
  * Single question schema (used in quiz editor form)
  */
-export const questionSchema = z.object({
+const questionSchema = z.object({
 	text: questionTextSchema,
 	options: z
 		.array(optionTextSchema)
@@ -108,7 +108,7 @@ export const questionSchema = z.object({
 /**
  * Question schema for form input (correctAnswerIndex as string for radio buttons)
  */
-export const questionFormSchema = z.object({
+const questionFormSchema = z.object({
 	text: questionTextSchema,
 	options: z
 		.array(optionTextSchema)
@@ -153,7 +153,7 @@ export const aiGenerateRequestSchema = z.object({
 /**
  * Player join request schema (for HTTP API)
  */
-export const playerJoinRequestSchema = z.object({
+const playerJoinRequestSchema = z.object({
 	name: nicknameSchema,
 	playerId: z.string().uuid('Invalid player ID'),
 });
@@ -161,7 +161,7 @@ export const playerJoinRequestSchema = z.object({
 /**
  * Submit answer request schema
  */
-export const submitAnswerRequestSchema = z.object({
+const submitAnswerRequestSchema = z.object({
 	playerId: z.string().uuid('Invalid player ID'),
 	answerIndex: z
 		.number()
@@ -173,7 +173,7 @@ export const submitAnswerRequestSchema = z.object({
 /**
  * Host authentication schema
  */
-export const hostAuthRequestSchema = z.object({
+const hostAuthRequestSchema = z.object({
 	hostSecret: z.uuid('Invalid host secret'),
 });
 
@@ -186,14 +186,14 @@ export const createGameRequestSchema = z.object({
 
 // ============ WebSocket Message Schemas ============
 
-export const wsConnectHostSchema = z.object({
+const wsConnectHostSchema = z.object({
 	type: z.literal('connect'),
 	role: z.literal('host'),
 	gameId: z.string().min(1),
 	hostSecret: z.uuid(),
 });
 
-export const wsConnectPlayerSchema = z.object({
+const wsConnectPlayerSchema = z.object({
 	type: z.literal('connect'),
 	role: z.literal('player'),
 	gameId: z.string().min(1),
@@ -204,14 +204,14 @@ export const wsConnectPlayerSchema = z.object({
 
 // Use union for connect messages since they share the same 'type' discriminator
 // The 'role' field differentiates between host and player
-export const wsConnectSchema = z.union([wsConnectHostSchema, wsConnectPlayerSchema]);
+const wsConnectSchema = z.union([wsConnectHostSchema, wsConnectPlayerSchema]);
 
-export const wsJoinSchema = z.object({
+const wsJoinSchema = z.object({
 	type: z.literal('join'),
 	nickname: nicknameSchema,
 });
 
-export const wsSubmitAnswerSchema = z.object({
+const wsSubmitAnswerSchema = z.object({
 	type: z.literal('submitAnswer'),
 	answerIndex: z
 		.number()
@@ -220,10 +220,10 @@ export const wsSubmitAnswerSchema = z.object({
 		.max(LIMITS.OPTIONS_MAX - 1),
 });
 
-export const wsStartGameSchema = z.object({ type: z.literal('startGame') });
-export const wsNextStateSchema = z.object({ type: z.literal('nextState') });
+const wsStartGameSchema = z.object({ type: z.literal('startGame') });
+const wsNextStateSchema = z.object({ type: z.literal('nextState') });
 
-export const wsSendEmojiSchema = z.object({
+const wsSendEmojiSchema = z.object({
 	type: z.literal('sendEmoji'),
 	emoji: z.enum(EMOJI_REACTIONS),
 });
@@ -240,11 +240,11 @@ export const wsClientMessageSchema = z.union([
 
 // ============ Type Exports ============
 
-export type NicknameInput = z.input<typeof nicknameSchema>;
+type NicknameInput = z.input<typeof nicknameSchema>;
 export type QuizFormInput = z.input<typeof quizFormSchema>;
-export type QuizInput = z.input<typeof quizSchema>;
-export type QuestionInput = z.input<typeof questionSchema>;
-export type AIGenerateRequest = z.input<typeof aiGenerateRequestSchema>;
-export type PlayerJoinRequest = z.input<typeof playerJoinRequestSchema>;
-export type SubmitAnswerRequest = z.input<typeof submitAnswerRequestSchema>;
-export type WSClientMessage = z.input<typeof wsClientMessageSchema>;
+type QuizInput = z.input<typeof quizSchema>;
+type QuestionInput = z.input<typeof questionSchema>;
+type AIGenerateRequest = z.input<typeof aiGenerateRequestSchema>;
+type PlayerJoinRequest = z.input<typeof playerJoinRequestSchema>;
+type SubmitAnswerRequest = z.input<typeof submitAnswerRequestSchema>;
+type WSClientMessage = z.input<typeof wsClientMessageSchema>;

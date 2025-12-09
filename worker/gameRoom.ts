@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { GameState, Question, Player, Answer, ClientMessage, ServerMessage, ClientRole, EmojiReaction } from '@shared/types';
+import { phaseAllowsEmoji } from '@shared/phaseRules';
 import { z } from 'zod';
 import { wsClientMessageSchema, nicknameSchema, LIMITS } from '@shared/validation';
 import { ErrorCode, createError } from '@shared/errors';
@@ -418,10 +419,8 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 		const state = await this.getFullGameState();
 		if (!state) return;
-
-		// Only allow emojis outside of QUESTION phase
-		if (state.phase === 'QUESTION') {
-			return; // Silently ignore during question phase
+		if (!phaseAllowsEmoji[state.phase]) {
+			return;
 		}
 
 		// Broadcast emoji to host only
@@ -480,8 +479,16 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 					await this.ctx.storage.setAlarm(Date.now() + CLEANUP_DELAY_MS);
 				}
 				break;
-			default:
+			case 'LOBBY':
+			case 'GET_READY':
+			case 'QUESTION_MODIFIER':
+			case 'END':
+				break;
+			default: {
+				const _exhaustiveCheck: never = state.phase;
 				this.sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_STATE_TRANSITION) });
+				return _exhaustiveCheck;
+			}
 		}
 	}
 
@@ -585,6 +592,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			case 'END':
 				this.sendMessage(ws, buildGameEndMessage(state));
 				break;
+			default: {
+				const _exhaustiveCheck: never = state.phase;
+				return _exhaustiveCheck;
+			}
 		}
 	}
 

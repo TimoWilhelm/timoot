@@ -23,8 +23,20 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import type { GamePhase } from '@shared/types';
+import { phaseAllowsEmoji } from '@shared/phaseRules';
 
 type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
+
+const phaseIsActiveForPlayer: Record<GamePhase, boolean> = {
+	LOBBY: false,
+	GET_READY: true,
+	QUESTION_MODIFIER: true,
+	QUESTION: true,
+	REVEAL: true,
+	LEADERBOARD: true,
+	END: false,
+};
 
 export function PlayerPage() {
 	const navigate = useNavigate();
@@ -179,7 +191,7 @@ export function PlayerPage() {
 	}, [gameState.phase, gameState.questionIndex]);
 
 	// Block navigation when game is active (not in LOBBY or END)
-	const isGameActive = view === 'GAME' && isConnected && gameState.phase !== 'LOBBY' && gameState.phase !== 'END';
+	const isGameActive = view === 'GAME' && isConnected && phaseIsActiveForPlayer[gameState.phase];
 	const blocker = useBlocker(isGameActive);
 
 	// Warn before browser/tab close when game is active
@@ -352,9 +364,8 @@ export function PlayerPage() {
 				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
 			</main>
 
-			{/* Emoji picker - fixed at bottom, doesn't affect layout */}
 			<AnimatePresence>
-				{gameState.phase !== 'QUESTION' && (
+				{phaseAllowsEmoji[gameState.phase] && (
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}

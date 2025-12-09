@@ -15,13 +15,13 @@ import { stripIndent } from 'common-tags';
 import { z } from 'zod/v4';
 import { env, waitUntil } from 'cloudflare:workers';
 
-export const getCloudflareDocsMCP: () => Promise<MCPClient> = async () => {
+const getCloudflareDocsMCP: () => Promise<MCPClient> = async () => {
 	return await createMCPClient({
 		transport: new StreamableHTTPClientTransport(new URL('https://docs.mcp.cloudflare.com/mcp')),
 	});
 };
 
-export const webSearchMCP: () => Promise<MCPClient> = async () => {
+const webSearchMCP: () => Promise<MCPClient> = async () => {
 	return await createMCPClient({
 		transport: new StreamableHTTPClientTransport(new URL('https://mcp.exa.ai/mcp')),
 	});
