@@ -32,4 +32,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 ));
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardHeader,  CardTitle,  CardContent };
+export { Card, CardHeader, CardTitle, CardContent };

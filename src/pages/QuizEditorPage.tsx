@@ -501,10 +501,17 @@ export function QuizEditorPage() {
 
 														{/* AI Image Generation */}
 														<div className="space-y-2">
-															<h4 className="flex items-center gap-1.5 text-sm font-semibold">
-																<Sparkles className="h-4 w-4 text-quiz-orange" />
-																Generate with AI
-															</h4>
+															<div className="flex items-center justify-between">
+																<h4 className="flex items-center gap-1.5 text-sm font-semibold">
+																	<Sparkles className="h-4 w-4 text-quiz-orange" />
+																	Generate with AI
+																</h4>
+																<span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+																	Powered by
+																	<img src="/icons/blackforestlabs.svg" alt="Black Forest Labs" className="h-3 w-3" />
+																	FLUX.2 [dev]
+																</span>
+															</div>
 															<div className="flex gap-2">
 																<div className="relative flex-1">
 																	<Input
