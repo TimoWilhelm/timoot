@@ -6,6 +6,7 @@ import { wsClientMessageSchema, nicknameSchema, LIMITS } from '@shared/validatio
 import { ErrorCode, createError } from '@shared/errors';
 import {
 	QUESTION_TIME_LIMIT_MS,
+	ALL_ANSWERED_DELAY_MS,
 	CLEANUP_DELAY_MS,
 	GET_READY_COUNTDOWN_MS,
 	QUESTION_MODIFIER_DURATION_MS,
@@ -217,6 +218,12 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			return;
 		}
 
+		// Handle QUESTION -> REVEAL transition (when all players answered or time expired)
+		if (state?.phase === 'QUESTION' && state.answers.length === state.players.length) {
+			await this.advanceToReveal(state);
+			return;
+		}
+
 		// Only cleanup if no active connections or game has ended
 		if (sockets.length === 0 || state?.phase === 'END') {
 			console.log(`Cleaning up game room: ${state?.id || 'unknown'}`);
@@ -405,9 +412,12 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			totalPlayers: state.players.length,
 		});
 
-		// Auto-advance to reveal if all players answered
+		// Auto-advance to reveal if all players answered (after a short delay)
 		if (state.answers.length === state.players.length) {
-			await this.advanceToReveal(state);
+			const elapsed = Date.now() - state.questionStartTime;
+			const remainingTime = QUESTION_TIME_LIMIT_MS - elapsed;
+			const delay = Math.min(ALL_ANSWERED_DELAY_MS, Math.max(0, remainingTime));
+			await this.ctx.storage.setAlarm(Date.now() + delay);
 		}
 	}
 
