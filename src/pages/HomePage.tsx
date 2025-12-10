@@ -527,6 +527,9 @@ export function HomePage() {
 							<Sparkles className="h-6 w-6 text-quiz-orange" />
 							{selectedQuiz?.title}
 						</DialogTitle>
+						<DialogDescription>
+							Ready to start the game?
+						</DialogDescription>
 					</DialogHeader>
 					<div className="py-4">
 						<div className="space-y-3 rounded-xl bg-slate-50 p-4">

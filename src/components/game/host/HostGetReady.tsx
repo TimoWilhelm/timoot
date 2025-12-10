@@ -114,7 +114,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 									transition={{ type: 'spring', stiffness: 400, damping: 20 }}
 									className="text-7xl font-bold text-white sm:text-8xl"
 								>
-									{countdown}
+									{countdown - 1}
 								</motion.span>
 							</AnimatePresence>
 						</div>
