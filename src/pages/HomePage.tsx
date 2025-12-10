@@ -373,8 +373,34 @@ export function HomePage() {
 											</Card>
 										</motion.div>
 									))}
-									{/* AI Generating Card */}
-									{isGenerating && (
+									{/* Create New Quiz Card */}
+									<motion.div
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: (customQuizzes.length + 1) * 0.08 }}
+									>
+										<Card
+											onClick={() => navigate('/edit')}
+											className="group h-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400 hover:shadow-xl"
+										>
+											<CardHeader className="pb-3">
+												<div className="flex items-start justify-between">
+													<CardTitle className="text-xl text-slate-500 transition-colors group-hover:text-blue-600">
+														Create New Quiz
+													</CardTitle>
+													<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 transition-colors group-hover:bg-blue-100">
+														<PlusCircle className="h-5 w-5 text-slate-400 transition-colors group-hover:text-blue-500" />
+													</div>
+												</div>
+											</CardHeader>
+											<CardContent className="pt-0">
+												<p className="text-sm text-muted-foreground">Build your own quiz from scratch</p>
+											</CardContent>
+										</Card>
+									</motion.div>
+
+									{/* Generate with AI Card / AI Generating Card */}
+									{isGenerating ? (
 										<motion.div
 											ref={generatingCardRef}
 											key="generating"
@@ -410,96 +436,69 @@ export function HomePage() {
 												</CardContent>
 											</Card>
 										</motion.div>
-									)}
-
-									{/* Create New Quiz Card */}
-									<motion.div
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: (customQuizzes.length + 1) * 0.08 }}
-									>
-										<Card
-											onClick={() => navigate('/edit')}
-											className="group h-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400 hover:shadow-xl"
+									) : (
+										<motion.div
+											initial={{ opacity: 0, y: 20 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ delay: (customQuizzes.length + 2) * 0.08 }}
 										>
-											<CardHeader className="pb-3">
-												<div className="flex items-start justify-between">
-													<CardTitle className="text-xl text-slate-500 transition-colors group-hover:text-blue-600">
-														Create New Quiz
-													</CardTitle>
-													<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 transition-colors group-hover:bg-blue-100">
-														<PlusCircle className="h-5 w-5 text-slate-400 transition-colors group-hover:text-blue-500" />
-													</div>
-												</div>
-											</CardHeader>
-											<CardContent className="pt-0">
-												<p className="text-sm text-muted-foreground">Build your own quiz from scratch</p>
-											</CardContent>
-										</Card>
-									</motion.div>
-
-									{/* Generate with AI Card */}
-									<motion.div
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: (customQuizzes.length + 2) * 0.08 }}
-									>
-										<Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
-											<DialogTrigger asChild>
-												<Card className="group h-full cursor-pointer rounded-2xl border-2 border-dashed border-quiz-orange/40 bg-gradient-to-br from-quiz-orange/5 to-quiz-gold/5 transition-all duration-300 hover:-translate-y-1 hover:border-quiz-orange hover:shadow-xl hover:shadow-quiz-orange/10">
-													<CardHeader className="pb-3">
-														<div className="flex items-start justify-between">
-															<CardTitle className="text-xl text-quiz-orange">Generate with AI</CardTitle>
-															<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-quiz-orange/10 transition-colors group-hover:bg-quiz-orange/20">
-																<Wand2 className="h-5 w-5 text-quiz-orange" />
+											<Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+												<DialogTrigger asChild>
+													<Card className="group h-full cursor-pointer rounded-2xl border-2 border-dashed border-quiz-orange/40 bg-gradient-to-br from-quiz-orange/5 to-quiz-gold/5 transition-all duration-300 hover:-translate-y-1 hover:border-quiz-orange hover:shadow-xl hover:shadow-quiz-orange/10">
+														<CardHeader className="pb-3">
+															<div className="flex items-start justify-between">
+																<CardTitle className="text-xl text-quiz-orange">Generate with AI</CardTitle>
+																<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-quiz-orange/10 transition-colors group-hover:bg-quiz-orange/20">
+																	<Wand2 className="h-5 w-5 text-quiz-orange" />
+																</div>
 															</div>
+														</CardHeader>
+														<CardContent className="pt-0">
+															<p className="text-sm text-muted-foreground">Let AI create questions for any topic</p>
+														</CardContent>
+													</Card>
+												</DialogTrigger>
+												<DialogContent className="sm:max-w-[425px]">
+													<DialogHeader>
+														<DialogTitle className="flex items-center gap-2">
+															<Wand2 className="h-5 w-5 text-quiz-orange" />
+															Generate Quiz with AI
+														</DialogTitle>
+														<DialogDescription>
+															Describe the topic or theme for your quiz and AI will create engaging questions for you.
+														</DialogDescription>
+													</DialogHeader>
+													<div className="grid gap-4 py-4">
+														<div className="grid gap-2">
+															<Label htmlFor="ai-prompt">Topic or Prompt</Label>
+															<Input
+																id="ai-prompt"
+																placeholder="JavaScript basics, Famous artists, Holiday movies..."
+																value={aiPrompt}
+																onChange={(e) => setAiPrompt(e.target.value)}
+																onKeyDown={(e) => e.key === 'Enter' && handleGenerateAiQuiz()}
+																className="col-span-3"
+																maxLength={LIMITS.AI_PROMPT_MAX}
+															/>
+															<p className="mt-1 text-xs text-muted-foreground">
+																{aiPrompt.length}/{LIMITS.AI_PROMPT_MAX} characters
+															</p>
 														</div>
-													</CardHeader>
-													<CardContent className="pt-0">
-														<p className="text-sm text-muted-foreground">Let AI create questions for any topic</p>
-													</CardContent>
-												</Card>
-											</DialogTrigger>
-											<DialogContent className="sm:max-w-[425px]">
-												<DialogHeader>
-													<DialogTitle className="flex items-center gap-2">
-														<Wand2 className="h-5 w-5 text-quiz-orange" />
-														Generate Quiz with AI
-													</DialogTitle>
-													<DialogDescription>
-														Describe the topic or theme for your quiz and AI will create engaging questions for you.
-													</DialogDescription>
-												</DialogHeader>
-												<div className="grid gap-4 py-4">
-													<div className="grid gap-2">
-														<Label htmlFor="ai-prompt">Topic or Prompt</Label>
-														<Input
-															id="ai-prompt"
-															placeholder="JavaScript basics, Famous artists, Holiday movies..."
-															value={aiPrompt}
-															onChange={(e) => setAiPrompt(e.target.value)}
-															onKeyDown={(e) => e.key === 'Enter' && handleGenerateAiQuiz()}
-															className="col-span-3"
-															maxLength={LIMITS.AI_PROMPT_MAX}
-														/>
-														<p className="mt-1 text-xs text-muted-foreground">
-															{aiPrompt.length}/{LIMITS.AI_PROMPT_MAX} characters
-														</p>
 													</div>
-												</div>
-												<DialogFooter>
-													<Button
-														onClick={handleGenerateAiQuiz}
-														disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN}
-														className="bg-quiz-orange hover:bg-quiz-orange/90"
-													>
-														<Wand2 className="mr-2 h-4 w-4" />
-														Generate Quiz
-													</Button>
-												</DialogFooter>
-											</DialogContent>
-										</Dialog>
-									</motion.div>
+													<DialogFooter>
+														<Button
+															onClick={handleGenerateAiQuiz}
+															disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN}
+															className="bg-quiz-orange hover:bg-quiz-orange/90"
+														>
+															<Wand2 className="mr-2 h-4 w-4" />
+															Generate Quiz
+														</Button>
+													</DialogFooter>
+												</DialogContent>
+											</Dialog>
+										</motion.div>
+									)}
 								</div>
 							</section>
 						</div>
