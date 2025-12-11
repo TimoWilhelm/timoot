@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shapes';
@@ -179,6 +179,14 @@ export function HostQuestion({
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
 	const [imageError, setImageError] = useState(false);
 
+	// Use refs for callbacks to prevent effect restart on parent re-renders
+	const onNextRef = useRef(onNext);
+	const onCountdownTickRef = useRef(onCountdownTick);
+	const onTimeUpRef = useRef(onTimeUp);
+	onNextRef.current = onNext;
+	onCountdownTickRef.current = onCountdownTick;
+	onTimeUpRef.current = onTimeUp;
+
 	// Reset image error state when backgroundImage changes
 	useEffect(() => {
 		setImageError(false);
@@ -194,18 +202,18 @@ export function HostQuestion({
 
 			// Play countdown tick sounds (once per second change)
 			if (remaining !== lastTickedSecond && remaining <= 5 && remaining > 0) {
-				onCountdownTick?.(remaining);
+				onCountdownTickRef.current?.(remaining);
 				lastTickedSecond = remaining;
 			}
 
 			if (elapsedMs >= timeLimitMs) {
 				clearInterval(timer);
-				onTimeUp?.();
-				onNext();
+				onTimeUpRef.current?.();
+				onNextRef.current();
 			}
 		}, 100);
 		return () => clearInterval(timer);
-	}, [startTime, timeLimitSec, timeLimitMs, onNext, onCountdownTick, onTimeUp]);
+	}, [startTime, timeLimitSec, timeLimitMs]);
 
 	return (
 		<div className="flex h-full max-h-screen flex-grow flex-col overflow-hidden p-4 sm:p-8">

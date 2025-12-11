@@ -140,6 +140,26 @@ export default {
 				glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
 			},
 			keyframes: {
+				'pulse-ring': {
+					'0%': {
+						transform: 'scale(1)',
+						opacity: '0.6',
+					},
+					'100%': {
+						transform: 'scale(1.3)',
+						opacity: '0',
+					},
+				},
+				'pulse-ring-outer': {
+					'0%': {
+						transform: 'scale(1)',
+						opacity: '0.4',
+					},
+					'100%': {
+						transform: 'scale(1.5)',
+						opacity: '0',
+					},
+				},
 				'fade-in': {
 					'0%': {
 						opacity: '0',

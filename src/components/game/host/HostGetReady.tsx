@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Clock, Trophy } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shapes';
@@ -11,21 +11,27 @@ interface HostGetReadyProps {
 
 export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: HostGetReadyProps) {
 	const [countdown, setCountdown] = useState(Math.ceil(countdownMs / 1000));
+	const onCountdownBeepRef = useRef(onCountdownBeep);
+	onCountdownBeepRef.current = onCountdownBeep;
 
 	useEffect(() => {
-		if (countdown <= 0) {
-			return;
-		}
+		// Play initial beep
+		onCountdownBeepRef.current?.();
 
-		// Play beep sound for countdown
-		onCountdownBeep?.();
-
-		const timer = setTimeout(() => {
-			setCountdown((c) => c - 1);
+		const interval = setInterval(() => {
+			setCountdown((c) => {
+				if (c <= 1) {
+					clearInterval(interval);
+					return 0;
+				}
+				// Play beep sound for countdown
+				onCountdownBeepRef.current?.();
+				return c - 1;
+			});
 		}, 1000);
 
-		return () => clearTimeout(timer);
-	}, [countdown, onCountdownBeep]);
+		return () => clearInterval(interval);
+	}, []);
 
 	return (
 		<div className="flex flex-grow flex-col items-center justify-center p-6 text-foreground sm:p-10">
@@ -91,16 +97,14 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 				{/* Countdown circle */}
 				<div className="my-12">
 					<motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.3 }} className="relative">
-						{/* Pulse rings */}
-						<motion.div
-							className="absolute inset-0 rounded-full border-4 border-quiz-orange"
-							animate={{ scale: [1, 1.3], opacity: [0.6, 0] }}
-							transition={{ duration: 1, repeat: Infinity }}
+						{/* Pulse rings - using CSS animations to prevent flickering on re-render */}
+						<div
+							className="absolute inset-0 animate-[pulse-ring_1s_ease-out_infinite] rounded-full border-4 border-quiz-orange"
+							style={{ animationFillMode: 'forwards' }}
 						/>
-						<motion.div
-							className="absolute inset-0 rounded-full border-4 border-quiz-orange"
-							animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
-							transition={{ duration: 1, repeat: Infinity, delay: 0.3 }}
+						<div
+							className="absolute inset-0 animate-[pulse-ring-outer_1s_ease-out_infinite_0.3s] rounded-full border-4 border-quiz-orange"
+							style={{ animationFillMode: 'forwards' }}
 						/>
 
 						{/* Main countdown circle */}
