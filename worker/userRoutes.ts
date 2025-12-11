@@ -36,6 +36,32 @@ interface AIImageListResponse {
 	nextCursor?: string;
 }
 
+// Sync code types
+interface SyncCodeData {
+	userId: string;
+	createdAt: string;
+}
+
+// Generate a short 6-character alphanumeric code (uppercase for readability)
+function generateSyncCode(): string {
+	const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed ambiguous: 0, O, I, 1
+	let code = '';
+	for (let i = 0; i < 6; i++) {
+		code += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+	return code;
+}
+
+// Helper to extract and validate user ID from request
+function getUserIdFromRequest(c: { req: { header: (name: string) => string | undefined } }): string {
+	const userId = c.req.header('X-User-Id');
+	if (!userId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+		// Return a default/fallback for invalid IDs (will create isolated storage)
+		return 'anonymous';
+	}
+	return userId;
+}
+
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
 	// Host WebSocket upgrade endpoint - requires token validation BEFORE connection
 	app.get('/api/games/:gameId/host-ws', async (c) => {
@@ -95,13 +121,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 		return c.json({ success: true, data: PREDEFINED_QUIZZES } satisfies ApiResponse<Quiz[]>);
 	});
 	app.get('/api/quizzes/custom', async (c) => {
-		const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+		const userId = getUserIdFromRequest(c);
+		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizzes();
+		// Update last activity (non-blocking)
+		waitUntil(quizStoreStub.touchLastAccess(userId));
 		return c.json({ success: true, data } satisfies ApiResponse<Quiz[]>);
 	});
 	app.get('/api/quizzes/custom/:id', async (c) => {
 		const { id } = c.req.param();
-		const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+		const userId = getUserIdFromRequest(c);
+		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizById(id);
 		if (!data) {
 			return c.json({ success: false, error: 'Quiz not found' }, 404);
@@ -114,8 +144,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 		if (!result.success) {
 			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
 		}
-		const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+		const userId = getUserIdFromRequest(c);
+		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.saveCustomQuiz(result.data);
+		// Update last activity (non-blocking)
+		waitUntil(quizStoreStub.touchLastAccess(userId));
 		return c.json({ success: true, data }, 201);
 	});
 	app.put('/api/quizzes/custom/:id', async (c) => {
@@ -128,17 +161,23 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 		if (id !== result.data.id) {
 			return c.json({ success: false, error: 'ID mismatch' }, 400);
 		}
-		const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+		const userId = getUserIdFromRequest(c);
+		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.saveCustomQuiz(result.data);
+		// Update last activity (non-blocking)
+		waitUntil(quizStoreStub.touchLastAccess(userId));
 		return c.json({ success: true, data });
 	});
 	app.delete('/api/quizzes/custom/:id', async (c) => {
 		const { id } = c.req.param();
-		const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+		const userId = getUserIdFromRequest(c);
+		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.deleteCustomQuiz(id);
 		if (!data.success) {
 			return c.json({ success: false, error: 'Quiz not found' }, 404);
 		}
+		// Update last activity (non-blocking)
+		waitUntil(quizStoreStub.touchLastAccess(userId));
 		return c.json({ success: true });
 	});
 	// AI Quiz Generation endpoint with SSE streaming for status updates
@@ -161,7 +200,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 				});
 
 				// Save the generated quiz as a custom quiz
-				const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+				const userId = getUserIdFromRequest(c);
+				const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 				const savedQuiz = await quizStoreStub.saveCustomQuiz({
 					title: generatedQuiz.title,
 					questions: generatedQuiz.questions,
@@ -245,7 +285,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 		// Resolve questions from quiz ID
 		let questions = GENERAL_KNOWLEDGE_QUIZ;
 		if (result.data.quizId) {
-			const quizStoreStub = exports.QuizStoreDurableObject.getByName('global');
+			const userId = getUserIdFromRequest(c);
+			const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 			const customQuiz = await quizStoreStub.getCustomQuizById(result.data.quizId);
 			if (customQuiz) {
 				questions = customQuiz.questions;
@@ -288,7 +329,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 			// Augment prompt for quiz card background suitability
 			const augmentedPrompt = oneLine`
 				A beautiful, vibrant background image for a quiz card.
-				Style: Fun, suitable for text overlay, no text or letters.
+				Style: Fun, suitable for text overlay.
+				NEVER include text or letters in the image.
 				Theme: ${prompt}.
 			`;
 
@@ -322,7 +364,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
 			// Generate unique ID for the image
 			const imageId = crypto.randomUUID();
-			const imagePath = `/api/images/${imageId}`;
+			const kvUserId = getUserIdFromRequest(c);
+			const imagePath = `/api/images/${kvUserId}/${imageId}`;
 
 			// Decode base64 to binary
 			const binaryString = atob(image);
@@ -339,7 +382,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 				createdAt: new Date().toISOString(),
 			};
 
-			await c.env.KV_IMAGES.put(`image:${imageId}`, bytes, {
+			await c.env.KV_IMAGES.put(`user:${kvUserId}:image:${imageId}`, bytes, {
 				metadata,
 			});
 
@@ -360,9 +403,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 	});
 
 	// Get AI-generated image by ID (serve from cache or KV)
-	app.get('/api/images/:imageId', async (c) => {
-		const { imageId } = c.req.param();
-		const cacheKey = new Request(c.req.url, { method: 'GET' });
+	app.get('/api/images/:userId/:imageId', async (c) => {
+		const { userId: kvUserId, imageId } = c.req.param();
+		const cacheKey = new Request(`${c.req.url}?userId=${kvUserId}`, { method: 'GET' });
 		const cache: Cache = caches.default;
 
 		try {
@@ -372,12 +415,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 				return cachedResponse;
 			}
 
-			// Cache miss - fetch from KV
-			const imageData = await c.env.KV_IMAGES.get(`image:${imageId}`, { type: 'arrayBuffer' });
+			// Cache miss - fetch from KV (with metadata to refresh TTL)
+			const kvKey = `user:${kvUserId}:image:${imageId}`;
+			const kvResult = await c.env.KV_IMAGES.getWithMetadata<AIImageMetadata>(kvKey, { type: 'arrayBuffer' });
 
-			if (!imageData) {
+			if (!kvResult.value) {
 				return c.json({ success: false, error: 'Image not found' }, 404);
 			}
+
+			const imageData = kvResult.value;
 
 			const response = new Response(imageData, {
 				headers: {
@@ -399,20 +445,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 	// List all AI-generated images with pagination
 	app.get('/api/images', async (c) => {
 		try {
+			const kvUserId = getUserIdFromRequest(c);
 			const cursor = c.req.query('cursor');
 			const listResult = await c.env.KV_IMAGES.list({
-				prefix: 'image:',
+				prefix: `user:${kvUserId}:image:`,
 				limit: 10,
 				cursor: cursor || undefined,
 			});
 
 			const images: AIImageListItem[] = listResult.keys.map((key: { name: string; metadata?: unknown }) => {
 				const metadata = key.metadata as AIImageMetadata | undefined;
-				const id = metadata?.id || key.name.replace('image:', '');
+				const id = metadata?.id || key.name.replace(/^user:[^:]+:image:/, '');
 				return {
 					id,
 					name: metadata?.name || 'AI Generated',
-					path: `/api/images/${id}`,
+					path: `/api/images/${kvUserId}/${id}`,
 					prompt: metadata?.prompt,
 					createdAt: metadata?.createdAt,
 				};
@@ -437,22 +484,101 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 	});
 
 	// Delete AI-generated image by ID
-	app.delete('/api/images/:imageId', async (c) => {
-		const { imageId } = c.req.param();
+	app.delete('/api/images/:userId/:imageId', async (c) => {
+		const { userId: kvUserId, imageId } = c.req.param();
 
 		try {
 			// Check if image exists
-			const existing = await c.env.KV_IMAGES.get(`image:${imageId}`);
+			const existing = await c.env.KV_IMAGES.get(`user:${kvUserId}:image:${imageId}`);
 			if (!existing) {
 				return c.json({ success: false, error: 'Image not found' } satisfies ApiResponse, 404);
 			}
 
-			await c.env.KV_IMAGES.delete(`image:${imageId}`);
+			await c.env.KV_IMAGES.delete(`user:${kvUserId}:image:${imageId}`);
 
 			return c.json({ success: true, data: { id: imageId } } satisfies ApiResponse<{ id: string }>);
 		} catch (error) {
 			console.error('[Image Delete Error]', error);
 			return c.json({ success: false, error: 'Failed to delete image' } satisfies ApiResponse, 500);
+		}
+	});
+
+	// ============ Sync Code Endpoints ============
+
+	// Generate a sync code for the current user
+	app.post('/api/sync/generate', async (c) => {
+		const userId = getUserIdFromRequest(c);
+		if (userId === 'anonymous') {
+			return c.json({ success: false, error: 'Valid user ID required' } satisfies ApiResponse, 400);
+		}
+
+		try {
+			// Generate a unique sync code (retry if collision)
+			let code: string;
+			let attempts = 0;
+			do {
+				code = generateSyncCode();
+				const existing = await c.env.KV_SYNC.get(`sync:${code}`);
+				if (!existing) break;
+				attempts++;
+			} while (attempts < 5);
+
+			if (attempts >= 5) {
+				return c.json({ success: false, error: 'Failed to generate unique code' } satisfies ApiResponse, 500);
+			}
+
+			const syncData: SyncCodeData = {
+				userId,
+				createdAt: new Date().toISOString(),
+			};
+
+			// Store with 15 minute expiration
+			await c.env.KV_SYNC.put(`sync:${code}`, JSON.stringify(syncData), {
+				expirationTtl: 15 * 60, // 15 minutes
+			});
+
+			return c.json({
+				success: true,
+				data: { code, expiresIn: 15 * 60 },
+			} satisfies ApiResponse<{ code: string; expiresIn: number }>);
+		} catch (error) {
+			console.error('[Sync Code Generation Error]', error);
+			return c.json({ success: false, error: 'Failed to generate sync code' } satisfies ApiResponse, 500);
+		}
+	});
+
+	// Redeem a sync code to get the associated userId
+	app.post('/api/sync/redeem', async (c) => {
+		const schema = z.object({
+			code: z.string().length(6).toUpperCase(),
+		});
+
+		const body = await c.req.json();
+		const result = schema.safeParse(body);
+		if (!result.success) {
+			return c.json({ success: false, error: 'Invalid sync code format' } satisfies ApiResponse, 400);
+		}
+
+		const { code } = result.data;
+
+		try {
+			const syncDataStr = await c.env.KV_SYNC.get(`sync:${code}`);
+			if (!syncDataStr) {
+				return c.json({ success: false, error: 'Sync code not found or expired' } satisfies ApiResponse, 404);
+			}
+
+			const syncData = JSON.parse(syncDataStr) as SyncCodeData;
+
+			// Delete the code after use (one-time use)
+			await c.env.KV_SYNC.delete(`sync:${code}`);
+
+			return c.json({
+				success: true,
+				data: { userId: syncData.userId },
+			} satisfies ApiResponse<{ userId: string }>);
+		} catch (error) {
+			console.error('[Sync Code Redemption Error]', error);
+			return c.json({ success: false, error: 'Failed to redeem sync code' } satisfies ApiResponse, 500);
 		}
 	});
 }

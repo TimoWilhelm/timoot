@@ -1,11 +1,70 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Quiz } from '@shared/types';
 
+// 6 months in milliseconds for data expiration
+const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
 /**
- * QuizStoreDurableObject - Singleton DO for storing custom quizzes
- * Accessed via idFromName('global') for a single shared instance
+ * QuizStoreDurableObject - Per-user DO for storing custom quizzes
+ * Accessed via idFromName('user:{userId}') for user isolation
+ * Data expires after 6 months of inactivity
  */
 export class QuizStoreDurableObject extends DurableObject<Env> {
+	/**
+	 * Update last access timestamp and schedule cleanup alarm
+	 * Called on every user interaction to reset the 6-month expiration
+	 * @param userId - The user ID to store for KV cleanup
+	 */
+	async touchLastAccess(userId: string): Promise<void> {
+		await this.ctx.storage.put('last_access', Date.now());
+		await this.ctx.storage.put('user_id', userId);
+		// Schedule alarm for 6 months from now
+		await this.ctx.storage.setAlarm(Date.now() + SIX_MONTHS_MS);
+	}
+
+	/**
+	 * Alarm handler - cleans up all user data (quizzes + images) if no activity in 6 months
+	 */
+	async alarm(): Promise<void> {
+		const lastAccess = await this.ctx.storage.get<number>('last_access');
+		const now = Date.now();
+
+		// If no activity in 6 months, delete all data
+		if (!lastAccess || now - lastAccess >= SIX_MONTHS_MS) {
+			const userId = await this.ctx.storage.get<string>('user_id');
+			console.log(`[QuizStore] Cleaning up inactive user data for user: ${userId || 'unknown'}`);
+
+			// Clean up KV images for this user
+			if (userId) {
+				await this.cleanupUserImages(userId);
+			}
+
+			// Delete all DO storage (quizzes, last_access, user_id)
+			await this.ctx.storage.deleteAll();
+		} else {
+			// User was active, reschedule alarm for remaining time
+			const remainingTime = SIX_MONTHS_MS - (now - lastAccess);
+			await this.ctx.storage.setAlarm(now + remainingTime);
+		}
+	}
+
+	/**
+	 * Delete all KV images for a user
+	 */
+	private async cleanupUserImages(userId: string): Promise<void> {
+		const prefix = `user:${userId}:image:`;
+		let cursor: string | undefined;
+
+		do {
+			const listResult = await this.env.KV_IMAGES.list({ prefix, cursor });
+
+			// Delete all images in this batch
+			await Promise.all(listResult.keys.map((key) => this.env.KV_IMAGES.delete(key.name)));
+
+			cursor = listResult.list_complete ? undefined : listResult.cursor;
+		} while (cursor);
+	}
+
 	async getCustomQuizzes(): Promise<Quiz[]> {
 		return (await this.ctx.storage.get<Quiz[]>('custom_quizzes')) || [];
 	}

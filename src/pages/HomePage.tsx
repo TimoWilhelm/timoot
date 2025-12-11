@@ -1,6 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Loader2, Pencil, Trash2, PlusCircle, Wand2, BookOpen, HelpCircle, Zap, Gamepad2, Music } from 'lucide-react';
+import {
+	Sparkles,
+	Loader2,
+	Pencil,
+	Trash2,
+	PlusCircle,
+	Wand2,
+	BookOpen,
+	HelpCircle,
+	Zap,
+	Gamepad2,
+	Music,
+	RefreshCw,
+	Copy,
+	Check,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -24,6 +39,8 @@ import { aiPromptSchema, LIMITS } from '@shared/validation';
 import { motion } from 'framer-motion';
 import { useHostStore } from '@/lib/host-store';
 import { musicCredits } from '@shared/music-credits';
+import { apiFetch } from '@/lib/api';
+import { setUserId } from '@/lib/user-id';
 
 export function HomePage() {
 	const navigate = useNavigate();
@@ -40,13 +57,21 @@ export function HomePage() {
 	const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
 	const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
 	const [isMusicCreditsOpen, setIsMusicCreditsOpen] = useState(false);
+	const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
+	const [syncCode, setSyncCode] = useState<string | null>(null);
+	const [syncCodeExpiry, setSyncCodeExpiry] = useState<number | null>(null);
+	const [isGeneratingSyncCode, setIsGeneratingSyncCode] = useState(false);
+	const [syncCodeInput, setSyncCodeInput] = useState('');
+	const [isRedeemingSyncCode, setIsRedeemingSyncCode] = useState(false);
+	const [codeCopied, setCodeCopied] = useState(false);
+	const [showSyncWarning, setShowSyncWarning] = useState(false);
 	const addSecret = useHostStore((s) => s.addSecret);
 	const generatingCardRef = useRef<HTMLDivElement>(null);
 
 	const fetchQuizzes = async () => {
 		setIsLoading(true);
 		try {
-			const [predefinedRes, customRes] = await Promise.all([fetch('/api/quizzes'), fetch('/api/quizzes/custom')]);
+			const [predefinedRes, customRes] = await Promise.all([fetch('/api/quizzes'), apiFetch('/api/quizzes/custom')]);
 			const predefinedResult = (await predefinedRes.json()) as ApiResponse<Quiz[]>;
 			const customResult = (await customRes.json()) as ApiResponse<Quiz[]>;
 			if (predefinedResult.success && predefinedResult.data) {
@@ -72,7 +97,7 @@ export function HomePage() {
 		setIsGameStarting(true);
 		setStartingQuizId(quizId);
 		try {
-			const response = await fetch('/api/games', {
+			const response = await apiFetch('/api/games', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ quizId }),
@@ -103,7 +128,7 @@ export function HomePage() {
 	const handleDeleteQuiz = async () => {
 		if (!quizToDelete) return;
 		try {
-			const res = await fetch(`/api/quizzes/custom/${quizToDelete}`, { method: 'DELETE' });
+			const res = await apiFetch(`/api/quizzes/custom/${quizToDelete}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
 			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
@@ -111,6 +136,67 @@ export function HomePage() {
 			toast.error('Could not delete quiz.');
 		} finally {
 			setQuizToDelete(null);
+		}
+	};
+
+	const handleGenerateSyncCode = async () => {
+		setIsGeneratingSyncCode(true);
+		try {
+			const response = await apiFetch('/api/sync/generate', { method: 'POST' });
+			const result = (await response.json()) as ApiResponse<{ code: string; expiresIn: number }>;
+			if (result.success && result.data) {
+				setSyncCode(result.data.code);
+				setSyncCodeExpiry(Date.now() + result.data.expiresIn * 1000);
+			} else {
+				throw new Error(result.error || 'Failed to generate sync code');
+			}
+		} catch (error: any) {
+			toast.error(error.message || 'Failed to generate sync code');
+		} finally {
+			setIsGeneratingSyncCode(false);
+		}
+	};
+
+	const handleRedeemSyncCode = async (confirmed = false) => {
+		if (syncCodeInput.length !== 6) {
+			toast.error('Please enter a 6-character code');
+			return;
+		}
+		// Warn if user has existing custom quizzes
+		if (!confirmed && customQuizzes.length > 0) {
+			setShowSyncWarning(true);
+			return;
+		}
+		setShowSyncWarning(false);
+		setIsRedeemingSyncCode(true);
+		try {
+			const response = await apiFetch('/api/sync/redeem', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ code: syncCodeInput.toUpperCase() }),
+			});
+			const result = (await response.json()) as ApiResponse<{ userId: string }>;
+			if (result.success && result.data) {
+				setUserId(result.data.userId);
+				toast.success('Device synced! Refreshing...');
+				setIsSyncDialogOpen(false);
+				// Reload to fetch data with new userId
+				setTimeout(() => window.location.reload(), 500);
+			} else {
+				throw new Error(result.error || 'Invalid or expired sync code');
+			}
+		} catch (error: any) {
+			toast.error(error.message || 'Failed to redeem sync code');
+		} finally {
+			setIsRedeemingSyncCode(false);
+		}
+	};
+
+	const copyCodeToClipboard = () => {
+		if (syncCode) {
+			navigator.clipboard.writeText(syncCode);
+			setCodeCopied(true);
+			setTimeout(() => setCodeCopied(false), 2000);
 		}
 	};
 
@@ -150,7 +236,7 @@ export function HomePage() {
 		}, 100);
 
 		try {
-			const response = await fetch('/api/quizzes/generate', {
+			const response = await apiFetch('/api/quizzes/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ prompt, numQuestions: 5 }),
@@ -526,6 +612,17 @@ export function HomePage() {
 						<Music className="h-3 w-3" />
 						Music Credits
 					</button>
+					<button
+						onClick={() => {
+							setSyncCode(null);
+							setSyncCodeInput('');
+							setIsSyncDialogOpen(true);
+						}}
+						className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+					>
+						<RefreshCw className="h-3 w-3" />
+						Sync Devices
+					</button>
 				</div>
 			</footer>
 
@@ -593,6 +690,104 @@ export function HomePage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* Sync Devices Dialog */}
+			<Dialog open={isSyncDialogOpen} onOpenChange={setIsSyncDialogOpen}>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<RefreshCw className="h-5 w-5 text-quiz-orange" />
+							Sync Devices
+						</DialogTitle>
+						<DialogDescription>Access your quizzes and images on another device</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-6 py-4">
+						{/* Generate Code Section */}
+						<div className="space-y-3">
+							<h4 className="font-medium">Share from this device</h4>
+							{syncCode ? (
+								<div className="space-y-2">
+									<div className="flex items-center justify-center gap-2">
+										<code className="rounded-lg bg-slate-100 px-4 py-3 font-mono text-2xl font-bold tracking-widest">{syncCode}</code>
+										<Button variant="outline" size="icon" onClick={copyCodeToClipboard}>
+											{codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+										</Button>
+									</div>
+									<p className="text-center text-xs text-muted-foreground">
+										Expires in {Math.max(0, Math.ceil(((syncCodeExpiry || 0) - Date.now()) / 60000))} minutes
+									</p>
+								</div>
+							) : (
+								<Button onClick={handleGenerateSyncCode} disabled={isGeneratingSyncCode} className="w-full">
+									{isGeneratingSyncCode ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+									Generate Sync Code
+								</Button>
+							)}
+						</div>
+
+						<div className="relative">
+							<div className="absolute inset-0 flex items-center">
+								<span className="w-full border-t" />
+							</div>
+							<div className="relative flex justify-center text-xs uppercase">
+								<span className="bg-white px-2 text-muted-foreground">or</span>
+							</div>
+						</div>
+
+						{/* Redeem Code Section */}
+						<div className="space-y-3">
+							<h4 className="font-medium">Sync to this device</h4>
+							{showSyncWarning ? (
+								<div className="space-y-3">
+									<div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+										<p className="font-medium text-amber-800">
+											Warning: You have {customQuizzes.length} custom quiz{customQuizzes.length !== 1 ? 'es' : ''} on this device.
+										</p>
+										<p className="mt-1 text-amber-700">
+											Syncing will switch to a different account and you'll lose access to your current quizzes and images.
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<Button variant="outline" onClick={() => setShowSyncWarning(false)} className="flex-1">
+											Cancel
+										</Button>
+										<Button
+											onClick={() => handleRedeemSyncCode(true)}
+											disabled={isRedeemingSyncCode}
+											className="flex-1 bg-amber-500 hover:bg-amber-600"
+										>
+											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync Anyway'}
+										</Button>
+									</div>
+								</div>
+							) : (
+								<>
+									<div className="flex gap-2">
+										<Input
+											placeholder="Enter 6-digit code"
+											value={syncCodeInput}
+											onChange={(e) => setSyncCodeInput(e.target.value.toUpperCase().slice(0, 6))}
+											maxLength={6}
+											className="text-center font-mono text-lg tracking-widest"
+											onKeyDown={(e) => e.key === 'Enter' && handleRedeemSyncCode()}
+										/>
+										<Button
+											onClick={() => handleRedeemSyncCode()}
+											disabled={isRedeemingSyncCode || syncCodeInput.length !== 6}
+											className="bg-quiz-orange hover:bg-quiz-orange/90"
+										>
+											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync'}
+										</Button>
+									</div>
+									<p className="text-xs text-muted-foreground">
+										Enter a code from another device to access the same quizzes and images here.
+									</p>
+								</>
+							)}
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
 
 			{/* Music Credits Dialog */}
 			<Dialog open={isMusicCreditsOpen} onOpenChange={setIsMusicCreditsOpen}>

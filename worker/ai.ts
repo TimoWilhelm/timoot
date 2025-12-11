@@ -72,7 +72,7 @@ export type OnStatusUpdate = (status: GenerationStatus) => void;
  */
 export async function generateQuizFromPrompt(
 	prompt: string,
-	numQuestions: number = 5,
+	numQuestions: number = 4,
 	abortSignal: AbortSignal,
 	onStatusUpdate?: OnStatusUpdate,
 	metadata?: Record<string, string>,

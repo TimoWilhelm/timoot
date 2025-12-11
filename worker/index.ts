@@ -25,7 +25,9 @@ export interface ClientErrorReport {
 }
 const app = new Hono<{ Bindings: Env }>();
 
-app.use('*', logger());
+if (import.meta.env.DEV) {
+	app.use('*', logger());
+}
 
 // **DO NOT TOUCH THE CODE BELOW THIS LINE**
 app.use(

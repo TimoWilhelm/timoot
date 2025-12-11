@@ -39,6 +39,8 @@ import { quizFormSchema, LIMITS, type QuizFormInput } from '@shared/validation';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
+import { apiFetch } from '@/lib/api';
+import { getUserId } from '@/lib/user-id';
 
 type QuizFormData = {
 	title: string;
@@ -99,7 +101,7 @@ export function QuizEditorPage() {
 	useEffect(() => {
 		const fetchAiImages = async () => {
 			try {
-				const response = await fetch('/api/images');
+				const response = await apiFetch('/api/images');
 				const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
 				if (result.success && result.data) {
 					setAiImages(result.data.images);
@@ -116,7 +118,7 @@ export function QuizEditorPage() {
 		if (!aiImagesCursor || isLoadingMoreImages) return;
 		setIsLoadingMoreImages(true);
 		try {
-			const response = await fetch(`/api/images?cursor=${encodeURIComponent(aiImagesCursor)}`);
+			const response = await apiFetch(`/api/images?cursor=${encodeURIComponent(aiImagesCursor)}`);
 			const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
 			if (result.success && result.data) {
 				setAiImages((prev) => [...prev, ...result.data!.images]);
@@ -132,7 +134,7 @@ export function QuizEditorPage() {
 		if (quizId) {
 			const fetchQuiz = async () => {
 				try {
-					const response = await fetch(`/api/quizzes/custom/${quizId}`);
+					const response = await apiFetch(`/api/quizzes/custom/${quizId}`);
 					const result = (await response.json()) as ApiResponse<Quiz>;
 					if (result.success && result.data) {
 						const formData: QuizFormInput = {
@@ -174,7 +176,7 @@ export function QuizEditorPage() {
 			};
 			const url = quizId ? `/api/quizzes/custom/${quizId}` : '/api/quizzes/custom';
 			const method = quizId ? 'PUT' : 'POST';
-			const response = await fetch(url, {
+			const response = await apiFetch(url, {
 				method,
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ ...processedData, id: quizId }),
@@ -213,7 +215,7 @@ export function QuizEditorPage() {
 
 		setIsGeneratingQuestion(true);
 		try {
-			const response = await fetch('/api/quizzes/generate-question', {
+			const response = await apiFetch('/api/quizzes/generate-question', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -248,7 +250,7 @@ export function QuizEditorPage() {
 	const deleteImage = async (imageId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
 		try {
-			const response = await fetch(`/api/images/${imageId}`, { method: 'DELETE' });
+			const response = await apiFetch(`/api/images/${getUserId()}/${imageId}`, { method: 'DELETE' });
 			const result = (await response.json()) as ApiResponse<{ id: string }>;
 			if (!response.ok || !result.success) {
 				throw new Error(result.error || 'Failed to delete image');
@@ -268,7 +270,7 @@ export function QuizEditorPage() {
 
 		setIsGeneratingImage(true);
 		try {
-			const response = await fetch('/api/images/generate', {
+			const response = await apiFetch('/api/images/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ prompt: imagePrompt }),
