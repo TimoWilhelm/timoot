@@ -123,6 +123,10 @@ export function HostPage() {
 			if (!isConnected) return;
 			if (!phaseAllowsManualAdvance[gameState.phase]) return;
 
+			// Only allow advancing when a visible Next button is rendered and enabled
+			const nextButton = document.querySelector<HTMLButtonElement>('[data-host-next-button]');
+			if (!nextButton || nextButton.disabled) return;
+
 			// Prevent default scrolling behavior for these keys
 			event.preventDefault();
 			nextState();

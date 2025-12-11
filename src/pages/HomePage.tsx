@@ -509,13 +509,24 @@ export function HomePage() {
 			{/* Footer */}
 			<footer className="relative z-10 border-t border-slate-200/50 py-6 text-center text-muted-foreground/80">
 				<p className="text-sm">Built with ❤️ at Cloudflare</p>
-				<button
-					onClick={() => setIsMusicCreditsOpen(true)}
-					className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
-				>
-					<Music className="h-3 w-3" />
-					Music Credits
-				</button>
+				<div className="mt-2 flex items-center justify-center gap-4">
+					<a
+						href="https://github.com/TimoWilhelm/timoot"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+					>
+						<img src="/icons/github-mark.svg" alt="GitHub" className="h-3 w-3 opacity-60" />
+						Open Source
+					</a>
+					<button
+						onClick={() => setIsMusicCreditsOpen(true)}
+						className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+					>
+						<Music className="h-3 w-3" />
+						Music Credits
+					</button>
+				</div>
 			</footer>
 
 			{/* Start Quiz Confirmation Dialog */}

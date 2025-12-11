@@ -59,7 +59,12 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 				})}
 			</div>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
-				<Button onClick={onNext} size="lg" className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white">
+				<Button
+					data-host-next-button
+					onClick={onNext}
+					size="lg"
+					className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white"
+				>
 					Next
 				</Button>
 			</motion.div>

@@ -157,7 +157,12 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				</CardContent>
 			</Card>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-				<Button onClick={onNext} size="lg" className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white">
+				<Button
+					data-host-next-button
+					onClick={onNext}
+					size="lg"
+					className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white"
+				>
 					{isLastQuestion ? 'Final Results' : 'Next Question'}
 				</Button>
 			</motion.div>
