@@ -4,7 +4,6 @@ import * as path from 'node:path';
 export default defineWorkersConfig({
 	test: {
 		include: ['tests/**/*.test.ts'],
-		exclude: ['tests/integration/**'],
 		globals: true,
 		poolOptions: {
 			workers: {

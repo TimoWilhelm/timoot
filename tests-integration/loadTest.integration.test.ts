@@ -82,7 +82,9 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	};
 
 	const startTime = Date.now();
+	console.log('  Creating game...');
 	const game = await createGame(baseUrl);
+	console.log(`  Game created: ${game.gameId}`);
 
 	// Connect host
 	const host = new WsTestClient({
@@ -95,16 +97,21 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	await host.waitForMessage('lobbyUpdate');
 
 	// Connect all players concurrently
+	console.log(`  Connecting ${playerCount} players...`);
 	const playerNames = generatePlayerNames(playerCount, 'LoadPlayer');
 	const playerPromises = playerNames.map((name) => simulatePlayer(baseUrl, game.gameId, name, metrics));
 	const players = (await Promise.all(playerPromises)).filter((p): p is WsTestClient => p !== null);
+	console.log(`  ${players.length}/${playerCount} players connected`);
 
 	// Wait for all players to be in lobby (with graceful timeout)
 	if (players.length > 0) {
+		console.log('  Waiting for lobby to sync...');
 		await host
-			.waitForMessage('lobbyUpdate', 30000, (m) => m.players.length >= players.length)
+			.waitForMessage('lobbyUpdate', 5000, (m) => m.players.length >= players.length)
 			.catch(() => {
-				// Some players may not have joined in time - continue with what we have
+				const lobbyMsgs = host.getMessagesByType('lobbyUpdate');
+				const lastLobby = lobbyMsgs[lobbyMsgs.length - 1];
+				console.log(`  Lobby has ${lastLobby?.players.length ?? 0}/${players.length} players, continuing...`);
 			});
 	}
 
@@ -113,16 +120,20 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	const lastLobby = lobbyMsgs[lobbyMsgs.length - 1];
 	if (!lastLobby || lastLobby.players.length === 0) {
 		// No players joined - skip game
+		console.log('  No players joined - skipping game');
 		host.close();
 		players.forEach((p) => p.close());
 		return metrics;
 	}
+	console.log('  Starting game...');
 	await host.startGame().catch(() => {});
 
 	// Wait for question (with timeout handling)
+	console.log('  Waiting for first question...');
 	await host.waitForMessage('getReady', 10000).catch(() => {});
 	const questionPromises = players.map((p) => p.waitForMessage('questionStart', 20000).catch(() => null));
 	await Promise.all(questionPromises);
+	console.log('  Question received, submitting answers...');
 
 	// All players submit answers (with timeout)
 	const answerPromises = players.map(async (player, idx) => {
@@ -143,12 +154,14 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	await new Promise((r) => setTimeout(r, 500));
 
 	// Host advances to reveal
+	console.log('  Advancing to reveal...');
 	host.nextState();
 	const revealPromises = players.map((p) => p.waitForMessage('reveal', 10000).catch(() => null));
 	await Promise.all(revealPromises);
 
 	// Send emojis burst
 	if (sendEmojis) {
+		console.log(`  Sending emoji burst (${LOAD_TEST_EMOJI_BURST} per player)...`);
 		const emojis: EmojiReaction[] = ['❤️', '😂', '🤔', '🎉'];
 		for (const player of players) {
 			for (let i = 0; i < LOAD_TEST_EMOJI_BURST; i++) {
@@ -162,8 +175,10 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	}
 
 	// Continue game through remaining questions until end
+	console.log('  Playing through remaining questions...');
 	let phase = 'REVEAL';
 	let attempts = 0;
+	let questionNumber = 1;
 	const maxAttempts = 50; // Prevent infinite loop
 
 	while (phase !== 'END' && attempts < maxAttempts) {
@@ -180,9 +195,12 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 			]);
 
 			if (nextMsg.type === 'gameEnd') {
+				console.log('  Game ended');
 				phase = 'END';
 				break;
 			} else if (nextMsg.type === 'questionStart') {
+				questionNumber++;
+				console.log(`  Question ${questionNumber}...`);
 				// Answer the question
 				const answerProms = players.map(async (player, idx) => {
 					try {
@@ -250,9 +268,9 @@ describe('Load Tests', () => {
 				metrics.errors.slice(0, 10).forEach((e) => console.log(`    - ${e}`));
 			}
 
-			// Assertions (relaxed for external test environment)
-			expect(metrics.successfulConnections).toBeGreaterThanOrEqual(metrics.totalPlayers * 0.5); // 50% success rate
-			expect(metrics.successfulJoins).toBeGreaterThanOrEqual(metrics.successfulConnections * 0.5);
+			// Assertions
+			expect(metrics.successfulConnections).toBeGreaterThanOrEqual(metrics.totalPlayers * 0.9); // 90% success rate
+			expect(metrics.successfulJoins).toBeGreaterThanOrEqual(metrics.successfulConnections * 0.95);
 			expect(metrics.avgConnectionTimeMs).toBeLessThan(10000); // < 10s connection time
 		}, 120000); // 2 minute timeout
 	});
@@ -333,9 +351,9 @@ describe('Load Tests', () => {
 				aggregated.errors.slice(0, 10).forEach((e) => console.log(`    - ${e}`));
 			}
 
-			// Assertions (relaxed for external test environment)
+			// Assertions
 			const successRate = aggregated.successfulConnections / aggregated.totalPlayers;
-			expect(successRate).toBeGreaterThanOrEqual(0.5); // 50% success rate for concurrent games
+			expect(successRate).toBeGreaterThanOrEqual(0.9); // 90% success rate for concurrent games
 		}, 300000); // 5 minute timeout
 	});
 
@@ -354,73 +372,87 @@ describe('Load Tests', () => {
 				hostSecret: game.hostSecret,
 			});
 
-			await host.connect();
-			await host.waitForMessage('lobbyUpdate');
-
-			// Connect players
 			const players: WsTestClient[] = [];
-			const playerNames = generatePlayerNames(playerCount, 'EmojiPlayer');
 
-			for (const name of playerNames) {
-				const player = new WsTestClient({
-					baseUrl: BASE_URL,
-					gameId: game.gameId,
-					role: 'player',
-				});
-				await player.connect();
-				player.join(name);
-				players.push(player);
-			}
+			try {
+				await host.connect();
+				await host.waitForMessage('lobbyUpdate');
 
-			// Wait for all players to appear in lobby
-			await host.waitForMessage('lobbyUpdate', 10000, (m) => m.players.length >= playerCount).catch(() => {});
+				// Connect and join players with small delays to avoid overwhelming server
+				const playerNames = generatePlayerNames(playerCount, 'EmojiPlayer');
 
-			// Start game and get to reveal phase
-			await host.startGame().catch(() => {});
-			await host.waitForMessage('getReady', 10000).catch(() => {});
-			await Promise.all(players.map((p) => p.waitForMessage('questionStart', 20000).catch(() => null)));
-			// Fire and forget answers
-			players.forEach((p) => p.send({ type: 'submitAnswer', answerIndex: 0 }));
-			await new Promise((r) => setTimeout(r, 1000));
-			host.nextState();
-			await Promise.all(players.map((p) => p.waitForMessage('reveal', 10000).catch(() => null)));
-
-			// Emoji burst
-			const emojis: EmojiReaction[] = ['❤️', '😂', '🤔', '🎉'];
-			const startTime = Date.now();
-			let totalEmojis = 0;
-
-			for (const player of players) {
-				for (let i = 0; i < emojisPerPlayer; i++) {
-					const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-					player.sendEmoji(emoji);
-					totalEmojis++;
+				for (const name of playerNames) {
+					const player = new WsTestClient({
+						baseUrl: BASE_URL,
+						gameId: game.gameId,
+						role: 'player',
+					});
+					await player.connect();
+					await player.joinAndWait(name, 10000);
+					players.push(player);
 				}
-			}
 
-			// Wait for processing
-			await new Promise((r) => setTimeout(r, 2000));
+				// Verify all players joined by waiting for lobbyUpdate with all players
+				await host.waitForMessage('lobbyUpdate', 5000, (m) => m.players.length >= playerCount);
 
-			const burstTime = Date.now() - startTime;
-			const emojisPerSecond = (totalEmojis / burstTime) * 1000;
+				// Start game and get to reveal phase
+				await host.startGame();
+				await Promise.all(players.map((p) => p.waitForMessage('questionStart', 20000)));
 
-			console.log(`  Total Emojis Sent: ${totalEmojis}`);
-			console.log(`  Burst Time: ${burstTime}ms`);
-			console.log(`  Emojis/Second: ${emojisPerSecond.toFixed(2)}`);
+				// All players submit answers (fire and forget, then wait)
+				players.forEach((p) => p.send({ type: 'submitAnswer', answerIndex: 0 }));
+				await new Promise((r) => setTimeout(r, 2000));
 
-			// Count received emojis on host
-			const receivedEmojis = host.getMessagesByType('emojiReceived');
-			console.log(`  Emojis Received by Host: ${receivedEmojis.length}`);
+				// Advance to reveal phase
+				host.nextState();
+				await host.waitForMessage('reveal', 10000);
+				// Give time for all players to receive reveal
+				await new Promise((r) => setTimeout(r, 500));
 
-			// Cleanup
-			host.close();
-			players.forEach((p) => p.close());
+				// Emoji burst - all players send emojis rapidly
+				const emojis: EmojiReaction[] = ['❤️', '😂', '🤔', '🎉'];
+				const startTime = Date.now();
+				let totalEmojis = 0;
 
-			// Should receive some emojis (relaxed - timing issues in test environment)
-			// In production, would expect higher success rate
-			expect(receivedEmojis.length).toBeGreaterThanOrEqual(0); // Just verify no crash
-			if (receivedEmojis.length === 0) {
-				console.log('  ⚠️ No emojis received - game may not have reached reveal phase');
+				for (const player of players) {
+					for (let i = 0; i < emojisPerPlayer; i++) {
+						const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+						player.sendEmoji(emoji);
+						totalEmojis++;
+					}
+				}
+
+				// Wait for emoji processing
+				await new Promise((r) => setTimeout(r, 3000));
+
+				const burstTime = Date.now() - startTime;
+				const emojisPerSecond = (totalEmojis / burstTime) * 1000;
+
+				console.log(`  Total Emojis Sent: ${totalEmojis}`);
+				console.log(`  Burst Time: ${burstTime}ms`);
+				console.log(`  Emojis/Second: ${emojisPerSecond.toFixed(2)}`);
+
+				// Count received emojis on host
+				const receivedEmojis = host.getMessagesByType('emojiReceived');
+				console.log(`  Emojis Received by Host: ${receivedEmojis.length}`);
+
+				// Check for errors on players (helps diagnose issues)
+				let totalErrors = 0;
+				for (const player of players) {
+					const errors = player.getMessagesByType('error');
+					totalErrors += errors.length;
+					if (errors.length > 0) {
+						console.log(`  Player errors: ${errors.map((e) => e.message).join(', ')}`);
+					}
+				}
+				console.log(`  Total player errors: ${totalErrors}`);
+
+				// Should receive most emojis (at least 50% delivered under load)
+				expect(receivedEmojis.length).toBeGreaterThanOrEqual(totalEmojis * 0.5);
+			} finally {
+				// Cleanup
+				host.close();
+				players.forEach((p) => p.close());
 			}
 		}, 60000);
 	});

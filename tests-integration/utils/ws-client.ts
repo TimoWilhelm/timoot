@@ -58,15 +58,15 @@ export class WsTestClient {
 				this.closeResolve = res;
 			});
 
-			this.ws.onopen = () => {
+			this.ws.addEventListener('open', () => {
 				// Players must send connect message
 				if (role === 'player') {
 					const connectMsg: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
 					this.ws!.send(JSON.stringify(connectMsg));
 				}
-			};
+			});
 
-			this.ws.onmessage = (event) => {
+			this.ws.addEventListener('message', (event) => {
 				try {
 					const message = JSON.parse(event.data.toString()) as ServerMessage;
 
@@ -89,14 +89,14 @@ export class WsTestClient {
 				} catch (err) {
 					console.error('Failed to parse message:', err);
 				}
-			};
+			});
 
-			this.ws.onerror = (err) => {
+			this.ws.addEventListener('error', (err) => {
 				clearTimeout(timeoutId);
 				reject(new Error(`WebSocket error: ${err}`));
-			};
+			});
 
-			this.ws.onclose = (event) => {
+			this.ws.addEventListener('close', (event) => {
 				clearTimeout(timeoutId);
 				const wasConnected = this.isConnected;
 				this.isConnected = false;
@@ -104,7 +104,7 @@ export class WsTestClient {
 				if (!wasConnected) {
 					reject(new Error(`WebSocket closed before connected: ${event.code} ${event.reason}`));
 				}
-			};
+			});
 		});
 	}
 
@@ -309,8 +309,9 @@ export async function gameExists(baseUrl: string, gameId: string): Promise<boole
 }
 
 /**
- * Generate unique player names for testing
+ * Generate unique player names for testing (max 20 chars to pass validation)
  */
-export function generatePlayerNames(count: number, prefix = 'Player'): string[] {
-	return Array.from({ length: count }, (_, i) => `${prefix}${i + 1}_${Date.now()}`);
+export function generatePlayerNames(count: number, prefix = 'P'): string[] {
+	const suffix = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+	return Array.from({ length: count }, (_, i) => `${prefix}${i + 1}_${suffix}`);
 }

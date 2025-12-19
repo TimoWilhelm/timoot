@@ -54,7 +54,7 @@ TEST_BASE_URL=https://your-app.pages.dev bun run test:integration
 ## Test Structure
 
 ```
-tests/integration/
+tests-integration/
 ├── utils/
 │   └── ws-client.ts       # WebSocket test client utilities
 ├── gameFlow.integration.test.ts    # User flow integration tests
