@@ -3,6 +3,18 @@
 	"name": "timoot",
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-11-17",
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "GAME_ROOM",
+				"class_name": "GameRoomDurableObject"
+			},
+			{
+				"name": "QUIZ_STORE",
+				"class_name": "QuizStoreDurableObject"
+			}
+		]
+	},
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./dist",
