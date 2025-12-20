@@ -348,6 +348,7 @@ export function PlayerPage() {
 				playerId={currentPlayerId ?? null}
 				leaderboard={gameState.leaderboard}
 				modifiers={gameState.modifiers}
+				endPhaseStartedAt={gameState.endPhaseStartedAt}
 			/>
 		);
 	};

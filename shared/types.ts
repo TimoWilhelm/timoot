@@ -41,6 +41,7 @@ export interface GameState {
 	questionStartTime: number; // Unix timestamp in ms
 	answers: Answer[];
 	hostSecret?: string;
+	endPhaseStartedAt?: number; // Unix timestamp when END phase started
 }
 export interface Quiz {
 	id: string;
@@ -108,6 +109,7 @@ export type ServerMessage =
 	| {
 			type: 'gameEnd';
 			finalLeaderboard: { id: string; name: string; score: number; rank: number }[];
+			phaseStartedAt: number; // Unix timestamp for calculating reveal timing
 	  }
 	| { type: 'playerJoined'; player: { id: string; name: string } }
 	| { type: 'kicked'; reason: string }

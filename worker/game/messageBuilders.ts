@@ -121,5 +121,9 @@ export function buildLeaderboardMessage(state: GameState): ServerMessage {
  * Build a game end message with final standings.
  */
 export function buildGameEndMessage(state: GameState): ServerMessage {
-	return { type: 'gameEnd', finalLeaderboard: buildLeaderboard(state.players) };
+	return {
+		type: 'gameEnd',
+		finalLeaderboard: buildLeaderboard(state.players),
+		phaseStartedAt: state.endPhaseStartedAt ?? Date.now(),
+	};
 }

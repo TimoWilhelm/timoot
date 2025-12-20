@@ -38,6 +38,8 @@ export interface WebSocketGameState {
 	// Leaderboard
 	leaderboard: LeaderboardEntry[];
 	isLastQuestion: boolean;
+	// End phase
+	endPhaseStartedAt: number;
 }
 
 interface UseGameWebSocketOptions {
@@ -73,6 +75,7 @@ const initialGameState: WebSocketGameState = {
 	answerCounts: [],
 	leaderboard: [],
 	isLastQuestion: false,
+	endPhaseStartedAt: 0,
 };
 
 export function useGameWebSocket({
@@ -220,6 +223,7 @@ export function useGameWebSocket({
 							...prev,
 							phase: 'END',
 							leaderboard: message.finalLeaderboard,
+							endPhaseStartedAt: message.phaseStartedAt,
 						}));
 						break;
 

@@ -217,7 +217,7 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 							transition={{ duration: 1.2, repeat: Infinity }}
 							className="text-center text-3xl font-bold sm:text-5xl md:text-6xl"
 						>
-							<span className="mx-2 sm:mx-4">And the top scorers are...</span>
+							<span className="mx-2 sm:mx-4">And the winners are...</span>
 						</motion.h1>
 						<motion.div
 							initial={{ opacity: 0, y: 10 }}

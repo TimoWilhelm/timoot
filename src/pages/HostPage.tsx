@@ -74,6 +74,7 @@ export function HostPage() {
 	const prevPhaseRef = useRef<GamePhase | null>(null);
 	const prevPlayersCountRef = useRef<number | null>(null);
 	const floatingEmojisRef = useRef<FloatingEmojisHandle>(null);
+	const keyboardNavEnabledAtRef = useRef<number>(0);
 
 	// Handle emoji received from players
 	const handleEmojiReceived = useCallback((emoji: EmojiReaction) => {
@@ -110,6 +111,12 @@ export function HostPage() {
 	// Block navigation when game is active (not in LOBBY or END)
 	const blocker = useBlocker(isGameActive);
 
+	// Set delay before keyboard navigation is allowed after phase change
+	useEffect(() => {
+		const KEYBOARD_NAV_DELAY_MS = 1000;
+		keyboardNavEnabledAtRef.current = Date.now() + KEYBOARD_NAV_DELAY_MS;
+	}, [gameState.phase]);
+
 	// Allow host to advance with common presenter keys (right arrow, page down, space, enter)
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -122,6 +129,9 @@ export function HostPage() {
 			// Only allow advancing when connected and in phases that have a manual Next button
 			if (!isConnected) return;
 			if (!phaseAllowsManualAdvance[gameState.phase]) return;
+
+			// Prevent advancing too quickly after phase change
+			if (Date.now() < keyboardNavEnabledAtRef.current) return;
 
 			// Only allow advancing when a visible Next button is rendered and enabled
 			const nextButton = document.querySelector<HTMLButtonElement>('[data-host-next-button]');

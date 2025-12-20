@@ -86,14 +86,14 @@ jobs:
             echo "PRODUCTION_URL not set, skipping health check"
             exit 0
           fi
-          
+
           echo "Checking health endpoint..."
           response=$(curl -sf "$PRODUCTION_URL/api/health" || echo "failed")
-          
+
           if [ "$response" = "failed" ]; then
             echo "::error::Health check failed!"
             exit 1
           fi
-          
+
           echo "Health check passed!"
           echo "Response: $response"

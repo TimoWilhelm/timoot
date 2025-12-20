@@ -462,6 +462,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				// and go straight to END to show the podium screen without spoilers.
 				if (state.currentQuestionIndex >= state.questions.length - 1) {
 					state.phase = 'END';
+					state.endPhaseStartedAt = Date.now();
 					state.players.sort((a, b) => b.score - a.score);
 					await this.ctx.storage.put('game_state', state);
 					this.broadcastGameEnd(state);
@@ -494,6 +495,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 					}
 				} else {
 					state.phase = 'END';
+					state.endPhaseStartedAt = Date.now();
 					await this.ctx.storage.put('game_state', state);
 					this.broadcastGameEnd(state);
 					// Schedule cleanup after game ends
