@@ -121,8 +121,8 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 }
 
 // Reveal delay in ms - matches host podium reveal timing
-// Host: 1.5s intro + 2.0s delay for 1st place = 3.5s, add buffer for animation
-const END_REVEAL_DELAY_MS = 4000;
+// Host: 1.5s intro + 2.0s 1st place delay + 0.3s name delay + ~0.7s spring animation
+const END_REVEAL_DELAY_MS = 5000;
 
 export function PlayerWaitingScreen({
 	phase,
