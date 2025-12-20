@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WsTestClient, createGame, generatePlayerNames } from './utils/ws-client';
+import { WsTestClient, createGame, generatePlayerNames } from '../integration/utils/ws-client';
 import type { EmojiReaction } from '@shared/types';
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';

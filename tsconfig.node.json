@@ -26,5 +26,5 @@
 			"@shared/*": ["./shared/*"]
 		}
 	},
-	"include": ["vite.config.ts", "tailwind.config.ts", "tests", "tests-integration"]
+	"include": ["vite.config.ts", "tailwind.config.ts", "test"]
 }

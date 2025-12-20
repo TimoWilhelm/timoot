@@ -3,7 +3,7 @@ import * as path from 'node:path';
 
 export default defineWorkersConfig({
 	test: {
-		include: ['tests/**/*.test.ts'],
+		include: ['test/unit/**/*.test.ts'],
 		globals: true,
 		poolOptions: {
 			workers: {

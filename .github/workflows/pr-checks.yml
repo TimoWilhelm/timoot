@@ -26,9 +26,7 @@ jobs:
               - 'worker/**'
               - 'wrangler.jsonc'
             tests:
-              - 'tests/**'
-              - 'vitest.config.mts'
-              - 'vitest.integration.config.mts'
+              - 'test/**'
             config:
               - 'package.json'
               - 'bun.lock'

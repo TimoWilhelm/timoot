@@ -54,12 +54,19 @@ TEST_BASE_URL=https://your-app.pages.dev bun run test:integration
 ## Test Structure
 
 ```
-tests-integration/
-├── utils/
-│   └── ws-client.ts       # WebSocket test client utilities
-├── gameFlow.integration.test.ts    # User flow integration tests
-├── loadTest.integration.test.ts    # Load and stress tests
-└── README.md              # This file
+test/
+├── unit/                  # Unit tests (run with Cloudflare Workers pool)
+│   ├── messageBuilders.test.ts
+│   ├── quizzes.test.ts
+│   ├── scoring.test.ts
+│   └── words.test.ts
+├── integration/           # Integration tests
+│   ├── utils/
+│   │   └── ws-client.ts   # WebSocket test client utilities
+│   ├── gameFlow.integration.test.ts
+│   └── README.md          # This file
+└── load/                  # Load and stress tests
+    └── loadTest.test.ts
 ```
 
 ## Integration Test Coverage

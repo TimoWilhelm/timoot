@@ -6,8 +6,8 @@ import {
 	buildRevealMessage,
 	buildLeaderboardMessage,
 	buildGameEndMessage,
-} from '../worker/game/messageBuilders';
-import { QUESTION_TIME_LIMIT_MS } from '../worker/game/constants';
+} from '../../worker/game/messageBuilders';
+import { QUESTION_TIME_LIMIT_MS } from '../../worker/game/constants';
 import type { GameState, Player, Question, Answer } from '@shared/types';
 
 const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
