@@ -108,8 +108,7 @@ describe('Game Flow Integration Tests', () => {
 			}
 		});
 
-		// Skip: Multi-player WebSocket tests are timing-sensitive in external test runners
-		it.skip('should support multiple players joining', async () => {
+		it('should support multiple players joining', async () => {
 			const game = await createGame(BASE_URL);
 			const host = new WsTestClient({
 				baseUrl: BASE_URL,
@@ -149,8 +148,7 @@ describe('Game Flow Integration Tests', () => {
 	});
 
 	describe('Full Game Flow', () => {
-		// Skip: Full game flow with multiple players needs worker-pool test environment
-		it.skip('should complete a full game with host and players', async () => {
+		it('should complete a full game with host and players', async () => {
 			const game = await createGame(BASE_URL);
 			const host = new WsTestClient({
 				baseUrl: BASE_URL,

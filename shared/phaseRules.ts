@@ -7,5 +7,6 @@ export const phaseAllowsEmoji: Record<GamePhase, boolean> = {
 	QUESTION: false,
 	REVEAL: true,
 	LEADERBOARD: true,
-	END: true,
+	END_INTRO: true,
+	END_REVEALED: true,
 };

@@ -27,7 +27,7 @@ export interface Answer {
 	isCorrect?: boolean;
 	score?: number;
 }
-export type GamePhase = 'LOBBY' | 'GET_READY' | 'QUESTION_MODIFIER' | 'QUESTION' | 'REVEAL' | 'LEADERBOARD' | 'END';
+export type GamePhase = 'LOBBY' | 'GET_READY' | 'QUESTION_MODIFIER' | 'QUESTION' | 'REVEAL' | 'LEADERBOARD' | 'END_INTRO' | 'END_REVEALED';
 
 // Question modifiers that can be applied
 export type QuestionModifier = 'doublePoints';
@@ -41,7 +41,6 @@ export interface GameState {
 	questionStartTime: number; // Unix timestamp in ms
 	answers: Answer[];
 	hostSecret?: string;
-	endPhaseStartedAt?: number; // Unix timestamp when END phase started
 }
 export interface Quiz {
 	id: string;
@@ -109,7 +108,7 @@ export type ServerMessage =
 	| {
 			type: 'gameEnd';
 			finalLeaderboard: { id: string; name: string; score: number; rank: number }[];
-			phaseStartedAt: number; // Unix timestamp for calculating reveal timing
+			revealed: boolean;
 	  }
 	| { type: 'playerJoined'; player: { id: string; name: string } }
 	| { type: 'kicked'; reason: string }

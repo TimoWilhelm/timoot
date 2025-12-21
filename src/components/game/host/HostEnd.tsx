@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import type { LeaderboardEntry } from '@/hooks/useGameWebSocket';
 
@@ -108,9 +108,10 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 
 interface HostEndProps {
 	leaderboard: LeaderboardEntry[];
+	revealed: boolean;
 }
 
-export function HostEnd({ leaderboard }: HostEndProps) {
+export function HostEnd({ leaderboard, revealed }: HostEndProps) {
 	const podiumEntries = getPodiumEntries(leaderboard);
 
 	// Get entries for each position (may be undefined if not enough players or skipped due to ties)
@@ -118,20 +119,9 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 	const secondPlace = podiumEntries.get(2);
 	const thirdPlace = podiumEntries.get(3);
 
-	const [showPodium, setShowPodium] = useState(false);
-
+	// Fire confetti when revealed
 	useEffect(() => {
-		const introTimeout = window.setTimeout(() => {
-			setShowPodium(true);
-		}, 1500);
-
-		return () => {
-			window.clearTimeout(introTimeout);
-		};
-	}, []);
-
-	useEffect(() => {
-		if (!firstPlace) return;
+		if (!revealed || !firstPlace) return;
 
 		// Fire confetti shortly after podium entries have animated in
 		let subtleIntervalId: number | undefined;
@@ -189,7 +179,7 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 					colors: colors,
 				});
 			}, 20);
-		}, 2300);
+		}, 800);
 
 		return () => {
 			window.clearTimeout(timeout);
@@ -197,12 +187,12 @@ export function HostEnd({ leaderboard }: HostEndProps) {
 				window.clearInterval(subtleIntervalId);
 			}
 		};
-	}, [firstPlace]);
+	}, [revealed, firstPlace]);
 
 	return (
 		<div className="flex flex-grow flex-col items-center justify-center gap-4 whitespace-nowrap p-4 sm:gap-6 sm:p-8">
 			<AnimatePresence mode="wait">
-				{!showPodium ? (
+				{!revealed ? (
 					<motion.div
 						key="intro"
 						initial={{ opacity: 0, scale: 0.9 }}

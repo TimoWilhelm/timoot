@@ -8,15 +8,15 @@ export default defineWorkersConfig({
 		poolOptions: {
 			workers: {
 				wrangler: {
-					configPath: './wrangler.jsonc',
+					configPath: '../../wrangler.jsonc',
 				},
 			},
 		},
 	},
 	resolve: {
 		alias: {
-			'@': path.resolve(__dirname, './src'),
-			'@shared': path.resolve(__dirname, './shared'),
+			'@': path.resolve(__dirname, '../../src'),
+			'@shared': path.resolve(__dirname, '../../shared'),
 		},
 	},
 });

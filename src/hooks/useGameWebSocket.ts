@@ -39,7 +39,7 @@ export interface WebSocketGameState {
 	leaderboard: LeaderboardEntry[];
 	isLastQuestion: boolean;
 	// End phase
-	endPhaseStartedAt: number;
+	endRevealed: boolean;
 }
 
 interface UseGameWebSocketOptions {
@@ -75,7 +75,7 @@ const initialGameState: WebSocketGameState = {
 	answerCounts: [],
 	leaderboard: [],
 	isLastQuestion: false,
-	endPhaseStartedAt: 0,
+	endRevealed: false,
 };
 
 export function useGameWebSocket({
@@ -221,9 +221,9 @@ export function useGameWebSocket({
 					case 'gameEnd':
 						setGameState((prev) => ({
 							...prev,
-							phase: 'END',
+							phase: message.revealed ? 'END_REVEALED' : 'END_INTRO',
 							leaderboard: message.finalLeaderboard,
-							endPhaseStartedAt: message.phaseStartedAt,
+							endRevealed: message.revealed,
 						}));
 						break;
 

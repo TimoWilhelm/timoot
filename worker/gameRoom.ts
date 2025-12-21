@@ -8,8 +8,8 @@ import {
 	QUESTION_TIME_LIMIT_MS,
 	ALL_ANSWERED_DELAY_MS,
 	CLEANUP_DELAY_MS,
-	GET_READY_COUNTDOWN_MS,
 	QUESTION_MODIFIER_DURATION_MS,
+	END_REVEAL_DELAY_MS,
 	MAX_PLAYERS,
 	processAnswersAndUpdateScores,
 	buildLobbyMessage,
@@ -73,6 +73,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			if (state) {
 				this.sendMessage(server, { type: 'connected', role: 'host' });
 				await this.sendCurrentStateToHost(server, state);
+				// Re-schedule alarm if we're in a phase that needs one
+				if (state.phase === 'END_INTRO') {
+					await this.ctx.storage.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
+				}
 			} else {
 				this.sendMessage(server, { type: 'error', ...createError(ErrorCode.GAME_NOT_FOUND) });
 				server.close(4004, 'Game not found');
@@ -224,8 +228,16 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			return;
 		}
 
+		// Handle END_INTRO -> END_REVEALED transition
+		if (state?.phase === 'END_INTRO') {
+			state.phase = 'END_REVEALED';
+			await this.ctx.storage.put('game_state', state);
+			this.broadcastGameEnd(state, true);
+			return;
+		}
+
 		// Only cleanup if no active connections or game has ended
-		if (sockets.length === 0 || state?.phase === 'END') {
+		if (sockets.length === 0 || state?.phase === 'END_REVEALED') {
 			console.log(`Cleaning up game room: ${state?.id || 'unknown'}`);
 			await this.ctx.storage.deleteAll();
 		}
@@ -364,7 +376,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		this.broadcastGetReady(state);
 
 		// Schedule automatic transition to QUESTION phase after countdown
-		await this.ctx.storage.setAlarm(Date.now() + GET_READY_COUNTDOWN_MS);
+		await this.ctx.storage.setAlarm(Date.now() + this.getReadyCountdownMs());
 	}
 
 	private async handleSubmitAnswer(ws: WebSocket, attachment: WebSocketAttachment, answerIndex: number): Promise<void> {
@@ -459,15 +471,14 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				break;
 			case 'REVEAL':
 				// After revealing the final question, skip the LEADERBOARD phase
-				// and go straight to END to show the podium screen without spoilers.
+				// and go straight to END_INTRO to show the podium screen without spoilers.
 				if (state.currentQuestionIndex >= state.questions.length - 1) {
-					state.phase = 'END';
-					state.endPhaseStartedAt = Date.now();
+					state.phase = 'END_INTRO';
 					state.players.sort((a, b) => b.score - a.score);
 					await this.ctx.storage.put('game_state', state);
-					this.broadcastGameEnd(state);
-					// Schedule cleanup after game ends
-					await this.ctx.storage.setAlarm(Date.now() + CLEANUP_DELAY_MS);
+					this.broadcastGameEnd(state, false);
+					// Schedule transition to END_REVEALED after intro animation
+					await this.ctx.storage.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
 				} else {
 					state.phase = 'LEADERBOARD';
 					state.players.sort((a, b) => b.score - a.score);
@@ -494,18 +505,18 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 						this.broadcastQuestionStart(state);
 					}
 				} else {
-					state.phase = 'END';
-					state.endPhaseStartedAt = Date.now();
+					state.phase = 'END_INTRO';
 					await this.ctx.storage.put('game_state', state);
-					this.broadcastGameEnd(state);
-					// Schedule cleanup after game ends
-					await this.ctx.storage.setAlarm(Date.now() + CLEANUP_DELAY_MS);
+					this.broadcastGameEnd(state, false);
+					// Schedule transition to END_REVEALED after intro animation
+					await this.ctx.storage.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
 				}
 				break;
 			case 'LOBBY':
 			case 'GET_READY':
 			case 'QUESTION_MODIFIER':
-			case 'END':
+			case 'END_INTRO':
+			case 'END_REVEALED':
 				break;
 			default: {
 				const _exhaustiveCheck: never = state.phase;
@@ -558,8 +569,12 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		this.broadcastToAll(buildLobbyMessage(state));
 	}
 
+	private getReadyCountdownMs(): number {
+		return parseInt(this.env.GET_READY_COUNTDOWN_MS, 10);
+	}
+
 	private broadcastGetReady(state: GameState): void {
-		this.broadcastToAll(buildGetReadyMessage(state));
+		this.broadcastToAll(buildGetReadyMessage(state, this.getReadyCountdownMs()));
 	}
 
 	private broadcastQuestionModifier(state: GameState): void {
@@ -588,8 +603,8 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		this.broadcastToAll(buildLeaderboardMessage(state));
 	}
 
-	private broadcastGameEnd(state: GameState): void {
-		this.broadcastToAll(buildGameEndMessage(state));
+	private broadcastGameEnd(state: GameState, revealed: boolean): void {
+		this.broadcastToAll(buildGameEndMessage(state, revealed));
 	}
 
 	private async sendCurrentStateToHost(ws: WebSocket, state: GameState): Promise<void> {
@@ -598,7 +613,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				this.sendMessage(ws, buildLobbyMessage(state));
 				break;
 			case 'GET_READY':
-				this.sendMessage(ws, buildGetReadyMessage(state));
+				this.sendMessage(ws, buildGetReadyMessage(state, this.getReadyCountdownMs()));
 				break;
 			case 'QUESTION_MODIFIER':
 				this.sendMessage(ws, buildQuestionModifierMessage(state));
@@ -612,8 +627,11 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			case 'LEADERBOARD':
 				this.sendMessage(ws, buildLeaderboardMessage(state));
 				break;
-			case 'END':
-				this.sendMessage(ws, buildGameEndMessage(state));
+			case 'END_INTRO':
+				this.sendMessage(ws, buildGameEndMessage(state, false));
+				break;
+			case 'END_REVEALED':
+				this.sendMessage(ws, buildGameEndMessage(state, true));
 				break;
 			default: {
 				const _exhaustiveCheck: never = state.phase;
@@ -628,7 +646,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				this.sendMessage(ws, buildLobbyMessage(state));
 				break;
 			case 'GET_READY':
-				this.sendMessage(ws, buildGetReadyMessage(state));
+				this.sendMessage(ws, buildGetReadyMessage(state, this.getReadyCountdownMs()));
 				break;
 			case 'QUESTION_MODIFIER':
 				this.sendMessage(ws, buildQuestionModifierMessage(state));
@@ -648,8 +666,11 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			case 'LEADERBOARD':
 				this.sendMessage(ws, buildLeaderboardMessage(state));
 				break;
-			case 'END':
-				this.sendMessage(ws, buildGameEndMessage(state));
+			case 'END_INTRO':
+				this.sendMessage(ws, buildGameEndMessage(state, false));
+				break;
+			case 'END_REVEALED':
+				this.sendMessage(ws, buildGameEndMessage(state, true));
 				break;
 		}
 	}

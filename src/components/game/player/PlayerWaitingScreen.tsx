@@ -1,7 +1,7 @@
 import { CheckCircle, XCircle, Loader2, Trophy, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import type { GamePhase, QuestionModifier } from '@shared/types';
 
@@ -19,7 +19,6 @@ interface PlayerWaitingScreenProps {
 	playerId: string | null;
 	leaderboard?: LeaderboardEntry[];
 	modifiers?: QuestionModifier[];
-	endPhaseStartedAt?: number;
 }
 
 // Double Points animation for player screen
@@ -120,10 +119,6 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 	);
 }
 
-// Reveal delay in ms - matches host podium reveal timing
-// Host: 1.5s intro + 2.0s 1st place delay + 0.3s name delay + ~0.7s spring animation
-const END_REVEAL_DELAY_MS = 5000;
-
 export function PlayerWaitingScreen({
 	phase,
 	answerResult,
@@ -131,36 +126,15 @@ export function PlayerWaitingScreen({
 	playerId,
 	leaderboard = [],
 	modifiers = [],
-	endPhaseStartedAt = 0,
 }: PlayerWaitingScreenProps) {
 	// Find player's final rank
 	const myFinalEntry = leaderboard.find((p) => p.id === playerId);
 	const myFinalRank = myFinalEntry?.rank ?? 0;
 	const isOnPodium = myFinalRank >= 1 && myFinalRank <= 3;
 
-	// Delay revealing final place until after host podium reveal
-	// Uses server timestamp to handle reconnections seamlessly
-	const [showFinalRank, setShowFinalRank] = useState(false);
+	// Trigger confetti for podium finishes when revealed
 	useEffect(() => {
-		if (phase === 'END' && endPhaseStartedAt > 0) {
-			const elapsed = Date.now() - endPhaseStartedAt;
-			const remainingDelay = Math.max(0, END_REVEAL_DELAY_MS - elapsed);
-
-			if (remainingDelay === 0) {
-				// Already past reveal time (e.g., reconnection)
-				setShowFinalRank(true);
-			} else {
-				const timer = setTimeout(() => setShowFinalRank(true), remainingDelay);
-				return () => clearTimeout(timer);
-			}
-		} else if (phase !== 'END') {
-			setShowFinalRank(false);
-		}
-	}, [phase, endPhaseStartedAt]);
-
-	// Trigger confetti for podium finishes (after reveal)
-	useEffect(() => {
-		if (phase === 'END' && isOnPodium && showFinalRank) {
+		if (phase === 'END_REVEALED' && isOnPodium) {
 			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
 			const count = 200;
 			const defaults = { origin: { y: 0.6 }, colors };
@@ -196,7 +170,7 @@ export function PlayerWaitingScreen({
 				startVelocity: 45,
 			});
 		}
-	}, [phase, isOnPodium, showFinalRank]);
+	}, [phase, isOnPodium]);
 
 	const renderContent = () => {
 		switch (phase) {
@@ -281,52 +255,52 @@ export function PlayerWaitingScreen({
 					</div>
 				);
 			}
-			case 'END':
+			case 'END_INTRO':
 				return (
 					<div className="text-center">
-						{!showFinalRank ? (
-							<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
-								<motion.span
-									animate={{ scale: [1, 1.1, 1] }}
-									transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-									className="text-6xl"
-								>
-									🏆
-								</motion.span>
-								<p className="text-xl text-slate-300">Look at the main screen</p>
+						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
+							<motion.span
+								animate={{ scale: [1, 1.1, 1] }}
+								transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+								className="text-6xl"
+							>
+								🏆
+							</motion.span>
+							<p className="text-xl text-slate-300">Look at the main screen</p>
+						</motion.div>
+					</div>
+				);
+			case 'END_REVEALED':
+				return (
+					<div className="text-center">
+						{isOnPodium ? (
+							<PodiumRankDisplay rank={myFinalRank} />
+						) : myFinalRank > 0 ? (
+							<motion.div
+								initial={{ opacity: 0, scale: 0.8 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ delay: 0.2 }}
+								className="mb-4"
+							>
+								<span className="mb-2 block text-5xl">⭐</span>
+								<span className="text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
+								<p className="mt-2 text-xl text-slate-300">Thanks for playing!</p>
 							</motion.div>
-						) : (
-							<>
-								{isOnPodium ? (
-									<PodiumRankDisplay rank={myFinalRank} />
-								) : myFinalRank > 0 ? (
-									<motion.div
-										initial={{ opacity: 0, scale: 0.8 }}
-										animate={{ opacity: 1, scale: 1 }}
-										transition={{ delay: 0.2 }}
-										className="mb-4"
-									>
-										<span className="mb-2 block text-5xl">⭐</span>
-										<span className="text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
-										<p className="mt-2 text-xl text-slate-300">Thanks for playing!</p>
-									</motion.div>
-								) : null}
+						) : null}
 
-								<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-4 text-2xl">
-									Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
-								</motion.p>
+						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-4 text-2xl">
+							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
+						</motion.p>
 
-								<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
-									<Link
-										to="/"
-										className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-600"
-									>
-										<Home className="h-4 w-4" />
-										Back to Home
-									</Link>
-								</motion.div>
-							</>
-						)}
+						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
+							<Link
+								to="/"
+								className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-600"
+							>
+								<Home className="h-4 w-4" />
+								Back to Home
+							</Link>
+						</motion.div>
 					</div>
 				);
 			default:

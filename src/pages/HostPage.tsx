@@ -35,7 +35,8 @@ const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	QUESTION: 'question',
 	REVEAL: 'reveal',
 	LEADERBOARD: 'leaderboard',
-	END: 'celebration',
+	END_INTRO: 'celebration',
+	END_REVEALED: 'celebration',
 };
 
 const phaseIsActive: Record<GamePhase, boolean> = {
@@ -45,7 +46,8 @@ const phaseIsActive: Record<GamePhase, boolean> = {
 	QUESTION: true,
 	REVEAL: true,
 	LEADERBOARD: true,
-	END: false,
+	END_INTRO: false,
+	END_REVEALED: false,
 };
 
 const phaseAllowsManualAdvance: Record<GamePhase, boolean> = {
@@ -55,7 +57,8 @@ const phaseAllowsManualAdvance: Record<GamePhase, boolean> = {
 	QUESTION: false,
 	REVEAL: true,
 	LEADERBOARD: true,
-	END: false,
+	END_INTRO: false,
+	END_REVEALED: false,
 };
 
 const getMusicTrackForPhase = (phase: GamePhase): MusicTrack | null => {
@@ -186,8 +189,11 @@ export function HostPage() {
 				case 'LEADERBOARD':
 					playSound('leaderboard');
 					break;
-				case 'END':
+				case 'END_INTRO':
 					playSound('gameEnd');
+					break;
+				case 'END_REVEALED':
+					// No sound for reveal transition
 					break;
 				default: {
 					const _exhaustiveCheck: never = currentPhase;
@@ -307,8 +313,9 @@ export function HostPage() {
 				);
 			case 'LEADERBOARD':
 				return <HostLeaderboard onNext={nextState} leaderboard={gameState.leaderboard} isLastQuestion={gameState.isLastQuestion} />;
-			case 'END':
-				return <HostEnd leaderboard={gameState.leaderboard} />;
+			case 'END_INTRO':
+			case 'END_REVEALED':
+				return <HostEnd leaderboard={gameState.leaderboard} revealed={gameState.endRevealed} />;
 			default:
 				return <div>Unknown game phase.</div>;
 		}

@@ -1,5 +1,5 @@
 import type { GameState, ServerMessage, QuestionModifier } from '@shared/types';
-import { QUESTION_TIME_LIMIT_MS, GET_READY_COUNTDOWN_MS } from './constants';
+import { QUESTION_TIME_LIMIT_MS } from './constants';
 import { buildLeaderboard } from './scoring';
 
 /**
@@ -17,10 +17,10 @@ export function buildLobbyMessage(state: GameState): ServerMessage {
 /**
  * Build a get ready message for the countdown before first question.
  */
-export function buildGetReadyMessage(state: GameState): ServerMessage {
+export function buildGetReadyMessage(state: GameState, countdownMs: number): ServerMessage {
 	return {
 		type: 'getReady',
-		countdownMs: GET_READY_COUNTDOWN_MS,
+		countdownMs,
 		totalQuestions: state.questions.length,
 	};
 }
@@ -119,11 +119,12 @@ export function buildLeaderboardMessage(state: GameState): ServerMessage {
 
 /**
  * Build a game end message with final standings.
+ * @param revealed - Whether the podium has been revealed (END_REVEALED phase)
  */
-export function buildGameEndMessage(state: GameState): ServerMessage {
+export function buildGameEndMessage(state: GameState, revealed: boolean): ServerMessage {
 	return {
 		type: 'gameEnd',
 		finalLeaderboard: buildLeaderboard(state.players),
-		phaseStartedAt: state.endPhaseStartedAt ?? Date.now(),
+		revealed,
 	};
 }

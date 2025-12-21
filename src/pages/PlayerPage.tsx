@@ -35,7 +35,8 @@ const phaseIsActiveForPlayer: Record<GamePhase, boolean> = {
 	QUESTION: true,
 	REVEAL: true,
 	LEADERBOARD: true,
-	END: false,
+	END_INTRO: false,
+	END_REVEALED: false,
 };
 
 export function PlayerPage() {
@@ -348,7 +349,6 @@ export function PlayerPage() {
 				playerId={currentPlayerId ?? null}
 				leaderboard={gameState.leaderboard}
 				modifiers={gameState.modifiers}
-				endPhaseStartedAt={gameState.endPhaseStartedAt}
 			/>
 		);
 	};

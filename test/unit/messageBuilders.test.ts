@@ -308,9 +308,22 @@ describe('messageBuilders.ts', () => {
 	describe('buildGameEndMessage', () => {
 		it('returns correct message type', () => {
 			const state = createMockState();
-			const message = buildGameEndMessage(state);
+			const message = buildGameEndMessage(state, false);
 
 			expect(message.type).toBe('gameEnd');
+		});
+
+		it('includes revealed flag based on parameter', () => {
+			const state = createMockState();
+			const introMessage = buildGameEndMessage(state, false);
+			const revealedMessage = buildGameEndMessage(state, true);
+
+			if (introMessage.type === 'gameEnd') {
+				expect(introMessage.revealed).toBe(false);
+			}
+			if (revealedMessage.type === 'gameEnd') {
+				expect(revealedMessage.revealed).toBe(true);
+			}
 		});
 
 		it('includes final leaderboard sorted by score', () => {
@@ -321,7 +334,7 @@ describe('messageBuilders.ts', () => {
 					{ id: 'p3', name: 'Second', score: 300, answered: false },
 				],
 			});
-			const message = buildGameEndMessage(state);
+			const message = buildGameEndMessage(state, true);
 
 			if (message.type === 'gameEnd') {
 				expect(message.finalLeaderboard).toHaveLength(3);
