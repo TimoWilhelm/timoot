@@ -4,3 +4,6 @@ dist
 .env.*
 !.env.example
 tsconfig.tsbuildinfo
+
+*storybook.log
+storybook-static

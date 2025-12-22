@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from 'eslint-plugin-storybook';
+
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -66,8 +69,7 @@ export default tseslint.config(
 				node: true,
 			},
 		},
-	},
-	// Disable react-refresh/only-export-components for UI components
+	}, // Disable react-refresh/only-export-components for UI components
 	// as shadcn/ui components commonly export both components and utilities
 	{
 		files: ['src/components/ui/**/*.{ts,tsx}'],
@@ -75,4 +77,5 @@ export default tseslint.config(
 			'react-refresh/only-export-components': 'off',
 		},
 	},
+	storybook.configs['flat/recommended'],
 );

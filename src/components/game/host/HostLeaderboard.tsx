@@ -127,7 +127,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 											exit={{ opacity: 0, x: 100 }}
 											transition={{
 												layout: { type: 'spring', stiffness: 300, damping: 30 },
-												opacity: { duration: 0.2 },
+												opacity: { duration: 0.3, delay: i * 0.15 },
 												x: { duration: 0.3, delay: i * 0.15 },
 												scale: { duration: 0.5 },
 											}}

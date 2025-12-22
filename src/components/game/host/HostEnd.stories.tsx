@@ -1,0 +1,92 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { HostEnd } from './HostEnd';
+
+const meta = {
+	title: 'Host/End',
+	component: HostEnd,
+	parameters: {
+		layout: 'fullscreen',
+	},
+	decorators: [
+		(Story) => (
+			<div className="flex min-h-screen flex-col bg-slate-100">
+				<Story />
+			</div>
+		),
+	],
+} satisfies Meta<typeof HostEnd>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Intro: Story = {
+	args: {
+		leaderboard: [
+			{ id: '1', name: 'Alice', score: 5000, rank: 1 },
+			{ id: '2', name: 'Bob', score: 4800, rank: 2 },
+			{ id: '3', name: 'Charlie', score: 4200, rank: 3 },
+		],
+		revealed: false,
+	},
+};
+
+export const Revealed: Story = {
+	args: {
+		leaderboard: [
+			{ id: '1', name: 'Alice', score: 5000, rank: 1 },
+			{ id: '2', name: 'Bob', score: 4800, rank: 2 },
+			{ id: '3', name: 'Charlie', score: 4200, rank: 3 },
+		],
+		revealed: true,
+	},
+};
+
+export const TiedFirstPlace: Story = {
+	args: {
+		leaderboard: [
+			{ id: '1', name: 'Alice', score: 5000, rank: 1 },
+			{ id: '2', name: 'Bob', score: 5000, rank: 1 },
+			{ id: '3', name: 'Charlie', score: 4200, rank: 3 },
+		],
+		revealed: true,
+	},
+};
+
+export const TwoPlayers: Story = {
+	args: {
+		leaderboard: [
+			{ id: '1', name: 'Alice', score: 5000, rank: 1 },
+			{ id: '2', name: 'Bob', score: 4800, rank: 2 },
+		],
+		revealed: true,
+	},
+};
+
+export const OnePlayer: Story = {
+	args: {
+		leaderboard: [{ id: '1', name: 'SoloChampion', score: 10000, rank: 1 }],
+		revealed: true,
+	},
+};
+
+export const LongNames: Story = {
+	args: {
+		leaderboard: [
+			{ id: '1', name: 'TheUltimateQuizMaster', score: 5000, rank: 1 },
+			{ id: '2', name: '🏆 Champion 🏆', score: 4800, rank: 2 },
+			{ id: '3', name: 'BronzeMedalist2024', score: 4200, rank: 3 },
+		],
+		revealed: true,
+	},
+};
+
+export const HighScores: Story = {
+	args: {
+		leaderboard: [
+			{ id: '1', name: 'Alice', score: 99999, rank: 1 },
+			{ id: '2', name: 'Bob', score: 88888, rank: 2 },
+			{ id: '3', name: 'Charlie', score: 77777, rank: 3 },
+		],
+		revealed: true,
+	},
+};
