@@ -27,8 +27,13 @@ interface RateLimiter {
 /**
  * Check rate limit and return 429 response if exceeded.
  * Uses CF-Connecting-IP combined with endpoint path as the rate limit key.
+ * Rate limiting is disabled in development mode.
  */
 export async function checkRateLimit(c: Context<{ Bindings: Env }>, rateLimiter: RateLimiter, endpoint: string): Promise<Response | null> {
+	if (import.meta.env.DEV) {
+		return null;
+	}
+
 	const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
 	const key = `${ip}:${endpoint}`;
 
