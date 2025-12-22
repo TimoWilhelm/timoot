@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { HostLobby } from './HostLobby';
-import { fn } from 'storybook/test';
+import { fn, expect } from 'storybook/test';
 
 const meta = {
 	title: 'Host/Lobby',
@@ -28,11 +28,22 @@ export const Empty: Story = {
 	args: {
 		players: [],
 	},
+	play: async ({ canvas }) => {
+		const startButton = canvas.getByRole('button', { name: /waiting for players/i });
+		await expect(startButton).toBeDisabled();
+	},
 };
 
 export const OnePlayer: Story = {
 	args: {
 		players: [{ id: '1', name: 'Alice' }],
+	},
+	play: async ({ args, canvas, userEvent }) => {
+		const startButton = canvas.getByRole('button', { name: /start game/i });
+		await expect(startButton).toBeEnabled();
+
+		await userEvent.click(startButton);
+		await expect(args.onStart).toHaveBeenCalled();
 	},
 };
 
@@ -43,6 +54,19 @@ export const FewPlayers: Story = {
 			{ id: '2', name: 'Bob' },
 			{ id: '3', name: 'Charlie' },
 		],
+	},
+	play: async ({ canvas, step }) => {
+		await step('Verify all players are displayed', async () => {
+			await expect(canvas.getByText('Alice')).toBeInTheDocument();
+			await expect(canvas.getByText('Bob')).toBeInTheDocument();
+			await expect(canvas.getByText('Charlie')).toBeInTheDocument();
+			await expect(canvas.getByText('Players (3)')).toBeInTheDocument();
+		});
+
+		await step('Verify copy link button exists', async () => {
+			const copyButton = canvas.getByRole('button', { name: /copy link/i });
+			await expect(copyButton).toBeInTheDocument();
+		});
 	},
 };
 

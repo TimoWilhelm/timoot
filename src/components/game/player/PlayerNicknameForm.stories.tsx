@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PlayerNicknameForm } from './PlayerNicknameForm';
-import { fn } from 'storybook/test';
+import { fn, expect } from 'storybook/test';
 
 const meta = {
 	title: 'Player/NicknameForm',
@@ -20,10 +20,43 @@ export const Default: Story = {
 	args: {
 		isLoading: false,
 	},
+	play: async ({ canvas }) => {
+		const submitButton = canvas.getByRole('button', { name: /join game/i });
+		await expect(submitButton).toBeDisabled();
+	},
 };
 
 export const Loading: Story = {
 	args: {
 		isLoading: true,
+	},
+	play: async ({ canvas }) => {
+		const submitButton = canvas.getByRole('button', { name: /joining/i });
+		await expect(submitButton).toBeDisabled();
+	},
+};
+
+export const SubmitNickname: Story = {
+	args: {
+		isLoading: false,
+	},
+	play: async ({ args, canvas, userEvent, step }) => {
+		const input = canvas.getByPlaceholderText(/your cool name/i);
+		const submitButton = canvas.getByRole('button', { name: /join game/i });
+
+		await step('Initially button is disabled', async () => {
+			await expect(submitButton).toBeDisabled();
+		});
+
+		await step('Type a valid nickname', async () => {
+			await userEvent.type(input, 'TestPlayer');
+			await expect(input).toHaveValue('TestPlayer');
+		});
+
+		await step('Submit the form', async () => {
+			await expect(submitButton).toBeEnabled();
+			await userEvent.click(submitButton);
+			await expect(args.onJoin).toHaveBeenCalledWith('TestPlayer');
+		});
 	},
 };

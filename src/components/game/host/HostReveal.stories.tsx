@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { HostReveal } from './HostReveal';
-import { fn } from 'storybook/test';
+import { fn, expect } from 'storybook/test';
 
 const meta = {
 	title: 'Host/Reveal',
@@ -29,6 +29,19 @@ export const MostCorrect: Story = {
 		options: ['London', 'Paris', 'Berlin', 'Madrid'],
 		correctAnswerIndex: 1,
 		answerCounts: [2, 10, 1, 1],
+	},
+	play: async ({ canvas, step }) => {
+		await step('Verify question is displayed', async () => {
+			await expect(canvas.getByText('What is the capital of France?')).toBeInTheDocument();
+		});
+
+		await step('Verify correct answer (Paris) is shown', async () => {
+			await expect(canvas.getByText('Paris')).toBeInTheDocument();
+		});
+
+		await step('Verify answer counts are displayed', async () => {
+			await expect(canvas.getByText('10')).toBeInTheDocument();
+		});
 	},
 };
 

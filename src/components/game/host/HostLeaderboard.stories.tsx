@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { HostLeaderboard } from './HostLeaderboard';
-import { fn } from 'storybook/test';
+import { fn, expect } from 'storybook/test';
 
 const meta = {
 	title: 'Host/Leaderboard',
@@ -33,6 +33,20 @@ export const TopFive: Story = {
 			{ id: '5', name: 'Eve', score: 1200, rank: 5 },
 		],
 		isLastQuestion: false,
+	},
+	play: async ({ canvas, step }) => {
+		await step('Verify all players are displayed', async () => {
+			await expect(canvas.getByText('Alice')).toBeInTheDocument();
+			await expect(canvas.getByText('Bob')).toBeInTheDocument();
+			await expect(canvas.getByText('Charlie')).toBeInTheDocument();
+			await expect(canvas.getByText('Diana')).toBeInTheDocument();
+			await expect(canvas.getByText('Eve')).toBeInTheDocument();
+		});
+
+		await step('Verify scores are displayed', async () => {
+			await expect(canvas.getByText('2500')).toBeInTheDocument();
+			await expect(canvas.getByText('2200')).toBeInTheDocument();
+		});
 	},
 };
 

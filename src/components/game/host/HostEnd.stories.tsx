@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { HostEnd } from './HostEnd';
+import { expect } from 'storybook/test';
 
 const meta = {
 	title: 'Host/End',
@@ -38,6 +39,13 @@ export const Revealed: Story = {
 			{ id: '3', name: 'Charlie', score: 4200, rank: 3 },
 		],
 		revealed: true,
+	},
+	play: async ({ canvas, step }) => {
+		await step('Verify podium winners are displayed', async () => {
+			await expect(canvas.getByText('Alice')).toBeInTheDocument();
+			await expect(canvas.getByText('Bob')).toBeInTheDocument();
+			await expect(canvas.getByText('Charlie')).toBeInTheDocument();
+		});
 	},
 };
 

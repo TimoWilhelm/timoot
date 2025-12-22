@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { HostQuestion } from './HostQuestion';
-import { fn } from 'storybook/test';
+import { fn, expect } from 'storybook/test';
 
 const meta = {
 	title: 'Host/Question',
@@ -36,6 +36,22 @@ export const Default: Story = {
 		answeredCount: 0,
 		totalPlayers: 8,
 		isDoublePoints: false,
+	},
+	play: async ({ canvas, step }) => {
+		await step('Verify question is displayed', async () => {
+			await expect(canvas.getByText('What is the capital of France?')).toBeInTheDocument();
+		});
+
+		await step('Verify all options are displayed', async () => {
+			await expect(canvas.getByText('London')).toBeInTheDocument();
+			await expect(canvas.getByText('Paris')).toBeInTheDocument();
+			await expect(canvas.getByText('Berlin')).toBeInTheDocument();
+			await expect(canvas.getByText('Madrid')).toBeInTheDocument();
+		});
+
+		await step('Verify answer count is displayed', async () => {
+			await expect(canvas.getByText('0/8 answered')).toBeInTheDocument();
+		});
 	},
 };
 

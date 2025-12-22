@@ -107,11 +107,66 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+  test-storybook:
+    name: Storybook Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(bun pm pkg get devDependencies.playwright)
+          echo "Playwright Version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright
+        uses: actions/cache@v3
+        id: playwright-cache
+        env:
+          cache-name: playwright
+        with:
+          path: '~/.cache/ms-playwright'
+          key: |
+            ${{ env.cache-name }}-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+          restore-keys: |
+            ${{ env.cache-name }}-${{ runner.os }}-
+
+      - name: Install Playwright browsers ${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+        run: bunx playwright install chromium
+
+      - name: Run Storybook tests
+        run: bun run test:storybook --run
+
   build:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, test, test-storybook]
 
     steps:
       - name: Checkout code

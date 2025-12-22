@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PlayerAnswerScreen } from './PlayerAnswerScreen';
-import { fn } from 'storybook/test';
+import { fn, expect } from 'storybook/test';
 
 const meta = {
 	title: 'Player/AnswerScreen',
@@ -28,6 +28,13 @@ export const FourOptions: Story = {
 		optionIndices: [0, 1, 2, 3],
 		submittedAnswer: null,
 	},
+	play: async ({ canvas }) => {
+		const buttons = canvas.getAllByRole('button');
+		await expect(buttons).toHaveLength(4);
+		for (const button of buttons) {
+			await expect(button).toBeEnabled();
+		}
+	},
 };
 
 export const ThreeOptions: Story = {
@@ -42,12 +49,46 @@ export const TwoOptions: Story = {
 		optionIndices: [0, 1],
 		submittedAnswer: null,
 	},
+	play: async ({ canvas }) => {
+		const buttons = canvas.getAllByRole('button');
+		await expect(buttons).toHaveLength(2);
+	},
+};
+
+export const ClickFirstOption: Story = {
+	args: {
+		optionIndices: [0, 1, 2, 3],
+		submittedAnswer: null,
+	},
+	play: async ({ args, canvas, userEvent }) => {
+		const buttons = canvas.getAllByRole('button');
+		await userEvent.click(buttons[0]);
+		await expect(args.onAnswer).toHaveBeenCalledWith(0);
+	},
+};
+
+export const ClickSecondOption: Story = {
+	args: {
+		optionIndices: [0, 1, 2, 3],
+		submittedAnswer: null,
+	},
+	play: async ({ args, canvas, userEvent }) => {
+		const buttons = canvas.getAllByRole('button');
+		await userEvent.click(buttons[1]);
+		await expect(args.onAnswer).toHaveBeenCalledWith(1);
+	},
 };
 
 export const FirstSelected: Story = {
 	args: {
 		optionIndices: [0, 1, 2, 3],
 		submittedAnswer: 0,
+	},
+	play: async ({ canvas }) => {
+		const buttons = canvas.getAllByRole('button');
+		for (const button of buttons) {
+			await expect(button).toBeDisabled();
+		}
 	},
 };
 
