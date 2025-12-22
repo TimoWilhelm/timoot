@@ -180,7 +180,7 @@ export function useHostSound() {
 	const masterGainRef = useRef<GainNode | null>(null);
 	const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
 	const currentTrackRef = useRef<MusicTrack | null>(null);
-	const { isMuted, volume } = useSoundStore();
+	const { isMuted, volume, setBlocked } = useSoundStore();
 	const lastTickTimeRef = useRef<number>(0);
 
 	// Initialize audio context lazily (must be triggered by user interaction)
@@ -194,8 +194,9 @@ export function useHostSound() {
 		if (audioContextRef.current.state === 'suspended') {
 			audioContextRef.current.resume();
 		}
+		setBlocked(false);
 		return { ctx: audioContextRef.current, gain: masterGainRef.current! };
-	}, []);
+	}, [setBlocked]);
 
 	// Update master volume when settings change
 	useEffect(() => {
@@ -250,11 +251,25 @@ export function useHostSound() {
 				const currentTrackPath = currentTrackRef.current ? MUSIC_TRACKS[currentTrackRef.current] : null;
 				const isSameFile = currentTrackPath === newTrackPath;
 
-				// If same file is already playing and not forcing restart, just continue
-				if (isSameFile && backgroundMusicRef.current && !backgroundMusicRef.current.paused && !forceRestart) {
-					// Just update volume in case it changed
+				// If same file and not forcing restart, ensure it's playing and update volume
+				if (isSameFile && backgroundMusicRef.current && !forceRestart) {
 					backgroundMusicRef.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
 					currentTrackRef.current = track;
+					// Resume if paused (e.g., after reconnection) without restarting from beginning
+					if (backgroundMusicRef.current.paused) {
+						backgroundMusicRef.current
+							.play()
+							.then(() => setBlocked(false))
+							.catch((err) => {
+								if (err.name === 'NotAllowedError') {
+									setBlocked(true);
+								}
+								console.warn('Failed to resume background music:', err);
+							});
+					} else {
+						// Already playing - audio is working
+						setBlocked(false);
+					}
 					return;
 				}
 
@@ -275,14 +290,20 @@ export function useHostSound() {
 					backgroundMusicRef.current.currentTime = 0;
 				}
 
-				backgroundMusicRef.current.play().catch((err) => {
-					console.warn('Failed to play background music:', err);
-				});
+				backgroundMusicRef.current
+					.play()
+					.then(() => setBlocked(false))
+					.catch((err) => {
+						if (err.name === 'NotAllowedError') {
+							setBlocked(true);
+						}
+						console.warn('Failed to play background music:', err);
+					});
 			} catch (error) {
 				console.warn('Failed to start background music:', error);
 			}
 		},
-		[isMuted, volume],
+		[isMuted, volume, setBlocked],
 	);
 
 	// Stop background music with fade out

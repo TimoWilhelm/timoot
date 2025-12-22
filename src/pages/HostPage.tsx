@@ -75,6 +75,7 @@ export function HostPage() {
 
 	const { playSound, playCountdownTick, initAudio, startBackgroundMusic, stopBackgroundMusic } = useHostSound();
 	const prevPhaseRef = useRef<GamePhase | null>(null);
+	const wasConnectedRef = useRef<boolean>(false);
 	const prevPlayersCountRef = useRef<number | null>(null);
 	const floatingEmojisRef = useRef<FloatingEmojisHandle>(null);
 	const keyboardNavEnabledAtRef = useRef<number>(0);
@@ -149,20 +150,28 @@ export function HostPage() {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [isConnected, gameState.phase, nextState]);
 
-	// Play sounds on game phase changes
+	// Play sounds on game phase changes or reconnection
 	useEffect(() => {
-		if (!isConnected) return;
+		if (!isConnected) {
+			wasConnectedRef.current = false;
+			return;
+		}
 
 		const currentPhase = gameState.phase;
 		const prevPhase = prevPhaseRef.current;
+		const isReconnecting = !wasConnectedRef.current;
+		wasConnectedRef.current = true;
 
-		if (prevPhase !== currentPhase) {
-			// Handle background music for different phases
+		// Play music on phase change OR on reconnection (to resume music)
+		if (prevPhase !== currentPhase || isReconnecting) {
 			const track = phaseToMusicTrack[currentPhase];
 			if (track) {
 				startBackgroundMusic(track);
 			}
+		}
 
+		// Play sound effects only on actual phase changes (not reconnection)
+		if (prevPhase !== currentPhase) {
 			// Play sound effects
 			switch (currentPhase) {
 				case 'LOBBY':
