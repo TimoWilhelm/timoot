@@ -1,5 +1,5 @@
-import type { Answer, GameState, Player } from '@shared/types';
 import { QUESTION_TIME_LIMIT_MS } from './constants';
+import type { Answer, GameState, Player } from '@shared/types';
 
 /**
  * Score calculation result for a single answer.

@@ -1,4 +1,4 @@
-import { Users, Copy, Check } from 'lucide-react';
+import { Check, Copy, Users } from 'lucide-react';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';

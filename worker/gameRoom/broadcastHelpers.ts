@@ -1,14 +1,14 @@
-import type { GameState, ServerMessage, ClientRole } from '@shared/types';
-import type { WebSocketAttachment } from './types';
 import {
-	buildLobbyMessage,
+	buildGameEndMessage,
 	buildGetReadyMessage,
+	buildLeaderboardMessage,
+	buildLobbyMessage,
 	buildQuestionMessage,
 	buildQuestionModifierMessage,
 	buildRevealMessage,
-	buildLeaderboardMessage,
-	buildGameEndMessage,
 } from '../game';
+import type { WebSocketAttachment } from './types';
+import type { ClientRole, GameState, ServerMessage } from '@shared/types';
 
 /**
  * Context interface for broadcast operations.
@@ -33,7 +33,7 @@ export function sendMessage(ws: WebSocket, message: ServerMessage): void {
 /**
  * Broadcast a message to all authenticated WebSocket connections.
  */
-export function broadcastToAll(ctx: BroadcastContext, message: ServerMessage): void {
+function broadcastToAll(ctx: BroadcastContext, message: ServerMessage): void {
 	const sockets = ctx.getWebSockets();
 	for (const ws of sockets) {
 		const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;

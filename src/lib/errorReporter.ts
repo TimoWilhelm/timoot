@@ -483,7 +483,7 @@ class ErrorReporter {
 
 			// Process queue
 			this.processQueue();
-		} catch (err) {
+		} catch {
 			// Swallow reporting errors in client
 		}
 	}

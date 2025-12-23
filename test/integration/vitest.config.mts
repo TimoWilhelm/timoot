@@ -1,6 +1,6 @@
+import * as path from 'node:path';
 import { defineConfig } from 'vitest/config';
 import { loadEnv } from 'vite';
-import * as path from 'node:path';
 
 /**
  * Vitest configuration for integration and load tests.

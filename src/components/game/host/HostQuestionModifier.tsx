@@ -8,6 +8,13 @@ interface HostQuestionModifierProps {
 	modifiers: QuestionModifier[];
 }
 
+// Pre-generated sparkle positions (generated once at module load, not during render)
+const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, i) => ({
+	left: `${(((i * 7919) % 100) + ((i * 104729) % 100) / 100) % 100}%`,
+	top: `${(((i * 7907) % 100) + ((i * 104723) % 100) / 100) % 100}%`,
+	delay: ((i * 7901) % 200) / 100,
+}));
+
 function DoublePointsAnimation() {
 	return (
 		<motion.div
@@ -93,13 +100,13 @@ function DoublePointsAnimation() {
 			</motion.div>
 
 			{/* Sparkle particles */}
-			{[...Array(20)].map((_, i) => (
+			{SPARKLE_POSITIONS.map((pos, i) => (
 				<motion.div
 					key={`sparkle-${i}`}
 					className="absolute h-2 w-2 rounded-full bg-yellow-200"
 					style={{
-						left: `${Math.random() * 100}%`,
-						top: `${Math.random() * 100}%`,
+						left: pos.left,
+						top: pos.top,
 					}}
 					initial={{ opacity: 0, scale: 0 }}
 					animate={{
@@ -108,7 +115,7 @@ function DoublePointsAnimation() {
 					}}
 					transition={{
 						duration: 1,
-						delay: Math.random() * 2,
+						delay: pos.delay,
 						repeat: Infinity,
 					}}
 				/>

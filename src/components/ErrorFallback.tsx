@@ -1,12 +1,13 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export interface ErrorFallbackProps {
 	title?: string;
 	message?: string;
-	error?: Error | any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	error?: any;
 	onRetry?: () => void;
 	onGoHome?: () => void;
 	showErrorDetails?: boolean;
@@ -84,7 +85,8 @@ export function ErrorFallback({
 								</summary>
 								<pre className="mt-3 max-h-40 overflow-auto text-xs text-muted-foreground">
 									{error.message || error.toString()}
-									{error.stack && '\n\n' + error.stack + '\n\n' + error.componentStack}
+									{error.stack && '\n\n' + error.stack}
+									{error.componentStack && '\n\n' + error.componentStack}
 								</pre>
 							</details>
 						)}

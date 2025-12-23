@@ -4,15 +4,15 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import {
 	type LanguageModel,
 	NoSuchToolError,
+	Output,
 	type ToolCallRepairFunction,
+	ToolLoopAgent,
 	type ToolSet,
 	generateText,
-	ToolLoopAgent,
 	stepCountIs,
-	Output,
 } from 'ai';
 import { stripIndent } from 'common-tags';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { env, waitUntil } from 'cloudflare:workers';
 
 const getCloudflareDocsMCP: () => Promise<MCPClient> = async () => {

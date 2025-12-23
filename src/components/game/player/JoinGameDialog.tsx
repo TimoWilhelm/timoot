@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverAnchor } from '@/components/ui/popover';
-import { adjectives, colors, animals, findMatches, isValidWord, isValidGameId } from '@/lib/words';
-import { ArrowRight, Gamepad2, Check, AlertCircle } from 'lucide-react';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
+import { adjectives, animals, colors, findMatches, isValidGameId, isValidWord } from '@/lib/words';
 import { cn } from '@/lib/utils';
 
 // Determine which word list to use based on current position

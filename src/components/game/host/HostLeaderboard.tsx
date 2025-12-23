@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Crown, Trophy, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, Crown, Trophy } from 'lucide-react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { LeaderboardEntry } from '@/hooks/useGameWebSocket';
 
 interface HostLeaderboardProps {

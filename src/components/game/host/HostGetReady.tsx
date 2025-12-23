@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Clock, Trophy } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Clock, Trophy, Zap } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shapes';
 
 interface HostGetReadyProps {
@@ -12,7 +12,10 @@ interface HostGetReadyProps {
 export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: HostGetReadyProps) {
 	const [countdown, setCountdown] = useState(Math.ceil(countdownMs / 1000));
 	const onCountdownBeepRef = useRef(onCountdownBeep);
-	onCountdownBeepRef.current = onCountdownBeep;
+
+	useEffect(() => {
+		onCountdownBeepRef.current = onCountdownBeep;
+	});
 
 	useEffect(() => {
 		// Play initial beep

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { Link, useParams, useBlocker } from 'react-router-dom';
+import { useCallback, useEffect, useRef } from 'react';
+import { Link, useBlocker, useParams } from 'react-router-dom';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
+import type { EmojiReaction, GamePhase } from '@shared/types';
 import { HostLobby } from '@/components/game/host/HostLobby';
 import { HostQuestion } from '@/components/game/host/HostQuestion';
 import { HostQuestionModifier } from '@/components/game/host/HostQuestionModifier';
@@ -24,9 +25,8 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { SoundToggle } from '@/components/SoundToggle';
-import { useHostSound, type MusicTrack } from '@/hooks/useHostSound';
+import { type MusicTrack, useHostSound } from '@/hooks/useHostSound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/FloatingEmojis';
-import type { EmojiReaction, GamePhase } from '@shared/types';
 
 const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	LOBBY: 'lobby',

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import type { ClientMessage, ServerMessage, ClientRole, GamePhase, QuestionModifier, EmojiReaction } from '@shared/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier, ServerMessage } from '@shared/types';
 import type { ErrorCodeType } from '@shared/errors';
 
 // Game state derived from WebSocket messages
@@ -92,7 +92,7 @@ export function useGameWebSocket({
 	const wsRef = useRef<WebSocket | null>(null);
 	const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
-	const [isConnecting, setIsConnecting] = useState(true);
+	const [isConnecting, setIsConnecting] = useState(!!gameId);
 	const [error, setError] = useState<string | null>(null);
 	const [gameState, setGameState] = useState<WebSocketGameState>(initialGameState);
 	const [submittedAnswer, setSubmittedAnswer] = useState<number | null>(null);
@@ -204,7 +204,7 @@ export function useGameWebSocket({
 							});
 
 							// Enrich leaderboard entries with previousRank
-							const enrichedLeaderboard: LeaderboardEntry[] = message.leaderboard.map((player, index) => ({
+							const enrichedLeaderboard: LeaderboardEntry[] = message.leaderboard.map((player) => ({
 								...player,
 								previousRank: previousRanks.get(player.id),
 							}));
@@ -242,6 +242,9 @@ export function useGameWebSocket({
 		},
 		[onConnected, onError, onPlayerJoined, onEmojiReceived],
 	);
+
+	// Store connect in a ref to enable self-reference for reconnection
+	const connectRef = useRef<() => void>();
 
 	const connect = useCallback(() => {
 		// Prevent duplicate connections - check both OPEN and CONNECTING states
@@ -283,7 +286,7 @@ export function useGameWebSocket({
 				setIsConnecting(true);
 				setError(null);
 				reconnectTimeoutRef.current = setTimeout(() => {
-					connect();
+					connectRef.current?.();
 				}, 2000);
 			} else {
 				setIsConnecting(false);
@@ -297,15 +300,15 @@ export function useGameWebSocket({
 		};
 	}, [gameId, role, hostSecret, playerId, playerToken, handleMessage]);
 
-	// Store connect in a ref to avoid effect re-running on connect changes
-	const connectRef = useRef(connect);
-	connectRef.current = connect;
+	// Update ref after connect is defined
+	useEffect(() => {
+		connectRef.current = connect;
+	});
 
 	// Connect on mount - use empty deps to run only once
 	useEffect(() => {
 		// Skip connection if no gameId provided
 		if (!gameId) {
-			setIsConnecting(false);
 			return;
 		}
 

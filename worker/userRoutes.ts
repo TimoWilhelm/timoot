@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { registerQuizRoutes, registerGameRoutes, registerImageRoutes, registerSyncRoutes } from './routes';
+import { registerGameRoutes, registerImageRoutes, registerQuizRoutes, registerSyncRoutes } from './routes';
 
 /**
  * Register all user-facing API routes.

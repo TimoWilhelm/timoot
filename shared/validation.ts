@@ -151,33 +151,6 @@ export const aiGenerateRequestSchema = z.object({
 });
 
 /**
- * Player join request schema (for HTTP API)
- */
-const playerJoinRequestSchema = z.object({
-	name: nicknameSchema,
-	playerId: z.string().uuid('Invalid player ID'),
-});
-
-/**
- * Submit answer request schema
- */
-const submitAnswerRequestSchema = z.object({
-	playerId: z.string().uuid('Invalid player ID'),
-	answerIndex: z
-		.number()
-		.int()
-		.min(0)
-		.max(LIMITS.OPTIONS_MAX - 1),
-});
-
-/**
- * Host authentication schema
- */
-const hostAuthRequestSchema = z.object({
-	hostSecret: z.uuid('Invalid host secret'),
-});
-
-/**
  * Create game request schema
  */
 export const createGameRequestSchema = z.object({
@@ -240,11 +213,4 @@ export const wsClientMessageSchema = z.union([
 
 // ============ Type Exports ============
 
-type NicknameInput = z.input<typeof nicknameSchema>;
 export type QuizFormInput = z.input<typeof quizFormSchema>;
-type QuizInput = z.input<typeof quizSchema>;
-type QuestionInput = z.input<typeof questionSchema>;
-type AIGenerateRequest = z.input<typeof aiGenerateRequestSchema>;
-type PlayerJoinRequest = z.input<typeof playerJoinRequestSchema>;
-type SubmitAnswerRequest = z.input<typeof submitAnswerRequestSchema>;
-type WSClientMessage = z.input<typeof wsClientMessageSchema>;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { GameState } from '@shared/types';
 interface GameStoreState {
 	gameState: GameState | null;

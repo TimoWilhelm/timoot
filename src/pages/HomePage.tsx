@@ -1,23 +1,29 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-	Sparkles,
-	Loader2,
-	Pencil,
-	Trash2,
-	PlusCircle,
-	Wand2,
 	BookOpen,
-	HelpCircle,
-	Zap,
-	Gamepad2,
-	Music,
-	RefreshCw,
-	Copy,
 	Check,
+	Copy,
+	Gamepad2,
+	HelpCircle,
+	Loader2,
+	Music,
+	Pencil,
+	PlusCircle,
+	RefreshCw,
+	Sparkles,
+	Trash2,
+	Wand2,
+	Zap,
 } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
+import { z } from 'zod';
+import { motion } from 'framer-motion';
+import type { ApiResponse, GameState, Quiz } from '@shared/types';
+import { LIMITS, aiPromptSchema } from '@shared/validation';
+import { musicCredits } from '@shared/music-credits';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
 	AlertDialog,
@@ -31,14 +37,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Toaster, toast } from 'sonner';
-import type { ApiResponse, GameState, Quiz } from '@shared/types';
 import { cn } from '@/lib/utils';
-import { z } from 'zod';
-import { aiPromptSchema, LIMITS } from '@shared/validation';
-import { motion } from 'framer-motion';
 import { useHostStore } from '@/lib/host-store';
-import { musicCredits } from '@shared/music-credits';
 import { apiFetch } from '@/lib/api';
 import { setUserId } from '@/lib/user-id';
 
@@ -105,7 +105,7 @@ export function HomePage() {
 			const result = (await response.json()) as ApiResponse<GameState>;
 			if (result.success && result.data) {
 				if ('error' in result.data) {
-					throw new Error((result.data as any).error);
+					throw new Error((result.data as { error: string }).error);
 				}
 				if (result.data.id && result.data.hostSecret) {
 					addSecret(result.data.id, result.data.hostSecret);
@@ -117,9 +117,9 @@ export function HomePage() {
 			} else {
 				throw new Error(result.error || 'Failed to create game');
 			}
-		} catch (error: any) {
+		} catch (error) {
 			console.error(error);
-			toast.error(error.message || 'Could not start a new game. Please try again.');
+			toast.error(error instanceof Error ? error.message : 'Could not start a new game. Please try again.');
 			setIsGameStarting(false);
 			setStartingQuizId(null);
 		}
@@ -132,7 +132,7 @@ export function HomePage() {
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
 			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
-		} catch (err) {
+		} catch {
 			toast.error('Could not delete quiz.');
 		} finally {
 			setQuizToDelete(null);
@@ -150,8 +150,8 @@ export function HomePage() {
 			} else {
 				throw new Error(result.error || 'Failed to generate sync code');
 			}
-		} catch (error: any) {
-			toast.error(error.message || 'Failed to generate sync code');
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to generate sync code');
 		} finally {
 			setIsGeneratingSyncCode(false);
 		}
@@ -185,8 +185,8 @@ export function HomePage() {
 			} else {
 				throw new Error(result.error || 'Invalid or expired sync code');
 			}
-		} catch (error: any) {
-			toast.error(error.message || 'Failed to redeem sync code');
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to redeem sync code');
 		} finally {
 			setIsRedeemingSyncCode(false);
 		}
@@ -281,9 +281,9 @@ export function HomePage() {
 					}
 				}
 			}
-		} catch (error: any) {
+		} catch (error) {
 			console.error(error);
-			toast.error(error.message || 'Could not generate quiz. Please try again.');
+			toast.error(error instanceof Error ? error.message : 'Could not generate quiz. Please try again.');
 		} finally {
 			setIsGenerating(false);
 			setGenerationStatus(null);

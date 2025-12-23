@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { WsTestClient, createGame, generatePlayerNames } from './utils/ws-client';
 import type { EmojiReaction } from '@shared/types';
 

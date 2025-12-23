@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { EmojiReaction } from '@shared/types';
 
 interface FloatingEmoji {

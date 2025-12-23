@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
-import type { ApiResponse } from '@shared/types';
 import { z } from 'zod';
 import { getUserIdFromRequest } from './utils';
+import type { ApiResponse } from '@shared/types';
 
 // Sync code types
 interface SyncCodeData {

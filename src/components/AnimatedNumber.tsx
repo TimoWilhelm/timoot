@@ -1,4 +1,4 @@
-import { useMotionValue, useTransform, animate, motion } from 'framer-motion';
+import { animate, motion, useMotionValue, useTransform } from 'framer-motion';
 import { useEffect } from 'react';
 
 interface AnimatedNumberProps {

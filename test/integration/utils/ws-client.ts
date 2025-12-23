@@ -1,4 +1,4 @@
-import type { ClientMessage, ServerMessage, ClientRole, EmojiReaction } from '@shared/types';
+import type { ClientMessage, ClientRole, EmojiReaction, ServerMessage } from '@shared/types';
 
 export interface WsClientOptions {
 	baseUrl: string;
@@ -298,14 +298,6 @@ export async function createGame(baseUrl: string, quizId?: string): Promise<{ ga
 		hostSecret: data.data.hostSecret,
 		pin: data.data.pin,
 	};
-}
-
-/**
- * Check if a game exists
- */
-export async function gameExists(baseUrl: string, gameId: string): Promise<boolean> {
-	const response = await fetch(`${baseUrl}/api/games/${gameId}/exists`);
-	return response.ok;
 }
 
 /**

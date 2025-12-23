@@ -19,10 +19,3 @@ export function getUserId(): string {
 export function setUserId(userId: string): void {
 	localStorage.setItem(STORAGE_KEY, userId);
 }
-
-/**
- * Clear the user ID (useful for testing or "reset" functionality)
- */
-export function clearUserId(): void {
-	localStorage.removeItem(STORAGE_KEY);
-}

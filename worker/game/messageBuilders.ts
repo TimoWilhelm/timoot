@@ -1,6 +1,6 @@
-import type { GameState, ServerMessage, QuestionModifier } from '@shared/types';
 import { QUESTION_TIME_LIMIT_MS } from './constants';
 import { buildLeaderboard } from './scoring';
+import type { GameState, QuestionModifier, ServerMessage } from '@shared/types';
 
 /**
  * Build a lobby update message with current players.

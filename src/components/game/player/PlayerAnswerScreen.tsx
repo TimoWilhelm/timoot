@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { shapePaths, shapeGradients, shapeGlowColors } from '@/components/game/shapes';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { shapeGradients, shapePaths } from '@/components/game/shapes';
 
 interface PlayerAnswerScreenProps {
 	onAnswer: (index: number) => void;
@@ -17,7 +17,8 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 			const timer = setTimeout(() => setShowPulse(true), 600);
 			return () => clearTimeout(timer);
 		}
-		setShowPulse(false);
+		// No need to setShowPulse(false) - state is initialized as false,
+		// and render guards (isSelected && showPulse) prevent showing pulse when submittedAnswer is null
 	}, [submittedAnswer]);
 
 	// Calculate positions for 2x2 grid with rectangular buttons (wider horizontally)

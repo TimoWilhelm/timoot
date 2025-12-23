@@ -14,11 +14,3 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
 		headers,
 	});
 }
-
-/**
- * Helper for JSON API requests with user ID header
- */
-export async function apiJson<T>(url: string, options?: RequestInit): Promise<T> {
-	const response = await apiFetch(url, options);
-	return response.json() as Promise<T>;
-}

@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Loader2, Trophy, Home } from 'lucide-react';
+import { CheckCircle, Home, Loader2, Trophy, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';

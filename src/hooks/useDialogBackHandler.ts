@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Hook that handles browser back button for dialogs.
@@ -16,10 +16,13 @@ export function useDialogBackHandler(controlledOpen: boolean | undefined, onOpen
 
 	// Use a ref to store the close callback to avoid stale closures in popstate handler
 	const onCloseRef = useRef<() => void>();
-	onCloseRef.current = () => {
-		setInternalOpen(false);
-		onOpenChange?.(false);
-	};
+
+	useEffect(() => {
+		onCloseRef.current = () => {
+			setInternalOpen(false);
+			onOpenChange?.(false);
+		};
+	}, [onOpenChange]);
 
 	// Track whether we've pushed a history entry for this dialog instance
 	const historyStateRef = useRef<'none' | 'pushed' | 'popped'>('none');

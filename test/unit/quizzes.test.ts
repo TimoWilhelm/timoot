@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { PREDEFINED_QUIZZES, GENERAL_KNOWLEDGE_QUIZ } from '../../worker/quizzes';
-import type { Question, Quiz } from '@shared/types';
+import { describe, expect, it } from 'vitest';
+import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../../worker/quizzes';
 
 describe('quizzes.ts', () => {
 	describe('PREDEFINED_QUIZZES', () => {

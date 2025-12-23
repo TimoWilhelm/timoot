@@ -1,11 +1,11 @@
 import { useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { LIMITS, nicknameSchema } from '@shared/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { nicknameSchema, LIMITS } from '@shared/validation';
 
 const formSchema = z.object({
 	nickname: nicknameSchema,
@@ -21,7 +21,7 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 	const {
 		register,
 		handleSubmit,
-		watch,
+		control,
 		formState: { errors, isValid },
 	} = useForm<FormData>({
 		resolver: zodResolver(formSchema),
@@ -29,7 +29,7 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 		defaultValues: { nickname: '' },
 	});
 
-	const nickname = watch('nickname');
+	const nickname = useWatch({ control, name: 'nickname' });
 
 	const onSubmit = (data: FormData) => {
 		onJoin(data.nickname);

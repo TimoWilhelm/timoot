@@ -251,7 +251,7 @@ export default {
 	},
 	plugins: [
 		tailwindcssAnimate,
-		plugin(({ addVariant, addUtilities, matchVariant }) => {
+		plugin(({ addVariant, matchVariant }) => {
 			// Hover media queries
 			addVariant('has-hover', '@media (hover: hover) and (pointer: fine)');
 			addVariant('no-hover', '@media not all and (hover: hover) and (pointer: fine)');

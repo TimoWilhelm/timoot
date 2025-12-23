@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useSearchParams, useBlocker } from 'react-router-dom';
-import { useGameStore } from '@/lib/game-store';
-import { ErrorCode } from '@shared/errors';
-import { useGameWebSocket } from '@/hooks/useGameWebSocket';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ErrorCode } from '@shared/errors';
+import type { GamePhase } from '@shared/types';
+import { phaseAllowsEmoji } from '@shared/phaseRules';
+import { useGameStore } from '@/lib/game-store';
+import { useGameWebSocket } from '@/hooks/useGameWebSocket';
 import { PlayerNicknameForm } from '@/components/game/player/PlayerNicknameForm';
 import { PlayerAnswerScreen } from '@/components/game/player/PlayerAnswerScreen';
 import { PlayerWaitingScreen } from '@/components/game/player/PlayerWaitingScreen';
@@ -23,8 +25,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import type { GamePhase } from '@shared/types';
-import { phaseAllowsEmoji } from '@shared/phaseRules';
 
 type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
 
@@ -52,43 +52,38 @@ export function PlayerPage() {
 	const setSession = useGameStore((s) => s.setSession);
 	const clearSession = useGameStore((s) => s.clearSession);
 
-	const [view, setView] = useState<View>('LOADING');
-	const [currentPlayerId, setCurrentPlayerId] = useState<string | undefined>(storedPlayerId ?? undefined);
-	const [currentPlayerToken, setCurrentPlayerToken] = useState<string | undefined>(storedPlayerToken ?? undefined);
-	const [currentNickname, setCurrentNickname] = useState<string>(nickname ?? '');
-	const pendingNicknameRef = useRef<string>(nickname ?? '');
-	const [answerResult, setAnswerResult] = useState<{ isCorrect: boolean; score: number } | null>(null);
-	const [totalScore, setTotalScore] = useState(0);
-	// For reconnecting players, skip score animation until initial sync is complete
-	// For new players (no stored ID), allow animations immediately
+	// Derive initial state based on URL and stored session
+	const isReconnecting = !!(urlGameId && storedPlayerId && storedPlayerToken && sessionGameId === urlGameId);
+	const isDifferentGame = !!(urlGameId && storedPlayerId && sessionGameId && sessionGameId !== urlGameId);
+
+	const [view, setView] = useState<View>(() => {
+		if (!urlGameId) return 'JOIN_GAME';
+		if (isReconnecting) return 'GAME';
+		return 'LOADING';
+	});
+	const [currentPlayerId, setCurrentPlayerId] = useState<string | undefined>(() =>
+		isReconnecting ? (storedPlayerId ?? undefined) : undefined,
+	);
+	const [currentPlayerToken, setCurrentPlayerToken] = useState<string | undefined>(() =>
+		isReconnecting ? (storedPlayerToken ?? undefined) : undefined,
+	);
+	const [currentNickname, setCurrentNickname] = useState<string>(() => (isReconnecting ? (nickname ?? '') : ''));
+	const pendingNicknameRef = useRef<string>(isReconnecting ? (nickname ?? '') : '');
+	// Track which question index we've processed side effects for (sound, score update)
+	const processedRevealRef = useRef<number | null>(null);
+	// For reconnecting players, initialize score as null until synced from leaderboard
+	// For new players, start at 0
+	const [totalScore, setTotalScore] = useState<number | null>(() => (storedPlayerId ? null : 0));
+	// Track if we've done the initial score sync for reconnecting players
 	const [hasInitialScoreSync, setHasInitialScoreSync] = useState(!storedPlayerId);
 	const { playSound } = useSound();
 
-	// Determine initial view
+	// Clear old session if joining a different game (side effect only, no state updates)
 	useEffect(() => {
-		if (!urlGameId) {
-			setView('JOIN_GAME');
-			return;
-		}
-
-		// Case 1: Player has a session for this game -> Reconnect
-		if (storedPlayerId && storedPlayerToken && sessionGameId === urlGameId) {
-			setCurrentPlayerId(storedPlayerId);
-			setCurrentPlayerToken(storedPlayerToken);
-			setCurrentNickname(nickname ?? '');
-			pendingNicknameRef.current = nickname ?? '';
-			setView('GAME');
-		}
-		// Case 2: Player has a session for a *different* game -> Clear old session
-		else if (storedPlayerId && sessionGameId && sessionGameId !== urlGameId) {
+		if (isDifferentGame) {
 			clearSession();
-			setCurrentPlayerId(undefined);
-			setCurrentPlayerToken(undefined);
-			// Stay in LOADING - handleConnected will set to NICKNAME once game is confirmed
 		}
-		// Case 3: New player or cleared session
-		// Stay in LOADING - handleConnected will set to NICKNAME once game is confirmed
-	}, [urlGameId, sessionGameId, storedPlayerId, storedPlayerToken, nickname, navigate, clearSession]);
+	}, [isDifferentGame, clearSession]);
 
 	const handleConnected = useCallback(
 		(playerId?: string, playerToken?: string) => {
@@ -157,37 +152,43 @@ export function PlayerPage() {
 		onConnected: handleConnected,
 	});
 
-	// Handle reveal results and update score immediately
-	useEffect(() => {
-		if (gameState.phase === 'REVEAL' && gameState.playerResult && !answerResult) {
-			setAnswerResult({
-				isCorrect: gameState.playerResult.isCorrect,
-				score: gameState.playerResult.score,
-			});
-			// Update total score immediately when reveal comes in
-			setTotalScore((prev) => prev + gameState.playerResult!.score);
-			playSound(gameState.playerResult.isCorrect ? 'correct' : 'incorrect');
-		}
-	}, [gameState.phase, gameState.playerResult, answerResult, playSound]);
+	// Derive answerResult from gameState.playerResult (no state needed)
+	// playerResult persists until next question starts, so this works for REVEAL and LEADERBOARD phases
+	const answerResult = gameState.playerResult ? { isCorrect: gameState.playerResult.isCorrect, score: gameState.playerResult.score } : null;
 
-	// Sync total score with leaderboard when available (handles reconnection)
+	// Handle reveal side effects (sound, score update) - only once per question
 	useEffect(() => {
-		if (gameState.leaderboard.length > 0 && currentPlayerId) {
+		if (gameState.phase === 'REVEAL' && gameState.playerResult && processedRevealRef.current !== gameState.questionIndex) {
+			processedRevealRef.current = gameState.questionIndex;
+			const scoreToAdd = gameState.playerResult.score;
+			const isCorrect = gameState.playerResult.isCorrect;
+			// Defer setState to avoid synchronous cascading render
+			requestAnimationFrame(() => {
+				setTotalScore((prev) => (prev ?? 0) + scoreToAdd);
+			});
+			playSound(isCorrect ? 'correct' : 'incorrect');
+		}
+	}, [gameState.phase, gameState.playerResult, gameState.questionIndex, playSound]);
+
+	// Sync total score with leaderboard when available (handles reconnection - one time only)
+	useEffect(() => {
+		if (!hasInitialScoreSync && gameState.leaderboard.length > 0 && currentPlayerId) {
 			const myLeaderboardScore = gameState.leaderboard.find((p) => p.id === currentPlayerId)?.score;
 			if (myLeaderboardScore !== undefined) {
-				setTotalScore(myLeaderboardScore);
-				// Mark initial sync as done after a short delay to skip animation
-				if (!hasInitialScoreSync) {
-					setTimeout(() => setHasInitialScoreSync(true), 100);
-				}
+				// Defer setState to avoid synchronous cascading render
+				requestAnimationFrame(() => {
+					setTotalScore(myLeaderboardScore);
+				});
+				// Mark sync as done after a short delay to skip initial animation
+				setTimeout(() => setHasInitialScoreSync(true), 100);
 			}
 		}
 	}, [gameState.leaderboard, currentPlayerId, hasInitialScoreSync]);
 
-	// Reset answer result on new question
+	// Reset processed reveal ref on new question (answerResult is now derived, no state to reset)
 	useEffect(() => {
 		if (gameState.phase === 'QUESTION') {
-			setAnswerResult(null);
+			processedRevealRef.current = null;
 		}
 	}, [gameState.phase, gameState.questionIndex]);
 

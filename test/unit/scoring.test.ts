@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { calculateAnswerScore, processAnswersAndUpdateScores, buildLeaderboard, type ScoreResult } from '../../worker/game/scoring';
+import { describe, expect, it } from 'vitest';
+import { buildLeaderboard, calculateAnswerScore, processAnswersAndUpdateScores } from '../../worker/game/scoring';
 import { QUESTION_TIME_LIMIT_MS } from '../../worker/game/constants';
 import type { Answer, GameState, Player, Question } from '@shared/types';
 

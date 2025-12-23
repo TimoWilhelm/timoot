@@ -1,7 +1,25 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Link, useBlocker } from 'react-router-dom';
-import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom';
+import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import {
+	ArrowLeft,
+	ChevronDown,
+	ChevronUp,
+	ImageIcon,
+	ImageOff,
+	Loader2,
+	PlusCircle,
+	Save,
+	Sparkles,
+	Trash2,
+	Wand2,
+	X,
+	Zap,
+} from 'lucide-react';
+import { Toaster, toast } from 'sonner';
+import type { ApiResponse, Question, Quiz } from '@shared/types';
+import { LIMITS, type QuizFormInput, quizFormSchema } from '@shared/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,25 +36,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-	PlusCircle,
-	Trash2,
-	Loader2,
-	Save,
-	ArrowLeft,
-	ChevronUp,
-	ChevronDown,
-	Wand2,
-	Zap,
-	ImageIcon,
-	ImageOff,
-	Sparkles,
-	X,
-} from 'lucide-react';
-import { Toaster, toast } from 'sonner';
-import type { ApiResponse, Quiz, Question } from '@shared/types';
-import { quizFormSchema, LIMITS, type QuizFormInput } from '@shared/validation';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
 import { apiFetch } from '@/lib/api';
@@ -46,8 +45,6 @@ type QuizFormData = {
 	title: string;
 	questions: Question[];
 };
-
-type QuestionFormInput = QuizFormInput['questions'][number];
 
 interface AIImage {
 	id: string;
@@ -149,7 +146,7 @@ export function QuizEditorPage() {
 					} else {
 						throw new Error(result.error || 'Failed to fetch quiz');
 					}
-				} catch (error) {
+				} catch {
 					toast.error('Could not load quiz for editing.');
 					navigate('/edit');
 				}

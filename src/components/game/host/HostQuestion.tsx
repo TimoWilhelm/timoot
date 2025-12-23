@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shapes';
 
@@ -178,19 +178,24 @@ export function HostQuestion({
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
 	const [imageError, setImageError] = useState(false);
+	const [prevBackgroundImage, setPrevBackgroundImage] = useState(backgroundImage);
+
+	// Reset image error state when backgroundImage changes (adjusting state during render)
+	if (backgroundImage !== prevBackgroundImage) {
+		setPrevBackgroundImage(backgroundImage);
+		setImageError(false);
+	}
 
 	// Use refs for callbacks to prevent effect restart on parent re-renders
 	const onNextRef = useRef(onNext);
 	const onCountdownTickRef = useRef(onCountdownTick);
 	const onTimeUpRef = useRef(onTimeUp);
-	onNextRef.current = onNext;
-	onCountdownTickRef.current = onCountdownTick;
-	onTimeUpRef.current = onTimeUp;
 
-	// Reset image error state when backgroundImage changes
 	useEffect(() => {
-		setImageError(false);
-	}, [backgroundImage]);
+		onNextRef.current = onNext;
+		onCountdownTickRef.current = onCountdownTick;
+		onTimeUpRef.current = onTimeUp;
+	});
 
 	useEffect(() => {
 		let lastTickedSecond = -1;

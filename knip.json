@@ -7,5 +7,6 @@
 	"tags": ["-lintignore"],
 	"entry": ["src/main.tsx", "worker/index.ts"],
 	"ignoreDependencies": ["cloudflare"],
-	"ignoreBinaries": ["wrangler"]
+	"ignoreBinaries": ["wrangler"],
+	"ignoreFiles": ["test/unit/env.d.ts"]
 }

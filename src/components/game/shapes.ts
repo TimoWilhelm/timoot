@@ -23,6 +23,3 @@ export const shapeGradients = [
 	'linear-gradient(135deg, #2DD4BF 0%, #14B8A6 50%, #0D9488 100%)', // Circle - Cyan Teal
 	'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #DB2777 100%)', // Square - Hot Pink
 ];
-
-/** Hex colors for glow effects */
-export const shapeGlowColors = ['#F59E0B', '#3B82F6', '#14B8A6', '#EC4899'];
