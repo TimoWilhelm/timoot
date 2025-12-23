@@ -1,6 +1,5 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
+import { ErrorBoundary, RouteErrorBoundary } from '@/components/error';
 import { HomePage } from '@/pages/HomePage';
 import { HostPage } from '@/pages/HostPage';
 import { PlayerPage } from '@/pages/PlayerPage';

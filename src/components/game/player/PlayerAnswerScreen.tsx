@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { shapeGradients, shapePaths } from '@/components/game/shapes';
+import { shapeGradients, shapePaths } from '@/components/game/shared';
 
 interface PlayerAnswerScreenProps {
 	onAnswer: (index: number) => void;

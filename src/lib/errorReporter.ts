@@ -18,8 +18,6 @@ interface ErrorReport extends BaseErrorData {
 	category?: 'react' | 'javascript' | 'network' | 'user' | 'unknown';
 }
 
-// Removed legacy ErrorSignature and related internal dedup logic in favor of GlobalErrorDeduplication
-
 type ConsoleMethod = 'warn' | 'error';
 type ConsoleArgs = unknown[];
 

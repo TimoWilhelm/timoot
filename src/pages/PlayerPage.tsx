@@ -12,9 +12,9 @@ import { PlayerNicknameForm } from '@/components/game/player/PlayerNicknameForm'
 import { PlayerAnswerScreen } from '@/components/game/player/PlayerAnswerScreen';
 import { PlayerWaitingScreen } from '@/components/game/player/PlayerWaitingScreen';
 import { JoinGameDialog } from '@/components/game/player/JoinGameDialog';
-import { EmojiPicker } from '@/components/EmojiPicker';
+import { EmojiPicker } from '@/components/game/shared';
 import { useSound } from '@/hooks/useSound';
-import { AnimatedNumber } from '@/components/AnimatedNumber';
+import { AnimatedNumber } from '@/components/ui/animated-number';
 import {
 	AlertDialog,
 	AlertDialogAction,

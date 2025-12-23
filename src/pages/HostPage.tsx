@@ -24,9 +24,9 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { SoundToggle } from '@/components/SoundToggle';
+import { SoundToggle } from '@/components/ui/sound-toggle';
 import { type MusicTrack, useHostSound } from '@/hooks/useHostSound';
-import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/FloatingEmojis';
+import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/game/shared';
 
 const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	LOBBY: 'lobby',

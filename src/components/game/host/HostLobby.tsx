@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { QRCode } from '@/components/game/QRCode';
+import { QRCode } from '@/components/game/shared';
 
 interface HostLobbyProps {
 	onStart: () => void;

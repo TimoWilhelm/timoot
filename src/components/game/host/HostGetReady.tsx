@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Trophy, Zap } from 'lucide-react';
-import { shapeColors, shapePaths } from '@/components/game/shapes';
+import { shapeColors, shapePaths } from '@/components/game/shared';
 
 interface HostGetReadyProps {
 	countdownMs: number;
