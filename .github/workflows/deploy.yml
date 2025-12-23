@@ -1,7 +1,9 @@
 name: Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -23,6 +25,8 @@ jobs:
     name: Deploy to Cloudflare Workers
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Only deploy if CI passed or if manually triggered
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: ${{ inputs.environment || 'production' }}
       url: ${{ steps.deploy.outputs.deployment-url }}

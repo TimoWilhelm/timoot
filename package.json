@@ -76,6 +76,7 @@
 		"build": "vite build",
 		"lint": "eslint --cache -f json --quiet .",
 		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"test": "vitest run --config ./test/unit/vitest.config.mts",
 		"test:watch": "vitest --config ./test/unit/vitest.config.mts",
 		"test:integration": "vitest run --config ./test/integration/vitest.config.mts",
