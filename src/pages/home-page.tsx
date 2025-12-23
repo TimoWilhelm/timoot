@@ -594,7 +594,6 @@ export function HomePage() {
 
 			{/* Footer */}
 			<footer className="relative z-10 border-t border-slate-200/50 py-6 text-center text-muted-foreground/80">
-				<p className="text-sm">Built with ❤️ at Cloudflare</p>
 				<div className="mt-2 flex items-center justify-center gap-4">
 					<a
 						href="https://github.com/TimoWilhelm/timoot"
