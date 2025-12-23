@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { PlayerWaitingScreen } from './PlayerWaitingScreen';
+import { PlayerWaitingScreen } from './player-waiting-screen';
 
 const meta = {
 	title: 'Player/WaitingScreen',

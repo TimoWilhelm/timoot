@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { JoinGameDialog } from './JoinGameDialog';
+import { JoinGameDialog } from './join-game-dialog';
 
 const meta = {
 	title: 'Player/JoinGameDialog',

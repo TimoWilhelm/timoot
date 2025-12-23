@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
-import { HostGetReady } from './HostGetReady';
+import { HostGetReady } from './host-get-ready';
 
 const meta = {
 	title: 'Host/GetReady',

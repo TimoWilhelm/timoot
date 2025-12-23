@@ -5,15 +5,15 @@ import { Toaster, toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ErrorCode } from '@shared/errors';
 import type { GamePhase } from '@shared/types';
-import { phaseAllowsEmoji } from '@shared/phaseRules';
+import { phaseAllowsEmoji } from '@shared/phase-rules';
 import { useGameStore } from '@/lib/game-store';
-import { useGameWebSocket } from '@/hooks/useGameWebSocket';
-import { PlayerNicknameForm } from '@/components/game/player/PlayerNicknameForm';
-import { PlayerAnswerScreen } from '@/components/game/player/PlayerAnswerScreen';
-import { PlayerWaitingScreen } from '@/components/game/player/PlayerWaitingScreen';
-import { JoinGameDialog } from '@/components/game/player/JoinGameDialog';
+import { useGameWebSocket } from '@/hooks/use-game-web-socket';
+import { PlayerNicknameForm } from '@/components/game/player/player-nickname-form';
+import { PlayerAnswerScreen } from '@/components/game/player/player-answer-screen';
+import { PlayerWaitingScreen } from '@/components/game/player/player-waiting-screen';
+import { JoinGameDialog } from '@/components/game/player/join-game-dialog';
 import { EmojiPicker } from '@/components/game/shared';
-import { useSound } from '@/hooks/useSound';
+import { useSound } from '@/hooks/use-sound';
 import { AnimatedNumber } from '@/components/ui/animated-number';
 import {
 	AlertDialog,

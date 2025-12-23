@@ -15,8 +15,8 @@ import {
 	handleStartGame,
 	handleSubmitAnswer,
 	sendMessage,
-} from './gameRoom/index';
-import { sendCurrentStateToHost } from './gameRoom/stateSync';
+} from './game-room/index';
+import { sendCurrentStateToHost } from './game-room/state-sync';
 import { ErrorCode, createError } from '@shared/errors';
 import { wsClientMessageSchema } from '@shared/validation';
 import type { ClientMessage, GameState, Question } from '@shared/types';

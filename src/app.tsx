@@ -1,9 +1,9 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { ErrorBoundary, RouteErrorBoundary } from '@/components/error';
-import { HomePage } from '@/pages/HomePage';
-import { HostPage } from '@/pages/HostPage';
-import { PlayerPage } from '@/pages/PlayerPage';
-import { QuizEditorPage } from '@/pages/QuizEditorPage';
+import { HomePage } from '@/pages/home-page';
+import { HostPage } from '@/pages/host-page';
+import { PlayerPage } from '@/pages/player-page';
+import { QuizEditorPage } from '@/pages/quiz-editor-page';
 const router = createBrowserRouter([
 	{
 		path: '/',

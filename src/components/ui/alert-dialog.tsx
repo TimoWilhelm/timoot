@@ -3,7 +3,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { useDialogBackHandler } from '@/hooks/useDialogBackHandler';
+import { useDialogBackHandler } from '@/hooks/use-dialog-back-handler';
 
 interface AlertDialogProps extends React.ComponentProps<typeof AlertDialogPrimitive.Root> {
 	/** Disable browser back button closing this dialog (use for navigation confirmation dialogs) */

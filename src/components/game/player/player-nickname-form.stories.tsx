@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
-import { PlayerNicknameForm } from './PlayerNicknameForm';
+import { PlayerNicknameForm } from './player-nickname-form';
 
 const meta = {
 	title: 'Player/NicknameForm',

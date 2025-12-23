@@ -5,7 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { useDialogBackHandler } from '@/hooks/useDialogBackHandler';
+import { useDialogBackHandler } from '@/hooks/use-dialog-back-handler';
 
 interface DialogProps extends React.ComponentProps<typeof DialogPrimitive.Root> {
 	/** Disable browser back button closing this dialog (use for navigation confirmation dialogs) */

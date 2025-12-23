@@ -3,9 +3,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { userRoutes } from './userRoutes';
-import { QuizStoreDurableObject } from './quizStore';
-import { GameRoomDurableObject } from './gameRoom';
+import { userRoutes } from './user-routes';
+import { QuizStoreDurableObject } from './quiz-store';
+import { GameRoomDurableObject } from './game-room';
 
 // Export Durable Object classes to make them available in wrangler
 export { QuizStoreDurableObject, GameRoomDurableObject };

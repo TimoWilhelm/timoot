@@ -40,6 +40,7 @@
 		"eslint-plugin-react-hooks": "^7.0.0",
 		"eslint-plugin-react-refresh": "^0.4.26",
 		"eslint-plugin-storybook": "^10.1.10",
+		"eslint-plugin-unicorn": "^62.0.0",
 		"eslint-plugin-unused-imports": "^4.3.0",
 		"framer-motion": "^12.23.26",
 		"globals": "^16.5.0",

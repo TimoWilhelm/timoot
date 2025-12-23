@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { HostQuestionModifier } from './HostQuestionModifier';
+import { HostQuestionModifier } from './host-question-modifier';
 
 const meta = {
 	title: 'Host/QuestionModifier',

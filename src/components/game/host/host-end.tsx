@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
-import type { LeaderboardEntry } from '@/hooks/useGameWebSocket';
+import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
 interface PodiumEntry {
 	players: LeaderboardEntry[];

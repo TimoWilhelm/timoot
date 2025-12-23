@@ -4,14 +4,14 @@ import { Loader2, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
 import type { EmojiReaction, GamePhase } from '@shared/types';
-import { HostLobby } from '@/components/game/host/HostLobby';
-import { HostQuestion } from '@/components/game/host/HostQuestion';
-import { HostQuestionModifier } from '@/components/game/host/HostQuestionModifier';
-import { HostReveal } from '@/components/game/host/HostReveal';
-import { HostLeaderboard } from '@/components/game/host/HostLeaderboard';
-import { HostEnd } from '@/components/game/host/HostEnd';
-import { HostGetReady } from '@/components/game/host/HostGetReady';
-import { useGameWebSocket } from '@/hooks/useGameWebSocket';
+import { HostLobby } from '@/components/game/host/host-lobby';
+import { HostQuestion } from '@/components/game/host/host-question';
+import { HostQuestionModifier } from '@/components/game/host/host-question-modifier';
+import { HostReveal } from '@/components/game/host/host-reveal';
+import { HostLeaderboard } from '@/components/game/host/host-leaderboard';
+import { HostEnd } from '@/components/game/host/host-end';
+import { HostGetReady } from '@/components/game/host/host-get-ready';
+import { useGameWebSocket } from '@/hooks/use-game-web-socket';
 import { useHostStore } from '@/lib/host-store';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +25,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { SoundToggle } from '@/components/ui/sound-toggle';
-import { type MusicTrack, useHostSound } from '@/hooks/useHostSound';
+import { type MusicTrack, useHostSound } from '@/hooks/use-host-sound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/game/shared';
 
 const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {

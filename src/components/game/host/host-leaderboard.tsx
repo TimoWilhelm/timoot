@@ -3,7 +3,7 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { LeaderboardEntry } from '@/hooks/useGameWebSocket';
+import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
 interface HostLeaderboardProps {
 	onNext: () => void;

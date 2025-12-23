@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
-import { HostEnd } from './HostEnd';
+import { HostEnd } from './host-end';
 
 const meta = {
 	title: 'Host/End',

@@ -10,6 +10,7 @@ import tseslint from 'typescript-eslint';
 import storybook from 'eslint-plugin-storybook';
 import { FlatCompat } from '@eslint/eslintrc';
 import unusedImports from 'eslint-plugin-unused-imports';
+import unicorn from 'eslint-plugin-unicorn';
 
 const compat = new FlatCompat({
 	baseDirectory: import.meta.dirname,
@@ -68,6 +69,22 @@ export default defineConfig(
 					varsIgnorePattern: '^_',
 					args: 'after-used',
 					argsIgnorePattern: '^_',
+				},
+			],
+		},
+	},
+	{
+		languageOptions: {
+			globals: globals.builtin,
+		},
+		plugins: {
+			unicorn,
+		},
+		rules: {
+			'unicorn/filename-case': [
+				'error',
+				{
+					case: 'kebabCase',
 				},
 			],
 		},

@@ -7,7 +7,7 @@ import {
 	buildQuestionModifierMessage,
 	buildRevealMessage,
 } from '../game';
-import { getReadyCountdownMs, sendMessage } from './broadcastHelpers';
+import { getReadyCountdownMs, sendMessage } from './broadcast-helpers';
 import type { GameState } from '@shared/types';
 
 /**

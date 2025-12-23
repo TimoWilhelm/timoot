@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
-import { PlayerAnswerScreen } from './PlayerAnswerScreen';
+import { PlayerAnswerScreen } from './player-answer-screen';
 
 const meta = {
 	title: 'Player/AnswerScreen',

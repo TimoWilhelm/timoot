@@ -21,11 +21,11 @@ import {
 	broadcastToRole,
 	getReadyCountdownMs,
 	sendMessage,
-} from './broadcastHelpers';
-import { sendCurrentStateToPlayer } from './stateSync';
+} from './broadcast-helpers';
+import { sendCurrentStateToPlayer } from './state-sync';
 import { ErrorCode, createError } from '@shared/errors';
 import { LIMITS, nicknameSchema } from '@shared/validation';
-import { phaseAllowsEmoji } from '@shared/phaseRules';
+import { phaseAllowsEmoji } from '@shared/phase-rules';
 import type { Answer, ClientMessage, EmojiReaction, GameState, Player } from '@shared/types';
 
 /**

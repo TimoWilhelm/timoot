@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
-import { HostQuestion } from './HostQuestion';
+import { HostQuestion } from './host-question';
 
 const meta = {
 	title: 'Host/Question',
