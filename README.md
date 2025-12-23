@@ -28,15 +28,15 @@ Every game runs on its own Durable Object, keeping state synced across all playe
 
 ## Tech Stack
 
-| Layer          | Tools                                      |
-| -------------- | ------------------------------------------ |
-| **Frontend**   | React, TypeScript, Tailwind CSS, shadcn/ui |
-| **State**      | Zustand, React Query                       |
-| **Animations** | Framer Motion                              |
-| **Backend**    | Cloudflare Workers, Hono                   |
-| **Realtime**   | Cloudflare Durable Objects, WebSockets     |
-| **AI**         | Cloudflare AI Gateway, Vercel AI SDK       |
-| **Tooling**    | Vite, Bun                                  |
+| Layer          | Tools                                  |
+| -------------- | -------------------------------------- |
+| **Frontend**   | React, TypeScript, Tailwind CSS        |
+| **State**      | Zustand                                |
+| **Animations** | Framer Motion                          |
+| **Backend**    | Cloudflare Workers, Hono               |
+| **Realtime**   | Cloudflare Durable Objects, WebSockets |
+| **AI**         | Cloudflare AI Gateway, AI SDK          |
+| **Tooling**    | Vite, Bun                              |
 
 ## Getting Started
 
@@ -101,23 +101,6 @@ bunx wrangler secret put CLOUDFLARE_AI_GATEWAY_API_TOKEN
 bunx wrangler secret put CLOUDFLARE_AI_GATEWAY_MODEL
 ```
 
-## AI Quiz Generation
-
-Timoot uses Cloudflare AI Gateway to generate quizzes on the fly. Describe a topic and the AI handles the rest.
-
-**How it works:**
-
-1. **Research phase** — An AI agent researches your topic, pulling from Cloudflare docs via MCP and its own knowledge base
-2. **Generation phase** — Creates quiz questions with 4 multiple-choice options each, varying in difficulty
-3. **Polish** — Questions are kept concise (<120 chars) and one question gets marked as double points
-
-**Two ways to use it:**
-
-- **Generate a full quiz** — Enter a topic prompt and get 3-10 questions instantly
-- **Add single questions** — In the Quiz Editor, generate individual questions that fit your existing quiz theme
-
-AI runs through Cloudflare's AI Gateway, giving you logging, analytics, caching, and rate limiting.
-
 ## Project Structure
 
 ```text
@@ -134,10 +117,6 @@ Ship it to Cloudflare's edge in one command:
 ```bash
 bun run deploy
 ```
-
-Or hit the button for one-click deploy:
-
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/TimoWilhelm/timoot)
 
 ## License
 
