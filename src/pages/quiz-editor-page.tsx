@@ -38,8 +38,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
-import { apiFetch } from '@/lib/api';
-import { getUserId } from '@/lib/user-id';
+import { createProtectedFetch, useUserFetch } from '@/hooks/use-api-fetch';
+import { useTurnstile } from '@/hooks/use-turnstile';
 
 type QuizFormData = {
 	title: string;
@@ -76,6 +76,9 @@ export function QuizEditorPage() {
 	const [isLoadingMoreImages, setIsLoadingMoreImages] = useState(false);
 	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 	const [imagePrompt, setImagePrompt] = useState('');
+	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
+	const { userFetch, userId } = useUserFetch();
+	const protectedFetch = createProtectedFetch({ userId, token: turnstileToken, resetToken });
 
 	// Track intentional navigation after save to skip the blocker
 	const skipBlockerRef = useRef(false);
@@ -98,7 +101,7 @@ export function QuizEditorPage() {
 	useEffect(() => {
 		const fetchAiImages = async () => {
 			try {
-				const response = await apiFetch('/api/images');
+				const response = await userFetch('/api/images');
 				const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
 				if (result.success && result.data) {
 					setAiImages(result.data.images);
@@ -115,7 +118,7 @@ export function QuizEditorPage() {
 		if (!aiImagesCursor || isLoadingMoreImages) return;
 		setIsLoadingMoreImages(true);
 		try {
-			const response = await apiFetch(`/api/images?cursor=${encodeURIComponent(aiImagesCursor)}`);
+			const response = await userFetch(`/api/images?cursor=${encodeURIComponent(aiImagesCursor)}`);
 			const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
 			if (result.success && result.data) {
 				setAiImages((prev) => [...prev, ...result.data!.images]);
@@ -131,7 +134,7 @@ export function QuizEditorPage() {
 		if (quizId) {
 			const fetchQuiz = async () => {
 				try {
-					const response = await apiFetch(`/api/quizzes/custom/${quizId}`);
+					const response = await userFetch(`/api/quizzes/custom/${quizId}`);
 					const result = (await response.json()) as ApiResponse<Quiz>;
 					if (result.success && result.data) {
 						const formData: QuizFormInput = {
@@ -173,7 +176,7 @@ export function QuizEditorPage() {
 			};
 			const url = quizId ? `/api/quizzes/custom/${quizId}` : '/api/quizzes/custom';
 			const method = quizId ? 'PUT' : 'POST';
-			const response = await apiFetch(url, {
+			const response = await protectedFetch(url, {
 				method,
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ ...processedData, id: quizId }),
@@ -212,7 +215,7 @@ export function QuizEditorPage() {
 
 		setIsGeneratingQuestion(true);
 		try {
-			const response = await apiFetch('/api/quizzes/generate-question', {
+			const response = await protectedFetch('/api/quizzes/generate-question', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -247,7 +250,7 @@ export function QuizEditorPage() {
 	const deleteImage = async (imageId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
 		try {
-			const response = await apiFetch(`/api/images/${getUserId()}/${imageId}`, { method: 'DELETE' });
+			const response = await protectedFetch(`/api/images/${userId}/${imageId}`, { method: 'DELETE' });
 			const result = (await response.json()) as ApiResponse<{ id: string }>;
 			if (!response.ok || !result.success) {
 				throw new Error(result.error || 'Failed to delete image');
@@ -267,7 +270,7 @@ export function QuizEditorPage() {
 
 		setIsGeneratingImage(true);
 		try {
-			const response = await apiFetch('/api/images/generate', {
+			const response = await protectedFetch('/api/images/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ prompt: imagePrompt }),
@@ -346,19 +349,13 @@ export function QuizEditorPage() {
 		<div className="min-h-screen bg-slate-50">
 			<div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4">
-							<Link to="/">
-								<Button type="button" variant="outline" size="icon">
-									<ArrowLeft className="h-5 w-5" />
-								</Button>
-							</Link>
-							<h1 className="font-display text-2xl font-bold sm:text-4xl">{quizId ? 'Edit Quiz' : 'Create a New Quiz'}</h1>
-						</div>
-						<Button type="submit" disabled={isSubmitting} size="lg" className="bg-quiz-orange hover:bg-quiz-orange/90">
-							{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-							Save Quiz
-						</Button>
+					<div className="flex items-center gap-4">
+						<Link to="/">
+							<Button type="button" variant="outline" size="icon">
+								<ArrowLeft className="h-5 w-5" />
+							</Button>
+						</Link>
+						<h1 className="font-display text-2xl font-bold sm:text-4xl">{quizId ? 'Edit Quiz' : 'Create a New Quiz'}</h1>
 					</div>
 					<Card className="rounded-2xl shadow-lg">
 						<CardHeader>
@@ -712,6 +709,13 @@ export function QuizEditorPage() {
 						>
 							{isGeneratingQuestion ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
 							Generate with AI
+						</Button>
+					</div>
+					<div className="flex items-center justify-end gap-4">
+						<TurnstileWidget />
+						<Button type="submit" disabled={isSubmitting || !turnstileToken} size="lg" className="bg-quiz-orange hover:bg-quiz-orange/90">
+							{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+							Save Quiz
 						</Button>
 					</div>
 				</form>

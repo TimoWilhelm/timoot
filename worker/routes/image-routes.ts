@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { waitUntil } from 'cloudflare:workers';
 import { oneLine } from 'common-tags';
 import { getUserIdFromRequest } from './utils';
+import { getTurnstileToken, validateTurnstile } from './turnstile';
 import { imagePromptSchema } from '@shared/validation';
 import type { ApiResponse } from '@shared/types';
 
@@ -39,6 +40,9 @@ interface AIImageListResponse {
 export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
 	// AI Image Generation endpoint
 	app.post('/api/images/generate', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const schema = z.object({
 			prompt: imagePromptSchema,
 		});
@@ -211,6 +215,9 @@ export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// Delete AI-generated image by ID
 	app.delete('/api/images/:userId/:imageId', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const { userId: kvUserId, imageId } = c.req.param();
 
 		try {

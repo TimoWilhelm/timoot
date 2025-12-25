@@ -1,5 +1,5 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import pino from 'pino';
 import devtoolsJson from 'vite-plugin-devtools-json';
@@ -33,7 +33,6 @@ const emitLog = (level: 'info' | 'warn' | 'error', rawMessage: string) => {
 	}
 };
 
-// 3. Create the custom logger for Vite
 const customLogger = {
 	warnOnce: (msg: string) => emitLog('warn', msg),
 
@@ -49,26 +48,15 @@ const customLogger = {
 };
 
 // https://vite.dev/config/
-export default ({ mode }: { mode: string }) => {
-	const env = loadEnv(mode, process.cwd());
+export default (): UserConfig => {
 	return defineConfig({
 		plugins: [devtoolsJson(), react(), cloudflare()],
 		build: {
 			minify: true,
-			sourcemap: 'inline', // Use inline source maps for better error reporting
-			rollupOptions: {
-				output: {
-					sourcemapExcludeSources: false, // Include original source in source maps
-				},
-			},
 		},
-		customLogger: env.VITE_LOGGER_TYPE === 'json' ? customLogger : undefined,
-		// Enable source maps in development too
+		customLogger,
 		css: {
 			devSourcemap: true,
-		},
-		server: {
-			allowedHosts: true,
 		},
 		resolve: {
 			alias: {
@@ -80,12 +68,7 @@ export default ({ mode }: { mode: string }) => {
 			// This is still crucial for reducing the time from when `bun run dev`
 			// is executed to when the server is actually ready.
 			include: ['react', 'react-dom', 'react-router-dom'],
-			exclude: ['agents'], // Exclude agents package from pre-bundling due to Node.js dependencies
 			force: true,
-		},
-		define: {
-			// Define Node.js globals for the agents package
-			global: 'globalThis',
 		},
 		// Clear cache more aggressively
 		cacheDir: 'node_modules/.vite',

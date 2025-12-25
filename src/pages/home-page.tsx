@@ -39,8 +39,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useHostStore } from '@/lib/host-store';
-import { apiFetch } from '@/lib/api';
-import { setUserId } from '@/lib/user-id';
+import { createProtectedFetch, useUserFetch } from '@/hooks/use-api-fetch';
+import { useTurnstile } from '@/hooks/use-turnstile';
+import { useUserId } from '@/hooks/use-user-id';
 
 export function HomePage() {
 	const navigate = useNavigate();
@@ -67,11 +68,15 @@ export function HomePage() {
 	const [showSyncWarning, setShowSyncWarning] = useState(false);
 	const addSecret = useHostStore((s) => s.addSecret);
 	const generatingCardRef = useRef<HTMLDivElement>(null);
+	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
+	const { userFetch } = useUserFetch();
+	const { userId, setUserId } = useUserId();
+	const protectedFetch = createProtectedFetch({ userId, token: turnstileToken, resetToken });
 
 	const fetchQuizzes = async () => {
 		setIsLoading(true);
 		try {
-			const [predefinedRes, customRes] = await Promise.all([fetch('/api/quizzes'), apiFetch('/api/quizzes/custom')]);
+			const [predefinedRes, customRes] = await Promise.all([fetch('/api/quizzes'), userFetch('/api/quizzes/custom')]);
 			const predefinedResult = (await predefinedRes.json()) as ApiResponse<Quiz[]>;
 			const customResult = (await customRes.json()) as ApiResponse<Quiz[]>;
 			if (predefinedResult.success && predefinedResult.data) {
@@ -97,7 +102,7 @@ export function HomePage() {
 		setIsGameStarting(true);
 		setStartingQuizId(quizId);
 		try {
-			const response = await apiFetch('/api/games', {
+			const response = await protectedFetch('/api/games', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ quizId }),
@@ -128,7 +133,7 @@ export function HomePage() {
 	const handleDeleteQuiz = async () => {
 		if (!quizToDelete) return;
 		try {
-			const res = await apiFetch(`/api/quizzes/custom/${quizToDelete}`, { method: 'DELETE' });
+			const res = await protectedFetch(`/api/quizzes/custom/${quizToDelete}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
 			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
@@ -142,7 +147,7 @@ export function HomePage() {
 	const handleGenerateSyncCode = async () => {
 		setIsGeneratingSyncCode(true);
 		try {
-			const response = await apiFetch('/api/sync/generate', { method: 'POST' });
+			const response = await protectedFetch('/api/sync/generate', { method: 'POST' });
 			const result = (await response.json()) as ApiResponse<{ code: string; expiresIn: number }>;
 			if (result.success && result.data) {
 				setSyncCode(result.data.code);
@@ -170,7 +175,7 @@ export function HomePage() {
 		setShowSyncWarning(false);
 		setIsRedeemingSyncCode(true);
 		try {
-			const response = await apiFetch('/api/sync/redeem', {
+			const response = await protectedFetch('/api/sync/redeem', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ code: syncCodeInput.toUpperCase() }),
@@ -236,7 +241,7 @@ export function HomePage() {
 		}, 100);
 
 		try {
-			const response = await apiFetch('/api/quizzes/generate', {
+			const response = await protectedFetch('/api/quizzes/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ prompt, numQuestions: 5 }),
@@ -570,6 +575,7 @@ export function HomePage() {
 																{aiPrompt.length}/{LIMITS.AI_PROMPT_MAX} characters
 															</p>
 														</div>
+														<TurnstileWidget className="flex justify-center" />
 													</div>
 													<DialogFooter>
 														<Button
@@ -635,15 +641,15 @@ export function HomePage() {
 						</DialogTitle>
 						<DialogDescription>Ready to start the game?</DialogDescription>
 					</DialogHeader>
-					<div className="py-4">
+					<div className="grid gap-4 py-4">
 						<div className="space-y-3 rounded-xl bg-slate-50 p-4">
 							<div className="flex items-center gap-2 text-sm">
 								<HelpCircle className="h-4 w-4 text-muted-foreground" />
 								<span className="text-muted-foreground">Questions:</span>
 								<span className="font-medium">{selectedQuiz?.questions.length}</span>
 							</div>
-							{/* Future game options will go here */}
 						</div>
+						<TurnstileWidget className="flex justify-center" />
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setSelectedQuiz(null)} disabled={isGameStarting}>
@@ -717,10 +723,13 @@ export function HomePage() {
 									</p>
 								</div>
 							) : (
-								<Button onClick={handleGenerateSyncCode} disabled={isGeneratingSyncCode} className="w-full">
-									{isGeneratingSyncCode ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-									Generate Sync Code
-								</Button>
+								<>
+									<TurnstileWidget className="flex justify-center" />
+									<Button onClick={handleGenerateSyncCode} disabled={isGeneratingSyncCode || !turnstileToken} className="w-full">
+										{isGeneratingSyncCode ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+										Generate Sync Code
+									</Button>
+								</>
 							)}
 						</div>
 

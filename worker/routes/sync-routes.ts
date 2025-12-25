@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { getUserIdFromRequest } from './utils';
+import { getTurnstileToken, validateTurnstile } from './turnstile';
 import type { ApiResponse } from '@shared/types';
 
 // Sync code types
@@ -25,6 +26,9 @@ function generateSyncCode(): string {
 export function registerSyncRoutes(app: Hono<{ Bindings: Env }>) {
 	// Generate a sync code for the current user
 	app.post('/api/sync/generate', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const userId = getUserIdFromRequest(c);
 		if (userId === 'anonymous') {
 			return c.json({ success: false, error: 'Valid user ID required' } satisfies ApiResponse, 400);
@@ -67,6 +71,9 @@ export function registerSyncRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// Redeem a sync code to get the associated userId
 	app.post('/api/sync/redeem', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const schema = z.object({
 			code: z.string().length(6).toUpperCase(),
 		});

@@ -5,6 +5,7 @@ import { exports, waitUntil } from 'cloudflare:workers';
 import { type GeneratedQuestion, type GenerationStatus, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
 import { PREDEFINED_QUIZZES } from '../quizzes';
 import { checkRateLimit, getUserIdFromRequest } from './utils';
+import { getTurnstileToken, validateTurnstile } from './turnstile';
 import { aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 import type { ApiResponse, Quiz } from '@shared/types';
 
@@ -41,6 +42,9 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// Create custom quiz
 	app.post('/api/quizzes/custom', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const body = await c.req.json();
 		const result = quizSchema.safeParse(body);
 		if (!result.success) {
@@ -56,6 +60,9 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// Update custom quiz
 	app.put('/api/quizzes/custom/:id', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const { id } = c.req.param();
 		const body = await c.req.json();
 		const result = quizSchema.safeParse(body);
@@ -75,6 +82,9 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// Delete custom quiz
 	app.delete('/api/quizzes/custom/:id', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const { id } = c.req.param();
 		const userId = getUserIdFromRequest(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
@@ -89,6 +99,9 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// AI Quiz Generation endpoint with SSE streaming for status updates
 	app.post('/api/quizzes/generate', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'quiz-generate');
 		if (rateLimitResponse) return rateLimitResponse;
 
@@ -136,6 +149,9 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// AI Single Question Generation endpoint
 	app.post('/api/quizzes/generate-question', async (c) => {
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'question-generate');
 		if (rateLimitResponse) return rateLimitResponse;
 

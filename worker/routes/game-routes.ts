@@ -4,6 +4,7 @@ import { exports } from 'cloudflare:workers';
 import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../quizzes';
 import { generateGameId } from '../words';
 import { checkRateLimit, getUserIdFromRequest } from './utils';
+import { getTurnstileToken, validateTurnstile } from './turnstile';
 import { createGameRequestSchema } from '@shared/validation';
 import type { ApiResponse, GameState } from '@shared/types';
 
@@ -81,6 +82,10 @@ export function registerGameRoutes(app: Hono<{ Bindings: Env }>) {
 
 	// Create a new game
 	app.post('/api/games', async (c) => {
+		// Validate Turnstile token
+		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
+		if (turnstileResponse) return turnstileResponse;
+
 		// Rate limit game creation
 		const rateLimitResponse = await checkRateLimit(c, c.env.GAME_RATE_LIMITER, 'game-create');
 		if (rateLimitResponse) return rateLimitResponse;
