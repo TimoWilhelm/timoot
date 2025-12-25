@@ -1,19 +1,20 @@
 import { Hono } from 'hono';
-import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { exports } from 'cloudflare:workers';
 import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../quizzes';
 import { generateGameId } from '../words';
-import { checkRateLimit, getUserIdFromRequest } from './utils';
-import { getTurnstileToken, validateTurnstile } from './turnstile';
+import { checkRateLimit } from './utils';
+import { withProtectedHeader, getUserId, verifyTurnstile } from './validators';
 import { createGameRequestSchema } from '@shared/validation';
 import type { ApiResponse, GameState } from '@shared/types';
 
 /**
- * Register game-related routes
+ * Game routes with RPC-compatible chained methods.
+ * Note: WebSocket endpoints don't work with hc client, use fetch directly.
  */
-export function registerGameRoutes(app: Hono<{ Bindings: Env }>) {
+export const gameRoutes = new Hono<{ Bindings: Env }>()
 	// Host WebSocket upgrade endpoint - requires token validation BEFORE connection
-	app.get('/api/games/:gameId/host-ws', async (c) => {
+	.get('/api/games/:gameId/host-ws', async (c) => {
 		const { gameId } = c.req.param();
 		const token = c.req.query('token');
 		const upgradeHeader = c.req.header('Upgrade');
@@ -43,10 +44,10 @@ export function registerGameRoutes(app: Hono<{ Bindings: Env }>) {
 				headers: c.req.raw.headers,
 			}),
 		);
-	});
+	})
 
 	// Player WebSocket upgrade endpoint - no token required
-	app.get('/api/games/:gameId/ws', async (c) => {
+	.get('/api/games/:gameId/ws', async (c) => {
 		const { gameId } = c.req.param();
 		const upgradeHeader = c.req.header('Upgrade');
 		if (!upgradeHeader || upgradeHeader !== 'websocket') {
@@ -65,10 +66,10 @@ export function registerGameRoutes(app: Hono<{ Bindings: Env }>) {
 				headers: c.req.raw.headers,
 			}),
 		);
-	});
+	})
 
 	// Check if a game exists
-	app.get('/api/games/:gameId/exists', async (c) => {
+	.get('/api/games/:gameId/exists', async (c) => {
 		const { gameId } = c.req.param();
 		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
 		const state = await gameRoomStub.getFullGameState();
@@ -78,34 +79,26 @@ export function registerGameRoutes(app: Hono<{ Bindings: Env }>) {
 		}
 
 		return c.json({ success: true, data: { exists: true, phase: state.phase } } satisfies ApiResponse<{ exists: boolean; phase: string }>);
-	});
+	})
 
-	// Create a new game
-	app.post('/api/games', async (c) => {
-		// Validate Turnstile token
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
+	// Create a new game (requires turnstile - expensive operation)
+	.post('/api/games', withProtectedHeader, verifyTurnstile, zValidator('json', createGameRequestSchema), async (c) => {
 		// Rate limit game creation
 		const rateLimitResponse = await checkRateLimit(c, c.env.GAME_RATE_LIMITER, 'game-create');
 		if (rateLimitResponse) return rateLimitResponse;
 
-		const body = await c.req.json();
-		const result = createGameRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
+		const { quizId } = c.req.valid('json');
 
 		// Resolve questions from quiz ID
 		let questions = GENERAL_KNOWLEDGE_QUIZ;
-		if (result.data.quizId) {
-			const userId = getUserIdFromRequest(c);
+		if (quizId) {
+			const userId = getUserId(c);
 			const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
-			const customQuiz = await quizStoreStub.getCustomQuizById(result.data.quizId);
+			const customQuiz = await quizStoreStub.getCustomQuizById(quizId);
 			if (customQuiz) {
 				questions = customQuiz.questions;
 			} else {
-				const predefinedQuiz = PREDEFINED_QUIZZES.find((q) => q.id === result.data.quizId);
+				const predefinedQuiz = PREDEFINED_QUIZZES.find((q) => q.id === quizId);
 				if (predefinedQuiz) {
 					questions = predefinedQuiz.questions;
 				}
@@ -124,4 +117,3 @@ export function registerGameRoutes(app: Hono<{ Bindings: Env }>) {
 
 		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
 	});
-}

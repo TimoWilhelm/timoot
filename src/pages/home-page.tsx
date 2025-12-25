@@ -19,7 +19,7 @@ import {
 import { Toaster, toast } from 'sonner';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import type { ApiResponse, GameState, Quiz } from '@shared/types';
+import type { Quiz } from '@shared/types';
 import { LIMITS, aiPromptSchema } from '@shared/validation';
 import { musicCredits } from '@shared/music-credits';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useHostStore } from '@/lib/host-store';
-import { createProtectedFetch, useUserFetch } from '@/hooks/use-api-fetch';
+import { api, userHeaders, protectedHeaders } from '@/lib/api-client';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
 
@@ -69,16 +69,17 @@ export function HomePage() {
 	const addSecret = useHostStore((s) => s.addSecret);
 	const generatingCardRef = useRef<HTMLDivElement>(null);
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
-	const { userFetch } = useUserFetch();
 	const { userId, setUserId } = useUserId();
-	const protectedFetch = createProtectedFetch({ userId, token: turnstileToken, resetToken });
 
 	const fetchQuizzes = async () => {
 		setIsLoading(true);
 		try {
-			const [predefinedRes, customRes] = await Promise.all([fetch('/api/quizzes'), userFetch('/api/quizzes/custom')]);
-			const predefinedResult = (await predefinedRes.json()) as ApiResponse<Quiz[]>;
-			const customResult = (await customRes.json()) as ApiResponse<Quiz[]>;
+			const [predefinedRes, customRes] = await Promise.all([
+				api.api.quizzes.$get(),
+				api.api.quizzes.custom.$get({}, { headers: userHeaders(userId) }),
+			]);
+			const predefinedResult = await predefinedRes.json();
+			const customResult = await customRes.json();
 			if (predefinedResult.success && predefinedResult.data) {
 				setPredefinedQuizzes(predefinedResult.data);
 			}
@@ -99,15 +100,15 @@ export function HomePage() {
 
 	const handleStartGame = async (quizId: string) => {
 		if (isGameStarting) return;
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
 		setIsGameStarting(true);
 		setStartingQuizId(quizId);
 		try {
-			const response = await protectedFetch('/api/games', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ quizId }),
-			});
-			const result = (await response.json()) as ApiResponse<GameState>;
+			const res = await api.api.games.$post({ json: { quizId } }, { headers: protectedHeaders(userId, turnstileToken, resetToken) });
+			const result = await res.json();
 			if (result.success && result.data) {
 				if ('error' in result.data) {
 					throw new Error((result.data as { error: string }).error);
@@ -133,7 +134,7 @@ export function HomePage() {
 	const handleDeleteQuiz = async () => {
 		if (!quizToDelete) return;
 		try {
-			const res = await protectedFetch(`/api/quizzes/custom/${quizToDelete}`, { method: 'DELETE' });
+			const res = await api.api.quizzes.custom[':id'].$delete({ param: { id: quizToDelete } }, { headers: userHeaders(userId) });
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
 			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
@@ -145,10 +146,14 @@ export function HomePage() {
 	};
 
 	const handleGenerateSyncCode = async () => {
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
 		setIsGeneratingSyncCode(true);
 		try {
-			const response = await protectedFetch('/api/sync/generate', { method: 'POST' });
-			const result = (await response.json()) as ApiResponse<{ code: string; expiresIn: number }>;
+			const res = await api.api.sync.generate.$post({}, { headers: protectedHeaders(userId, turnstileToken, resetToken) });
+			const result = await res.json();
 			if (result.success && result.data) {
 				setSyncCode(result.data.code);
 				setSyncCodeExpiry(Date.now() + result.data.expiresIn * 1000);
@@ -175,12 +180,8 @@ export function HomePage() {
 		setShowSyncWarning(false);
 		setIsRedeemingSyncCode(true);
 		try {
-			const response = await protectedFetch('/api/sync/redeem', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ code: syncCodeInput.toUpperCase() }),
-			});
-			const result = (await response.json()) as ApiResponse<{ userId: string }>;
+			const res = await api.api.sync.redeem.$post({ json: { code: syncCodeInput.toUpperCase() } }, { headers: userHeaders(userId) });
+			const result = await res.json();
 			if (result.success && result.data) {
 				setUserId(result.data.userId);
 				toast.success('Device synced! Refreshing...');
@@ -228,6 +229,11 @@ export function HomePage() {
 			return;
 		}
 
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
+
 		const prompt = aiPrompt.trim();
 		setGeneratingPrompt(prompt);
 		setIsGenerating(true);
@@ -240,10 +246,12 @@ export function HomePage() {
 			generatingCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}, 100);
 
+		// SSE streaming requires direct fetch, not Hono client
+		const headers = protectedHeaders(userId, turnstileToken, resetToken);
 		try {
-			const response = await protectedFetch('/api/quizzes/generate', {
+			const response = await fetch('/api/quizzes/generate', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 'Content-Type': 'application/json', ...headers },
 				body: JSON.stringify({ prompt, numQuestions: 5 }),
 			});
 
@@ -269,15 +277,14 @@ export function HomePage() {
 					if (line.startsWith('event: ')) {
 						currentEvent = line.slice(7);
 					} else if (line.startsWith('data: ')) {
-						const data = JSON.parse(line.slice(6));
+						const data = JSON.parse(line.slice(6)) as { success?: boolean; data?: Quiz; error?: string; stage?: string; detail?: string };
 
 						if (currentEvent === 'status') {
-							setGenerationStatus(data);
+							setGenerationStatus(data as { stage: string; detail?: string });
 						} else if (currentEvent === 'complete') {
-							const apiResult = data as ApiResponse<Quiz>;
-							if (apiResult.success && apiResult.data) {
-								toast.success(`Quiz "${apiResult.data.title}" generated successfully!`);
-								setCustomQuizzes((prev) => [...prev, apiResult.data!]);
+							if (data.success && data.data) {
+								toast.success(`Quiz "${data.data.title}" generated successfully!`);
+								setCustomQuizzes((prev) => [...prev, data.data!]);
 							}
 						} else if (currentEvent === 'error') {
 							throw new Error(data.error || 'Failed to generate quiz');
@@ -580,7 +587,7 @@ export function HomePage() {
 													<DialogFooter>
 														<Button
 															onClick={handleGenerateAiQuiz}
-															disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN}
+															disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN || !turnstileToken}
 															className="bg-quiz-orange hover:bg-quiz-orange/90"
 														>
 															<Wand2 className="mr-2 h-4 w-4" />
@@ -661,7 +668,7 @@ export function HomePage() {
 									handleStartGame(selectedQuiz.id);
 								}
 							}}
-							disabled={isGameStarting}
+							disabled={isGameStarting || !turnstileToken}
 							className="min-w-[130px] bg-quiz-orange hover:bg-quiz-orange/90"
 						>
 							{isGameStarting ? (

@@ -1,23 +1,6 @@
 import type { Context } from 'hono';
 
 /**
- * Shared utilities for route handlers
- */
-
-/**
- * Extract and validate user ID from request header.
- * Returns 'anonymous' for invalid or missing IDs.
- */
-export function getUserIdFromRequest(c: { req: { header: (name: string) => string | undefined } }): string {
-	const userId = c.req.header('X-User-Id');
-	if (!userId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
-		// Return a default/fallback for invalid IDs (will create isolated storage)
-		return 'anonymous';
-	}
-	return userId;
-}
-
-/**
  * Rate limiter interface matching Cloudflare's Rate Limiting API
  */
 interface RateLimiter {

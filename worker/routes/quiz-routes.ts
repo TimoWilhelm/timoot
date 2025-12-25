@@ -1,92 +1,79 @@
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { exports, waitUntil } from 'cloudflare:workers';
 import { type GeneratedQuestion, type GenerationStatus, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
 import { PREDEFINED_QUIZZES } from '../quizzes';
-import { checkRateLimit, getUserIdFromRequest } from './utils';
-import { getTurnstileToken, validateTurnstile } from './turnstile';
+import { checkRateLimit } from './utils';
+import { withUserId, withProtectedHeader, getUserId, verifyTurnstile } from './validators';
 import { aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 import type { ApiResponse, Quiz } from '@shared/types';
 
 /**
- * Register quiz-related routes
+ * Quiz routes with RPC-compatible chained methods.
+ * Routes are chained to enable type inference for the Hono client.
  */
-export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
-	// Get predefined quizzes
-	app.get('/api/quizzes', (c) => {
-		return c.json({ success: true, data: PREDEFINED_QUIZZES } satisfies ApiResponse<Quiz[]>);
-	});
+export const quizRoutes = new Hono<{ Bindings: Env }>()
+	// Get predefined quizzes (no auth required)
+	.get('/api/quizzes', (c) => {
+		return c.json({ success: true, data: PREDEFINED_QUIZZES } satisfies ApiResponse<Quiz[]>, 200, {
+			'Cache-Control': 'public, max-age=3600',
+		});
+	})
 
 	// Get custom quizzes for user
-	app.get('/api/quizzes/custom', async (c) => {
-		const userId = getUserIdFromRequest(c);
+	.get('/api/quizzes/custom', withUserId, async (c) => {
+		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizzes();
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
 		return c.json({ success: true, data } satisfies ApiResponse<Quiz[]>);
-	});
+	})
 
 	// Get specific custom quiz
-	app.get('/api/quizzes/custom/:id', async (c) => {
+	.get('/api/quizzes/custom/:id', withUserId, async (c) => {
 		const { id } = c.req.param();
-		const userId = getUserIdFromRequest(c);
+		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizById(id);
 		if (!data) {
 			return c.json({ success: false, error: 'Quiz not found' }, 404);
 		}
 		return c.json({ success: true, data } satisfies ApiResponse<Quiz>);
-	});
+	})
 
 	// Create custom quiz
-	app.post('/api/quizzes/custom', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
-		const body = await c.req.json();
-		const result = quizSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const userId = getUserIdFromRequest(c);
+	.post('/api/quizzes/custom', withUserId, zValidator('json', quizSchema), async (c) => {
+		const quiz = c.req.valid('json');
+		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
-		const data = await quizStoreStub.saveCustomQuiz(result.data);
+		const data = await quizStoreStub.saveCustomQuiz(quiz);
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
-		return c.json({ success: true, data }, 201);
-	});
+		return c.json({ success: true, data } satisfies ApiResponse<Quiz>, 201);
+	})
 
 	// Update custom quiz
-	app.put('/api/quizzes/custom/:id', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
+	.put('/api/quizzes/custom/:id', withUserId, zValidator('json', quizSchema), async (c) => {
 		const { id } = c.req.param();
-		const body = await c.req.json();
-		const result = quizSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		if (id !== result.data.id) {
+		const quiz = c.req.valid('json');
+		if (id !== quiz.id) {
 			return c.json({ success: false, error: 'ID mismatch' }, 400);
 		}
-		const userId = getUserIdFromRequest(c);
+		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
-		const data = await quizStoreStub.saveCustomQuiz(result.data);
+		const data = await quizStoreStub.saveCustomQuiz(quiz);
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
-		return c.json({ success: true, data });
-	});
+		return c.json({ success: true, data } satisfies ApiResponse<Quiz>);
+	})
 
 	// Delete custom quiz
-	app.delete('/api/quizzes/custom/:id', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
+	.delete('/api/quizzes/custom/:id', withUserId, async (c) => {
 		const { id } = c.req.param();
-		const userId = getUserIdFromRequest(c);
+		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.deleteCustomQuiz(id);
 		if (!data.success) {
@@ -95,22 +82,15 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
 		return c.json({ success: true });
-	});
+	})
 
 	// AI Quiz Generation endpoint with SSE streaming for status updates
-	app.post('/api/quizzes/generate', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
+	// Note: SSE endpoints don't work well with hc client, use fetch directly
+	.post('/api/quizzes/generate', withProtectedHeader, verifyTurnstile, zValidator('json', aiGenerateRequestSchema), async (c) => {
 		const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'quiz-generate');
 		if (rateLimitResponse) return rateLimitResponse;
 
-		const body = await c.req.json();
-		const result = aiGenerateRequestSchema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-		const { prompt, numQuestions } = result.data;
+		const { prompt, numQuestions } = c.req.valid('json');
 
 		return streamSSE(c, async (stream) => {
 			try {
@@ -123,7 +103,7 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 				});
 
 				// Save the generated quiz as a custom quiz
-				const userId = getUserIdFromRequest(c);
+				const userId = getUserId(c);
 				const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 				const savedQuiz = await quizStoreStub.saveCustomQuiz({
 					title: generatedQuiz.title,
@@ -145,51 +125,48 @@ export function registerQuizRoutes(app: Hono<{ Bindings: Env }>) {
 				});
 			}
 		});
-	});
+	})
 
 	// AI Single Question Generation endpoint
-	app.post('/api/quizzes/generate-question', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
+	.post(
+		'/api/quizzes/generate-question',
+		withProtectedHeader,
+		verifyTurnstile,
+		zValidator(
+			'json',
+			z.object({
+				title: z.string().min(1, 'Quiz title is required'),
+				existingQuestions: z
+					.array(
+						z.object({
+							text: z.string(),
+							options: z.array(z.string()),
+							correctAnswerIndex: z.number(),
+						}),
+					)
+					.optional()
+					.default([]),
+			}),
+		),
+		async (c) => {
+			const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'question-generate');
+			if (rateLimitResponse) return rateLimitResponse;
 
-		const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'question-generate');
-		if (rateLimitResponse) return rateLimitResponse;
-
-		const body = await c.req.json();
-		const schema = z.object({
-			title: z.string().min(1, 'Quiz title is required'),
-			existingQuestions: z
-				.array(
-					z.object({
-						text: z.string(),
-						options: z.array(z.string()),
-						correctAnswerIndex: z.number(),
-					}),
-				)
-				.optional()
-				.default([]),
-		});
-
-		const result = schema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-
-		try {
-			const { title, existingQuestions } = result.data;
-			const question = await generateSingleQuestion(title, existingQuestions, c.req.raw.signal, {
-				connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
-			});
-			return c.json({ success: true, data: question } satisfies ApiResponse<GeneratedQuestion>);
-		} catch (error) {
-			console.error('[AI Question Generation Error]', error);
-			return c.json(
-				{
-					success: false,
-					error: error instanceof Error ? error.message : 'Failed to generate question',
-				} satisfies ApiResponse,
-				500,
-			);
-		}
-	});
-}
+			try {
+				const { title, existingQuestions } = c.req.valid('json');
+				const question = await generateSingleQuestion(title, existingQuestions, c.req.raw.signal, {
+					connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
+				});
+				return c.json({ success: true, data: question } satisfies ApiResponse<GeneratedQuestion>);
+			} catch (error) {
+				console.error('[AI Question Generation Error]', error);
+				return c.json(
+					{
+						success: false,
+						error: error instanceof Error ? error.message : 'Failed to generate question',
+					} satisfies ApiResponse,
+					500,
+				);
+			}
+		},
+	);

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { getUserIdFromRequest } from './utils';
-import { getTurnstileToken, validateTurnstile } from './turnstile';
+import { zValidator } from '@hono/zod-validator';
+import { withProtectedHeader, withUserId, getUserId, verifyTurnstile } from './validators';
 import type { ApiResponse } from '@shared/types';
 
 // Sync code types
@@ -21,15 +21,12 @@ function generateSyncCode(): string {
 }
 
 /**
- * Register sync-related routes
+ * Sync routes with RPC-compatible chained methods.
  */
-export function registerSyncRoutes(app: Hono<{ Bindings: Env }>) {
-	// Generate a sync code for the current user
-	app.post('/api/sync/generate', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
-		const userId = getUserIdFromRequest(c);
+export const syncRoutes = new Hono<{ Bindings: Env }>()
+	// Generate a sync code for the current user (requires turnstile - expensive operation)
+	.post('/api/sync/generate', withProtectedHeader, verifyTurnstile, async (c) => {
+		const userId = getUserId(c);
 		if (userId === 'anonymous') {
 			return c.json({ success: false, error: 'Valid user ID required' } satisfies ApiResponse, 400);
 		}
@@ -67,24 +64,11 @@ export function registerSyncRoutes(app: Hono<{ Bindings: Env }>) {
 			console.error('[Sync Code Generation Error]', error);
 			return c.json({ success: false, error: 'Failed to generate sync code' } satisfies ApiResponse, 500);
 		}
-	});
+	})
 
-	// Redeem a sync code to get the associated userId
-	app.post('/api/sync/redeem', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
-		const schema = z.object({
-			code: z.string().length(6).toUpperCase(),
-		});
-
-		const body = await c.req.json();
-		const result = schema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: 'Invalid sync code format' } satisfies ApiResponse, 400);
-		}
-
-		const { code } = result.data;
+	// Redeem a sync code to get the associated userId (no turnstile - one-time use codes are self-limiting)
+	.post('/api/sync/redeem', withUserId, zValidator('json', z.object({ code: z.string().length(6).toUpperCase() })), async (c) => {
+		const { code } = c.req.valid('json');
 
 		try {
 			const syncDataStr = await c.env.KV_SYNC.get(`sync:${code}`);
@@ -106,4 +90,3 @@ export function registerSyncRoutes(app: Hono<{ Bindings: Env }>) {
 			return c.json({ success: false, error: 'Failed to redeem sync code' } satisfies ApiResponse, 500);
 		}
 	});
-}

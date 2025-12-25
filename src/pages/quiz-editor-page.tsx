@@ -18,7 +18,7 @@ import {
 	Zap,
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
-import type { ApiResponse, Question, Quiz } from '@shared/types';
+import type { Question } from '@shared/types';
 import { LIMITS, type QuizFormInput, quizFormSchema } from '@shared/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
-import { createProtectedFetch, useUserFetch } from '@/hooks/use-api-fetch';
+import { api, userHeaders, protectedHeaders } from '@/lib/api-client';
+import { useUserId } from '@/hooks/use-user-id';
 import { useTurnstile } from '@/hooks/use-turnstile';
 
 type QuizFormData = {
@@ -77,8 +78,7 @@ export function QuizEditorPage() {
 	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 	const [imagePrompt, setImagePrompt] = useState('');
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
-	const { userFetch, userId } = useUserFetch();
-	const protectedFetch = createProtectedFetch({ userId, token: turnstileToken, resetToken });
+	const { userId } = useUserId();
 
 	// Track intentional navigation after save to skip the blocker
 	const skipBlockerRef = useRef(false);
@@ -101,28 +101,32 @@ export function QuizEditorPage() {
 	useEffect(() => {
 		const fetchAiImages = async () => {
 			try {
-				const response = await userFetch('/api/images');
-				const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
-				if (result.success && result.data) {
-					setAiImages(result.data.images);
-					setAiImagesCursor(result.data.nextCursor);
+				const res = await api.api.images.$get({}, { headers: userHeaders(userId) });
+				if (res.ok) {
+					const result = await res.json();
+					if (result.success && result.data) {
+						setAiImages(result.data.images);
+						setAiImagesCursor(result.data.nextCursor);
+					}
 				}
 			} catch (error) {
 				console.error('Failed to fetch AI images:', error);
 			}
 		};
 		fetchAiImages();
-	}, []);
+	}, [userId]);
 
 	const loadMoreImages = async () => {
 		if (!aiImagesCursor || isLoadingMoreImages) return;
 		setIsLoadingMoreImages(true);
 		try {
-			const response = await userFetch(`/api/images?cursor=${encodeURIComponent(aiImagesCursor)}`);
-			const result = (await response.json()) as ApiResponse<{ images: AIImage[]; nextCursor?: string }>;
-			if (result.success && result.data) {
-				setAiImages((prev) => [...prev, ...result.data!.images]);
-				setAiImagesCursor(result.data.nextCursor);
+			const res = await api.api.images.$get({ query: { cursor: aiImagesCursor } }, { headers: userHeaders(userId) });
+			if (res.ok) {
+				const result = await res.json();
+				if (result.success && result.data) {
+					setAiImages((prev) => [...prev, ...result.data!.images]);
+					setAiImagesCursor(result.data.nextCursor);
+				}
 			}
 		} catch (error) {
 			console.error('Failed to load more images:', error);
@@ -134,8 +138,8 @@ export function QuizEditorPage() {
 		if (quizId) {
 			const fetchQuiz = async () => {
 				try {
-					const response = await userFetch(`/api/quizzes/custom/${quizId}`);
-					const result = (await response.json()) as ApiResponse<Quiz>;
+					const res = await api.api.quizzes.custom[':id'].$get({ param: { id: quizId } }, { headers: userHeaders(userId) });
+					const result = await res.json();
 					if (result.success && result.data) {
 						const formData: QuizFormInput = {
 							...result.data,
@@ -161,7 +165,7 @@ export function QuizEditorPage() {
 				questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined }],
 			});
 		}
-	}, [quizId, reset, navigate]);
+	}, [quizId, reset, navigate, userId]);
 	const onSubmit: SubmitHandler<QuizFormInput> = async (data) => {
 		try {
 			const processedData: QuizFormData = {
@@ -174,15 +178,18 @@ export function QuizEditorPage() {
 					backgroundImage: q.backgroundImage,
 				})),
 			};
-			const url = quizId ? `/api/quizzes/custom/${quizId}` : '/api/quizzes/custom';
-			const method = quizId ? 'PUT' : 'POST';
-			const response = await protectedFetch(url, {
-				method,
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ ...processedData, id: quizId }),
-			});
-			const result = (await response.json()) as ApiResponse<Quiz>;
-			if (!response.ok || !result.success) {
+			let result;
+			if (quizId) {
+				const res = await api.api.quizzes.custom[':id'].$put(
+					{ param: { id: quizId }, json: { ...processedData, id: quizId } },
+					{ headers: userHeaders(userId) },
+				);
+				result = await res.json();
+			} else {
+				const res = await api.api.quizzes.custom.$post({ json: processedData }, { headers: userHeaders(userId) });
+				result = await res.json();
+			}
+			if (!result.success) {
 				throw new Error(result.error || 'Failed to save quiz');
 			}
 			toast.success(`Quiz "${result.data?.title}" saved successfully!`);
@@ -213,23 +220,29 @@ export function QuizEditorPage() {
 			return;
 		}
 
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
+
 		setIsGeneratingQuestion(true);
 		try {
-			const response = await protectedFetch('/api/quizzes/generate-question', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					title,
-					existingQuestions: currentQuestions.map((q) => ({
-						text: q.text,
-						options: q.options,
-						correctAnswerIndex: Number(q.correctAnswerIndex),
-					})),
-				}),
-			});
+			const res = await api.api.quizzes['generate-question'].$post(
+				{
+					json: {
+						title,
+						existingQuestions: currentQuestions.map((q) => ({
+							text: q.text,
+							options: q.options,
+							correctAnswerIndex: Number(q.correctAnswerIndex),
+						})),
+					},
+				},
+				{ headers: protectedHeaders(userId, turnstileToken, resetToken) },
+			);
 
-			const result = (await response.json()) as ApiResponse<Question>;
-			if (!response.ok || !result.success || !result.data) {
+			const result = await res.json();
+			if (!res.ok || !result.success || !result.data) {
 				throw new Error(result.error || 'Failed to generate question');
 			}
 
@@ -250,9 +263,9 @@ export function QuizEditorPage() {
 	const deleteImage = async (imageId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
 		try {
-			const response = await protectedFetch(`/api/images/${userId}/${imageId}`, { method: 'DELETE' });
-			const result = (await response.json()) as ApiResponse<{ id: string }>;
-			if (!response.ok || !result.success) {
+			const res = await api.api.images[':userId'][':imageId'].$delete({ param: { userId, imageId } }, { headers: userHeaders(userId) });
+			const result = await res.json();
+			if (!res.ok || !result.success) {
 				throw new Error(result.error || 'Failed to delete image');
 			}
 			setAiImages((prev) => prev.filter((img) => img.id !== imageId));
@@ -268,16 +281,20 @@ export function QuizEditorPage() {
 			return;
 		}
 
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
+
 		setIsGeneratingImage(true);
 		try {
-			const response = await protectedFetch('/api/images/generate', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ prompt: imagePrompt }),
-			});
+			const res = await api.api.images.generate.$post(
+				{ json: { prompt: imagePrompt } },
+				{ headers: protectedHeaders(userId, turnstileToken, resetToken) },
+			);
 
-			const result = (await response.json()) as ApiResponse<AIImage>;
-			if (!response.ok || !result.success || !result.data) {
+			const result = await res.json();
+			if (!res.ok || !result.success || !result.data) {
 				throw new Error(result.error || 'Failed to generate image');
 			}
 
@@ -532,12 +549,17 @@ export function QuizEditorPage() {
 																	type="button"
 																	size="sm"
 																	onClick={() => generateImage(bgField.onChange)}
-																	disabled={isGeneratingImage || !imagePrompt.trim()}
+																	disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
 																	className="shrink-0 bg-quiz-orange hover:bg-quiz-orange/90"
 																>
 																	{isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
 																</Button>
 															</div>
+															{!turnstileToken && (
+																<div className="flex justify-center pt-2">
+																	<TurnstileWidget />
+																</div>
+															)}
 														</div>
 													</div>
 												</PopoverContent>
@@ -695,25 +717,29 @@ export function QuizEditorPage() {
 							</CardContent>
 						</Card>
 					))}
-					<div className="flex gap-3">
-						<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className="flex-1">
-							<PlusCircle className="mr-2 h-5 w-5" /> Add Question
-						</Button>
-						<Button
-							type="button"
-							onClick={generateQuestion}
-							disabled={isGeneratingQuestion}
-							variant="outline"
-							size="lg"
-							className="flex-1 border-quiz-orange/50 text-quiz-orange hover:bg-quiz-orange/10 hover:text-quiz-orange"
-						>
-							{isGeneratingQuestion ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
-							Generate with AI
-						</Button>
+					<div className="flex flex-col gap-3">
+						<div className="flex gap-3">
+							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className="flex-1">
+								<PlusCircle className="mr-2 h-5 w-5" /> Add Question
+							</Button>
+							<Button
+								type="button"
+								onClick={generateQuestion}
+								disabled={isGeneratingQuestion || !turnstileToken}
+								variant="outline"
+								size="lg"
+								className="flex-1 border-quiz-orange/50 text-quiz-orange hover:bg-quiz-orange/10 hover:text-quiz-orange"
+							>
+								{isGeneratingQuestion ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+								Generate with AI
+							</Button>
+						</div>
+						<div className="flex justify-center">
+							<TurnstileWidget />
+						</div>
 					</div>
 					<div className="flex items-center justify-end gap-4">
-						<TurnstileWidget />
-						<Button type="submit" disabled={isSubmitting || !turnstileToken} size="lg" className="bg-quiz-orange hover:bg-quiz-orange/90">
+						<Button type="submit" disabled={isSubmitting} size="lg" className="bg-quiz-orange hover:bg-quiz-orange/90">
 							{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
 							Save Quiz
 						</Button>

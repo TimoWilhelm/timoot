@@ -1,5 +1,5 @@
 // Routes module exports
-export { registerQuizRoutes } from './quiz-routes';
-export { registerGameRoutes } from './game-routes';
-export { registerImageRoutes } from './image-routes';
-export { registerSyncRoutes } from './sync-routes';
+export { quizRoutes } from './quiz-routes';
+export { gameRoutes } from './game-routes';
+export { imageRoutes } from './image-routes';
+export { syncRoutes } from './sync-routes';

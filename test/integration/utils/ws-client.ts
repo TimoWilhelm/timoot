@@ -280,7 +280,11 @@ interface CreateGameResponse {
 export async function createGame(baseUrl: string, quizId?: string): Promise<{ gameId: string; hostSecret: string; pin: string }> {
 	const response = await fetch(`${baseUrl}/api/games`, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'x-user-id': 'test-user-' + Date.now(),
+			'x-turnstile-token': 'test-token', // Turnstile validation is skipped in DEV mode
+		},
 		body: JSON.stringify({ quizId }),
 	});
 

@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { waitUntil } from 'cloudflare:workers';
 import { oneLine } from 'common-tags';
-import { getUserIdFromRequest } from './utils';
-import { getTurnstileToken, validateTurnstile } from './turnstile';
+import { withUserId, withProtectedHeader, getUserId, verifyTurnstile } from './validators';
 import { imagePromptSchema } from '@shared/validation';
 import type { ApiResponse } from '@shared/types';
 
@@ -35,105 +35,98 @@ interface AIImageListResponse {
 }
 
 /**
- * Register image-related routes
+ * Image routes with RPC-compatible chained methods.
  */
-export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
-	// AI Image Generation endpoint
-	app.post('/api/images/generate', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
+export const imageRoutes = new Hono<{ Bindings: Env }>()
+	// AI Image Generation endpoint (requires turnstile - expensive operation)
+	.post(
+		'/api/images/generate',
+		withProtectedHeader,
+		verifyTurnstile,
+		zValidator('json', z.object({ prompt: imagePromptSchema })),
+		async (c) => {
+			try {
+				const { prompt } = c.req.valid('json');
 
-		const schema = z.object({
-			prompt: imagePromptSchema,
-		});
-
-		const body = await c.req.json();
-		const result = schema.safeParse(body);
-		if (!result.success) {
-			return c.json({ success: false, error: z.prettifyError(result.error) } satisfies ApiResponse, 400);
-		}
-
-		try {
-			const { prompt } = result.data;
-
-			// Augment prompt for quiz card background suitability
-			const augmentedPrompt = oneLine`
+				// Augment prompt for quiz card background suitability
+				const augmentedPrompt = oneLine`
 				A beautiful, vibrant background image for a quiz card.
 				Style: Fun, suitable for text overlay.
 				NEVER include text or letters in the image.
 				Theme: ${prompt}.
 			`;
 
-			// Generate image using flux-2-dev model
-			const form = new FormData();
-			form.append('prompt', augmentedPrompt);
-			form.append('steps', '15');
-			form.append('width', '1024');
-			form.append('height', '512');
+				// Generate image using flux-2-dev model
+				const form = new FormData();
+				form.append('prompt', augmentedPrompt);
+				form.append('steps', '15');
+				form.append('width', '1024');
+				form.append('height', '512');
 
-			const formRequest = new Request('http://dummy', {
-				method: 'POST',
-				body: form,
-			});
-			const formStream = formRequest.body;
-			const formContentType = formRequest.headers.get('content-type') || 'multipart/form-data';
+				const formRequest = new Request('http://dummy', {
+					method: 'POST',
+					body: form,
+				});
+				const formStream = formRequest.body;
+				const formContentType = formRequest.headers.get('content-type') || 'multipart/form-data';
 
-			// @ts-expect-error model types not available
-			const response = await c.env.AI.run('@cf/black-forest-labs/flux-2-dev', {
-				multipart: {
-					body: formStream,
-					contentType: formContentType,
-				},
-			});
+				// @ts-expect-error model types not available
+				const response = await c.env.AI.run('@cf/black-forest-labs/flux-2-dev', {
+					multipart: {
+						body: formStream,
+						contentType: formContentType,
+					},
+				});
 
-			// Handle different response structures
-			const image = (response as FluxResponse).result?.image ?? (response as { image?: string }).image;
-			if (!image) {
-				throw new Error(`No image returned from AI. Response: ${JSON.stringify(response)}`);
+				// Handle different response structures
+				const image = (response as FluxResponse).result?.image ?? (response as { image?: string }).image;
+				if (!image) {
+					throw new Error(`No image returned from AI. Response: ${JSON.stringify(response)}`);
+				}
+
+				// Generate unique ID for the image
+				const imageId = crypto.randomUUID();
+				const kvUserId = getUserId(c);
+				const imagePath = `/api/images/${kvUserId}/${imageId}`;
+
+				// Decode base64 to binary
+				const binaryString = atob(image);
+				const bytes = new Uint8Array(binaryString.length);
+				for (let i = 0; i < binaryString.length; i++) {
+					bytes[i] = binaryString.charCodeAt(i);
+				}
+
+				// Store image in KV with metadata
+				const metadata: AIImageMetadata = {
+					id: imageId,
+					name: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
+					prompt,
+					createdAt: new Date().toISOString(),
+				};
+
+				await c.env.KV_IMAGES.put(`user:${kvUserId}:image:${imageId}`, bytes, {
+					metadata,
+				});
+
+				return c.json({
+					success: true,
+					data: { path: imagePath, ...metadata },
+				} satisfies ApiResponse<{ path: string } & AIImageMetadata>);
+			} catch (error) {
+				console.error('[AI Image Generation Error]', error);
+				return c.json(
+					{
+						success: false,
+						error: error instanceof Error ? error.message : 'Failed to generate image',
+					} satisfies ApiResponse,
+					500,
+				);
 			}
+		},
+	)
 
-			// Generate unique ID for the image
-			const imageId = crypto.randomUUID();
-			const kvUserId = getUserIdFromRequest(c);
-			const imagePath = `/api/images/${kvUserId}/${imageId}`;
-
-			// Decode base64 to binary
-			const binaryString = atob(image);
-			const bytes = new Uint8Array(binaryString.length);
-			for (let i = 0; i < binaryString.length; i++) {
-				bytes[i] = binaryString.charCodeAt(i);
-			}
-
-			// Store image in KV with metadata
-			const metadata: AIImageMetadata = {
-				id: imageId,
-				name: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
-				prompt,
-				createdAt: new Date().toISOString(),
-			};
-
-			await c.env.KV_IMAGES.put(`user:${kvUserId}:image:${imageId}`, bytes, {
-				metadata,
-			});
-
-			return c.json({
-				success: true,
-				data: { path: imagePath, ...metadata },
-			} satisfies ApiResponse<{ path: string } & AIImageMetadata>);
-		} catch (error) {
-			console.error('[AI Image Generation Error]', error);
-			return c.json(
-				{
-					success: false,
-					error: error instanceof Error ? error.message : 'Failed to generate image',
-				} satisfies ApiResponse,
-				500,
-			);
-		}
-	});
-
-	// Get AI-generated image by ID (serve from cache or KV)
-	app.get('/api/images/:userId/:imageId', async (c) => {
+	// Get AI-generated image by ID (serve from cache or KV) - no auth required for serving
+	.get('/api/images/:userId/:imageId', async (c) => {
 		const { userId: kvUserId, imageId } = c.req.param();
 		const cacheKey = new Request(`${c.req.url}?userId=${kvUserId}`, { method: 'GET' });
 		const cache: Cache = caches.default;
@@ -159,6 +152,7 @@ export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
 				headers: {
 					'Content-Type': 'image/jpeg',
 					'Cache-Control': 'public, max-age=31536000, immutable',
+					Vary: 'Accept-Encoding',
 				},
 			});
 
@@ -170,12 +164,12 @@ export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
 			console.error('[Image Fetch Error]', error);
 			return c.json({ success: false, error: 'Failed to fetch image' }, 500);
 		}
-	});
+	})
 
 	// List all AI-generated images with pagination
-	app.get('/api/images', async (c) => {
+	.get('/api/images', withUserId, async (c) => {
 		try {
-			const kvUserId = getUserIdFromRequest(c);
+			const kvUserId = getUserId(c);
 			const cursor = c.req.query('cursor');
 			const listResult = await c.env.KV_IMAGES.list({
 				prefix: `user:${kvUserId}:image:`,
@@ -211,13 +205,10 @@ export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
 			console.error('[Image List Error]', error);
 			return c.json({ success: false, error: 'Failed to list images' }, 500);
 		}
-	});
+	})
 
 	// Delete AI-generated image by ID
-	app.delete('/api/images/:userId/:imageId', async (c) => {
-		const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
-		if (turnstileResponse) return turnstileResponse;
-
+	.delete('/api/images/:userId/:imageId', withUserId, async (c) => {
 		const { userId: kvUserId, imageId } = c.req.param();
 
 		try {
@@ -235,4 +226,3 @@ export function registerImageRoutes(app: Hono<{ Bindings: Env }>) {
 			return c.json({ success: false, error: 'Failed to delete image' } satisfies ApiResponse, 500);
 		}
 	});
-}

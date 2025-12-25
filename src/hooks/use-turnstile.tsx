@@ -26,11 +26,42 @@ interface TurnstileWidgetProps {
 	className?: string;
 }
 
+const DEV_PLACEHOLDER_TOKEN = 'dev-mode-placeholder-token';
+
 /**
- * Hook that provides local turnstile state and a widget component.
- * Each call creates an independent turnstile instance.
+ * Dev mode implementation - returns static placeholder.
+ * This entire function is tree-shaken in production.
  */
-export function useTurnstile() {
+function useTurnstileDev() {
+	const TurnstileWidget = ({ className }: TurnstileWidgetProps) => (
+		<div
+			className={className}
+			style={{
+				padding: '8px 16px',
+				backgroundColor: '#f0f0f0',
+				border: '1px dashed #999',
+				borderRadius: '4px',
+				fontSize: '12px',
+				color: '#666',
+				textAlign: 'center',
+			}}
+		>
+			[Turnstile Disabled - Dev Mode]
+		</div>
+	);
+
+	return {
+		token: DEV_PLACEHOLDER_TOKEN,
+		resetToken: () => {},
+		TurnstileWidget,
+	};
+}
+
+/**
+ * Production implementation with real Turnstile widget.
+ * This entire function is tree-shaken in development.
+ */
+function useTurnstileProd() {
 	const [token, setToken] = useState<string | null>(null);
 	const widgetIdRef = useRef<string | null>(null);
 	const containerRef = useRef<HTMLDivElement | null>(null);
@@ -106,3 +137,10 @@ export function useTurnstile() {
 
 	return { token, resetToken, TurnstileWidget };
 }
+
+/**
+ * Hook that provides local turnstile state and a widget component.
+ * Each call creates an independent turnstile instance.
+ * In development mode, returns a placeholder token and renders a placeholder widget.
+ */
+export const useTurnstile = import.meta.env.DEV ? useTurnstileDev : useTurnstileProd;
