@@ -1,4 +1,4 @@
-import '@/lib/error-reporter';
+import '@/lib/sentry';
 import { enableMapSet } from 'immer';
 enableMapSet();
 import { StrictMode } from 'react';

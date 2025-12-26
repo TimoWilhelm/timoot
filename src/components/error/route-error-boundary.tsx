@@ -1,7 +1,7 @@
 import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ErrorFallback } from './error-fallback';
-import { errorReporter } from '@/lib/error-reporter';
+import { Sentry } from '@/lib/sentry';
 
 export function RouteErrorBoundary() {
 	const error = useRouteError();
@@ -26,14 +26,15 @@ export function RouteErrorBoundary() {
 				errorMessage = JSON.stringify(error);
 			}
 
-			errorReporter.report({
-				message: errorMessage,
-				stack: errorStack,
-				url: window.location.href,
-				timestamp: new Date().toISOString(),
-				source: 'react-router',
-				error: error,
-				level: 'error',
+			// Capture exception in Sentry
+			Sentry.captureException(error instanceof Error ? error : new Error(errorMessage), {
+				tags: {
+					source: 'react-router',
+				},
+				extra: {
+					errorMessage,
+					errorStack,
+				},
 			});
 		}
 	}, [error]);

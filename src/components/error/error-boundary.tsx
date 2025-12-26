@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ErrorFallback } from './error-fallback';
-import { errorReporter } from '@/lib/error-reporter';
+import { Sentry } from '@/lib/sentry';
 
 interface Props {
 	children: ReactNode;
@@ -28,18 +28,17 @@ export class ErrorBoundary extends Component<Props, State> {
 		// Update state with error info
 		this.setState({ errorInfo });
 
-		// Report error to backend
-		errorReporter.report({
-			message: error.message,
-			stack: error.stack || '',
-			componentStack: errorInfo.componentStack,
-			errorBoundary: true,
-			errorBoundaryProps: {
+		// Capture exception in Sentry
+		Sentry.captureException(error, {
+			contexts: {
+				react: {
+					componentStack: errorInfo.componentStack,
+				},
+			},
+			tags: {
+				errorBoundary: 'true',
 				componentName: this.constructor.name,
 			},
-			url: window.location.href,
-			timestamp: new Date().toISOString(),
-			level: 'error',
 		});
 	}
 

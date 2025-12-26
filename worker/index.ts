@@ -3,26 +3,14 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import * as Sentry from '@sentry/cloudflare';
 import { userRoutes } from './user-routes';
 import { QuizStoreDurableObject } from './quiz-store';
 import { GameRoomDurableObject } from './game-room';
 
 // Export Durable Object classes to make them available in wrangler
 export { QuizStoreDurableObject, GameRoomDurableObject };
-export interface ClientErrorReport {
-	message: string;
-	url: string;
-	userAgent: string;
-	timestamp: string;
-	stack?: string;
-	componentStack?: string;
-	errorBoundary?: boolean;
-	errorBoundaryProps?: Record<string, unknown>;
-	source?: string;
-	lineno?: number;
-	colno?: number;
-	error?: unknown;
-}
+
 const app = new Hono<{ Bindings: Env }>();
 
 if (import.meta.env.DEV) {
@@ -38,36 +26,6 @@ app.use(
 userRoutes(app);
 app.get('/api/health', (c) => c.json({ success: true, data: { status: 'healthy', timestamp: new Date().toISOString() } }));
 
-app.post('/api/client-errors', async (c) => {
-	try {
-		const e = await c.req.json<ClientErrorReport>();
-		if (!e.message || !e.url || !e.userAgent) return c.json({ success: false, error: 'Missing required fields' }, 400);
-		console.error(
-			'[CLIENT ERROR]',
-			JSON.stringify(
-				{
-					timestamp: e.timestamp || new Date().toISOString(),
-					message: e.message,
-					url: e.url,
-					userAgent: e.userAgent,
-					stack: e.stack,
-					componentStack: e.componentStack,
-					errorBoundary: e.errorBoundary,
-					source: e.source,
-					lineno: e.lineno,
-					colno: e.colno,
-				},
-				null,
-				2,
-			),
-		);
-		return c.json({ success: true });
-	} catch (error) {
-		console.error('[CLIENT ERROR HANDLER] Failed:', error);
-		return c.json({ success: false, error: 'Failed to process' }, 500);
-	}
-});
-
 app.notFound((c) => c.json({ success: false, error: 'Not Found' }, 404));
 app.onError((err, c) => {
 	console.error(`[ERROR] ${err}`);
@@ -76,4 +34,15 @@ app.onError((err, c) => {
 
 console.log(`Server is running`);
 
-export default { fetch: app.fetch } satisfies ExportedHandler<Env>;
+export default Sentry.withSentry(
+	(env: Env) => ({
+		dsn: import.meta.env.VITE_SENTRY_DSN,
+		release: env.CF_VERSION_METADATA?.id,
+		tracesSampleRate: 1.0,
+		sendDefaultPii: true,
+		_experiments: {
+			enableLogs: true,
+		},
+	}),
+	app,
+);

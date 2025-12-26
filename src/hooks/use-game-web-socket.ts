@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier, ServerMessage } from '@shared/types';
 import type { ErrorCodeType } from '@shared/errors';
+import { Sentry } from '@/lib/sentry';
 
 // Game state derived from WebSocket messages
 export interface LeaderboardEntry {
@@ -238,6 +239,7 @@ export function useGameWebSocket({
 				}
 			} catch (err) {
 				console.error('Failed to parse WebSocket message:', err);
+				Sentry.captureException(err, { tags: { source: 'websocket' } });
 			}
 		},
 		[onConnected, onError, onPlayerJoined, onEmojiReceived],
@@ -342,14 +344,18 @@ export function useGameWebSocket({
 	const submitAnswer = useCallback(
 		(answerIndex: number) => {
 			if (submittedAnswer !== null) return; // Prevent double submission
-			sendMessage({ type: 'submitAnswer', answerIndex });
+			Sentry.startSpan({ op: 'game.action', name: 'Submit Answer' }, () => {
+				sendMessage({ type: 'submitAnswer', answerIndex });
+			});
 		},
 		[sendMessage, submittedAnswer],
 	);
 
 	// Host actions
 	const startGame = useCallback(() => {
-		sendMessage({ type: 'startGame' });
+		Sentry.startSpan({ op: 'game.action', name: 'Start Game' }, () => {
+			sendMessage({ type: 'startGame' });
+		});
 	}, [sendMessage]);
 
 	const nextState = useCallback(() => {
