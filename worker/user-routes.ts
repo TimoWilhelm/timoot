@@ -7,6 +7,8 @@ import { quizRoutes, gameRoutes, imageRoutes, syncRoutes } from './routes';
  */
 const apiRoutes = new Hono<{ Bindings: Env }>().route('', quizRoutes).route('', gameRoutes).route('', imageRoutes).route('', syncRoutes);
 
+export type ApiRoutes = typeof apiRoutes;
+
 /**
  * Register all user-facing API routes on the main app.
  */

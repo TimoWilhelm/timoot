@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
-import { client, userHeaders, protectedHeaders } from '@/lib/api-client';
+import { client } from '@/lib/api-client';
 import { useUserId } from '@/hooks/use-user-id';
 import { useTurnstile } from '@/hooks/use-turnstile';
 
@@ -101,7 +101,7 @@ export function QuizEditorPage() {
 	useEffect(() => {
 		const fetchAiImages = async () => {
 			try {
-				const res = await client.api.images.$get({ header: userHeaders(userId), query: {} });
+				const res = await client.api.images.$get({ header: { 'x-user-id': userId }, query: {} });
 				if (res.ok) {
 					const result = await res.json();
 					if (result.success && result.data) {
@@ -120,7 +120,7 @@ export function QuizEditorPage() {
 		if (!aiImagesCursor || isLoadingMoreImages) return;
 		setIsLoadingMoreImages(true);
 		try {
-			const res = await client.api.images.$get({ header: userHeaders(userId), query: { cursor: aiImagesCursor } });
+			const res = await client.api.images.$get({ header: { 'x-user-id': userId }, query: { cursor: aiImagesCursor } });
 			if (res.ok) {
 				const result = await res.json();
 				if (result.success && result.data) {
@@ -138,7 +138,7 @@ export function QuizEditorPage() {
 		if (quizId) {
 			const fetchQuiz = async () => {
 				try {
-					const res = await client.api.quizzes.custom[':id'].$get({ header: userHeaders(userId), param: { id: quizId } });
+					const res = await client.api.quizzes.custom[':id'].$get({ header: { 'x-user-id': userId }, param: { id: quizId } });
 					const result = await res.json();
 					if (result.success && result.data) {
 						const formData: QuizFormInput = {
@@ -181,13 +181,13 @@ export function QuizEditorPage() {
 			let result;
 			if (quizId) {
 				const res = await client.api.quizzes.custom[':id'].$put({
-					header: userHeaders(userId),
+					header: { 'x-user-id': userId },
 					param: { id: quizId },
 					json: { ...processedData, id: quizId },
 				});
 				result = await res.json();
 			} else {
-				const res = await client.api.quizzes.custom.$post({ header: userHeaders(userId), json: processedData });
+				const res = await client.api.quizzes.custom.$post({ header: { 'x-user-id': userId }, json: processedData });
 				result = await res.json();
 			}
 			if (!result.success) {
@@ -228,8 +228,9 @@ export function QuizEditorPage() {
 
 		setIsGeneratingQuestion(true);
 		try {
+			resetToken();
 			const res = await client.api.quizzes['generate-question'].$post({
-				header: protectedHeaders(userId, turnstileToken, resetToken),
+				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
 				json: {
 					title,
 					existingQuestions: currentQuestions.map((q) => ({
@@ -262,7 +263,7 @@ export function QuizEditorPage() {
 	const deleteImage = async (imageId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
 		try {
-			const res = await client.api.images[':userId'][':imageId'].$delete({ header: userHeaders(userId), param: { userId, imageId } });
+			const res = await client.api.images[':userId'][':imageId'].$delete({ header: { 'x-user-id': userId }, param: { userId, imageId } });
 			const result = await res.json();
 			if (!res.ok || !result.success) {
 				throw new Error('error' in result ? result.error : 'Failed to delete image');
@@ -287,8 +288,9 @@ export function QuizEditorPage() {
 
 		setIsGeneratingImage(true);
 		try {
+			resetToken();
 			const res = await client.api.images.generate.$post({
-				header: protectedHeaders(userId, turnstileToken, resetToken),
+				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
 				json: { prompt: imagePrompt },
 			});
 

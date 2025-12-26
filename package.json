@@ -76,6 +76,7 @@
 		"dev": "bun run build:worker-types && concurrently -n vite,types -c blue,yellow \"vite --host 0.0.0.0 --port 3000\" \"tsc -p tsconfig.worker.json --watch --preserveWatchOutput\"",
 		"build": "bun run build:worker-types && vite build",
 		"build:worker-types": "tsc -p tsconfig.worker.json",
+		"typecheck": "bun run build:worker-types && tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.worker.json",
 		"lint": "eslint --cache -f json --quiet .",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",

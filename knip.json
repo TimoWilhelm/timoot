@@ -5,7 +5,7 @@
 		"type": true
 	},
 	"tags": ["-lintignore"],
-	"entry": ["src/main.tsx", "worker/index.ts"],
+	"entry": ["src/main.tsx", "worker/index.ts", "worker/user-routes.ts"],
 	"ignoreDependencies": ["cloudflare"],
 	"ignoreBinaries": ["wrangler"],
 	"ignoreFiles": ["test/unit/env.d.ts"]

@@ -39,7 +39,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useHostStore } from '@/lib/host-store';
-import { client, userHeaders, protectedHeaders } from '@/lib/api-client';
+import { client } from '@/lib/api-client';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
 
@@ -76,7 +76,7 @@ export function HomePage() {
 		try {
 			const [predefinedRes, customRes] = await Promise.all([
 				client.api.quizzes.$get(),
-				client.api.quizzes.custom.$get({ header: userHeaders(userId) }),
+				client.api.quizzes.custom.$get({ header: { 'x-user-id': userId } }),
 			]);
 			const predefinedResult = await predefinedRes.json();
 			const customResult = await customRes.json();
@@ -107,7 +107,8 @@ export function HomePage() {
 		setIsGameStarting(true);
 		setStartingQuizId(quizId);
 		try {
-			const res = await client.api.games.$post({ header: protectedHeaders(userId, turnstileToken, resetToken), json: { quizId } });
+			resetToken();
+			const res = await client.api.games.$post({ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken }, json: { quizId } });
 			const result = await res.json();
 			if (result.success && result.data) {
 				if ('error' in result.data) {
@@ -134,7 +135,7 @@ export function HomePage() {
 	const handleDeleteQuiz = async () => {
 		if (!quizToDelete) return;
 		try {
-			const res = await client.api.quizzes.custom[':id'].$delete({ header: userHeaders(userId), param: { id: quizToDelete } });
+			const res = await client.api.quizzes.custom[':id'].$delete({ header: { 'x-user-id': userId }, param: { id: quizToDelete } });
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
 			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
@@ -152,7 +153,8 @@ export function HomePage() {
 		}
 		setIsGeneratingSyncCode(true);
 		try {
-			const res = await client.api.sync.generate.$post({ header: protectedHeaders(userId, turnstileToken, resetToken) });
+			resetToken();
+			const res = await client.api.sync.generate.$post({ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } });
 			const result = await res.json();
 			if (result.success && result.data) {
 				setSyncCode(result.data.code);
@@ -180,7 +182,7 @@ export function HomePage() {
 		setShowSyncWarning(false);
 		setIsRedeemingSyncCode(true);
 		try {
-			const res = await client.api.sync.redeem.$post({ header: userHeaders(userId), json: { code: syncCodeInput.toUpperCase() } });
+			const res = await client.api.sync.redeem.$post({ header: { 'x-user-id': userId }, json: { code: syncCodeInput.toUpperCase() } });
 			const result = await res.json();
 			if (result.success && result.data) {
 				setUserId(result.data.userId);
@@ -247,7 +249,8 @@ export function HomePage() {
 		}, 100);
 
 		// SSE streaming requires direct fetch, not Hono client
-		const headers = protectedHeaders(userId, turnstileToken, resetToken);
+		resetToken();
+		const headers = { 'x-user-id': userId, 'x-turnstile-token': turnstileToken };
 		try {
 			const response = await fetch('/api/quizzes/generate', {
 				method: 'POST',
