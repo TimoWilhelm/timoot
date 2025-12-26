@@ -13,8 +13,3 @@ const apiRoutes = new Hono<{ Bindings: Env }>().route('', quizRoutes).route('', 
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
 	app.route('', apiRoutes);
 }
-
-/**
- * Export the API type for Hono RPC client usage.
- */
-export type ApiRoutes = typeof apiRoutes;

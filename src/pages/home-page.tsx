@@ -39,7 +39,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useHostStore } from '@/lib/host-store';
-import { api, userHeaders, protectedHeaders } from '@/lib/api-client';
+import { client, userHeaders, protectedHeaders } from '@/lib/api-client';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
 
@@ -75,8 +75,8 @@ export function HomePage() {
 		setIsLoading(true);
 		try {
 			const [predefinedRes, customRes] = await Promise.all([
-				api.api.quizzes.$get(),
-				api.api.quizzes.custom.$get({}, { headers: userHeaders(userId) }),
+				client.api.quizzes.$get(),
+				client.api.quizzes.custom.$get({ header: userHeaders(userId) }),
 			]);
 			const predefinedResult = await predefinedRes.json();
 			const customResult = await customRes.json();
@@ -107,7 +107,7 @@ export function HomePage() {
 		setIsGameStarting(true);
 		setStartingQuizId(quizId);
 		try {
-			const res = await api.api.games.$post({ json: { quizId } }, { headers: protectedHeaders(userId, turnstileToken, resetToken) });
+			const res = await client.api.games.$post({ header: protectedHeaders(userId, turnstileToken, resetToken), json: { quizId } });
 			const result = await res.json();
 			if (result.success && result.data) {
 				if ('error' in result.data) {
@@ -121,7 +121,7 @@ export function HomePage() {
 					throw new Error('Game created, but missing ID or secret.');
 				}
 			} else {
-				throw new Error(result.error || 'Failed to create game');
+				throw new Error('error' in result ? result.error : 'Failed to create game');
 			}
 		} catch (error) {
 			console.error(error);
@@ -134,7 +134,7 @@ export function HomePage() {
 	const handleDeleteQuiz = async () => {
 		if (!quizToDelete) return;
 		try {
-			const res = await api.api.quizzes.custom[':id'].$delete({ param: { id: quizToDelete } }, { headers: userHeaders(userId) });
+			const res = await client.api.quizzes.custom[':id'].$delete({ header: userHeaders(userId), param: { id: quizToDelete } });
 			if (!res.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
 			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
@@ -152,13 +152,13 @@ export function HomePage() {
 		}
 		setIsGeneratingSyncCode(true);
 		try {
-			const res = await api.api.sync.generate.$post({}, { headers: protectedHeaders(userId, turnstileToken, resetToken) });
+			const res = await client.api.sync.generate.$post({ header: protectedHeaders(userId, turnstileToken, resetToken) });
 			const result = await res.json();
 			if (result.success && result.data) {
 				setSyncCode(result.data.code);
 				setSyncCodeExpiry(Date.now() + result.data.expiresIn * 1000);
 			} else {
-				throw new Error(result.error || 'Failed to generate sync code');
+				throw new Error('error' in result ? result.error : 'Failed to generate sync code');
 			}
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : 'Failed to generate sync code');
@@ -180,7 +180,7 @@ export function HomePage() {
 		setShowSyncWarning(false);
 		setIsRedeemingSyncCode(true);
 		try {
-			const res = await api.api.sync.redeem.$post({ json: { code: syncCodeInput.toUpperCase() } }, { headers: userHeaders(userId) });
+			const res = await client.api.sync.redeem.$post({ header: userHeaders(userId), json: { code: syncCodeInput.toUpperCase() } });
 			const result = await res.json();
 			if (result.success && result.data) {
 				setUserId(result.data.userId);
@@ -189,7 +189,7 @@ export function HomePage() {
 				// Reload to fetch data with new userId
 				setTimeout(() => window.location.reload(), 500);
 			} else {
-				throw new Error(result.error || 'Invalid or expired sync code');
+				throw new Error('error' in result ? result.error : 'Invalid or expired sync code');
 			}
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : 'Failed to redeem sync code');

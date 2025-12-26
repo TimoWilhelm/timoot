@@ -167,10 +167,10 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// List all AI-generated images with pagination
-	.get('/api/images', withUserId, async (c) => {
+	.get('/api/images', withUserId, zValidator('query', z.object({ cursor: z.string().optional() })), async (c) => {
 		try {
 			const kvUserId = getUserId(c);
-			const cursor = c.req.query('cursor');
+			const cursor = c.req.valid('query').cursor;
 			const listResult = await c.env.KV_IMAGES.list({
 				prefix: `user:${kvUserId}:image:`,
 				limit: 10,

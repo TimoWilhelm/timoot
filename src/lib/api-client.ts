@@ -1,25 +1,28 @@
 import { hc } from 'hono/client';
-import type { ApiRoutes } from '../../worker/user-routes';
+import type { ApiRoutes } from '../../dist/worker/worker/user-routes';
 
 /**
  * Type-safe Hono RPC client for API calls.
+ * Uses hcWithType pattern for better type inference at compile time.
  *
  * Usage:
  * ```ts
  * // For routes requiring user ID header:
- * const res = await api.api.quizzes.custom.$get({}, {
- *   headers: userHeaders(userId)
+ * const res = await client.api.quizzes.custom.$get({
+ *   header: userHeaders(userId)
  * });
  *
  * // For protected routes requiring turnstile token:
- * const res = await api.api.games.$post({
+ * const res = await client.api.games.$post({
+ *   header: protectedHeaders(userId, token),
  *   json: { quizId: '...' }
- * }, {
- *   headers: protectedHeaders(userId, token)
  * });
  * ```
  */
-export const api = hc<ApiRoutes>('/');
+// Pre-compute client type at compile time for better type inference
+export type Client = ReturnType<typeof hc<ApiRoutes>>;
+const hcWithType = (...args: Parameters<typeof hc>): Client => hc<ApiRoutes>(...args);
+export const client = hcWithType('/');
 
 /**
  * Helper to create headers for routes requiring user ID.

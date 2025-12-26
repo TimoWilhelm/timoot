@@ -33,6 +33,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"common-tags": "^1.8.2",
+		"concurrently": "^9.2.1",
 		"eslint": "^9.39.2",
 		"eslint-import-resolver-typescript": "^4.4.4",
 		"eslint-plugin-import": "^2.32.0",
@@ -72,8 +73,9 @@
 	},
 	"private": true,
 	"scripts": {
-		"dev": "vite --host 0.0.0.0 --port 3000",
-		"build": "vite build",
+		"dev": "bun run build:worker-types && concurrently -n vite,types -c blue,yellow \"vite --host 0.0.0.0 --port 3000\" \"tsc -p tsconfig.worker.json --watch --preserveWatchOutput\"",
+		"build": "bun run build:worker-types && vite build",
+		"build:worker-types": "tsc -p tsconfig.worker.json",
 		"lint": "eslint --cache -f json --quiet .",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
@@ -84,7 +86,6 @@
 		"preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",
 		"deploy": "bun run build && wrangler deploy",
 		"cf-typegen": "wrangler types",
-		"typecheck": "bunx tsc --noEmit",
 		"knip": "knip",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"

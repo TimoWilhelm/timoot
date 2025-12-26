@@ -1,4 +1,5 @@
-import type { Context } from 'hono';
+import type { Context, TypedResponse } from 'hono';
+import type { ApiResponse } from '@shared/types';
 
 /**
  * Rate limiter interface matching Cloudflare's Rate Limiting API
@@ -7,12 +8,18 @@ interface RateLimiter {
 	limit(options: { key: string }): Promise<{ success: boolean }>;
 }
 
+type RateLimitErrorResponse = TypedResponse<ApiResponse<never>, 429, 'json'>;
+
 /**
  * Check rate limit and return 429 response if exceeded.
  * Uses CF-Connecting-IP combined with endpoint path as the rate limit key.
  * Rate limiting is disabled in development mode.
  */
-export async function checkRateLimit(c: Context<{ Bindings: Env }>, rateLimiter: RateLimiter, endpoint: string): Promise<Response | null> {
+export async function checkRateLimit(
+	c: Context<{ Bindings: Env }>,
+	rateLimiter: RateLimiter,
+	endpoint: string,
+): Promise<RateLimitErrorResponse | null> {
 	if (import.meta.env.DEV) {
 		return null;
 	}
@@ -27,7 +34,7 @@ export async function checkRateLimit(c: Context<{ Bindings: Env }>, rateLimiter:
 			{
 				success: false,
 				error: 'Rate limit exceeded. Please try again later.',
-			},
+			} satisfies ApiResponse<never>,
 			429,
 		);
 	}
