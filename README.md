@@ -34,9 +34,13 @@ Every game runs on its own Durable Object, keeping state synced across all playe
 | **State**      | Zustand                                |
 | **Animations** | Framer Motion                          |
 | **Backend**    | Cloudflare Workers, Hono               |
+| **API Client** | Hono RPC (type-safe client)            |
 | **Realtime**   | Cloudflare Durable Objects, WebSockets |
-| **AI**         | Cloudflare AI Gateway, AI SDK          |
-| **Tooling**    | Vite, Bun                              |
+| **AI**         | Cloudflare AI Gateway, Vercel AI SDK   |
+| **Storage**    | Durable Objects SQLite, KV             |
+| **Build**      | Vite, Bun, @cloudflare/vite-plugin     |
+| **Testing**    | Vitest, Playwright, Storybook          |
+| **Quality**    | ESLint, Prettier, Knip                 |
 
 ## Getting Started
 
@@ -106,8 +110,41 @@ bunx wrangler secret put CLOUDFLARE_AI_GATEWAY_MODEL
 ```text
 src/           → React app (pages, components, hooks)
 worker/        → Cloudflare Worker (API routes, Durable Objects)
-shared/        → Shared TypeScript types
+shared/        → Shared code between frontend and worker
+test/          → Unit, integration, and load tests
+.storybook/    → Storybook configuration
 wrangler.jsonc → Worker configuration
+```
+
+## Tooling
+
+### Hono RPC
+
+The frontend uses [Hono RPC](https://hono.dev/docs/guides/rpc) for type-safe API calls. The client is generated from the worker's route types:
+
+```typescript
+import { client } from '@/lib/api-client';
+
+// Type-safe API call with full IntelliSense
+const response = await client.api.quizzes.$get();
+```
+
+### Testing
+
+```bash
+bun test              # Unit tests
+bun test:integration  # Integration tests (Playwright)
+bun test:storybook    # Component tests
+bun test:load         # Load tests
+```
+
+### Code Quality
+
+```bash
+bun lint          # ESLint
+bun format        # Prettier
+bun knip          # Find unused exports/dependencies
+bun typecheck     # TypeScript checks
 ```
 
 ## Deploy
