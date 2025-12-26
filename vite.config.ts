@@ -3,12 +3,24 @@ import { defineConfig, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import devtoolsJson from 'vite-plugin-devtools-json';
 import { cloudflare } from '@cloudflare/vite-plugin';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 // https://vite.dev/config/
 export default (): UserConfig => {
 	return defineConfig({
-		plugins: [devtoolsJson(), react(), cloudflare()],
+		plugins: [
+			devtoolsJson(),
+			react(),
+			cloudflare(),
+			sentryVitePlugin({
+				authToken: process.env.SENTRY_AUTH_TOKEN,
+				org: 'daxo',
+				project: 'timoot',
+				telemetry: false,
+			}),
+		],
 		build: {
+			sourcemap: true,
 			minify: true,
 		},
 		css: {

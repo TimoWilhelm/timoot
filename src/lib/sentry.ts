@@ -25,4 +25,16 @@ Sentry.init({
 	environment: import.meta.env.MODE,
 });
 
+void fetch('/api/version')
+	.then((res) => res.json())
+	.then((data: { success: boolean; data: { release: string | null } }) => {
+		if (data.success && data.data.release) {
+			const client = Sentry.getClient();
+			if (client) {
+				client.getOptions().release = data.data.release;
+			}
+		}
+	})
+	.catch(() => {});
+
 export { Sentry };

@@ -94,5 +94,8 @@
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@sentry/vite-plugin": "^4.6.1"
+	}
 }

@@ -6,7 +6,7 @@ import { exports, waitUntil } from 'cloudflare:workers';
 import { type GeneratedQuestion, type GenerationStatus, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
 import { PREDEFINED_QUIZZES } from '../quizzes';
 import { checkRateLimit } from './utils';
-import { withUserId, withProtectedHeader, getUserId, verifyTurnstile } from './validators';
+import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
 import { aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 import type { ApiResponse, Quiz } from '@shared/types';
 
@@ -23,7 +23,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Get custom quizzes for user
-	.get('/api/quizzes/custom', withUserId, async (c) => {
+	.get('/api/quizzes/custom', zValidator('header', userIdHeaderSchema), async (c) => {
 		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizzes();
@@ -33,7 +33,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Get specific custom quiz
-	.get('/api/quizzes/custom/:id', withUserId, async (c) => {
+	.get('/api/quizzes/custom/:id', zValidator('header', userIdHeaderSchema), async (c) => {
 		const { id } = c.req.param();
 		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
@@ -45,7 +45,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Create custom quiz
-	.post('/api/quizzes/custom', withUserId, zValidator('json', quizSchema), async (c) => {
+	.post('/api/quizzes/custom', zValidator('header', userIdHeaderSchema), zValidator('json', quizSchema), async (c) => {
 		const quiz = c.req.valid('json');
 		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
@@ -56,7 +56,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Update custom quiz
-	.put('/api/quizzes/custom/:id', withUserId, zValidator('json', quizSchema), async (c) => {
+	.put('/api/quizzes/custom/:id', zValidator('header', userIdHeaderSchema), zValidator('json', quizSchema), async (c) => {
 		const { id } = c.req.param();
 		const quiz = c.req.valid('json');
 		if (id !== quiz.id) {
@@ -71,7 +71,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Delete custom quiz
-	.delete('/api/quizzes/custom/:id', withUserId, async (c) => {
+	.delete('/api/quizzes/custom/:id', zValidator('header', userIdHeaderSchema), async (c) => {
 		const { id } = c.req.param();
 		const userId = getUserId(c);
 		const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
@@ -86,51 +86,57 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 
 	// AI Quiz Generation endpoint with SSE streaming for status updates
 	// Note: SSE endpoints don't work well with hc client, use fetch directly
-	.post('/api/quizzes/generate', withProtectedHeader, verifyTurnstile, zValidator('json', aiGenerateRequestSchema), async (c) => {
-		const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'quiz-generate');
-		if (rateLimitResponse) return rateLimitResponse;
+	.post(
+		'/api/quizzes/generate',
+		zValidator('header', protectedHeaderSchema),
+		verifyTurnstile,
+		zValidator('json', aiGenerateRequestSchema),
+		async (c) => {
+			const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'quiz-generate');
+			if (rateLimitResponse) return rateLimitResponse;
 
-		const { prompt, numQuestions } = c.req.valid('json');
+			const { prompt, numQuestions } = c.req.valid('json');
 
-		return streamSSE(c, async (stream) => {
-			try {
-				const onStatusUpdate = (status: GenerationStatus) => {
-					stream.writeSSE({ event: 'status', data: JSON.stringify(status) });
-				};
+			return streamSSE(c, async (stream) => {
+				try {
+					const onStatusUpdate = (status: GenerationStatus) => {
+						stream.writeSSE({ event: 'status', data: JSON.stringify(status) });
+					};
 
-				const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {
-					connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
-				});
+					const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {
+						connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
+					});
 
-				// Save the generated quiz as a custom quiz
-				const userId = getUserId(c);
-				const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
-				const savedQuiz = await quizStoreStub.saveCustomQuiz({
-					title: generatedQuiz.title,
-					questions: generatedQuiz.questions,
-				});
+					// Save the generated quiz as a custom quiz
+					const userId = getUserId(c);
+					const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
+					const savedQuiz = await quizStoreStub.saveCustomQuiz({
+						title: generatedQuiz.title,
+						questions: generatedQuiz.questions,
+					});
 
-				await stream.writeSSE({
-					event: 'complete',
-					data: JSON.stringify({ success: true, data: savedQuiz } satisfies ApiResponse<Quiz>),
-				});
-			} catch (error) {
-				console.error('[AI Quiz Generation Error]', error);
-				await stream.writeSSE({
-					event: 'error',
-					data: JSON.stringify({
-						success: false,
-						error: error instanceof Error ? error.message : 'Failed to generate quiz',
-					} satisfies ApiResponse),
-				});
-			}
-		});
-	})
+					await stream.writeSSE({
+						event: 'complete',
+						data: JSON.stringify({ success: true, data: savedQuiz } satisfies ApiResponse<Quiz>),
+					});
+				} catch (error) {
+					console.error('[AI Quiz Generation Error]', error);
+					await stream.writeSSE({
+						event: 'error',
+						data: JSON.stringify({
+							success: false,
+							error: error instanceof Error ? error.message : 'Failed to generate quiz',
+						} satisfies ApiResponse),
+					});
+				}
+			});
+		},
+	)
 
 	// AI Single Question Generation endpoint
 	.post(
 		'/api/quizzes/generate-question',
-		withProtectedHeader,
+		zValidator('header', protectedHeaderSchema),
 		verifyTurnstile,
 		zValidator(
 			'json',

@@ -4,7 +4,7 @@ import { exports } from 'cloudflare:workers';
 import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../quizzes';
 import { generateGameId } from '../words';
 import { checkRateLimit } from './utils';
-import { withProtectedHeader, getUserId, verifyTurnstile } from './validators';
+import { protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
 import { createGameRequestSchema } from '@shared/validation';
 import type { ApiResponse, GameState } from '@shared/types';
 
@@ -82,38 +82,44 @@ export const gameRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Create a new game (requires turnstile - expensive operation)
-	.post('/api/games', withProtectedHeader, verifyTurnstile, zValidator('json', createGameRequestSchema), async (c) => {
-		// Rate limit game creation
-		const rateLimitResponse = await checkRateLimit(c, c.env.GAME_RATE_LIMITER, 'game-create');
-		if (rateLimitResponse) return rateLimitResponse;
+	.post(
+		'/api/games',
+		zValidator('header', protectedHeaderSchema),
+		verifyTurnstile,
+		zValidator('json', createGameRequestSchema),
+		async (c) => {
+			// Rate limit game creation
+			const rateLimitResponse = await checkRateLimit(c, c.env.GAME_RATE_LIMITER, 'game-create');
+			if (rateLimitResponse) return rateLimitResponse;
 
-		const { quizId } = c.req.valid('json');
+			const { quizId } = c.req.valid('json');
 
-		// Resolve questions from quiz ID
-		let questions = GENERAL_KNOWLEDGE_QUIZ;
-		if (quizId) {
-			const userId = getUserId(c);
-			const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
-			const customQuiz = await quizStoreStub.getCustomQuizById(quizId);
-			if (customQuiz) {
-				questions = customQuiz.questions;
-			} else {
-				const predefinedQuiz = PREDEFINED_QUIZZES.find((q) => q.id === quizId);
-				if (predefinedQuiz) {
-					questions = predefinedQuiz.questions;
+			// Resolve questions from quiz ID
+			let questions = GENERAL_KNOWLEDGE_QUIZ;
+			if (quizId) {
+				const userId = getUserId(c);
+				const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
+				const customQuiz = await quizStoreStub.getCustomQuizById(quizId);
+				if (customQuiz) {
+					questions = customQuiz.questions;
+				} else {
+					const predefinedQuiz = PREDEFINED_QUIZZES.find((q) => q.id === quizId);
+					if (predefinedQuiz) {
+						questions = predefinedQuiz.questions;
+					}
 				}
 			}
-		}
 
-		// Generate a unique game ID for the room (adjective-color-animal format)
-		const gameId = generateGameId();
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+			// Generate a unique game ID for the room (adjective-color-animal format)
+			const gameId = generateGameId();
+			const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
 
-		// Create game with the resolved questions (copied into game state)
-		const data = await gameRoomStub.createGame(gameId, questions);
-		if ('error' in data) {
-			return c.json({ success: false, error: data.error }, 400);
-		}
+			// Create game with the resolved questions (copied into game state)
+			const data = await gameRoomStub.createGame(gameId, questions);
+			if ('error' in data) {
+				return c.json({ success: false, error: data.error }, 400);
+			}
 
-		return c.json({ success: true, data } satisfies ApiResponse<GameState>);
-	});
+			return c.json({ success: true, data } satisfies ApiResponse<GameState>);
+		},
+	);

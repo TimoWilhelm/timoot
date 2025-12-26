@@ -1,11 +1,16 @@
 import { Hono } from 'hono';
-import { quizRoutes, gameRoutes, imageRoutes, syncRoutes } from './routes';
+import { quizRoutes, gameRoutes, imageRoutes, syncRoutes, versionRoutes } from './routes';
 
 /**
  * Compose all API routes with RPC-compatible type inference.
  * Routes are organized by resource in separate modules under ./routes/
  */
-const apiRoutes = new Hono<{ Bindings: Env }>().route('', quizRoutes).route('', gameRoutes).route('', imageRoutes).route('', syncRoutes);
+const apiRoutes = new Hono<{ Bindings: Env }>()
+	.route('', quizRoutes)
+	.route('', gameRoutes)
+	.route('', imageRoutes)
+	.route('', syncRoutes)
+	.route('', versionRoutes);
 
 export type ApiRoutes = typeof apiRoutes;
 

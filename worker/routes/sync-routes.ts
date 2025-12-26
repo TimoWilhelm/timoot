@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
-import { withProtectedHeader, withUserId, getUserId, verifyTurnstile } from './validators';
+import { protectedHeaderSchema, userIdHeaderSchema, getUserId, verifyTurnstile } from './validators';
 import type { ApiResponse } from '@shared/types';
 
 // Sync code types
@@ -25,7 +25,7 @@ function generateSyncCode(): string {
  */
 export const syncRoutes = new Hono<{ Bindings: Env }>()
 	// Generate a sync code for the current user (requires turnstile - expensive operation)
-	.post('/api/sync/generate', withProtectedHeader, verifyTurnstile, async (c) => {
+	.post('/api/sync/generate', zValidator('header', protectedHeaderSchema), verifyTurnstile, async (c) => {
 		const userId = getUserId(c);
 		if (userId === 'anonymous') {
 			return c.json({ success: false, error: 'Valid user ID required' } satisfies ApiResponse, 400);
@@ -67,26 +67,31 @@ export const syncRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// Redeem a sync code to get the associated userId (no turnstile - one-time use codes are self-limiting)
-	.post('/api/sync/redeem', withUserId, zValidator('json', z.object({ code: z.string().length(6).toUpperCase() })), async (c) => {
-		const { code } = c.req.valid('json');
+	.post(
+		'/api/sync/redeem',
+		zValidator('header', userIdHeaderSchema),
+		zValidator('json', z.object({ code: z.string().length(6).toUpperCase() })),
+		async (c) => {
+			const { code } = c.req.valid('json');
 
-		try {
-			const syncDataStr = await c.env.KV_SYNC.get(`sync:${code}`);
-			if (!syncDataStr) {
-				return c.json({ success: false, error: 'Sync code not found or expired' } satisfies ApiResponse, 404);
+			try {
+				const syncDataStr = await c.env.KV_SYNC.get(`sync:${code}`);
+				if (!syncDataStr) {
+					return c.json({ success: false, error: 'Sync code not found or expired' } satisfies ApiResponse, 404);
+				}
+
+				const syncData = JSON.parse(syncDataStr) as SyncCodeData;
+
+				// Delete the code after use (one-time use)
+				await c.env.KV_SYNC.delete(`sync:${code}`);
+
+				return c.json({
+					success: true,
+					data: { userId: syncData.userId },
+				} satisfies ApiResponse<{ userId: string }>);
+			} catch (error) {
+				console.error('[Sync Code Redemption Error]', error);
+				return c.json({ success: false, error: 'Failed to redeem sync code' } satisfies ApiResponse, 500);
 			}
-
-			const syncData = JSON.parse(syncDataStr) as SyncCodeData;
-
-			// Delete the code after use (one-time use)
-			await c.env.KV_SYNC.delete(`sync:${code}`);
-
-			return c.json({
-				success: true,
-				data: { userId: syncData.userId },
-			} satisfies ApiResponse<{ userId: string }>);
-		} catch (error) {
-			console.error('[Sync Code Redemption Error]', error);
-			return c.json({ success: false, error: 'Failed to redeem sync code' } satisfies ApiResponse, 500);
-		}
-	});
+		},
+	);

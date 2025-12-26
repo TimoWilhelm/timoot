@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { waitUntil } from 'cloudflare:workers';
 import { oneLine } from 'common-tags';
-import { withUserId, withProtectedHeader, getUserId, verifyTurnstile } from './validators';
+import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
 import { imagePromptSchema } from '@shared/validation';
 import type { ApiResponse } from '@shared/types';
 
@@ -41,7 +41,7 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 	// AI Image Generation endpoint (requires turnstile - expensive operation)
 	.post(
 		'/api/images/generate',
-		withProtectedHeader,
+		zValidator('header', protectedHeaderSchema),
 		verifyTurnstile,
 		zValidator('json', z.object({ prompt: imagePromptSchema })),
 		async (c) => {
@@ -167,48 +167,53 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// List all AI-generated images with pagination
-	.get('/api/images', withUserId, zValidator('query', z.object({ cursor: z.string().optional() })), async (c) => {
-		try {
-			const kvUserId = getUserId(c);
-			const cursor = c.req.valid('query').cursor;
-			const listResult = await c.env.KV_IMAGES.list({
-				prefix: `user:${kvUserId}:image:`,
-				limit: 10,
-				cursor: cursor || undefined,
-			});
+	.get(
+		'/api/images',
+		zValidator('header', userIdHeaderSchema),
+		zValidator('query', z.object({ cursor: z.string().optional() })),
+		async (c) => {
+			try {
+				const kvUserId = getUserId(c);
+				const cursor = c.req.valid('query').cursor;
+				const listResult = await c.env.KV_IMAGES.list({
+					prefix: `user:${kvUserId}:image:`,
+					limit: 10,
+					cursor: cursor || undefined,
+				});
 
-			const images: AIImageListItem[] = listResult.keys.map((key: { name: string; metadata?: unknown }) => {
-				const metadata = key.metadata as AIImageMetadata | undefined;
-				const id = metadata?.id || key.name.replace(/^user:[^:]+:image:/, '');
-				return {
-					id,
-					name: metadata?.name || 'AI Generated',
-					path: `/api/images/${kvUserId}/${id}`,
-					prompt: metadata?.prompt,
-					createdAt: metadata?.createdAt,
+				const images: AIImageListItem[] = listResult.keys.map((key: { name: string; metadata?: unknown }) => {
+					const metadata = key.metadata as AIImageMetadata | undefined;
+					const id = metadata?.id || key.name.replace(/^user:[^:]+:image:/, '');
+					return {
+						id,
+						name: metadata?.name || 'AI Generated',
+						path: `/api/images/${kvUserId}/${id}`,
+						prompt: metadata?.prompt,
+						createdAt: metadata?.createdAt,
+					};
+				});
+
+				// Sort by createdAt descending (newest first)
+				images.sort((a, b) => {
+					if (!a.createdAt || !b.createdAt) return 0;
+					return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+				});
+
+				const response: AIImageListResponse = {
+					images,
+					nextCursor: listResult.list_complete ? undefined : listResult.cursor,
 				};
-			});
 
-			// Sort by createdAt descending (newest first)
-			images.sort((a, b) => {
-				if (!a.createdAt || !b.createdAt) return 0;
-				return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-			});
-
-			const response: AIImageListResponse = {
-				images,
-				nextCursor: listResult.list_complete ? undefined : listResult.cursor,
-			};
-
-			return c.json({ success: true, data: response } satisfies ApiResponse<AIImageListResponse>);
-		} catch (error) {
-			console.error('[Image List Error]', error);
-			return c.json({ success: false, error: 'Failed to list images' }, 500);
-		}
-	})
+				return c.json({ success: true, data: response } satisfies ApiResponse<AIImageListResponse>);
+			} catch (error) {
+				console.error('[Image List Error]', error);
+				return c.json({ success: false, error: 'Failed to list images' }, 500);
+			}
+		},
+	)
 
 	// Delete AI-generated image by ID
-	.delete('/api/images/:userId/:imageId', withUserId, async (c) => {
+	.delete('/api/images/:userId/:imageId', zValidator('header', userIdHeaderSchema), async (c) => {
 		const { userId: kvUserId, imageId } = c.req.param();
 
 		try {
