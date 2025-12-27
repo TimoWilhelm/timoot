@@ -50,8 +50,10 @@
 		"framer-motion": "^12.23.26",
 		"globals": "^16.5.0",
 		"hono": "^4.11.1",
+		"husky": "^9.1.7",
 		"immer": "^10.2.0",
 		"knip": "^5.76.3",
+		"lint-staged": "^16.2.7",
 		"lucide-react": "^0.525.0",
 		"playwright": "^1.57.0",
 		"postcss": "^8.5.6",
@@ -77,6 +79,7 @@
 	},
 	"private": true,
 	"scripts": {
+		"prepare": "husky",
 		"dev": "bun run build:worker-types && concurrently -n vite,types -c blue,yellow \"vite --host 0.0.0.0 --port 3000\" \"tsc -p tsconfig.worker.json --watch --preserveWatchOutput\"",
 		"build": "bun run build:worker-types && vite build",
 		"build:worker-types": "tsc -p tsconfig.worker.json",
