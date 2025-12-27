@@ -20,7 +20,7 @@ import {
 import { Toaster, toast } from 'sonner';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import type { Quiz } from '@shared/types';
+import type { Quiz, QuizGenerateSSEEvent } from '@shared/types';
 import { LIMITS, aiPromptSchema } from '@shared/validation';
 import { musicCredits } from '@shared/music-credits';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utilities';
 import { useHostStore } from '@/lib/host-store';
+import { consumeSSEStream } from '@/lib/sse-client';
+import { hcWithType } from '@/lib/api-client';
 import {
 	queryKeys,
 	useCreateGame,
@@ -250,63 +252,39 @@ export function HomePage() {
 			generatingCardReference.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}, 100);
 
-		// SSE streaming requires direct fetch, not Hono client
 		resetToken();
-		const headers = { 'x-user-id': userId, 'x-turnstile-token': turnstileToken };
+		const client = hcWithType('/');
 		try {
-			const response = await fetch('/api/quizzes/generate', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', ...headers },
-				body: JSON.stringify({ prompt, numQuestions: 5 }),
+			const response = await client.api.quizzes.generate.$post({
+				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
+				json: { prompt, numQuestions: 5 },
 			});
 
-			if (!response.ok || !response.body) {
-				throw new Error('Failed to start quiz generation');
-			}
-
-			// Parse SSE stream
-			const reader = response.body.getReader();
-			const decoder = new TextDecoder();
-			let buffer = '';
-
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
-
-				buffer += decoder.decode(value, { stream: true });
-				const lines = buffer.split('\n');
-				buffer = lines.pop() || '';
-
-				let currentEvent = '';
-				for (const line of lines) {
-					if (line.startsWith('event: ')) {
-						currentEvent = line.slice(7);
-					} else if (line.startsWith('data: ')) {
-						const data = JSON.parse(line.slice(6)) as { success?: boolean; data?: Quiz; error?: string; stage?: string; detail?: string };
-
-						switch (currentEvent) {
-							case 'status': {
-								setGenerationStatus(data as { stage: string; detail?: string });
-
-								break;
-							}
-							case 'complete': {
-								if (data.success && data.data) {
-									toast.success(`Quiz "${data.data.title}" generated successfully!`);
-									void queryClient.invalidateQueries({ queryKey: queryKeys.quizzes.custom(userId) });
-								}
-
-								break;
-							}
-							case 'error': {
-								throw new Error(data.error || 'Failed to generate quiz');
-							}
-							// No default
+			await consumeSSEStream<QuizGenerateSSEEvent>(response, {
+				onEvent: (event) => {
+					switch (event.event) {
+						case 'status': {
+							setGenerationStatus(event.data);
+							break;
 						}
-						currentEvent = '';
+						case 'complete': {
+							if (event.data.success && event.data.data) {
+								toast.success(`Quiz "${event.data.data.title}" generated successfully!`);
+								void queryClient.invalidateQueries({ queryKey: queryKeys.quizzes.custom(userId) });
+							}
+							break;
+						}
+						case 'error': {
+							toast.error(event.data.error || 'Failed to generate quiz');
+							break;
+						}
 					}
-				}
-			}
+				},
+				onError: (error) => {
+					console.error(error);
+					toast.error(error.message);
+				},
+			});
 		} catch (error) {
 			console.error(error);
 			toast.error(error instanceof Error ? error.message : 'Could not generate quiz. Please try again.');

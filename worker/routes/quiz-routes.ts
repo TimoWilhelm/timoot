@@ -3,12 +3,12 @@ import { streamSSE } from 'hono/streaming';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { exports, waitUntil } from 'cloudflare:workers';
-import { type GeneratedQuestion, type GenerationStatus, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
+import { type GeneratedQuestion, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
 import { PREDEFINED_QUIZZES } from '../quizzes';
 import { checkRateLimit } from './utilities';
 import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
 import { aiGenerateRequestSchema, quizSchema } from '@shared/validation';
-import type { ApiResponse, Quiz } from '@shared/types';
+import type { ApiResponse, GenerationStatus, Quiz, QuizGenerateSSEEvent } from '@shared/types';
 
 /**
  * Quiz routes with RPC-compatible chained methods.
@@ -85,7 +85,6 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	})
 
 	// AI Quiz Generation endpoint with SSE streaming for status updates
-	// Note: SSE endpoints don't work well with hc client, use fetch directly
 	.post(
 		'/api/quizzes/generate',
 		zValidator('header', protectedHeaderSchema),
@@ -97,10 +96,14 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 
 			const { prompt, numQuestions } = c.req.valid('json');
 
+			const writeSSEEvent = (stream: Parameters<Parameters<typeof streamSSE>[1]>[0], event: QuizGenerateSSEEvent) => {
+				return stream.writeSSE({ event: event.event, data: JSON.stringify(event.data) });
+			};
+
 			return streamSSE(c, async (stream) => {
 				try {
 					const onStatusUpdate = (status: GenerationStatus) => {
-						void stream.writeSSE({ event: 'status', data: JSON.stringify(status) });
+						void writeSSEEvent(stream, { event: 'status', data: status });
 					};
 
 					const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {
@@ -115,18 +118,12 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 						questions: generatedQuiz.questions,
 					});
 
-					await stream.writeSSE({
-						event: 'complete',
-						data: JSON.stringify({ success: true, data: savedQuiz } satisfies ApiResponse<Quiz>),
-					});
+					await writeSSEEvent(stream, { event: 'complete', data: { success: true, data: savedQuiz } });
 				} catch (error) {
 					console.error('[AI Quiz Generation Error]', error);
-					await stream.writeSSE({
+					await writeSSEEvent(stream, {
 						event: 'error',
-						data: JSON.stringify({
-							success: false,
-							error: error instanceof Error ? error.message : 'Failed to generate quiz',
-						} satisfies ApiResponse),
+						data: { success: false, error: error instanceof Error ? error.message : 'Failed to generate quiz' },
 					});
 				}
 			});

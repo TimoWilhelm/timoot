@@ -5,6 +5,18 @@ export interface ApiResponse<T = unknown> {
 	data?: T;
 	error?: string;
 }
+
+// ============ SSE Event Types ============
+
+export type GenerationStatus = {
+	stage: 'researching' | 'reading_docs' | 'searching_web' | 'generating';
+	detail?: string;
+};
+
+export type QuizGenerateSSEEvent =
+	| { event: 'status'; data: GenerationStatus }
+	| { event: 'complete'; data: ApiResponse<Quiz> }
+	| { event: 'error'; data: ApiResponse };
 export interface Question {
 	text: string;
 	options: string[];

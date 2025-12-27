@@ -14,6 +14,7 @@ import {
 import { stripIndent } from 'common-tags';
 import { z } from 'zod';
 import { env, waitUntil } from 'cloudflare:workers';
+import type { GenerationStatus } from '@shared/types';
 
 const getCloudflareDocumentationMCP: () => Promise<MCPClient> = async () => {
 	return await createMCPClient({
@@ -59,11 +60,6 @@ const QuizSchema = z.object({
 
 export type GeneratedQuiz = z.infer<typeof QuizSchema>;
 export type GeneratedQuestion = z.infer<typeof QuestionSchema>;
-
-export type GenerationStatus = {
-	stage: 'researching' | 'reading_docs' | 'searching_web' | 'generating';
-	detail?: string;
-};
 
 export type OnStatusUpdate = (status: GenerationStatus) => void;
 
