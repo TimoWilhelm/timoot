@@ -48,12 +48,11 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 			try {
 				const { prompt } = c.req.valid('json');
 
-				// Augment prompt for quiz card background suitability
+				// Augment prompt for background image suitability
 				const augmentedPrompt = oneLine`
-				A beautiful, vibrant background image for a quiz card.
-				Style: Fun, suitable for text overlay.
-				NEVER include text or letters in the image.
-				Theme: ${prompt}.
+				${prompt}, pure photographic wallpaper, wide panoramic landscape composition,
+				frame composition with richer detail toward edges and fewer busy elements in the center,
+				8k resolution, cinematic lighting, vivid sharp details
 			`;
 
 				// Generate image using flux-2-dev model

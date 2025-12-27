@@ -532,11 +532,9 @@ export function QuizEditorPage() {
 																	{isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
 																</Button>
 															</div>
-															{!turnstileToken && (
-																<div className="flex justify-center pt-2">
-																	<TurnstileWidget />
-																</div>
-															)}
+															<div className="flex justify-center pt-2">
+																<TurnstileWidget />
+															</div>
 														</div>
 													</div>
 												</PopoverContent>
