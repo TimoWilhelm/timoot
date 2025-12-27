@@ -1,6 +1,7 @@
 {
 	"name": "timoot",
 	"version": "0.0.0",
+	"type": "module",
 	"devDependencies": {
 		"@ai-sdk/mcp": "^1.0.0",
 		"@ai-sdk/openai-compatible": "^2.0.0",
@@ -20,10 +21,12 @@
 		"@radix-ui/react-slot": "^1.2.4",
 		"@sentry/cloudflare": "^10.32.1",
 		"@sentry/react": "^10.32.1",
+		"@sentry/vite-plugin": "^4.6.1",
 		"@storybook/addon-a11y": "^10.1.10",
 		"@storybook/addon-docs": "^10.1.10",
 		"@storybook/addon-vitest": "^10.1.10",
 		"@storybook/react-vite": "^10.1.10",
+		"@tanstack/react-query": "^5.90.12",
 		"@types/canvas-confetti": "^1.9.0",
 		"@types/common-tags": "^1.8.4",
 		"@types/react": "^18.3.27",
@@ -97,9 +100,5 @@
 		"knip": "knip",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
-	},
-	"type": "module",
-	"dependencies": {
-		"@sentry/vite-plugin": "^4.6.1"
 	}
 }

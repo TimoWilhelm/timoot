@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
 	BookOpen,
@@ -39,7 +40,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utilities';
 import { useHostStore } from '@/lib/host-store';
-import { client } from '@/lib/api-client';
+import {
+	queryKeys,
+	useCreateGame,
+	useCustomQuizzes,
+	useDeleteQuiz,
+	useGenerateSyncCode,
+	usePredefinedQuizzes,
+	useRedeemSyncCode,
+} from '@/hooks/use-api';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
 
@@ -66,10 +75,6 @@ function getStatusMessage(status: { stage: string; detail?: string } | undefined
 
 export function HomePage() {
 	const navigate = useNavigate();
-	const [isLoading, setIsLoading] = useState(false);
-	const [isGameStarting, setIsGameStarting] = useState(false);
-	const [predefinedQuizzes, setPredefinedQuizzes] = useState<Quiz[]>([]);
-	const [customQuizzes, setCustomQuizzes] = useState<Quiz[]>([]);
 	const [startingQuizId, setStartingQuizId] = useState<string | undefined>();
 	const [aiPrompt, setAiPrompt] = useState('');
 	const [isGenerating, setIsGenerating] = useState(false);
@@ -82,9 +87,7 @@ export function HomePage() {
 	const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
 	const [syncCode, setSyncCode] = useState<string | undefined>();
 	const [syncCodeExpiry, setSyncCodeExpiry] = useState<number | undefined>();
-	const [isGeneratingSyncCode, setIsGeneratingSyncCode] = useState(false);
 	const [syncCodeInput, setSyncCodeInput] = useState('');
-	const [isRedeemingSyncCode, setIsRedeemingSyncCode] = useState(false);
 	const [codeCopied, setCodeCopied] = useState(false);
 	const [showSyncWarning, setShowSyncWarning] = useState(false);
 	const addSecret = useHostStore((s) => s.addSecret);
@@ -92,32 +95,20 @@ export function HomePage() {
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 	const { userId, setUserId } = useUserId();
 
-	const fetchQuizzes = useCallback(async () => {
-		setIsLoading(true);
-		try {
-			const [predefinedResponse, customResponse] = await Promise.all([
-				client.api.quizzes.$get(),
-				client.api.quizzes.custom.$get({ header: { 'x-user-id': userId } }),
-			]);
-			const predefinedResult = await predefinedResponse.json();
-			const customResult = await customResponse.json();
-			if (predefinedResult.success && predefinedResult.data) {
-				setPredefinedQuizzes(predefinedResult.data);
-			}
-			if (customResult.success && customResult.data) {
-				setCustomQuizzes(customResult.data);
-			}
-		} catch (error) {
-			console.error(error);
-			toast.error('Could not load quizzes. Please try again.');
-		} finally {
-			setIsLoading(false);
-		}
-	}, [userId]);
+	// React Query hooks
+	const { data: predefinedQuizzes = [], isLoading: isLoadingPredefined } = usePredefinedQuizzes();
+	const { data: customQuizzes = [], isLoading: isLoadingCustom } = useCustomQuizzes(userId);
+	const isLoading = isLoadingPredefined || isLoadingCustom;
 
-	useEffect(() => {
-		void fetchQuizzes();
-	}, [fetchQuizzes]);
+	const queryClient = useQueryClient();
+	const createGameMutation = useCreateGame();
+	const deleteQuizMutation = useDeleteQuiz();
+	const generateSyncCodeMutation = useGenerateSyncCode();
+	const redeemSyncCodeMutation = useRedeemSyncCode();
+
+	const isGameStarting = createGameMutation.isPending;
+	const isGeneratingSyncCode = generateSyncCodeMutation.isPending;
+	const isRedeemingSyncCode = redeemSyncCodeMutation.isPending;
 
 	const handleStartGame = async (quizId: string) => {
 		if (isGameStarting) return;
@@ -125,75 +116,81 @@ export function HomePage() {
 			toast.error('Please complete the captcha verification first');
 			return;
 		}
-		setIsGameStarting(true);
 		setStartingQuizId(quizId);
-		try {
-			resetToken();
-			const response = await client.api.games.$post({
+		resetToken();
+		createGameMutation.mutate(
+			{
 				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
 				json: { quizId },
-			});
-			const result = await response.json();
-			if (result.success && result.data) {
-				if ('error' in result.data) {
-					throw new Error((result.data as { error: string }).error);
-				}
-				if (result.data.id && result.data.hostSecret) {
-					addSecret(result.data.id, result.data.hostSecret);
-					toast.success('New game created!');
-					navigate(`/host/${result.data.id}`);
-				} else {
-					throw new Error('Game created, but missing ID or secret.');
-				}
-			} else {
-				throw new Error('error' in result ? result.error : 'Failed to create game');
-			}
-		} catch (error) {
-			console.error(error);
-			toast.error(error instanceof Error ? error.message : 'Could not start a new game. Please try again.');
-			setIsGameStarting(false);
-			setStartingQuizId(undefined);
-		}
+			},
+			{
+				onSuccess: (result) => {
+					if (result.success && result.data) {
+						if ('error' in result.data) {
+							toast.error((result.data as { error: string }).error);
+							setStartingQuizId(undefined);
+							return;
+						}
+						if (result.data.id && result.data.hostSecret) {
+							addSecret(result.data.id, result.data.hostSecret);
+							toast.success('New game created!');
+							navigate(`/host/${result.data.id}`);
+						} else {
+							toast.error('Game created, but missing ID or secret.');
+							setStartingQuizId(undefined);
+						}
+					} else {
+						toast.error('error' in result ? String(result.error) : 'Failed to create game');
+						setStartingQuizId(undefined);
+					}
+				},
+				onError: (error) => {
+					console.error(error);
+					toast.error(error.message || 'Could not start a new game. Please try again.');
+					setStartingQuizId(undefined);
+				},
+			},
+		);
 	};
 
-	const handleDeleteQuiz = async () => {
+	const handleDeleteQuiz = () => {
 		if (!quizToDelete) return;
-		try {
-			const response = await client.api.quizzes.custom[':id'].$delete({ header: { 'x-user-id': userId }, param: { id: quizToDelete } });
-			if (!response.ok) throw new Error('Failed to delete quiz');
-			toast.success('Quiz deleted!');
-			setCustomQuizzes((previous) => previous.filter((q) => q.id !== quizToDelete));
-		} catch {
-			toast.error('Could not delete quiz.');
-		} finally {
-			setQuizToDelete(undefined);
-		}
+		deleteQuizMutation.mutate(
+			{ userId, quizId: quizToDelete },
+			{
+				onSuccess: () => {
+					toast.success('Quiz deleted!');
+					setQuizToDelete(undefined);
+				},
+				onError: () => {
+					toast.error('Could not delete quiz.');
+					setQuizToDelete(undefined);
+				},
+			},
+		);
 	};
 
-	const handleGenerateSyncCode = async () => {
+	const handleGenerateSyncCode = () => {
 		if (!turnstileToken) {
 			toast.error('Please complete the captcha verification first');
 			return;
 		}
-		setIsGeneratingSyncCode(true);
-		try {
-			resetToken();
-			const response = await client.api.sync.generate.$post({ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } });
-			const result = await response.json();
-			if (result.success && result.data) {
-				setSyncCode(result.data.code);
-				setSyncCodeExpiry(Date.now() + result.data.expiresIn * 1000);
-			} else {
-				throw new Error('error' in result ? result.error : 'Failed to generate sync code');
-			}
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to generate sync code');
-		} finally {
-			setIsGeneratingSyncCode(false);
-		}
+		resetToken();
+		generateSyncCodeMutation.mutate(
+			{ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } },
+			{
+				onSuccess: (data) => {
+					setSyncCode(data.code);
+					setSyncCodeExpiry(Date.now() + data.expiresIn * 1000);
+				},
+				onError: (error) => {
+					toast.error(error.message || 'Failed to generate sync code');
+				},
+			},
+		);
 	};
 
-	const handleRedeemSyncCode = async (confirmed = false) => {
+	const handleRedeemSyncCode = (confirmed = false) => {
 		if (syncCodeInput.length !== 6) {
 			toast.error('Please enter a 6-character code');
 			return;
@@ -204,24 +201,21 @@ export function HomePage() {
 			return;
 		}
 		setShowSyncWarning(false);
-		setIsRedeemingSyncCode(true);
-		try {
-			const response = await client.api.sync.redeem.$post({ header: { 'x-user-id': userId }, json: { code: syncCodeInput.toUpperCase() } });
-			const result = await response.json();
-			if (result.success && result.data) {
-				setUserId(result.data.userId);
-				toast.success('Device synced! Refreshing...');
-				setIsSyncDialogOpen(false);
-				// Reload to fetch data with new userId
-				setTimeout(() => globalThis.location.reload(), 500);
-			} else {
-				throw new Error('error' in result ? result.error : 'Invalid or expired sync code');
-			}
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to redeem sync code');
-		} finally {
-			setIsRedeemingSyncCode(false);
-		}
+		redeemSyncCodeMutation.mutate(
+			{ header: { 'x-user-id': userId }, json: { code: syncCodeInput.toUpperCase() } },
+			{
+				onSuccess: (data) => {
+					setUserId(data.userId);
+					toast.success('Device synced! Refreshing...');
+					setIsSyncDialogOpen(false);
+					// Reload to fetch data with new userId
+					setTimeout(() => globalThis.location.reload(), 500);
+				},
+				onError: (error) => {
+					toast.error(error.message || 'Failed to redeem sync code');
+				},
+			},
+		);
 	};
 
 	const copyCodeToClipboard = () => {
@@ -299,7 +293,7 @@ export function HomePage() {
 							case 'complete': {
 								if (data.success && data.data) {
 									toast.success(`Quiz "${data.data.title}" generated successfully!`);
-									setCustomQuizzes((previous) => [...previous, data.data!]);
+									void queryClient.invalidateQueries({ queryKey: queryKeys.quizzes.custom(userId) });
 								}
 
 								break;

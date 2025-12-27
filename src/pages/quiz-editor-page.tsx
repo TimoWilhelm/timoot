@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom';
-import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+import { Control, Controller, SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	ArrowLeft,
@@ -38,7 +38,16 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
-import { client } from '@/lib/api-client';
+import {
+	useCreateQuiz,
+	useDeleteImage,
+	useGenerateImage,
+	useGenerateQuestion,
+	useImages,
+	useLoadMoreImages,
+	useQuizDetail,
+	useUpdateQuiz,
+} from '@/hooks/use-api';
 import { useUserId } from '@/hooks/use-user-id';
 import { useTurnstile } from '@/hooks/use-turnstile';
 
@@ -47,13 +56,33 @@ type QuizFormData = {
 	questions: Question[];
 };
 
-interface AIImage {
-	id: string;
-	name: string;
-	path: string;
-	prompt?: string;
-	createdAt?: string;
+function TitleCharCount({ control }: { control: Control<QuizFormInput> }) {
+	const value = useWatch({ control, name: 'title' });
+	return (
+		<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+			{value?.length || 0}/{LIMITS.QUIZ_TITLE_MAX}
+		</span>
+	);
 }
+
+function QuestionCharCount({ control, qIndex }: { control: Control<QuizFormInput>; qIndex: number }) {
+	const value = useWatch({ control, name: `questions.${qIndex}.text` });
+	return (
+		<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+			{value?.length || 0}/{LIMITS.QUESTION_TEXT_MAX}
+		</span>
+	);
+}
+
+function OptionCharCount({ control, qIndex, oIndex }: { control: Control<QuizFormInput>; qIndex: number; oIndex: number }) {
+	const value = useWatch({ control, name: `questions.${qIndex}.options.${oIndex}` });
+	return (
+		<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+			{value?.length || 0}/{LIMITS.OPTION_TEXT_MAX}
+		</span>
+	);
+}
+
 export function QuizEditorPage() {
 	const { quizId } = useParams<{ quizId?: string }>();
 	const navigate = useNavigate();
@@ -63,22 +92,32 @@ export function QuizEditorPage() {
 		handleSubmit,
 		reset,
 		getValues,
-		watch,
 		formState: { errors, isSubmitting, isDirty },
 	} = useForm<QuizFormInput>({
 		resolver: zodResolver(quizFormSchema),
 		defaultValues: { title: '', questions: [] },
 	});
 	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
-	const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
 	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
-	const [aiImages, setAiImages] = useState<AIImage[]>([]);
-	const [aiImagesCursor, setAiImagesCursor] = useState<string | undefined>();
-	const [isLoadingMoreImages, setIsLoadingMoreImages] = useState(false);
-	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 	const [imagePrompt, setImagePrompt] = useState('');
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 	const { userId } = useUserId();
+
+	// React Query hooks
+	const { data: imagesData } = useImages(userId);
+	const { data: quizData, isError: quizError } = useQuizDetail(userId, quizId);
+	const loadMoreImagesMutation = useLoadMoreImages();
+	const createQuizMutation = useCreateQuiz();
+	const updateQuizMutation = useUpdateQuiz();
+	const generateQuestionMutation = useGenerateQuestion();
+	const generateImageMutation = useGenerateImage();
+	const deleteImageMutation = useDeleteImage();
+
+	const aiImages = imagesData?.images ?? [];
+	const aiImagesCursor = imagesData?.nextCursor;
+	const isLoadingMoreImages = loadMoreImagesMutation.isPending;
+	const isGeneratingQuestion = generateQuestionMutation.isPending;
+	const isGeneratingImage = generateImageMutation.isPending;
 
 	// Track intentional navigation after save to skip the blocker
 	const skipBlockerReference = useRef(false);
@@ -97,118 +136,75 @@ export function QuizEditorPage() {
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
 	}, [isDirty]);
 
-	// Fetch AI-generated images on mount
+	// Reset form when quiz data is loaded or when creating new quiz
 	useEffect(() => {
-		const fetchAiImages = async () => {
-			try {
-				const response = await client.api.images.$get({ header: { 'x-user-id': userId }, query: {} });
-				if (response.ok) {
-					const result = await response.json();
-					if (result.success && result.data) {
-						setAiImages(result.data.images);
-						setAiImagesCursor(result.data.nextCursor);
-					}
-				}
-			} catch (error) {
-				console.error('Failed to fetch AI images:', error);
-			}
-		};
-		void fetchAiImages();
-	}, [userId]);
-
-	const loadMoreImages = async () => {
-		if (!aiImagesCursor || isLoadingMoreImages) return;
-		setIsLoadingMoreImages(true);
-		try {
-			const response = await client.api.images.$get({ header: { 'x-user-id': userId }, query: { cursor: aiImagesCursor } });
-			if (response.ok) {
-				const result = await response.json();
-				if (result.success && result.data) {
-					setAiImages((previous) => [...previous, ...result.data!.images]);
-					setAiImagesCursor(result.data.nextCursor);
-				}
-			}
-		} catch (error) {
-			console.error('Failed to load more images:', error);
-		} finally {
-			setIsLoadingMoreImages(false);
-		}
-	};
-	useEffect(() => {
-		if (quizId) {
-			const fetchQuiz = async () => {
-				try {
-					const response = await client.api.quizzes.custom[':id'].$get({ header: { 'x-user-id': userId }, param: { id: quizId } });
-					const result = await response.json();
-					if (result.success && result.data) {
-						const formData: QuizFormInput = {
-							...result.data,
-							questions: result.data.questions.map((q) => ({
-								...q,
-								correctAnswerIndex: String(q.correctAnswerIndex),
-								backgroundImage: q.backgroundImage,
-							})),
-						};
-						reset(formData);
-					} else {
-						throw new Error('error' in result ? result.error : 'Failed to fetch quiz');
-					}
-				} catch {
-					toast.error('Could not load quiz for editing.');
-					navigate('/edit');
-				}
+		if (quizId && quizData) {
+			const formData: QuizFormInput = {
+				...quizData,
+				questions: quizData.questions.map((q) => ({
+					...q,
+					correctAnswerIndex: String(q.correctAnswerIndex),
+					backgroundImage: q.backgroundImage,
+				})),
 			};
-			void fetchQuiz();
-		} else {
+			reset(formData);
+		} else if (!quizId) {
 			reset({
 				title: '',
 				questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined }],
 			});
 		}
-	}, [quizId, reset, navigate, userId]);
+	}, [quizId, quizData, reset]);
+
+	// Handle quiz fetch error
+	useEffect(() => {
+		if (quizError) {
+			toast.error('Could not load quiz for editing.');
+			navigate('/edit');
+		}
+	}, [quizError, navigate]);
+
+	const loadMoreImages = () => {
+		if (!aiImagesCursor || isLoadingMoreImages) return;
+		loadMoreImagesMutation.mutate({ userId, cursor: aiImagesCursor });
+	};
+
 	const onSubmit: SubmitHandler<QuizFormInput> = async (data) => {
-		try {
-			const processedData: QuizFormData = {
-				...data,
-				questions: data.questions.map((q) => ({
-					text: q.text,
-					options: q.options,
-					correctAnswerIndex: Number.parseInt(q.correctAnswerIndex, 10),
-					isDoublePoints: q.isDoublePoints,
-					backgroundImage: q.backgroundImage,
-				})),
-			};
-			let result;
-			if (quizId) {
-				const response = await client.api.quizzes.custom[':id'].$put({
-					header: { 'x-user-id': userId },
-					param: { id: quizId },
-					json: { ...processedData, id: quizId },
-				});
-				result = await response.json();
-			} else {
-				const response = await client.api.quizzes.custom.$post({ header: { 'x-user-id': userId }, json: processedData });
-				result = await response.json();
-			}
-			if (!result.success) {
-				throw new Error('error' in result ? result.error : 'Failed to save quiz');
-			}
-			toast.success(`Quiz "${result.data?.title}" saved successfully!`);
-			reset(data); // Reset form to mark as not dirty
-			skipBlockerReference.current = true; // Skip blocker for intentional navigation after save
+		const processedData: QuizFormData = {
+			...data,
+			questions: data.questions.map((q) => ({
+				text: q.text,
+				options: q.options,
+				correctAnswerIndex: Number.parseInt(q.correctAnswerIndex, 10),
+				isDoublePoints: q.isDoublePoints,
+				backgroundImage: q.backgroundImage,
+			})),
+		};
+
+		const onSuccess = (result: { title: string } | undefined) => {
+			toast.success(`Quiz "${result?.title}" saved successfully!`);
+			reset(data);
+			skipBlockerReference.current = true;
 			navigate('/');
-		} catch (error) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-			} else {
-				toast.error(String(error));
-			}
+		};
+
+		if (quizId) {
+			updateQuizMutation.mutate(
+				{ header: { 'x-user-id': userId }, param: { id: quizId }, json: { ...processedData, id: quizId } },
+				{ onSuccess, onError: (error) => toast.error(error.message || 'Failed to save quiz') },
+			);
+		} else {
+			createQuizMutation.mutate(
+				{ header: { 'x-user-id': userId }, json: processedData },
+				{ onSuccess, onError: (error) => toast.error(error.message || 'Failed to save quiz') },
+			);
 		}
 	};
+
 	const addQuestion = () =>
 		append({ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined });
 
-	const generateQuestion = async () => {
+	const generateQuestion = () => {
 		const title = getValues('title');
 		if (!title.trim()) {
 			toast.error('Please enter a quiz title first');
@@ -226,10 +222,9 @@ export function QuizEditorPage() {
 			return;
 		}
 
-		setIsGeneratingQuestion(true);
-		try {
-			resetToken();
-			const response = await client.api.quizzes['generate-question'].$post({
+		resetToken();
+		generateQuestionMutation.mutate(
+			{
 				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
 				json: {
 					title,
@@ -239,46 +234,36 @@ export function QuizEditorPage() {
 						correctAnswerIndex: Number(q.correctAnswerIndex),
 					})),
 				},
-			});
-
-			const result = await response.json();
-			if (!response.ok || !result.success || !result.data) {
-				throw new Error('error' in result ? result.error : 'Failed to generate question');
-			}
-
-			append({
-				text: result.data.text,
-				options: result.data.options,
-				correctAnswerIndex: String(result.data.correctAnswerIndex),
-				isDoublePoints: false,
-			});
-			toast.success('Question generated!');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to generate question');
-		} finally {
-			setIsGeneratingQuestion(false);
-		}
+			},
+			{
+				onSuccess: (data) => {
+					append({
+						text: data.text,
+						options: data.options,
+						correctAnswerIndex: String(data.correctAnswerIndex),
+						isDoublePoints: false,
+					});
+					toast.success('Question generated!');
+				},
+				onError: (error) => {
+					toast.error(error.message || 'Failed to generate question');
+				},
+			},
+		);
 	};
 
-	const deleteImage = async (imageId: string, event: React.MouseEvent) => {
+	const deleteImage = (imageId: string, event: React.MouseEvent) => {
 		event.stopPropagation();
-		try {
-			const response = await client.api.images[':userId'][':imageId'].$delete({
-				header: { 'x-user-id': userId },
-				param: { userId, imageId },
-			});
-			const result = await response.json();
-			if (!response.ok || !result.success) {
-				throw new Error('error' in result ? result.error : 'Failed to delete image');
-			}
-			setAiImages((previous) => previous.filter((img) => img.id !== imageId));
-			toast.success('Image deleted');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to delete image');
-		}
+		deleteImageMutation.mutate(
+			{ userId, imageId },
+			{
+				onSuccess: () => toast.success('Image deleted'),
+				onError: (error) => toast.error(error.message || 'Failed to delete image'),
+			},
+		);
 	};
 
-	const generateImage = async (onImageGenerated: (path: string) => void) => {
+	const generateImage = (onImageGenerated: (path: string) => void) => {
 		if (!imagePrompt.trim()) {
 			toast.error('Please enter a prompt for the image');
 			return;
@@ -289,31 +274,21 @@ export function QuizEditorPage() {
 			return;
 		}
 
-		setIsGeneratingImage(true);
-		try {
-			resetToken();
-			const response = await client.api.images.generate.$post({
-				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
-				json: { prompt: imagePrompt },
-			});
-
-			const result = await response.json();
-			if (!response.ok || !result.success || !result.data) {
-				throw new Error('error' in result ? result.error : 'Failed to generate image');
-			}
-
-			// Add to AI images list
-			setAiImages((previous) => [result.data!, ...previous]);
-			// Set as the selected image
-			onImageGenerated(result.data.path);
-			setImagePrompt('');
-			setOpenImagePopover(undefined);
-			toast.success('Image generated!');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to generate image');
-		} finally {
-			setIsGeneratingImage(false);
-		}
+		resetToken();
+		generateImageMutation.mutate(
+			{ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken }, json: { prompt: imagePrompt } },
+			{
+				onSuccess: (data) => {
+					onImageGenerated(data.path);
+					setImagePrompt('');
+					setOpenImagePopover(undefined);
+					toast.success('Image generated!');
+				},
+				onError: (error) => {
+					toast.error(error.message || 'Failed to generate image');
+				},
+			},
+		);
 	};
 
 	const addOption = (qIndex: number) => {
@@ -369,7 +344,7 @@ export function QuizEditorPage() {
 	return (
 		<div className="min-h-screen bg-slate-50">
 			<div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+				<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className="space-y-8">
 					<div className="flex items-center gap-4">
 						<Link to="/">
 							<Button type="button" variant="outline" size="icon">
@@ -392,9 +367,7 @@ export function QuizEditorPage() {
 									className="pr-16 text-lg"
 									maxLength={LIMITS.QUIZ_TITLE_MAX}
 								/>
-								<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-									{watch('title')?.length || 0}/{LIMITS.QUIZ_TITLE_MAX}
-								</span>
+								<TitleCharCount control={control} />
 							</div>
 							{errors.title && <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>}
 						</CardContent>
@@ -618,7 +591,9 @@ export function QuizEditorPage() {
 											<AlertDialogContent>
 												<AlertDialogHeader>
 													<AlertDialogTitle>Delete Question {qIndex + 1}?</AlertDialogTitle>
-													<AlertDialogDescription>This will permanently remove this question and all its options.</AlertDialogDescription>
+													<AlertDialogDescription>
+														You have unsaved changes. Are you sure you want to delete this question? Your changes will be lost.
+													</AlertDialogDescription>
 												</AlertDialogHeader>
 												<AlertDialogFooter>
 													<AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -641,9 +616,7 @@ export function QuizEditorPage() {
 											maxLength={LIMITS.QUESTION_TEXT_MAX}
 											className="pr-16"
 										/>
-										<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-											{watch(`questions.${qIndex}.text`)?.length || 0}/{LIMITS.QUESTION_TEXT_MAX}
-										</span>
+										<QuestionCharCount control={control} qIndex={qIndex} />
 									</div>
 									{errors.questions?.[qIndex]?.text && (
 										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.text?.message}</p>
@@ -688,9 +661,7 @@ export function QuizEditorPage() {
 																maxLength={LIMITS.OPTION_TEXT_MAX}
 																className="pr-14"
 															/>
-															<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-																{watch(`questions.${qIndex}.options.${oIndex}`)?.length || 0}/{LIMITS.OPTION_TEXT_MAX}
-															</span>
+															<OptionCharCount control={control} qIndex={qIndex} oIndex={oIndex} />
 														</div>
 														{getValues(`questions.${qIndex}.options`).length > LIMITS.OPTIONS_MIN && (
 															<Button

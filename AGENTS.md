@@ -22,10 +22,10 @@
 </directories>
 
 <api_client>
-- Import the Hono RPC client from `@/lib/api-client`
-- Example: `import { client } from '@/lib/api-client';`
-- Use `client.api.*` for type-safe API calls
-- Documentation: <https://hono.dev/docs/guides/rpc>
+- Use React Query hooks from `@/hooks/use-api` for all API calls
+- Hono RPC client provides type-safe request/response types
+- React Query handles caching, loading states, and cache invalidation
+- Documentation: <https://tanstack.com/query/latest>, <https://hono.dev/docs/guides/rpc>
 </api_client>
 
 
@@ -33,8 +33,9 @@
 
 <frontend>
 - React with TypeScript
+- TanStack React Query for server state management
 - Tailwind CSS for styling
-- Zustand for state management
+- Zustand for client state management
 - Framer Motion for animations
 </frontend>
 
@@ -49,6 +50,7 @@
 - Package manager: bun (use bun commands, not npm/yarn/pnpm)
 - Build tool: Vite with @cloudflare/vite-plugin
 - Dev server: bun dev (runs at localhost:3000)
+- Install all dependencies as dev dependencies (`bun add -d`) since they are bundled with Vite
 </build_and_tooling>
 
 

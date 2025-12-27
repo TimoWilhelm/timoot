@@ -1,16 +1,30 @@
+/**
+ * API Client utilities for type-safe API access.
+ *
+ * Use React Query hooks from `@/hooks/use-api` for all API calls:
+ *
+ * @example
+ * ```tsx
+ * import { useMyQuery, useMyMutation } from '@/hooks/use-api';
+ *
+ * // Queries
+ * const { data, isLoading } = useMyQuery();
+ *
+ * // Mutations
+ * const mutation = useMyMutation();
+ * mutation.mutate({ ... });
+ * ```
+ */
+
 import { hc } from 'hono/client';
 import type { ApiRoutes } from '../../dist/worker/worker/user-routes';
 
-/**
- * Type-safe Hono RPC client for API calls.
- * Uses hcWithType pattern for better type inference at compile time.
- */
-// Pre-compute client type at compile time for better type inference
-export type Client = ReturnType<typeof hc<ApiRoutes>>;
-const hcWithType = (...arguments_: Parameters<typeof hc>): Client => hc<ApiRoutes>(...arguments_);
-export const client = hcWithType('/');
+export type { InferRequestType, InferResponseType } from 'hono/client';
 
 /**
- * Type for inferring request/response types from the API client.
+ * Pre-compiled client type for better IDE performance.
+ * @see https://hono.dev/docs/guides/rpc#typescript-project-references
  */
-export type { InferRequestType, InferResponseType } from 'hono/client';
+export type Client = ReturnType<typeof hc<ApiRoutes>>;
+
+export const hcWithType = (...arguments_: Parameters<typeof hc>): Client => hc<ApiRoutes>(...arguments_);

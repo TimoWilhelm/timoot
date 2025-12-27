@@ -28,19 +28,19 @@ Every game runs on its own Durable Object, keeping state synced across all playe
 
 ## Tech Stack
 
-| Layer          | Tools                                  |
-| -------------- | -------------------------------------- |
-| **Frontend**   | React, TypeScript, Tailwind CSS        |
-| **State**      | Zustand                                |
-| **Animations** | Framer Motion                          |
-| **Backend**    | Cloudflare Workers, Hono               |
-| **API Client** | Hono RPC (type-safe client)            |
-| **Realtime**   | Cloudflare Durable Objects, WebSockets |
-| **AI**         | Cloudflare AI Gateway, Vercel AI SDK   |
-| **Storage**    | Durable Objects SQLite, KV             |
-| **Build**      | Vite, Bun, @cloudflare/vite-plugin     |
-| **Testing**    | Vitest, Playwright, Storybook          |
-| **Quality**    | ESLint, Prettier, Knip                 |
+| Layer             | Tools                                  |
+| ----------------- | -------------------------------------- |
+| **Frontend**      | React, TypeScript, Tailwind CSS        |
+| **Data Fetching** | TanStack React Query, Hono RPC         |
+| **Client State**  | Zustand                                |
+| **Animations**    | Framer Motion                          |
+| **Backend**       | Cloudflare Workers, Hono               |
+| **Realtime**      | Cloudflare Durable Objects, WebSockets |
+| **AI**            | Cloudflare AI Gateway, Vercel AI SDK   |
+| **Storage**       | Durable Objects SQLite, KV             |
+| **Build**         | Vite, Bun, @cloudflare/vite-plugin     |
+| **Testing**       | Vitest, Playwright, Storybook          |
+| **Quality**       | ESLint, Prettier, Knip                 |
 
 ## Getting Started
 
