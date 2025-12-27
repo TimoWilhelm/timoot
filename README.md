@@ -63,89 +63,15 @@ bun install
 bunx wrangler login
 ```
 
-### Development
+### Environment
+
+Copy `.env.example` to `.env.local` and fill in the required values:
 
 ```bash
-bun dev
+cp .env.example .env.local
 ```
 
-This fires up everything at `http://localhost:3000`:
-
-- React frontend with hot reload
-- Cloudflare Worker running locally via the Vite plugin
-- Full Durable Objects support for real-time features
-
-The `@cloudflare/vite-plugin` handles all the wiring between your frontend and worker automatically.
-
-### Environment Setup
-
-The app works out of the box for basic quiz hosting. For AI-powered quiz generation, you'll need to configure a few things.
-
-**1. Copy the example env file:**
-
-```bash
-cp .env.example .env
-```
-
-**2. Fill in your Cloudflare credentials:**
-
-| Variable                          | Where to find it                                                                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLOUDFLARE_ACCOUNT_ID`           | [Dashboard](https://dash.cloudflare.com/) → right sidebar                                                                             |
-| `CLOUDFLARE_AI_GATEWAY_ID`        | [AI Gateway](https://dash.cloudflare.com/?to=/:account/ai/ai-gateway) → create or select a gateway                                    |
-| `CLOUDFLARE_AI_GATEWAY_API_TOKEN` | [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → create token with AI Gateway permissions                               |
-| `CLOUDFLARE_AI_GATEWAY_MODEL`     | [Dynamic routing](https://developers.cloudflare.com/ai-gateway/features/dynamic-routing/) → create a dynamic route in your AI Gateway |
-
-**3. For production**, add these as secrets via Wrangler:
-
-```bash
-bunx wrangler secret put CLOUDFLARE_ACCOUNT_ID
-bunx wrangler secret put CLOUDFLARE_AI_GATEWAY_ID
-bunx wrangler secret put CLOUDFLARE_AI_GATEWAY_API_TOKEN
-bunx wrangler secret put CLOUDFLARE_AI_GATEWAY_MODEL
-```
-
-## Project Structure
-
-```text
-src/           → React app (pages, components, hooks)
-worker/        → Cloudflare Worker (API routes, Durable Objects)
-shared/        → Shared code between frontend and worker
-test/          → Unit, integration, and load tests
-.storybook/    → Storybook configuration
-wrangler.jsonc → Worker configuration
-```
-
-## Tooling
-
-### Hono RPC
-
-The frontend uses [Hono RPC](https://hono.dev/docs/guides/rpc) for type-safe API calls. The client is generated from the worker's route types:
-
-```typescript
-import { client } from '@/lib/api-client';
-
-// Type-safe API call with full IntelliSense
-const response = await client.api.quizzes.$get();
-```
-
-### Testing
-
-```bash
-bun test              # Unit tests
-bun test:integration  # Integration tests (Playwright)
-bun test:storybook    # Component tests
-bun test:load         # Load tests
-```
-
-### Code Quality
-
-```bash
-bun lint          # ESLint
-bun format        # Prettier
-bun knip          # Find unused exports/dependencies
-bun typecheck     # TypeScript checks
-```
+For production, configure runtime variables in your [Cloudflare Dashboard](https://dash.cloudflare.com/) under `Workers & Pages → Settings → Variables` and any build-time variables in your CI/CD system (e.g. GitHub Actions).
 
 ## Deploy
 

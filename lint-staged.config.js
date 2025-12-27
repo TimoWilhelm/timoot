@@ -1,4 +1,3 @@
-
 export default {
 	'*': () => 'bun run knip',
 	'*.{ts,tsx}': (stagedFiles) => [
@@ -8,4 +7,3 @@ export default {
 	],
 	'*.md': (stagedFiles) => `prettier --list-different ${stagedFiles.join(' ')}`,
 };
-
