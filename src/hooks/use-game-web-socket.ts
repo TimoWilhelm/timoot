@@ -33,8 +33,8 @@ export interface WebSocketGameState {
 	// Answer tracking (for host)
 	answeredCount: number;
 	// Reveal phase
-	correctAnswerIndex: number | null;
-	playerResult: { isCorrect: boolean; score: number; answerIndex: number } | null;
+	correctAnswerIndex: number | undefined;
+	playerResult: { isCorrect: boolean; score: number; answerIndex: number } | undefined;
 	answerCounts: number[];
 	// Leaderboard
 	leaderboard: LeaderboardEntry[];
@@ -357,7 +357,7 @@ export function useGameWebSocket({
 
 	const submitAnswer = useCallback(
 		(answerIndex: number) => {
-			if (submittedAnswer !== null) return; // Prevent double submission
+			if (submittedAnswer !== undefined) return; // Prevent double submission
 			Sentry.startSpan({ op: 'game.action', name: 'Submit Answer' }, () => {
 				sendMessage({ type: 'submitAnswer', answerIndex });
 			});

@@ -59,8 +59,8 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 				const form = new FormData();
 				form.append('prompt', augmentedPrompt);
 				form.append('steps', '15');
-				form.append('width', '1024');
-				form.append('height', '512');
+				form.append('width', '2048');
+				form.append('height', '1024');
 
 				const formRequest = new Request('http://dummy', {
 					method: 'POST',

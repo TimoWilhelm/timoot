@@ -366,7 +366,7 @@ export function PlayerPage() {
 			<header className="flex items-center justify-between text-2xl font-bold">
 				<span>{currentNickname}</span>
 				<span>
-					Score: <AnimatedNumber value={myScore} instant={!hasInitialScoreSync} />
+					Score: <AnimatedNumber value={myScore ?? 0} instant={!hasInitialScoreSync} />
 				</span>
 			</header>
 			<main className="flex flex-grow items-center justify-center">

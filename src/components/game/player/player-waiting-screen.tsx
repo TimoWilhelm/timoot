@@ -14,9 +14,9 @@ interface LeaderboardEntry {
 
 interface PlayerWaitingScreenProperties {
 	phase: GamePhase;
-	answerResult: { isCorrect: boolean; score: number } | null;
+	answerResult: { isCorrect: boolean; score: number } | undefined;
 	finalScore?: number;
-	playerId: string | null;
+	playerId: string | undefined;
 	leaderboard?: LeaderboardEntry[];
 	modifiers?: QuestionModifier[];
 }
