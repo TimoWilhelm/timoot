@@ -66,7 +66,16 @@ function useTurnstileProduction() {
 	const widgetIdReference = useRef<string | undefined>();
 	const containerReference = useRef<HTMLDivElement | undefined>();
 
-	const resetToken = useCallback(() => setToken(undefined), []);
+	const resetToken = useCallback(() => {
+		setToken(undefined);
+		if (widgetIdReference.current && globalThis.turnstile) {
+			try {
+				globalThis.turnstile.reset(widgetIdReference.current);
+			} catch {
+				// Widget may not exist
+			}
+		}
+	}, []);
 
 	// Cleanup on unmount
 	useEffect(() => {

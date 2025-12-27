@@ -100,6 +100,7 @@ export function QuizEditorPage() {
 	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
 	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
 	const [imagePrompt, setImagePrompt] = useState('');
+	const turnstileReference = useRef<HTMLDivElement>(null);
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 	const { userId } = useUserId();
 
@@ -270,6 +271,7 @@ export function QuizEditorPage() {
 		}
 
 		if (!turnstileToken) {
+			turnstileReference.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			toast.error('Please complete the captcha verification first');
 			return;
 		}
@@ -532,9 +534,6 @@ export function QuizEditorPage() {
 																	{isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
 																</Button>
 															</div>
-															<div className="flex justify-center pt-2">
-																<TurnstileWidget />
-															</div>
 														</div>
 													</div>
 												</PopoverContent>
@@ -707,7 +706,7 @@ export function QuizEditorPage() {
 								Generate with AI
 							</Button>
 						</div>
-						<div className="flex justify-center">
+						<div ref={turnstileReference} className="flex justify-center">
 							<TurnstileWidget />
 						</div>
 					</div>
