@@ -50,9 +50,10 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 
 				// Augment prompt for background image suitability
 				const augmentedPrompt = oneLine`
-				${prompt}, pure photographic wallpaper, wide panoramic landscape composition,
-				frame composition with richer detail toward edges and fewer busy elements in the center,
-				8k resolution, cinematic lighting, vivid sharp details
+				${prompt}, vibrant digital art style, energetic and fun atmosphere, wide panoramic composition,
+				colorful, soft lighting, frame composition with richer detail toward edges and fewer busy elements in the center,
+				no people, no characters, scenery only,
+				8k resolution, high definition, aesthetically pleasing background
 			`;
 
 				// Generate image using flux-2-dev model
