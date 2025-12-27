@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { QRCode } from '@/components/game/shared';
 
-interface HostLobbyProps {
+interface HostLobbyProperties {
 	onStart: () => void;
 	players: { id: string; name: string }[];
 	gameId: string;
 }
 
-export function HostLobby({ onStart, players, gameId }: HostLobbyProps) {
-	const joinUrl = `${window.location.origin}/play?gameId=${gameId}`;
+export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
+	const joinUrl = `${globalThis.location.origin}/play?gameId=${gameId}`;
 	const [copied, setCopied] = useState(false);
 
 	const copyToClipboard = async () => {
@@ -108,9 +108,9 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProps) {
 						onClick={onStart}
 						size="lg"
 						className="transform rounded-2xl bg-quiz-orange px-10 py-6 text-xl font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95"
-						disabled={players.length < 1}
+						disabled={players.length === 0}
 					>
-						{players.length < 1 ? 'Waiting for players...' : 'Start Game'}
+						{players.length === 0 ? 'Waiting for players...' : 'Start Game'}
 					</Button>
 				</motion.div>
 			</div>

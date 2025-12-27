@@ -15,16 +15,16 @@ function getPodiumEntries(leaderboard: LeaderboardEntry[]): Map<number, PodiumEn
 	if (leaderboard.length === 0) return podiumMap;
 
 	let currentRank = 1;
-	let i = 0;
+	let index = 0;
 
-	while (i < leaderboard.length && currentRank <= 3) {
-		const currentScore = leaderboard[i].score;
+	while (index < leaderboard.length && currentRank <= 3) {
+		const currentScore = leaderboard[index].score;
 		const playersWithSameScore: LeaderboardEntry[] = [];
 
 		// Collect all players with the same score
-		while (i < leaderboard.length && leaderboard[i].score === currentScore) {
-			playersWithSameScore.push(leaderboard[i]);
-			i++;
+		while (index < leaderboard.length && leaderboard[index].score === currentScore) {
+			playersWithSameScore.push(leaderboard[index]);
+			index++;
 		}
 
 		podiumMap.set(currentRank, { players: playersWithSameScore, rank: currentRank });
@@ -37,8 +37,8 @@ function getPodiumEntries(leaderboard: LeaderboardEntry[]): Map<number, PodiumEn
 }
 
 const PODIUM_CONFIG = {
-	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400', emoji: '🥇', delay: 2.0 },
-	2: { height: 'h-28 sm:h-40', color: 'bg-gray-400', emoji: '🥈', delay: 1.0 },
+	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400', emoji: '🥇', delay: 2 },
+	2: { height: 'h-28 sm:h-40', color: 'bg-gray-400', emoji: '🥈', delay: 1 },
 	3: { height: 'h-20 sm:h-28', color: 'bg-amber-600', emoji: '🥉', delay: 0 },
 } as const;
 
@@ -59,7 +59,7 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 				>
 					{/* Player names (handles multiple tied players) */}
 					<div className="mb-1 flex flex-col items-center">
-						{entry.players.map((player, idx) => {
+						{entry.players.map((player, index) => {
 							const isFirstPlace = entry.rank === 1;
 							return (
 								<motion.p
@@ -71,7 +71,7 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 									}`}
 									initial={isFirstPlace ? { opacity: 0, scale: 0.6, y: 20 } : { opacity: 0, x: -20 }}
 									animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-									transition={{ delay: delay + 0.3 + idx * 0.15, type: 'spring', stiffness: isFirstPlace ? 140 : 80, damping: 12 }}
+									transition={{ delay: delay + 0.3 + index * 0.15, type: 'spring', stiffness: isFirstPlace ? 140 : 80, damping: 12 }}
 								>
 									{player.name}
 								</motion.p>
@@ -106,12 +106,12 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 	);
 }
 
-interface HostEndProps {
+interface HostEndProperties {
 	leaderboard: LeaderboardEntry[];
 	revealed: boolean;
 }
 
-export function HostEnd({ leaderboard, revealed }: HostEndProps) {
+export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 	const podiumEntries = getPodiumEntries(leaderboard);
 
 	// Get entries for each position (may be undefined if not enough players or skipped due to ties)
@@ -124,17 +124,17 @@ export function HostEnd({ leaderboard, revealed }: HostEndProps) {
 		if (!revealed || !firstPlace) return;
 
 		// Fire confetti shortly after podium entries have animated in
-		let subtleIntervalId: number | undefined;
+		let subtleIntervalId: ReturnType<typeof setInterval> | undefined;
 
-		const timeout = window.setTimeout(() => {
+		const timeout = globalThis.setTimeout(() => {
 			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
 			const count = 220;
 			const defaults = { origin: { y: 0.6 }, colors };
 
-			const fire = (particleRatio: number, opts: confetti.Options) => {
-				confetti({
+			const fire = (particleRatio: number, options: confetti.Options) => {
+				void confetti({
 					...defaults,
-					...opts,
+					...options,
 					particleCount: Math.floor(count * particleRatio),
 				});
 			};
@@ -163,15 +163,15 @@ export function HostEnd({ leaderboard, revealed }: HostEndProps) {
 			});
 
 			// Subtle continuous confetti while the podium is visible
-			subtleIntervalId = window.setInterval(() => {
-				confetti({
+			subtleIntervalId = globalThis.setInterval(() => {
+				void confetti({
 					particleCount: 2,
 					angle: 60,
 					spread: 55,
 					origin: { x: 0 },
 					colors: colors,
 				});
-				confetti({
+				void confetti({
 					particleCount: 2,
 					angle: 120,
 					spread: 55,
@@ -182,9 +182,9 @@ export function HostEnd({ leaderboard, revealed }: HostEndProps) {
 		}, 800);
 
 		return () => {
-			window.clearTimeout(timeout);
+			globalThis.clearTimeout(timeout);
 			if (subtleIntervalId !== undefined) {
-				window.clearInterval(subtleIntervalId);
+				globalThis.clearInterval(subtleIntervalId);
 			}
 		};
 	}, [revealed, firstPlace]);
@@ -192,40 +192,7 @@ export function HostEnd({ leaderboard, revealed }: HostEndProps) {
 	return (
 		<div className="flex flex-grow flex-col items-center justify-center gap-4 whitespace-nowrap p-4 sm:gap-6 sm:p-8">
 			<AnimatePresence mode="wait">
-				{!revealed ? (
-					<motion.div
-						key="intro"
-						initial={{ opacity: 0, scale: 0.9 }}
-						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0, scale: 1.05 }}
-						transition={{ duration: 0.5, ease: 'easeOut' }}
-						className="flex flex-col items-center gap-6"
-					>
-						<motion.h1
-							initial={false}
-							animate={{ opacity: [0.6, 1, 0.6] }}
-							transition={{ duration: 1.2, repeat: Infinity }}
-							className="text-center text-3xl font-bold sm:text-5xl md:text-6xl"
-						>
-							<span className="mx-2 sm:mx-4">And the winners are...</span>
-						</motion.h1>
-						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.2 }}
-							className="flex items-center gap-3 rounded-full bg-quiz-orange/10 px-4 py-2 text-sm font-medium text-quiz-orange sm:text-base"
-						>
-							<motion.span
-								animate={{ rotate: [-10, 10] }}
-								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
-								className="inline-block text-lg sm:text-xl"
-							>
-								🏆
-							</motion.span>
-							<span>Crunching final scores...</span>
-						</motion.div>
-					</motion.div>
-				) : (
+				{revealed ? (
 					<motion.div
 						key="podium"
 						initial={{ opacity: 0, y: 10 }}
@@ -264,12 +231,45 @@ export function HostEnd({ leaderboard, revealed }: HostEndProps) {
 
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }}>
 							<Button
-								onClick={() => (window.location.href = '/')}
+								onClick={() => (globalThis.location.href = '/')}
 								size="lg"
 								className="rounded-2xl bg-quiz-orange px-8 py-6 text-xl font-bold text-white sm:px-12 sm:py-8 sm:text-2xl"
 							>
 								Play Again
 							</Button>
+						</motion.div>
+					</motion.div>
+				) : (
+					<motion.div
+						key="intro"
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 1.05 }}
+						transition={{ duration: 0.5, ease: 'easeOut' }}
+						className="flex flex-col items-center gap-6"
+					>
+						<motion.h1
+							initial={false}
+							animate={{ opacity: [0.6, 1, 0.6] }}
+							transition={{ duration: 1.2, repeat: Infinity }}
+							className="text-center text-3xl font-bold sm:text-5xl md:text-6xl"
+						>
+							<span className="mx-2 sm:mx-4">And the winners are...</span>
+						</motion.h1>
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.2 }}
+							className="flex items-center gap-3 rounded-full bg-quiz-orange/10 px-4 py-2 text-sm font-medium text-quiz-orange sm:text-base"
+						>
+							<motion.span
+								animate={{ rotate: [-10, 10] }}
+								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+								className="inline-block text-lg sm:text-xl"
+							>
+								🏆
+							</motion.span>
+							<span>Crunching final scores...</span>
 						</motion.div>
 					</motion.div>
 				)}

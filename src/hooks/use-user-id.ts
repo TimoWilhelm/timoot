@@ -12,11 +12,11 @@ function getSnapshot(): string {
 }
 
 function subscribe(callback: () => void): () => void {
-	const handler = (e: StorageEvent) => {
-		if (e.key === STORAGE_KEY) callback();
+	const handler = (event: StorageEvent) => {
+		if (event.key === STORAGE_KEY) callback();
 	};
-	window.addEventListener('storage', handler);
-	return () => window.removeEventListener('storage', handler);
+	globalThis.addEventListener('storage', handler);
+	return () => globalThis.removeEventListener('storage', handler);
 }
 
 /**
@@ -29,7 +29,7 @@ export function useUserId() {
 	const setUserId = useCallback((newUserId: string) => {
 		localStorage.setItem(STORAGE_KEY, newUserId);
 		// Trigger re-render by dispatching storage event
-		window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+		globalThis.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
 	}, []);
 
 	return { userId, setUserId };

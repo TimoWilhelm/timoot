@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>;
 export const Lobby: Story = {
 	args: {
 		phase: 'LOBBY',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 	},
 };
@@ -30,7 +30,7 @@ export const Lobby: Story = {
 export const GetReady: Story = {
 	args: {
 		phase: 'GET_READY',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 	},
 };
@@ -38,7 +38,7 @@ export const GetReady: Story = {
 export const QuestionModifierDoublePoints: Story = {
 	args: {
 		phase: 'QUESTION_MODIFIER',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 		modifiers: ['doublePoints'],
 	},
@@ -63,7 +63,7 @@ export const RevealIncorrect: Story = {
 export const RevealNoAnswer: Story = {
 	args: {
 		phase: 'REVEAL',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 	},
 };
@@ -71,7 +71,7 @@ export const RevealNoAnswer: Story = {
 export const LeaderboardFirstPlace: Story = {
 	args: {
 		phase: 'LEADERBOARD',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 		leaderboard: [
 			{ id: 'player1', name: 'You', score: 2500, rank: 1 },
@@ -84,7 +84,7 @@ export const LeaderboardFirstPlace: Story = {
 export const LeaderboardMiddle: Story = {
 	args: {
 		phase: 'LEADERBOARD',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 		leaderboard: [
 			{ id: 'player2', name: 'Alice', score: 2500, rank: 1 },
@@ -99,7 +99,7 @@ export const LeaderboardMiddle: Story = {
 export const LeaderboardNotInTop: Story = {
 	args: {
 		phase: 'LEADERBOARD',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player10',
 		leaderboard: [
 			{ id: 'player1', name: 'Alice', score: 2500, rank: 1 },
@@ -112,7 +112,7 @@ export const LeaderboardNotInTop: Story = {
 export const EndIntro: Story = {
 	args: {
 		phase: 'END_INTRO',
-		answerResult: null,
+		answerResult: undefined,
 		playerId: 'player1',
 	},
 };
@@ -120,7 +120,7 @@ export const EndIntro: Story = {
 export const EndRevealedFirstPlace: Story = {
 	args: {
 		phase: 'END_REVEALED',
-		answerResult: null,
+		answerResult: undefined,
 		finalScore: 5000,
 		playerId: 'player1',
 		leaderboard: [
@@ -134,7 +134,7 @@ export const EndRevealedFirstPlace: Story = {
 export const EndRevealedSecondPlace: Story = {
 	args: {
 		phase: 'END_REVEALED',
-		answerResult: null,
+		answerResult: undefined,
 		finalScore: 4800,
 		playerId: 'player1',
 		leaderboard: [
@@ -148,7 +148,7 @@ export const EndRevealedSecondPlace: Story = {
 export const EndRevealedThirdPlace: Story = {
 	args: {
 		phase: 'END_REVEALED',
-		answerResult: null,
+		answerResult: undefined,
 		finalScore: 4200,
 		playerId: 'player1',
 		leaderboard: [
@@ -162,7 +162,7 @@ export const EndRevealedThirdPlace: Story = {
 export const EndRevealedNotOnPodium: Story = {
 	args: {
 		phase: 'END_REVEALED',
-		answerResult: null,
+		answerResult: undefined,
 		finalScore: 2000,
 		playerId: 'player1',
 		leaderboard: [

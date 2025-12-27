@@ -59,5 +59,5 @@ export function processAnswersAndUpdateScores(state: GameState): void {
  * @returns Sorted leaderboard with rank information
  */
 export function buildLeaderboard(players: Player[]): { id: string; name: string; score: number; rank: number }[] {
-	return [...players].sort((a, b) => b.score - a.score).map((p, i) => ({ id: p.id, name: p.name, score: p.score, rank: i + 1 }));
+	return [...players].sort((a, b) => b.score - a.score).map((p, index) => ({ id: p.id, name: p.name, score: p.score, rank: index + 1 }));
 }

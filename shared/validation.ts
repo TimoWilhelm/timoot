@@ -83,7 +83,7 @@ export const imagePromptSchema = z
 /**
  * Number of questions for AI generation
  */
-const aiNumQuestionsSchema = z
+const aiNumberQuestionsSchema = z
 	.number()
 	.int()
 	.min(LIMITS.AI_NUM_QUESTIONS_MIN, `Must generate at least ${LIMITS.AI_NUM_QUESTIONS_MIN} question`)
@@ -147,7 +147,7 @@ export const quizFormSchema = z.object({
  */
 export const aiGenerateRequestSchema = z.object({
 	prompt: aiPromptSchema,
-	numQuestions: aiNumQuestionsSchema.optional().default(5),
+	numQuestions: aiNumberQuestionsSchema.optional().default(5),
 });
 
 /**

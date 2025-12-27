@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { useSoundStore } from '@/lib/sound-store';
 import { cn } from '@/lib/utils';
 
-interface SoundToggleProps {
+interface SoundToggleProperties {
 	className?: string;
 	onToggle?: () => void;
 }
 
-export function SoundToggle({ className, onToggle }: SoundToggleProps) {
+export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 	const { isMuted, isBlocked, toggleMute } = useSoundStore();
 
 	const handleClick = () => {

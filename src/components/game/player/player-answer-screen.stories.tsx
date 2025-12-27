@@ -26,7 +26,7 @@ type Story = StoryObj<typeof meta>;
 export const FourOptions: Story = {
 	args: {
 		optionIndices: [0, 1, 2, 3],
-		submittedAnswer: null,
+		submittedAnswer: undefined,
 	},
 	play: async ({ canvas }) => {
 		const buttons = canvas.getAllByRole('button');
@@ -40,14 +40,14 @@ export const FourOptions: Story = {
 export const ThreeOptions: Story = {
 	args: {
 		optionIndices: [0, 1, 2],
-		submittedAnswer: null,
+		submittedAnswer: undefined,
 	},
 };
 
 export const TwoOptions: Story = {
 	args: {
 		optionIndices: [0, 1],
-		submittedAnswer: null,
+		submittedAnswer: undefined,
 	},
 	play: async ({ canvas }) => {
 		const buttons = canvas.getAllByRole('button');
@@ -58,7 +58,7 @@ export const TwoOptions: Story = {
 export const ClickFirstOption: Story = {
 	args: {
 		optionIndices: [0, 1, 2, 3],
-		submittedAnswer: null,
+		submittedAnswer: undefined,
 	},
 	play: async ({ args, canvas, userEvent }) => {
 		const buttons = canvas.getAllByRole('button');
@@ -70,7 +70,7 @@ export const ClickFirstOption: Story = {
 export const ClickSecondOption: Story = {
 	args: {
 		optionIndices: [0, 1, 2, 3],
-		submittedAnswer: null,
+		submittedAnswer: undefined,
 	},
 	play: async ({ args, canvas, userEvent }) => {
 		const buttons = canvas.getAllByRole('button');

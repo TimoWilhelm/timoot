@@ -67,12 +67,12 @@ const initialGameState: WebSocketGameState = {
 	questionText: '',
 	options: [],
 	startTime: 0,
-	timeLimitMs: 20000,
+	timeLimitMs: 20_000,
 	isDoublePoints: false,
 	backgroundImage: undefined,
 	answeredCount: 0,
-	correctAnswerIndex: null,
-	playerResult: null,
+	correctAnswerIndex: undefined,
+	playerResult: undefined,
 	answerCounts: [],
 	leaderboard: [],
 	isLastQuestion: false,
@@ -90,13 +90,13 @@ export function useGameWebSocket({
 	onPlayerJoined,
 	onEmojiReceived,
 }: UseGameWebSocketOptions) {
-	const wsRef = useRef<WebSocket | null>(null);
-	const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const wsReference = useRef<WebSocket | undefined>();
+	const reconnectTimeoutReference = useRef<NodeJS.Timeout | undefined>();
 	const [isConnected, setIsConnected] = useState(false);
 	const [isConnecting, setIsConnecting] = useState(!!gameId);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<string | undefined>();
 	const [gameState, setGameState] = useState<WebSocketGameState>(initialGameState);
-	const [submittedAnswer, setSubmittedAnswer] = useState<number | null>(null);
+	const [submittedAnswer, setSubmittedAnswer] = useState<number | undefined>();
 
 	const handleMessage = useCallback(
 		(event: MessageEvent) => {
@@ -104,59 +104,65 @@ export function useGameWebSocket({
 				const message = JSON.parse(event.data) as ServerMessage;
 
 				switch (message.type) {
-					case 'connected':
+					case 'connected': {
 						setIsConnected(true);
 						setIsConnecting(false);
-						setError(null);
+						setError(undefined);
 						onConnected?.(message.playerId, message.playerToken);
 						break;
+					}
 
-					case 'error':
+					case 'error': {
 						setError(message.message);
 						onError?.(message.code, message.message);
 						break;
+					}
 
-					case 'lobbyUpdate':
-						setGameState((prev) => ({
-							...prev,
+					case 'lobbyUpdate': {
+						setGameState((previous) => ({
+							...previous,
 							phase: 'LOBBY',
 							gameId: message.gameId,
 							pin: message.pin,
 							players: message.players,
 						}));
 						break;
+					}
 
-					case 'getReady':
-						setGameState((prev) => ({
-							...prev,
+					case 'getReady': {
+						setGameState((previous) => ({
+							...previous,
 							phase: 'GET_READY',
 							getReadyCountdownMs: message.countdownMs,
 							totalQuestions: message.totalQuestions,
 						}));
 						break;
+					}
 
-					case 'questionModifier':
-						setGameState((prev) => ({
-							...prev,
+					case 'questionModifier': {
+						setGameState((previous) => ({
+							...previous,
 							phase: 'QUESTION_MODIFIER',
 							questionIndex: message.questionIndex,
 							totalQuestions: message.totalQuestions,
 							modifiers: message.modifiers,
 						}));
 						break;
+					}
 
-					case 'playerJoined':
-						setGameState((prev) => ({
-							...prev,
-							players: [...prev.players, message.player],
+					case 'playerJoined': {
+						setGameState((previous) => ({
+							...previous,
+							players: [...previous.players, message.player],
 						}));
 						onPlayerJoined?.(message.player);
 						break;
+					}
 
-					case 'questionStart':
-						setSubmittedAnswer(null);
-						setGameState((prev) => ({
-							...prev,
+					case 'questionStart': {
+						setSubmittedAnswer(undefined);
+						setGameState((previous) => ({
+							...previous,
 							phase: 'QUESTION',
 							questionIndex: message.questionIndex,
 							totalQuestions: message.totalQuestions,
@@ -167,42 +173,46 @@ export function useGameWebSocket({
 							isDoublePoints: message.isDoublePoints ?? false,
 							backgroundImage: message.backgroundImage,
 							answeredCount: 0,
-							correctAnswerIndex: null,
-							playerResult: null,
+							correctAnswerIndex: undefined,
+							playerResult: undefined,
 							answerCounts: [],
 						}));
 						break;
+					}
 
-					case 'answerReceived':
+					case 'answerReceived': {
 						setSubmittedAnswer(message.answerIndex);
 						break;
+					}
 
-					case 'playerAnswered':
-						setGameState((prev) => ({
-							...prev,
+					case 'playerAnswered': {
+						setGameState((previous) => ({
+							...previous,
 							answeredCount: message.answeredCount,
 						}));
 						break;
+					}
 
-					case 'reveal':
-						setGameState((prev) => ({
-							...prev,
+					case 'reveal': {
+						setGameState((previous) => ({
+							...previous,
 							phase: 'REVEAL',
 							correctAnswerIndex: message.correctAnswerIndex,
-							playerResult: message.playerResult ?? null,
+							playerResult: message.playerResult,
 							answerCounts: message.answerCounts,
 							questionText: message.questionText,
 							options: message.options,
 						}));
 						break;
+					}
 
-					case 'leaderboard':
-						setGameState((prev) => {
+					case 'leaderboard': {
+						setGameState((previous) => {
 							// Build previous ranks from old leaderboard
 							const previousRanks = new Map<string, number>();
-							prev.leaderboard.slice(0, 5).forEach((player, index) => {
+							for (const [index, player] of previous.leaderboard.slice(0, 5).entries()) {
 								previousRanks.set(player.id, index + 1);
-							});
+							}
 
 							// Enrich leaderboard entries with previousRank
 							const enrichedLeaderboard: LeaderboardEntry[] = message.leaderboard.map((player) => ({
@@ -211,100 +221,104 @@ export function useGameWebSocket({
 							}));
 
 							return {
-								...prev,
+								...previous,
 								phase: 'LEADERBOARD',
 								leaderboard: enrichedLeaderboard,
 								isLastQuestion: message.isLastQuestion,
 							};
 						});
 						break;
+					}
 
-					case 'gameEnd':
-						setGameState((prev) => ({
-							...prev,
+					case 'gameEnd': {
+						setGameState((previous) => ({
+							...previous,
 							phase: message.revealed ? 'END_REVEALED' : 'END_INTRO',
 							leaderboard: message.finalLeaderboard,
 							endRevealed: message.revealed,
 						}));
 						break;
+					}
 
-					case 'kicked':
+					case 'kicked': {
 						setError(message.reason);
-						wsRef.current?.close();
+						wsReference.current?.close();
 						break;
+					}
 
-					case 'emojiReceived':
+					case 'emojiReceived': {
 						onEmojiReceived?.(message.emoji, message.playerId);
 						break;
+					}
 				}
-			} catch (err) {
-				console.error('Failed to parse WebSocket message:', err);
-				Sentry.captureException(err, { tags: { source: 'websocket' } });
+			} catch (error_) {
+				console.error('Failed to parse WebSocket message:', error_);
+				Sentry.captureException(error_, { tags: { source: 'websocket' } });
 			}
 		},
 		[onConnected, onError, onPlayerJoined, onEmojiReceived],
 	);
 
 	// Store connect in a ref to enable self-reference for reconnection
-	const connectRef = useRef<() => void>();
+	const connectReference = useRef<() => void>();
 
 	const connect = useCallback(() => {
 		// Prevent duplicate connections - check both OPEN and CONNECTING states
-		if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) return;
+		if (wsReference.current?.readyState === WebSocket.OPEN || wsReference.current?.readyState === WebSocket.CONNECTING) return;
 
 		setIsConnecting(true);
-		setError(null);
+		setError(undefined);
 
-		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const protocol = globalThis.location.protocol === 'https:' ? 'wss:' : 'ws:';
 
 		// Use separate endpoints for host vs player
 		// Host endpoint requires token in query params and pre-authenticates
 		// Player endpoint requires a connect message after connection
 		const wsUrl =
 			role === 'host'
-				? `${protocol}//${window.location.host}/api/games/${gameId}/host-ws?token=${encodeURIComponent(hostSecret!)}`
-				: `${protocol}//${window.location.host}/api/games/${gameId}/ws`;
+				? `${protocol}//${globalThis.location.host}/api/games/${gameId}/host-ws?token=${encodeURIComponent(hostSecret!)}`
+				: `${protocol}//${globalThis.location.host}/api/games/${gameId}/ws`;
 
 		const ws = new WebSocket(wsUrl);
-		wsRef.current = ws;
+		wsReference.current = ws;
 
-		ws.onopen = () => {
+		ws.addEventListener('open', () => {
 			// Host is pre-authenticated via the URL token - no connect message needed
 			// Players must send a connect message for authentication
 			if (role === 'player') {
-				const connectMsg: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
-				ws.send(JSON.stringify(connectMsg));
+				const connectMessage: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
+				ws.send(JSON.stringify(connectMessage));
 			}
-		};
+		});
 
-		ws.onmessage = handleMessage;
+		ws.addEventListener('message', handleMessage);
 
-		ws.onclose = (event) => {
+		ws.addEventListener('close', (event) => {
 			setIsConnected(false);
 
 			// Attempt reconnection for unexpected closures
 			if (event.code !== 1000 && event.code < 4000) {
 				// Keep isConnecting true to show loading state during reconnect delay
 				setIsConnecting(true);
-				setError(null);
-				reconnectTimeoutRef.current = setTimeout(() => {
-					connectRef.current?.();
+				setError(undefined);
+				reconnectTimeoutReference.current = setTimeout(() => {
+					connectReference.current?.();
 				}, 2000);
 			} else {
 				setIsConnecting(false);
 			}
-		};
+		});
 
-		ws.onerror = () => {
+		ws.addEventListener('error', () => {
 			// Don't set isConnecting here - onclose will handle state management
 			// and will decide whether to show loading (reconnecting) or error
 			setError('WebSocket connection error');
-		};
+		});
 	}, [gameId, role, hostSecret, playerId, playerToken, handleMessage]);
 
 	// Update ref after connect is defined
 	useEffect(() => {
-		connectRef.current = connect;
+		connectReference.current = connect;
 	});
 
 	// Connect on mount - use empty deps to run only once
@@ -314,22 +328,22 @@ export function useGameWebSocket({
 			return;
 		}
 
-		connectRef.current();
+		connectReference.current();
 
 		return () => {
-			if (reconnectTimeoutRef.current) {
-				clearTimeout(reconnectTimeoutRef.current);
+			if (reconnectTimeoutReference.current) {
+				clearTimeout(reconnectTimeoutReference.current);
 			}
-			if (wsRef.current) {
-				wsRef.current.close(1000, 'Component unmounted');
+			if (wsReference.current) {
+				wsReference.current.close(1000, 'Component unmounted');
 			}
 		};
 	}, [gameId]);
 
 	// Send message helper
 	const sendMessage = useCallback((message: ClientMessage) => {
-		if (wsRef.current?.readyState === WebSocket.OPEN) {
-			wsRef.current.send(JSON.stringify(message));
+		if (wsReference.current?.readyState === WebSocket.OPEN) {
+			wsReference.current.send(JSON.stringify(message));
 		}
 	}, []);
 

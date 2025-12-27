@@ -71,9 +71,9 @@ export function QuizEditorPage() {
 	});
 	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
 	const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
-	const [openImagePopover, setOpenImagePopover] = useState<number | null>(null);
+	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
 	const [aiImages, setAiImages] = useState<AIImage[]>([]);
-	const [aiImagesCursor, setAiImagesCursor] = useState<string | undefined>(undefined);
+	const [aiImagesCursor, setAiImagesCursor] = useState<string | undefined>();
 	const [isLoadingMoreImages, setIsLoadingMoreImages] = useState(false);
 	const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 	const [imagePrompt, setImagePrompt] = useState('');
@@ -81,16 +81,16 @@ export function QuizEditorPage() {
 	const { userId } = useUserId();
 
 	// Track intentional navigation after save to skip the blocker
-	const skipBlockerRef = useRef(false);
+	const skipBlockerReference = useRef(false);
 
 	// Block navigation when there are unsaved changes (unless intentionally navigating after save)
-	const blocker = useBlocker(() => isDirty && !skipBlockerRef.current);
+	const blocker = useBlocker(() => isDirty && !skipBlockerReference.current);
 
 	// Warn before browser/tab close when there are unsaved changes
 	useEffect(() => {
-		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			if (isDirty) {
-				e.preventDefault();
+				event.preventDefault();
 			}
 		};
 		window.addEventListener('beforeunload', handleBeforeUnload);
@@ -101,9 +101,9 @@ export function QuizEditorPage() {
 	useEffect(() => {
 		const fetchAiImages = async () => {
 			try {
-				const res = await client.api.images.$get({ header: { 'x-user-id': userId }, query: {} });
-				if (res.ok) {
-					const result = await res.json();
+				const response = await client.api.images.$get({ header: { 'x-user-id': userId }, query: {} });
+				if (response.ok) {
+					const result = await response.json();
 					if (result.success && result.data) {
 						setAiImages(result.data.images);
 						setAiImagesCursor(result.data.nextCursor);
@@ -113,18 +113,18 @@ export function QuizEditorPage() {
 				console.error('Failed to fetch AI images:', error);
 			}
 		};
-		fetchAiImages();
+		void fetchAiImages();
 	}, [userId]);
 
 	const loadMoreImages = async () => {
 		if (!aiImagesCursor || isLoadingMoreImages) return;
 		setIsLoadingMoreImages(true);
 		try {
-			const res = await client.api.images.$get({ header: { 'x-user-id': userId }, query: { cursor: aiImagesCursor } });
-			if (res.ok) {
-				const result = await res.json();
+			const response = await client.api.images.$get({ header: { 'x-user-id': userId }, query: { cursor: aiImagesCursor } });
+			if (response.ok) {
+				const result = await response.json();
 				if (result.success && result.data) {
-					setAiImages((prev) => [...prev, ...result.data!.images]);
+					setAiImages((previous) => [...previous, ...result.data!.images]);
 					setAiImagesCursor(result.data.nextCursor);
 				}
 			}
@@ -138,8 +138,8 @@ export function QuizEditorPage() {
 		if (quizId) {
 			const fetchQuiz = async () => {
 				try {
-					const res = await client.api.quizzes.custom[':id'].$get({ header: { 'x-user-id': userId }, param: { id: quizId } });
-					const result = await res.json();
+					const response = await client.api.quizzes.custom[':id'].$get({ header: { 'x-user-id': userId }, param: { id: quizId } });
+					const result = await response.json();
 					if (result.success && result.data) {
 						const formData: QuizFormInput = {
 							...result.data,
@@ -158,7 +158,7 @@ export function QuizEditorPage() {
 					navigate('/edit');
 				}
 			};
-			fetchQuiz();
+			void fetchQuiz();
 		} else {
 			reset({
 				title: '',
@@ -173,29 +173,29 @@ export function QuizEditorPage() {
 				questions: data.questions.map((q) => ({
 					text: q.text,
 					options: q.options,
-					correctAnswerIndex: parseInt(q.correctAnswerIndex, 10),
+					correctAnswerIndex: Number.parseInt(q.correctAnswerIndex, 10),
 					isDoublePoints: q.isDoublePoints,
 					backgroundImage: q.backgroundImage,
 				})),
 			};
 			let result;
 			if (quizId) {
-				const res = await client.api.quizzes.custom[':id'].$put({
+				const response = await client.api.quizzes.custom[':id'].$put({
 					header: { 'x-user-id': userId },
 					param: { id: quizId },
 					json: { ...processedData, id: quizId },
 				});
-				result = await res.json();
+				result = await response.json();
 			} else {
-				const res = await client.api.quizzes.custom.$post({ header: { 'x-user-id': userId }, json: processedData });
-				result = await res.json();
+				const response = await client.api.quizzes.custom.$post({ header: { 'x-user-id': userId }, json: processedData });
+				result = await response.json();
 			}
 			if (!result.success) {
 				throw new Error('error' in result ? result.error : 'Failed to save quiz');
 			}
 			toast.success(`Quiz "${result.data?.title}" saved successfully!`);
 			reset(data); // Reset form to mark as not dirty
-			skipBlockerRef.current = true; // Skip blocker for intentional navigation after save
+			skipBlockerReference.current = true; // Skip blocker for intentional navigation after save
 			navigate('/');
 		} catch (error) {
 			if (error instanceof Error) {
@@ -229,7 +229,7 @@ export function QuizEditorPage() {
 		setIsGeneratingQuestion(true);
 		try {
 			resetToken();
-			const res = await client.api.quizzes['generate-question'].$post({
+			const response = await client.api.quizzes['generate-question'].$post({
 				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
 				json: {
 					title,
@@ -241,8 +241,8 @@ export function QuizEditorPage() {
 				},
 			});
 
-			const result = await res.json();
-			if (!res.ok || !result.success || !result.data) {
+			const result = await response.json();
+			if (!response.ok || !result.success || !result.data) {
 				throw new Error('error' in result ? result.error : 'Failed to generate question');
 			}
 
@@ -260,15 +260,18 @@ export function QuizEditorPage() {
 		}
 	};
 
-	const deleteImage = async (imageId: string, e: React.MouseEvent) => {
-		e.stopPropagation();
+	const deleteImage = async (imageId: string, event: React.MouseEvent) => {
+		event.stopPropagation();
 		try {
-			const res = await client.api.images[':userId'][':imageId'].$delete({ header: { 'x-user-id': userId }, param: { userId, imageId } });
-			const result = await res.json();
-			if (!res.ok || !result.success) {
+			const response = await client.api.images[':userId'][':imageId'].$delete({
+				header: { 'x-user-id': userId },
+				param: { userId, imageId },
+			});
+			const result = await response.json();
+			if (!response.ok || !result.success) {
 				throw new Error('error' in result ? result.error : 'Failed to delete image');
 			}
-			setAiImages((prev) => prev.filter((img) => img.id !== imageId));
+			setAiImages((previous) => previous.filter((img) => img.id !== imageId));
 			toast.success('Image deleted');
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : 'Failed to delete image');
@@ -289,22 +292,22 @@ export function QuizEditorPage() {
 		setIsGeneratingImage(true);
 		try {
 			resetToken();
-			const res = await client.api.images.generate.$post({
+			const response = await client.api.images.generate.$post({
 				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
 				json: { prompt: imagePrompt },
 			});
 
-			const result = await res.json();
-			if (!res.ok || !result.success || !result.data) {
+			const result = await response.json();
+			if (!response.ok || !result.success || !result.data) {
 				throw new Error('error' in result ? result.error : 'Failed to generate image');
 			}
 
 			// Add to AI images list
-			setAiImages((prev) => [result.data!, ...prev]);
+			setAiImages((previous) => [result.data!, ...previous]);
 			// Set as the selected image
 			onImageGenerated(result.data.path);
 			setImagePrompt('');
-			setOpenImagePopover(null);
+			setOpenImagePopover(undefined);
 			toast.success('Image generated!');
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : 'Failed to generate image');
@@ -325,8 +328,8 @@ export function QuizEditorPage() {
 	const removeOption = (qIndex: number, oIndex: number) => {
 		const currentQuestion = getValues(`questions.${qIndex}`);
 		if (currentQuestion.options.length > LIMITS.OPTIONS_MIN) {
-			const newOptions = currentQuestion.options.filter((_, i) => i !== oIndex);
-			const currentCorrect = parseInt(currentQuestion.correctAnswerIndex, 10);
+			const newOptions = currentQuestion.options.filter((_, index) => index !== oIndex);
+			const currentCorrect = Number.parseInt(currentQuestion.correctAnswerIndex, 10);
 			const newCorrect =
 				currentCorrect === oIndex
 					? 0 // If the deleted option was correct, default to the first option
@@ -349,7 +352,7 @@ export function QuizEditorPage() {
 		[newOptions[oIndex], newOptions[newIndex]] = [newOptions[newIndex], newOptions[oIndex]];
 
 		// Update correctAnswerIndex if the correct answer was moved
-		const currentCorrect = parseInt(currentQuestion.correctAnswerIndex, 10);
+		const currentCorrect = Number.parseInt(currentQuestion.correctAnswerIndex, 10);
 		let newCorrect = currentCorrect;
 		if (currentCorrect === oIndex) {
 			newCorrect = newIndex;
@@ -405,7 +408,7 @@ export function QuizEditorPage() {
 										control={control}
 										name={`questions.${qIndex}.backgroundImage`}
 										render={({ field: bgField }) => (
-											<Popover open={openImagePopover === qIndex} onOpenChange={(open) => setOpenImagePopover(open ? qIndex : null)}>
+											<Popover open={openImagePopover === qIndex} onOpenChange={(open) => setOpenImagePopover(open ? qIndex : undefined)}>
 												<PopoverTrigger asChild>
 													<button
 														type="button"
@@ -433,10 +436,10 @@ export function QuizEditorPage() {
 																	type="button"
 																	onClick={() => {
 																		bgField.onChange('');
-																		setOpenImagePopover(null);
+																		setOpenImagePopover(undefined);
 																	}}
 																	className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted transition-all ${
-																		!bgField.value ? 'ring-2 ring-quiz-orange ring-offset-2' : 'hover:ring-2 hover:ring-muted-foreground/30'
+																		bgField.value ? 'hover:ring-2 hover:ring-muted-foreground/30' : 'ring-2 ring-quiz-orange ring-offset-2'
 																	}`}
 																>
 																	<div className="flex flex-col items-center gap-1 text-muted-foreground">
@@ -450,7 +453,7 @@ export function QuizEditorPage() {
 																		type="button"
 																		onClick={() => {
 																			bgField.onChange(img.path);
-																			setOpenImagePopover(null);
+																			setOpenImagePopover(undefined);
 																		}}
 																		className={`relative aspect-video overflow-hidden rounded-lg transition-all ${
 																			bgField.value === img.path
@@ -475,7 +478,7 @@ export function QuizEditorPage() {
 																				type="button"
 																				onClick={() => {
 																					bgField.onChange(img.path);
-																					setOpenImagePopover(null);
+																					setOpenImagePopover(undefined);
 																				}}
 																				className={`relative aspect-video w-full overflow-hidden rounded-lg transition-all ${
 																					bgField.value === img.path
@@ -488,7 +491,7 @@ export function QuizEditorPage() {
 																			</button>
 																			<button
 																				type="button"
-																				onClick={(e) => deleteImage(img.id, e)}
+																				onClick={(event) => deleteImage(img.id, event)}
 																				className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
 																				title="Delete image"
 																			>
@@ -506,7 +509,7 @@ export function QuizEditorPage() {
 																		onClick={loadMoreImages}
 																		disabled={isLoadingMoreImages}
 																	>
-																		{isLoadingMoreImages ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+																		{isLoadingMoreImages ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : undefined}
 																		Load More
 																	</Button>
 																)}
@@ -531,14 +534,14 @@ export function QuizEditorPage() {
 																	<Input
 																		placeholder="Describe the image..."
 																		value={imagePrompt}
-																		onChange={(e) => setImagePrompt(e.target.value)}
+																		onChange={(event) => setImagePrompt(event.target.value)}
 																		className="pr-14 text-sm"
 																		maxLength={LIMITS.AI_IMAGE_PROMPT_MAX}
 																		disabled={isGeneratingImage}
-																		onKeyDown={(e) => {
-																			if (e.key === 'Enter') {
-																				e.preventDefault();
-																				generateImage(bgField.onChange);
+																		onKeyDown={(event) => {
+																			if (event.key === 'Enter') {
+																				event.preventDefault();
+																				void generateImage(bgField.onChange);
 																			}
 																		}}
 																	/>

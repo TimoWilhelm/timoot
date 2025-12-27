@@ -7,7 +7,7 @@ import type { ApiRoutes } from '../../dist/worker/worker/user-routes';
  */
 // Pre-compute client type at compile time for better type inference
 export type Client = ReturnType<typeof hc<ApiRoutes>>;
-const hcWithType = (...args: Parameters<typeof hc>): Client => hc<ApiRoutes>(...args);
+const hcWithType = (...arguments_: Parameters<typeof hc>): Client => hc<ApiRoutes>(...arguments_);
 export const client = hcWithType('/');
 
 /**

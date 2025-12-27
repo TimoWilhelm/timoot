@@ -22,7 +22,7 @@ declare global {
 	}
 }
 
-interface TurnstileWidgetProps {
+interface TurnstileWidgetProperties {
 	className?: string;
 }
 
@@ -32,8 +32,8 @@ const DEV_PLACEHOLDER_TOKEN = 'dev-mode-placeholder-token';
  * Dev mode implementation - returns static placeholder.
  * This entire function is tree-shaken in production.
  */
-function useTurnstileDev() {
-	const TurnstileWidget = ({ className }: TurnstileWidgetProps) => (
+function useTurnstileDevelopment() {
+	const TurnstileWidget = ({ className }: TurnstileWidgetProperties) => (
 		<div
 			className={className}
 			style={{
@@ -61,67 +61,67 @@ function useTurnstileDev() {
  * Production implementation with real Turnstile widget.
  * This entire function is tree-shaken in development.
  */
-function useTurnstileProd() {
-	const [token, setToken] = useState<string | null>(null);
-	const widgetIdRef = useRef<string | null>(null);
-	const containerRef = useRef<HTMLDivElement | null>(null);
+function useTurnstileProduction() {
+	const [token, setToken] = useState<string | undefined>();
+	const widgetIdReference = useRef<string | undefined>();
+	const containerReference = useRef<HTMLDivElement | undefined>();
 
-	const resetToken = useCallback(() => setToken(null), []);
+	const resetToken = useCallback(() => setToken(undefined), []);
 
 	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
-			if (widgetIdRef.current && window.turnstile) {
+			if (widgetIdReference.current && globalThis.turnstile) {
 				try {
-					window.turnstile.remove(widgetIdRef.current);
+					globalThis.turnstile.remove(widgetIdReference.current);
 				} catch {
 					// Widget may already be removed
 				}
-				widgetIdRef.current = null;
+				widgetIdReference.current = undefined;
 			}
 		};
 	}, []);
 
 	const TurnstileWidget = useCallback(
-		({ className }: TurnstileWidgetProps) => {
+		({ className }: TurnstileWidgetProperties) => {
 			return (
 				<div
-					ref={(el) => {
-						if (!el || containerRef.current === el) return;
-						containerRef.current = el;
+					ref={(element) => {
+						if (!element || containerReference.current === element) return;
+						containerReference.current = element;
 
 						// Clean up old widget if exists
-						if (widgetIdRef.current && window.turnstile) {
+						if (widgetIdReference.current && globalThis.turnstile) {
 							try {
-								window.turnstile.remove(widgetIdRef.current);
+								globalThis.turnstile.remove(widgetIdReference.current);
 							} catch {
 								// ignore
 							}
-							widgetIdRef.current = null;
+							widgetIdReference.current = undefined;
 						}
 
 						const renderWidget = () => {
-							if (!el || widgetIdRef.current || !window.turnstile) return;
+							if (!element || widgetIdReference.current || !globalThis.turnstile) return;
 							try {
-								widgetIdRef.current = window.turnstile.render(el, {
+								widgetIdReference.current = globalThis.turnstile.render(element, {
 									sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
 									callback: (t: string) => setToken(t),
-									'expired-callback': () => setToken(null),
-									'error-callback': () => setToken(null),
+									'expired-callback': () => setToken(undefined),
+									'error-callback': () => setToken(undefined),
 									theme: 'light',
 									appearance: 'always',
 									size: 'normal',
 								});
-							} catch (e) {
-								console.error('[Turnstile] Failed to render widget:', e);
+							} catch (error) {
+								console.error('[Turnstile] Failed to render widget:', error);
 							}
 						};
 
-						if (window.turnstile) {
+						if (globalThis.turnstile) {
 							renderWidget();
 						} else {
 							const checkInterval = setInterval(() => {
-								if (window.turnstile) {
+								if (globalThis.turnstile) {
 									clearInterval(checkInterval);
 									renderWidget();
 								}
@@ -143,4 +143,4 @@ function useTurnstileProd() {
  * Each call creates an independent turnstile instance.
  * In development mode, returns a placeholder token and renders a placeholder widget.
  */
-export const useTurnstile = import.meta.env.DEV ? useTurnstileDev : useTurnstileProd;
+export const useTurnstile = import.meta.env.DEV ? useTurnstileDevelopment : useTurnstileProduction;

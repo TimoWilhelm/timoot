@@ -2,18 +2,18 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { shapeGradients, shapePaths } from '@/components/game/shared';
 
-interface PlayerAnswerScreenProps {
+interface PlayerAnswerScreenProperties {
 	onAnswer: (index: number) => void;
-	submittedAnswer: number | null;
+	submittedAnswer: number | undefined;
 	optionIndices: number[];
 }
 
-export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerScreenProps) {
+export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerScreenProperties) {
 	const [showPulse, setShowPulse] = useState(false);
 
 	// Trigger pulse animation after selection
 	useEffect(() => {
-		if (submittedAnswer !== null) {
+		if (submittedAnswer !== undefined) {
 			const timer = setTimeout(() => setShowPulse(true), 600);
 			return () => clearTimeout(timer);
 		}
@@ -31,14 +31,14 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 		};
 	};
 
-	const canAnswer = submittedAnswer === null;
+	const canAnswer = submittedAnswer === undefined;
 
 	return (
 		<div className="relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl overflow-hidden">
 			{/* Answer buttons */}
 			{optionIndices.map((originalIndex, displayIndex) => {
 				const isSelected = submittedAnswer === originalIndex;
-				const isOther = submittedAnswer !== null && !isSelected;
+				const isOther = submittedAnswer !== undefined && !isSelected;
 				const pos = getPosition(displayIndex);
 
 				return (
@@ -190,9 +190,9 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 						{/* Sparkle particles for selected */}
 						{isSelected && showPulse && (
 							<>
-								{[...Array(6)].map((_, i) => (
+								{Array.from({ length: 6 }).map((_, index) => (
 									<motion.div
-										key={i}
+										key={index}
 										className="absolute h-2 w-2 rounded-full bg-white"
 										initial={{
 											x: 0,
@@ -201,14 +201,14 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 											scale: 0,
 										}}
 										animate={{
-											x: Math.cos((i * Math.PI * 2) / 6) * 100,
-											y: Math.sin((i * Math.PI * 2) / 6) * 100,
+											x: Math.cos((index * Math.PI * 2) / 6) * 100,
+											y: Math.sin((index * Math.PI * 2) / 6) * 100,
 											opacity: [1, 0],
 											scale: [0, 1, 0],
 										}}
 										transition={{
 											duration: 1,
-											delay: 0.6 + i * 0.1,
+											delay: 0.6 + index * 0.1,
 											ease: 'easeOut',
 										}}
 									/>

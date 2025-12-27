@@ -2,17 +2,17 @@ import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import type { QuestionModifier } from '@shared/types';
 
-interface HostQuestionModifierProps {
+interface HostQuestionModifierProperties {
 	questionIndex: number;
 	totalQuestions: number;
 	modifiers: QuestionModifier[];
 }
 
 // Pre-generated sparkle positions (generated once at module load, not during render)
-const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, i) => ({
-	left: `${(((i * 7919) % 100) + ((i * 104729) % 100) / 100) % 100}%`,
-	top: `${(((i * 7907) % 100) + ((i * 104723) % 100) / 100) % 100}%`,
-	delay: ((i * 7901) % 200) / 100,
+const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, index) => ({
+	left: `${(((index * 7919) % 100) + ((index * 104_729) % 100) / 100) % 100}%`,
+	top: `${(((index * 7907) % 100) + ((index * 104_723) % 100) / 100) % 100}%`,
+	delay: ((index * 7901) % 200) / 100,
 }));
 
 function DoublePointsAnimation() {
@@ -25,9 +25,9 @@ function DoublePointsAnimation() {
 			transition={{ duration: 0.3 }}
 		>
 			{/* Background pulse rings */}
-			{[...Array(3)].map((_, i) => (
+			{Array.from({ length: 3 }).map((_, index) => (
 				<motion.div
-					key={i}
+					key={index}
 					className="absolute rounded-full border-4 border-white/30"
 					initial={{ width: 100, height: 100, opacity: 0.8 }}
 					animate={{
@@ -37,7 +37,7 @@ function DoublePointsAnimation() {
 					}}
 					transition={{
 						duration: 1.5,
-						delay: i * 0.3,
+						delay: index * 0.3,
 						repeat: Infinity,
 						ease: 'easeOut',
 					}}
@@ -45,12 +45,12 @@ function DoublePointsAnimation() {
 			))}
 
 			{/* Lightning bolts */}
-			{[...Array(8)].map((_, i) => (
+			{Array.from({ length: 8 }).map((_, index) => (
 				<motion.div
-					key={`bolt-${i}`}
+					key={`bolt-${index}`}
 					className="absolute"
 					style={{
-						transform: `rotate(${i * 45}deg) translateY(-150px)`,
+						transform: `rotate(${index * 45}deg) translateY(-150px)`,
 					}}
 					initial={{ opacity: 0, scale: 0 }}
 					animate={{
@@ -59,7 +59,7 @@ function DoublePointsAnimation() {
 					}}
 					transition={{
 						duration: 0.6,
-						delay: 0.5 + i * 0.08,
+						delay: 0.5 + index * 0.08,
 						repeat: 2,
 					}}
 				>
@@ -100,9 +100,9 @@ function DoublePointsAnimation() {
 			</motion.div>
 
 			{/* Sparkle particles */}
-			{SPARKLE_POSITIONS.map((pos, i) => (
+			{SPARKLE_POSITIONS.map((pos, index) => (
 				<motion.div
-					key={`sparkle-${i}`}
+					key={`sparkle-${index}`}
 					className="absolute h-2 w-2 rounded-full bg-yellow-200"
 					style={{
 						left: pos.left,
@@ -124,7 +124,7 @@ function DoublePointsAnimation() {
 	);
 }
 
-export function HostQuestionModifier({ questionIndex, totalQuestions, modifiers }: HostQuestionModifierProps) {
+export function HostQuestionModifier({ questionIndex, totalQuestions, modifiers }: HostQuestionModifierProperties) {
 	// For now, only support double points modifier
 	// Future modifiers can be added here with their own animations
 	const hasDoublePoints = modifiers.includes('doublePoints');

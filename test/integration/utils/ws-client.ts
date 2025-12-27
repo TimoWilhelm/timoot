@@ -20,11 +20,11 @@ export interface ConnectedResult {
  * Provides promise-based API for interacting with the game server.
  */
 export class WsTestClient {
-	private ws: WebSocket | null = null;
+	private ws: WebSocket | undefined;
 	private messageQueue: ServerMessage[] = [];
-	private messageHandlers: ((msg: ServerMessage) => void)[] = [];
-	private closePromise: Promise<{ code: number; reason: string }> | null = null;
-	private closeResolve: ((value: { code: number; reason: string }) => void) | null = null;
+	private messageHandlers: ((message: ServerMessage) => void)[] = [];
+	private closePromise: Promise<{ code: number; reason: string }> | undefined;
+	private closeResolve: ((value: { code: number; reason: string }) => void) | undefined;
 
 	public playerId?: string;
 	public playerToken?: string;
@@ -36,7 +36,7 @@ export class WsTestClient {
 	 * Connect to the WebSocket server
 	 */
 	async connect(): Promise<ConnectedResult> {
-		const { baseUrl, gameId, role, hostSecret, playerId, playerToken, timeout = 10000 } = this.options;
+		const { baseUrl, gameId, role, hostSecret, playerId, playerToken, timeout = 10_000 } = this.options;
 
 		const protocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
 		const host = baseUrl.replace(/^https?:\/\//, '');
@@ -54,15 +54,15 @@ export class WsTestClient {
 
 			this.ws = new WebSocket(wsUrl);
 
-			this.closePromise = new Promise((res) => {
-				this.closeResolve = res;
+			this.closePromise = new Promise((resolve) => {
+				this.closeResolve = resolve;
 			});
 
 			this.ws.addEventListener('open', () => {
 				// Players must send connect message
 				if (role === 'player') {
-					const connectMsg: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
-					this.ws!.send(JSON.stringify(connectMsg));
+					const connectMessage: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
+					this.ws!.send(JSON.stringify(connectMessage));
 				}
 			});
 
@@ -86,14 +86,14 @@ export class WsTestClient {
 					for (const handler of this.messageHandlers) {
 						handler(message);
 					}
-				} catch (err) {
-					console.error('Failed to parse message:', err);
+				} catch (error) {
+					console.error('Failed to parse message:', error);
 				}
 			});
 
-			this.ws.addEventListener('error', (err) => {
+			this.ws.addEventListener('error', (error) => {
 				clearTimeout(timeoutId);
-				reject(new Error(`WebSocket error: ${err}`));
+				reject(new Error(`WebSocket error: ${error}`));
 			});
 
 			this.ws.addEventListener('close', (event) => {
@@ -123,8 +123,8 @@ export class WsTestClient {
 	 */
 	async waitForMessage<T extends ServerMessage['type']>(
 		type: T,
-		timeout = 30000,
-		predicate?: (msg: Extract<ServerMessage, { type: T }>) => boolean,
+		timeout = 30_000,
+		predicate?: (message: Extract<ServerMessage, { type: T }>) => boolean,
 	): Promise<Extract<ServerMessage, { type: T }>> {
 		// Check existing queue first
 		const existing = this.messageQueue.find(
@@ -136,17 +136,17 @@ export class WsTestClient {
 
 		return new Promise((resolve, reject) => {
 			const timeoutId = setTimeout(() => {
-				const idx = this.messageHandlers.indexOf(handler);
-				if (idx !== -1) this.messageHandlers.splice(idx, 1);
+				const index = this.messageHandlers.indexOf(handler);
+				if (index !== -1) this.messageHandlers.splice(index, 1);
 				reject(new Error(`Timeout waiting for message type: ${type}`));
 			}, timeout);
 
-			const handler = (msg: ServerMessage) => {
-				if (msg.type === type && (!predicate || predicate(msg as Extract<ServerMessage, { type: T }>))) {
+			const handler = (message: ServerMessage) => {
+				if (message.type === type && (!predicate || predicate(message as Extract<ServerMessage, { type: T }>))) {
 					clearTimeout(timeoutId);
-					const idx = this.messageHandlers.indexOf(handler);
-					if (idx !== -1) this.messageHandlers.splice(idx, 1);
-					resolve(msg as Extract<ServerMessage, { type: T }>);
+					const index = this.messageHandlers.indexOf(handler);
+					if (index !== -1) this.messageHandlers.splice(index, 1);
+					resolve(message as Extract<ServerMessage, { type: T }>);
 				}
 			};
 
@@ -205,25 +205,25 @@ export class WsTestClient {
 	/**
 	 * Join a game and wait for the connected response with credentials.
 	 */
-	async joinAndWait(nickname: string, timeout = 10000): Promise<ConnectedResult> {
+	async joinAndWait(nickname: string, timeout = 10_000): Promise<ConnectedResult> {
 		this.send({ type: 'join', nickname });
 
 		// Wait for connected message with playerId (server sends this after successful join)
 		try {
-			const msg = await this.waitForMessage('connected', timeout, (m) => !!m.playerId);
-			this.playerId = msg.playerId;
-			this.playerToken = msg.playerToken;
-			return { playerId: msg.playerId, playerToken: msg.playerToken };
+			const message = await this.waitForMessage('connected', timeout, (m) => !!m.playerId);
+			this.playerId = message.playerId;
+			this.playerToken = message.playerToken;
+			return { playerId: message.playerId, playerToken: message.playerToken };
 		} catch {
 			// If timeout, check if credentials arrived in queue anyway
-			const connectedMsg = this.messageQueue.find((m) => m.type === 'connected' && 'playerId' in m && m.playerId) as
+			const connectedMessage = this.messageQueue.find((m) => m.type === 'connected' && 'playerId' in m && m.playerId) as
 				| Extract<ServerMessage, { type: 'connected' }>
 				| undefined;
 
-			if (connectedMsg) {
-				this.playerId = connectedMsg.playerId;
-				this.playerToken = connectedMsg.playerToken;
-				return { playerId: connectedMsg.playerId, playerToken: connectedMsg.playerToken };
+			if (connectedMessage) {
+				this.playerId = connectedMessage.playerId;
+				this.playerToken = connectedMessage.playerToken;
+				return { playerId: connectedMessage.playerId, playerToken: connectedMessage.playerToken };
 			}
 			return { playerId: undefined, playerToken: undefined };
 		}
@@ -309,5 +309,5 @@ export async function createGame(baseUrl: string, quizId?: string): Promise<{ ga
  */
 export function generatePlayerNames(count: number, prefix = 'P'): string[] {
 	const suffix = Date.now().toString().slice(-6); // Last 6 digits of timestamp
-	return Array.from({ length: count }, (_, i) => `${prefix}${i + 1}_${suffix}`);
+	return Array.from({ length: count }, (_, index) => `${prefix}${index + 1}_${suffix}`);
 }

@@ -74,12 +74,12 @@ export function buildQuestionMessage(state: GameState): ServerMessage {
  */
 export function buildAnswerCounts(state: GameState): number[] {
 	const question = state.questions[state.currentQuestionIndex];
-	const answerCounts = new Array(question.options.length).fill(0);
-	state.answers.forEach((a) => {
+	const answerCounts: number[] = Array.from({ length: question.options.length }, () => 0);
+	for (const a of state.answers) {
 		if (a.answerIndex >= 0 && a.answerIndex < answerCounts.length) {
 			answerCounts[a.answerIndex]++;
 		}
-	});
+	}
 	return answerCounts;
 }
 

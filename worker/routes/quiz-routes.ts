@@ -100,7 +100,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 			return streamSSE(c, async (stream) => {
 				try {
 					const onStatusUpdate = (status: GenerationStatus) => {
-						stream.writeSSE({ event: 'status', data: JSON.stringify(status) });
+						void stream.writeSSE({ event: 'status', data: JSON.stringify(status) });
 					};
 
 					const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {

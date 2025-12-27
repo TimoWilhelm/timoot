@@ -3,23 +3,23 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Trophy, Zap } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shared';
 
-interface HostGetReadyProps {
+interface HostGetReadyProperties {
 	countdownMs: number;
 	totalQuestions: number;
 	onCountdownBeep?: () => void;
 }
 
-export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: HostGetReadyProps) {
+export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: HostGetReadyProperties) {
 	const [countdown, setCountdown] = useState(Math.ceil(countdownMs / 1000));
-	const onCountdownBeepRef = useRef(onCountdownBeep);
+	const onCountdownBeepReference = useRef(onCountdownBeep);
 
 	useEffect(() => {
-		onCountdownBeepRef.current = onCountdownBeep;
+		onCountdownBeepReference.current = onCountdownBeep;
 	});
 
 	useEffect(() => {
 		// Play initial beep
-		onCountdownBeepRef.current?.();
+		onCountdownBeepReference.current?.();
 
 		const interval = setInterval(() => {
 			setCountdown((c) => {
@@ -28,7 +28,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 					return 0;
 				}
 				// Play beep sound for countdown
-				onCountdownBeepRef.current?.();
+				onCountdownBeepReference.current?.();
 				return c - 1;
 			});
 		}, 1000);
@@ -59,12 +59,12 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 					<div className="flex flex-col items-center justify-between rounded-2xl bg-card p-5 shadow-md">
 						<div className="mb-3 flex h-10 items-center justify-center">
 							<div className="relative h-12 w-12">
-								{shapeColors.map((color, i) => {
-									const row = Math.floor(i / 2);
-									const col = i % 2;
+								{shapeColors.map((color, index) => {
+									const row = Math.floor(index / 2);
+									const col = index % 2;
 									return (
 										<div
-											key={i}
+											key={index}
 											className={`absolute flex items-center justify-center rounded ${color}`}
 											style={{
 												top: `calc(${row * 50}% + 1px)`,
@@ -74,7 +74,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 											}}
 										>
 											<svg viewBox="0 0 24 24" className="h-3 w-3 fill-white">
-												<path d={shapePaths[i]} />
+												<path d={shapePaths[index]} />
 											</svg>
 										</div>
 									);

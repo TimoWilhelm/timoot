@@ -15,17 +15,17 @@ export function useDialogBackHandler(controlledOpen: boolean | undefined, onOpen
 	const isOpen = controlledOpen ?? internalOpen;
 
 	// Use a ref to store the close callback to avoid stale closures in popstate handler
-	const onCloseRef = useRef<() => void>();
+	const onCloseReference = useRef<() => void>();
 
 	useEffect(() => {
-		onCloseRef.current = () => {
+		onCloseReference.current = () => {
 			setInternalOpen(false);
 			onOpenChange?.(false);
 		};
 	}, [onOpenChange]);
 
 	// Track whether we've pushed a history entry for this dialog instance
-	const historyStateRef = useRef<'none' | 'pushed' | 'popped'>('none');
+	const historyStateReference = useRef<'none' | 'pushed' | 'popped'>('none');
 
 	const wrappedOnOpenChange = useCallback(
 		(open: boolean) => {
@@ -37,36 +37,36 @@ export function useDialogBackHandler(controlledOpen: boolean | undefined, onOpen
 
 	// Handle dialog open: push history state
 	useEffect(() => {
-		if (isOpen && historyStateRef.current === 'none') {
-			window.history.pushState({ dialogOpen: true }, '');
-			historyStateRef.current = 'pushed';
+		if (isOpen && historyStateReference.current === 'none') {
+			globalThis.history.pushState({ dialogOpen: true }, '');
+			historyStateReference.current = 'pushed';
 		}
 	}, [isOpen]);
 
 	// Handle dialog close: clean up history if we pushed it
 	useEffect(() => {
-		if (!isOpen && historyStateRef.current === 'pushed') {
+		if (!isOpen && historyStateReference.current === 'pushed') {
 			// Dialog was closed by user action (not back button), remove our history entry
-			historyStateRef.current = 'none';
-			window.history.back();
+			historyStateReference.current = 'none';
+			globalThis.history.back();
 		} else if (!isOpen) {
 			// Reset state when dialog is closed
-			historyStateRef.current = 'none';
+			historyStateReference.current = 'none';
 		}
 	}, [isOpen]);
 
 	// Listen for popstate (back button)
 	useEffect(() => {
 		const handlePopState = () => {
-			if (historyStateRef.current === 'pushed') {
+			if (historyStateReference.current === 'pushed') {
 				// Back button was pressed while dialog was open
-				historyStateRef.current = 'popped';
-				onCloseRef.current?.();
+				historyStateReference.current = 'popped';
+				onCloseReference.current?.();
 			}
 		};
 
-		window.addEventListener('popstate', handlePopState);
-		return () => window.removeEventListener('popstate', handlePopState);
+		globalThis.addEventListener('popstate', handlePopState);
+		return () => globalThis.removeEventListener('popstate', handlePopState);
 	}, []);
 
 	// Note: We intentionally do NOT clean up history on unmount.

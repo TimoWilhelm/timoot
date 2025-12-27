@@ -69,9 +69,9 @@ export class QuizStoreDurableObject extends DurableObject<Env> {
 		return (await this.ctx.storage.get<Quiz[]>('custom_quizzes')) || [];
 	}
 
-	async getCustomQuizById(id: string): Promise<Quiz | null> {
+	async getCustomQuizById(id: string): Promise<Quiz | undefined> {
 		const quizzes = await this.getCustomQuizzes();
-		return quizzes.find((q) => q.id === id) || null;
+		return quizzes.find((q) => q.id === id);
 	}
 
 	async saveCustomQuiz(quizData: Omit<Quiz, 'id'> & { id?: string }): Promise<Quiz> {
@@ -79,7 +79,7 @@ export class QuizStoreDurableObject extends DurableObject<Env> {
 
 		if (quizData.id) {
 			const index = quizzes.findIndex((q) => q.id === quizData.id);
-			if (index > -1) {
+			if (index !== -1) {
 				// Update existing quiz
 				quizzes[index] = { ...quizzes[index], ...quizData, id: quizData.id };
 				await this.ctx.storage.put('custom_quizzes', quizzes);

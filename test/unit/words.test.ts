@@ -27,7 +27,7 @@ describe('words.ts', () => {
 		it('generates different IDs on multiple calls (randomness)', () => {
 			const ids = new Set<string>();
 			// Generate 100 IDs and check we get at least a few unique ones
-			for (let i = 0; i < 100; i++) {
+			for (let index = 0; index < 100; index++) {
 				ids.add(generateGameId());
 			}
 			// With 41 adjectives, 31 colors, 41 animals = 51,911 combinations

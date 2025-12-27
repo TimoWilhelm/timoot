@@ -23,7 +23,7 @@ describe('scoring.ts', () => {
 
 		it('gives higher score for faster answers', () => {
 			const fastAnswer: Answer = { playerId: 'p1', answerIndex: 1, time: 1000 };
-			const slowAnswer: Answer = { playerId: 'p2', answerIndex: 1, time: 15000 };
+			const slowAnswer: Answer = { playerId: 'p2', answerIndex: 1, time: 15_000 };
 
 			const fastResult = calculateAnswerScore(fastAnswer, 1);
 			const slowResult = calculateAnswerScore(slowAnswer, 1);

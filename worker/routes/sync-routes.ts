@@ -14,7 +14,7 @@ interface SyncCodeData {
 function generateSyncCode(): string {
 	const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed ambiguous: 0, O, I, 1
 	let code = '';
-	for (let i = 0; i < 6; i++) {
+	for (let index = 0; index < 6; index++) {
 		code += chars.charAt(Math.floor(Math.random() * chars.length));
 	}
 	return code;
@@ -75,12 +75,12 @@ export const syncRoutes = new Hono<{ Bindings: Env }>()
 			const { code } = c.req.valid('json');
 
 			try {
-				const syncDataStr = await c.env.KV_SYNC.get(`sync:${code}`);
-				if (!syncDataStr) {
+				const syncDataString = await c.env.KV_SYNC.get(`sync:${code}`);
+				if (!syncDataString) {
 					return c.json({ success: false, error: 'Sync code not found or expired' } satisfies ApiResponse, 404);
 				}
 
-				const syncData = JSON.parse(syncDataStr) as SyncCodeData;
+				const syncData = JSON.parse(syncDataString) as SyncCodeData;
 
 				// Delete the code after use (one-time use)
 				await c.env.KV_SYNC.delete(`sync:${code}`);

@@ -92,8 +92,8 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 				// Decode base64 to binary
 				const binaryString = atob(image);
 				const bytes = new Uint8Array(binaryString.length);
-				for (let i = 0; i < binaryString.length; i++) {
-					bytes[i] = binaryString.charCodeAt(i);
+				for (let index = 0; index < binaryString.length; index++) {
+					bytes[index] = binaryString.charCodeAt(index);
 				}
 
 				// Store image in KV with metadata

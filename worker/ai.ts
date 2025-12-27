@@ -72,7 +72,7 @@ export type OnStatusUpdate = (status: GenerationStatus) => void;
  */
 export async function generateQuizFromPrompt(
 	prompt: string,
-	numQuestions: number = 4,
+	numberQuestions: number = 4,
 	abortSignal: AbortSignal,
 	onStatusUpdate?: OnStatusUpdate,
 	metadata?: Record<string, string>,
@@ -110,7 +110,7 @@ export async function generateQuizFromPrompt(
 					content: stripIndent`
 						You are an expert quiz maker.
 						
-						Create exactly ${numQuestions} multiple-choice questions. Each question should:
+						Create exactly ${numberQuestions} multiple-choice questions. Each question should:
 						- Have exactly 4 answer options
 						- Have one clearly correct answer
 						- Be interesting and educational
@@ -166,20 +166,20 @@ async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[]
 	// Wrap tools to intercept calls and report status
 	const instrumentedTools = Object.fromEntries(
 		Object.entries(mcpTools).map(([name, tool]) => {
-			const typedTool = tool as { execute: (args: unknown, options: unknown) => Promise<unknown> };
+			const typedTool = tool as { execute: (arguments_: unknown, options: unknown) => Promise<unknown> };
 			return [
 				name,
 				{
 					...(tool as object),
-					execute: async (args: unknown, options: unknown) => {
+					execute: async (arguments_: unknown, options: unknown) => {
 						if (name === 'search_cloudflare_documentation') {
-							const query = (args as { query?: string })?.query;
+							const query = (arguments_ as { query?: string })?.query;
 							onStatusUpdate?.({ stage: 'reading_docs', detail: query || 'Cloudflare docs' });
 						} else if (name === 'web_search_exa') {
-							const query = (args as { query?: string })?.query;
+							const query = (arguments_ as { query?: string })?.query;
 							onStatusUpdate?.({ stage: 'searching_web', detail: query || 'the web' });
 						}
-						return typedTool.execute(args, options);
+						return typedTool.execute(arguments_, options);
 					},
 				},
 			];
@@ -219,7 +219,7 @@ export async function generateSingleQuestion(
 			? stripIndent`
 				
 				Existing questions in this quiz:
-				${existingQuestions.map((q, i) => `${i + 1}. ${q.text}\n   Options: ${q.options.map((opt, idx) => (idx === q.correctAnswerIndex ? `${opt} (correct)` : opt)).join(', ')}`).join('\n')}`
+				${existingQuestions.map((q, index) => `${index + 1}. ${q.text}\n   Options: ${q.options.map((opt, index) => (index === q.correctAnswerIndex ? `${opt} (correct)` : opt)).join(', ')}`).join('\n')}`
 			: '';
 
 	const activeModel = metadata ? createModel(metadata) : model;
@@ -267,12 +267,14 @@ const repairToolCall: <T extends ToolSet>(model: LanguageModel) => ToolCallRepai
 	(model) =>
 	async ({ toolCall, tools, inputSchema, error }) => {
 		if (NoSuchToolError.isInstance(error)) {
-			return null; // do not attempt to fix invalid tool names
+			// eslint-disable-next-line unicorn/no-null -- required by ToolCallRepairFunction type
+			return null;
 		}
 
 		const tool = tools[toolCall.toolName as keyof typeof tools];
 
 		if (tool.inputSchema === undefined) {
+			// eslint-disable-next-line unicorn/no-null -- required by ToolCallRepairFunction type
 			return null;
 		}
 

@@ -12,7 +12,7 @@ interface LeaderboardEntry {
 	rank: number;
 }
 
-interface PlayerWaitingScreenProps {
+interface PlayerWaitingScreenProperties {
 	phase: GamePhase;
 	answerResult: { isCorrect: boolean; score: number } | null;
 	finalScore?: number;
@@ -32,9 +32,9 @@ function PlayerDoublePointsAnimation() {
 			transition={{ duration: 0.3 }}
 		>
 			{/* Pulse rings */}
-			{[...Array(3)].map((_, i) => (
+			{Array.from({ length: 3 }).map((_, index) => (
 				<motion.div
-					key={i}
+					key={index}
 					className="absolute rounded-full border-2 border-white/30"
 					initial={{ width: 50, height: 50, opacity: 0.8 }}
 					animate={{
@@ -44,7 +44,7 @@ function PlayerDoublePointsAnimation() {
 					}}
 					transition={{
 						duration: 1.2,
-						delay: i * 0.25,
+						delay: index * 0.25,
 						repeat: Infinity,
 						ease: 'easeOut',
 					}}
@@ -91,7 +91,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 		3: { color: 'text-amber-600', label: '3rd Place!', emoji: '🥉' },
 	}[rank];
 
-	if (!config) return null;
+	if (!config) return;
 
 	return (
 		<motion.div
@@ -126,7 +126,7 @@ export function PlayerWaitingScreen({
 	playerId,
 	leaderboard = [],
 	modifiers = [],
-}: PlayerWaitingScreenProps) {
+}: PlayerWaitingScreenProperties) {
 	// Find player's final rank
 	const myFinalEntry = leaderboard.find((p) => p.id === playerId);
 	const myFinalRank = myFinalEntry?.rank ?? 0;
@@ -139,10 +139,10 @@ export function PlayerWaitingScreen({
 			const count = 200;
 			const defaults = { origin: { y: 0.6 }, colors };
 
-			const fire = (particleRatio: number, opts: confetti.Options) => {
-				confetti({
+			const fire = (particleRatio: number, options: confetti.Options) => {
+				void confetti({
 					...defaults,
-					...opts,
+					...options,
 					particleCount: Math.floor(count * particleRatio),
 				});
 			};
@@ -174,14 +174,15 @@ export function PlayerWaitingScreen({
 
 	const renderContent = () => {
 		switch (phase) {
-			case 'LOBBY':
+			case 'LOBBY': {
 				return (
 					<div className="text-center">
 						<h2 className="text-4xl font-bold">You're in!</h2>
 						<p>See your name on the big screen.</p>
 					</div>
 				);
-			case 'GET_READY':
+			}
+			case 'GET_READY': {
 				return (
 					<div className="flex flex-col items-center text-center">
 						<motion.div
@@ -195,6 +196,7 @@ export function PlayerWaitingScreen({
 						<p className="mt-2 text-lg text-slate-300">Look at the main screen</p>
 					</div>
 				);
+			}
 			case 'QUESTION_MODIFIER': {
 				// Show modifier animation based on the modifiers
 				const hasDoublePoints = modifiers.includes('doublePoints');
@@ -209,7 +211,7 @@ export function PlayerWaitingScreen({
 					</div>
 				);
 			}
-			case 'REVEAL':
+			case 'REVEAL': {
 				if (answerResult) {
 					return (
 						<div
@@ -227,6 +229,7 @@ export function PlayerWaitingScreen({
 						<p>Look at the main screen</p>
 					</div>
 				);
+			}
 			case 'LEADERBOARD': {
 				const myEntry = leaderboard.find((p) => p.id === playerId);
 				const myRank = myEntry?.rank ?? 0;
@@ -240,11 +243,11 @@ export function PlayerWaitingScreen({
 							</p>
 						)}
 						<ul className="space-y-2 text-lg">
-							{top3.map((player, i) => (
+							{top3.map((player, index) => (
 								<li key={player.id} className="mx-auto flex w-64 justify-between">
 									<span>
 										<Trophy
-											className={`mr-2 inline h-5 w-5 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-400' : 'text-yellow-600'}`}
+											className={`mr-2 inline h-5 w-5 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-400' : 'text-yellow-600'}`}
 										/>
 										{player.name}
 									</span>
@@ -255,7 +258,7 @@ export function PlayerWaitingScreen({
 					</div>
 				);
 			}
-			case 'END_INTRO':
+			case 'END_INTRO': {
 				return (
 					<div className="text-center">
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
@@ -270,7 +273,8 @@ export function PlayerWaitingScreen({
 						</motion.div>
 					</div>
 				);
-			case 'END_REVEALED':
+			}
+			case 'END_REVEALED': {
 				return (
 					<div className="text-center">
 						{isOnPodium ? (
@@ -286,7 +290,7 @@ export function PlayerWaitingScreen({
 								<span className="text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
 								<p className="mt-2 text-xl text-slate-300">Thanks for playing!</p>
 							</motion.div>
-						) : null}
+						) : undefined}
 
 						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-4 text-2xl">
 							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
@@ -303,13 +307,15 @@ export function PlayerWaitingScreen({
 						</motion.div>
 					</div>
 				);
-			default:
+			}
+			default: {
 				return (
 					<div className="flex flex-col items-center text-center">
 						<Loader2 className="mb-4 h-12 w-12 animate-spin" />
 						<h2 className="text-4xl font-bold">Waiting...</h2>
 					</div>
 				);
+			}
 		}
 	};
 	return (

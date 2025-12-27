@@ -260,12 +260,14 @@ export default {
 			addVariant('hover-never', '@media (hover: hover) and (pointer: fine) { &:hover }');
 			matchVariant(
 				'group-hover-never',
-				(_, { modifier }) => `@media (hover: hover) and (pointer: fine) { :merge(.group${modifier ? '\\/' + modifier : ''}):hover & }`,
+				(_, { modifier }) =>
+					`@media (hover: hover) and (pointer: fine) { :merge(.group${modifier ? String.raw`\/` + modifier : ''}):hover & }`,
 				{ values: { DEFAULT: '' } },
 			);
 			matchVariant(
 				'peer-hover-never',
-				(_, { modifier }) => `@media (hover: hover) and (pointer: fine) { :merge(.peer${modifier ? '\\/' + modifier : ''}):hover & }`,
+				(_, { modifier }) =>
+					`@media (hover: hover) and (pointer: fine) { :merge(.peer${modifier ? String.raw`\/` + modifier : ''}):hover & }`,
 				{ values: { DEFAULT: '' } },
 			);
 
@@ -277,7 +279,7 @@ export default {
 			matchVariant(
 				'group-hover-always',
 				(_, { modifier }) => [
-					`@media (hover: hover) and (pointer: fine) { :merge(.group${modifier ? '\\/' + modifier : ''}):hover & }`,
+					`@media (hover: hover) and (pointer: fine) { :merge(.group${modifier ? String.raw`\/` + modifier : ''}):hover & }`,
 					'@media not all and (hover: hover) and (pointer: fine)',
 				],
 				{ values: { DEFAULT: '' } },
@@ -285,7 +287,7 @@ export default {
 			matchVariant(
 				'peer-hover-always',
 				(_, { modifier }) => [
-					`@media (hover: hover) and (pointer: fine) { :merge(.peer${modifier ? '\\/' + modifier : ''}):hover & }`,
+					`@media (hover: hover) and (pointer: fine) { :merge(.peer${modifier ? String.raw`\/` + modifier : ''}):hover & }`,
 					'@media not all and (hover: hover) and (pointer: fine)',
 				],
 				{ values: { DEFAULT: '' } },

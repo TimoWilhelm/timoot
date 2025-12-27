@@ -7,11 +7,11 @@ import { adjectives, animals, colors, findMatches, isValidGameId, isValidWord } 
 import { cn } from '@/lib/utils';
 
 // Determine which word list to use based on current position
-function getWordListForPosition(parts: string[]): { list: string[]; label: string } | null {
+function getWordListForPosition(parts: string[]): { list: string[]; label: string } | undefined {
 	if (parts.length === 1) return { list: adjectives, label: 'Adjective' };
 	if (parts.length === 2) return { list: colors, label: 'Color' };
 	if (parts.length === 3) return { list: animals, label: 'Animal' };
-	return null;
+	return undefined;
 }
 
 // Generate a random placeholder example
@@ -33,11 +33,11 @@ export function JoinGameDialog() {
 	const [gameNotFound, setGameNotFound] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(-1); // -1 means nothing selected
 	const [placeholder] = useState(generateRandomPlaceholder);
-	const inputRef = useRef<HTMLInputElement>(null);
-	const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const inputReference = useRef<HTMLInputElement>(null);
+	const tooltipTimeoutReference = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const parts = value.split('-');
-	const currentPart = parts[parts.length - 1] || '';
+	const currentPart = parts.at(-1) || '';
 	const partsCount = parts.length;
 	const wordInfo = useMemo(() => getWordListForPosition(parts), [partsCount]); // eslint-disable-line react-hooks/exhaustive-deps
 	const suggestions = useMemo(() => (wordInfo ? findMatches(currentPart, wordInfo.list).slice(0, 8) : []), [currentPart, wordInfo]);
@@ -53,19 +53,19 @@ export function JoinGameDialog() {
 
 	// Validate each part for visual feedback
 	const partValidation = {
-		adjective: parts[0] ? isValidWord(parts[0], adjectives) : null,
-		color: parts[1] ? isValidWord(parts[1], colors) : null,
-		animal: parts[2] ? isValidWord(parts[2], animals) : null,
+		adjective: parts[0] ? isValidWord(parts[0], adjectives) : undefined,
+		color: parts[1] ? isValidWord(parts[1], colors) : undefined,
+		animal: parts[2] ? isValidWord(parts[2], animals) : undefined,
 	};
 
 	const showError = useCallback((message: string) => {
 		// Clear any existing timeout
-		if (tooltipTimeoutRef.current) {
-			clearTimeout(tooltipTimeoutRef.current);
+		if (tooltipTimeoutReference.current) {
+			clearTimeout(tooltipTimeoutReference.current);
 		}
 		setErrorMessage(message);
 		setShowInvalidTooltip(true);
-		tooltipTimeoutRef.current = setTimeout(() => setShowInvalidTooltip(false), 3000);
+		tooltipTimeoutReference.current = setTimeout(() => setShowInvalidTooltip(false), 3000);
 	}, []);
 
 	const showInvalidInput = useCallback(() => {
@@ -73,11 +73,11 @@ export function JoinGameDialog() {
 	}, [showError]);
 
 	const handleInputChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			let newValue = e.target.value.toLowerCase();
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			let newValue = event.target.value.toLowerCase();
 
 			// Only allow letters a-z and hyphens (for paste)
-			const filteredValue = newValue.replace(/[^a-z-]/g, '');
+			const filteredValue = newValue.replaceAll(/[^a-z-]/g, '');
 			if (filteredValue !== newValue) {
 				// Invalid characters were typed
 				showInvalidInput();
@@ -94,7 +94,7 @@ export function JoinGameDialog() {
 
 			// Check if this input would lead to any valid suggestions
 			const newParts = newValue.split('-');
-			const newCurrentPart = newParts[newParts.length - 1] || '';
+			const newCurrentPart = newParts.at(-1) || '';
 			const newWordInfo = getWordListForPosition(newParts);
 
 			if (newCurrentPart && newWordInfo) {
@@ -131,7 +131,7 @@ export function JoinGameDialog() {
 			setTimeout(() => setAutoCompleteFlash(false), 300);
 
 			setShowSuggestions(true);
-			inputRef.current?.focus();
+			inputReference.current?.focus();
 		},
 		[parts],
 	);
@@ -156,32 +156,32 @@ export function JoinGameDialog() {
 	}, [isComplete, isValidating, gameNotFound, value, navigate, showError]);
 
 	const handleKeyDown = useCallback(
-		(e: React.KeyboardEvent<HTMLInputElement>) => {
+		(event: React.KeyboardEvent<HTMLInputElement>) => {
 			// Allow Ctrl+A for select-all
-			if (e.ctrlKey || e.metaKey) {
+			if (event.ctrlKey || event.metaKey) {
 				return;
 			}
 
-			if (e.key === 'Enter') {
+			if (event.key === 'Enter') {
 				if (isComplete) {
-					handleJoin();
+					void handleJoin();
 				} else if (selectedIndex >= 0 && suggestions[selectedIndex]) {
 					// Auto-complete with selected suggestion
 					handleSelectSuggestion(suggestions[selectedIndex]);
 				}
-			} else if (e.key === 'Tab' && selectedIndex >= 0 && suggestions[selectedIndex]) {
-				e.preventDefault();
+			} else if (event.key === 'Tab' && selectedIndex >= 0 && suggestions[selectedIndex]) {
+				event.preventDefault();
 				handleSelectSuggestion(suggestions[selectedIndex]);
-			} else if (e.key === 'ArrowDown' && suggestions.length > 0) {
-				e.preventDefault();
-				setSelectedIndex((prev) => (prev + 1) % suggestions.length);
-			} else if (e.key === 'ArrowUp' && suggestions.length > 0) {
-				e.preventDefault();
-				setSelectedIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
-			} else if (e.key === 'Escape') {
+			} else if (event.key === 'ArrowDown' && suggestions.length > 0) {
+				event.preventDefault();
+				setSelectedIndex((previous) => (previous + 1) % suggestions.length);
+			} else if (event.key === 'ArrowUp' && suggestions.length > 0) {
+				event.preventDefault();
+				setSelectedIndex((previous) => (previous <= 0 ? suggestions.length - 1 : previous - 1));
+			} else if (event.key === 'Escape') {
 				setShowSuggestions(false);
-			} else if (e.key === 'Backspace') {
-				const input = e.currentTarget;
+			} else if (event.key === 'Backspace') {
+				const input = event.currentTarget;
 				const hasSelection = input.selectionStart !== input.selectionEnd;
 
 				// If text is selected (e.g., after Ctrl+A), allow normal deletion
@@ -195,32 +195,32 @@ export function JoinGameDialog() {
 
 				if (isCurrentPartComplete) {
 					// Delete the whole word
-					e.preventDefault();
+					event.preventDefault();
 
 					// If ends with hyphen, we need to find the hyphen BEFORE the trailing one
 					const searchValue = endsWithHyphen ? value.slice(0, -1) : value;
 					const lastHyphenIndex = searchValue.lastIndexOf('-');
 
-					if (lastHyphenIndex >= 0) {
-						// "happy-blue-panda" -> "happy-blue-", "happy-blue-" -> "happy-", "happy-" -> ""
-						setValue(searchValue.slice(0, lastHyphenIndex + 1));
-					} else {
+					if (lastHyphenIndex === -1) {
 						// No hyphen (single complete word), clear everything
 						setValue('');
+					} else {
+						// "happy-blue-panda" -> "happy-blue-", "happy-blue-" -> "happy-", "happy-" -> ""
+						setValue(searchValue.slice(0, lastHyphenIndex + 1));
 					}
 				}
 				// Otherwise, let default backspace behavior work (delete one char)
-			} else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
+			} else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
 				// Prevent cursor movement (but not when selecting)
-				e.preventDefault();
+				event.preventDefault();
 			}
 		},
 		[isComplete, value, suggestions, handleJoin, handleSelectSuggestion, wordInfo, currentPart, selectedIndex],
 	);
 
 	// Keep cursor at end of input (but allow full selection)
-	const handleSelect = useCallback((e: React.SyntheticEvent<HTMLInputElement>) => {
-		const input = e.currentTarget;
+	const handleSelect = useCallback((event: React.SyntheticEvent<HTMLInputElement>) => {
+		const input = event.currentTarget;
 		// Allow full selection (Ctrl+A), otherwise force cursor to end
 		const isFullSelection = input.selectionStart === 0 && input.selectionEnd === input.value.length;
 		if (!isFullSelection && (input.selectionStart !== input.value.length || input.selectionEnd !== input.value.length)) {
@@ -261,7 +261,7 @@ export function JoinGameDialog() {
 				setTimeout(() => setAutoCompleteFlash(false), 300);
 			} else if (parts.length < 3 && !value.endsWith('-')) {
 				// Word is complete, just add hyphen
-				setValue((prev) => prev + '-');
+				setValue((previous) => previous + '-');
 			}
 		}
 	}, [currentPart, parts, value]);
@@ -286,7 +286,7 @@ export function JoinGameDialog() {
 						<PopoverAnchor asChild>
 							<div className="relative">
 								<input
-									ref={inputRef}
+									ref={inputReference}
 									type="text"
 									value={value}
 									onChange={handleInputChange}
@@ -334,7 +334,7 @@ export function JoinGameDialog() {
 						<PopoverContent
 							className="w-[--radix-popover-trigger-width] border-slate-700 bg-slate-800 p-0"
 							align="start"
-							onOpenAutoFocus={(e) => e.preventDefault()}
+							onOpenAutoFocus={(event) => event.preventDefault()}
 						>
 							<div className="py-1">
 								<div className="px-2 py-1.5 text-xs font-medium text-slate-400">{wordInfo?.label}</div>

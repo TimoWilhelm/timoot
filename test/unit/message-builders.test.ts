@@ -23,7 +23,7 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
 		{ text: 'Question 2?', options: ['X', 'Y', 'Z'], correctAnswerIndex: 2, isDoublePoints: true },
 	],
 	currentQuestionIndex: 0,
-	questionStartTime: 1700000000000,
+	questionStartTime: 1_700_000_000_000,
 	answers: [],
 	...overrides,
 });
@@ -90,11 +90,11 @@ describe('messageBuilders.ts', () => {
 		});
 
 		it('includes timing information', () => {
-			const state = createMockState({ questionStartTime: 1700000000000 });
+			const state = createMockState({ questionStartTime: 1_700_000_000_000 });
 			const message = buildQuestionMessage(state);
 
 			if (message.type === 'questionStart') {
-				expect(message.startTime).toBe(1700000000000);
+				expect(message.startTime).toBe(1_700_000_000_000);
 				expect(message.timeLimitMs).toBe(QUESTION_TIME_LIMIT_MS);
 			}
 		});

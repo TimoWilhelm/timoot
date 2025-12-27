@@ -19,9 +19,9 @@ export async function checkRateLimit(
 	c: Context<{ Bindings: Env }>,
 	rateLimiter: RateLimiter,
 	endpoint: string,
-): Promise<RateLimitErrorResponse | null> {
+): Promise<RateLimitErrorResponse | undefined> {
 	if (import.meta.env.DEV) {
-		return null;
+		return undefined;
 	}
 
 	const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
@@ -39,5 +39,5 @@ export async function checkRateLimit(
 		);
 	}
 
-	return null;
+	return undefined;
 }

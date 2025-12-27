@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
 import { EMOJI_REACTIONS, type EmojiReaction } from '@shared/types';
 
-interface EmojiPickerProps {
+interface EmojiPickerProperties {
 	onEmojiSelect: (emoji: EmojiReaction) => void;
 	disabled?: boolean;
 }
 
-export function EmojiPicker({ onEmojiSelect, disabled }: EmojiPickerProps) {
+export function EmojiPicker({ onEmojiSelect, disabled }: EmojiPickerProperties) {
 	return (
 		<div className="flex justify-center gap-4">
 			{EMOJI_REACTIONS.map((emoji) => (

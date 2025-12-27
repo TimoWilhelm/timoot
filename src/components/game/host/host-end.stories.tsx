@@ -72,7 +72,7 @@ export const TwoPlayers: Story = {
 
 export const OnePlayer: Story = {
 	args: {
-		leaderboard: [{ id: '1', name: 'SoloChampion', score: 10000, rank: 1 }],
+		leaderboard: [{ id: '1', name: 'SoloChampion', score: 10_000, rank: 1 }],
 		revealed: true,
 	},
 };
@@ -91,9 +91,9 @@ export const LongNames: Story = {
 export const HighScores: Story = {
 	args: {
 		leaderboard: [
-			{ id: '1', name: 'Alice', score: 99999, rank: 1 },
-			{ id: '2', name: 'Bob', score: 88888, rank: 2 },
-			{ id: '3', name: 'Charlie', score: 77777, rank: 3 },
+			{ id: '1', name: 'Alice', score: 99_999, rank: 1 },
+			{ id: '2', name: 'Bob', score: 88_888, rank: 2 },
+			{ id: '3', name: 'Charlie', score: 77_777, rank: 3 },
 		],
 		revealed: true,
 	},

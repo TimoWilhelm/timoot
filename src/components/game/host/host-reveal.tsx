@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface HostRevealProps {
+interface HostRevealProperties {
 	onNext: () => void;
 	questionText: string;
 	options: string[];
@@ -10,19 +10,19 @@ interface HostRevealProps {
 	answerCounts: number[];
 }
 
-export function HostReveal({ onNext, questionText, options, correctAnswerIndex, answerCounts }: HostRevealProps) {
+export function HostReveal({ onNext, questionText, options, correctAnswerIndex, answerCounts }: HostRevealProperties) {
 	const totalAnswers = answerCounts.reduce((a, b) => a + b, 0);
 	return (
 		<div className="flex flex-grow flex-col items-center justify-center space-y-6 p-4 sm:p-8">
 			<h2 className="mb-4 text-center text-3xl font-bold sm:text-5xl">{questionText}</h2>
 			<div className="w-full max-w-4xl space-y-4">
-				{options.map((option, i) => {
-					const isCorrect = i === correctAnswerIndex;
-					const count = answerCounts[i];
+				{options.map((option, index) => {
+					const isCorrect = index === correctAnswerIndex;
+					const count = answerCounts[index];
 					const percentage = totalAnswers > 0 ? (count / totalAnswers) * 100 : 0;
 					return (
 						<motion.div
-							key={i}
+							key={index}
 							initial={{ opacity: 0, x: -50 }}
 							animate={{
 								opacity: 1,
@@ -30,7 +30,7 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 								scale: isCorrect ? [1, 1.03, 1] : 1,
 							}}
 							transition={{
-								delay: i * 0.2,
+								delay: index * 0.2,
 								...(isCorrect && {
 									scale: {
 										repeat: Infinity,
@@ -45,7 +45,7 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 								className="absolute left-0 top-0 h-full bg-green-300/50"
 								initial={{ width: 0 }}
 								animate={{ width: `${percentage}%` }}
-								transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }}
+								transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
 							/>
 							<div className="relative flex items-center justify-between gap-4 text-lg font-bold sm:text-2xl">
 								<span className="flex items-center gap-2">

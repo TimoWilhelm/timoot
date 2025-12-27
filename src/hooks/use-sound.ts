@@ -10,22 +10,22 @@ const sounds = {
 };
 type SoundEvent = keyof typeof sounds;
 export function useSound() {
-	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const audioReference = useRef<HTMLAudioElement | null>(null);
 	useEffect(() => {
 		// Pre-create the audio element to be reused.
 		// This can help with performance and browser restrictions on audio playback.
-		audioRef.current = new Audio();
-		audioRef.current.volume = 0.5;
+		audioReference.current = new Audio();
+		audioReference.current.volume = 0.5;
 		return () => {
 			// Cleanup
-			if (audioRef.current) {
-				audioRef.current.pause();
-				audioRef.current = null;
+			if (audioReference.current) {
+				audioReference.current.pause();
+				audioReference.current = undefined;
 			}
 		};
 	}, []);
 	const playSound = useCallback((sound: SoundEvent) => {
-		if (audioRef.current) {
+		if (audioReference.current) {
 			// In a real application, you would uncomment the following lines.
 			// For this simulation, we will log to the console instead.
 			// audioRef.current.src = sounds[sound];

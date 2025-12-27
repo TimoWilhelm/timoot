@@ -28,10 +28,10 @@ describe('Game Flow Integration Tests', () => {
 				expect(host.isConnected).toBe(true);
 
 				// Host should receive lobby update
-				const lobbyMsg = await host.waitForMessage('lobbyUpdate');
-				expect(lobbyMsg.gameId).toBe(game.gameId);
-				expect(lobbyMsg.pin).toBe(game.pin);
-				expect(lobbyMsg.players).toHaveLength(0);
+				const lobbyMessage = await host.waitForMessage('lobbyUpdate');
+				expect(lobbyMessage.gameId).toBe(game.gameId);
+				expect(lobbyMessage.pin).toBe(game.pin);
+				expect(lobbyMessage.players).toHaveLength(0);
 			} finally {
 				host.close();
 			}
@@ -61,9 +61,9 @@ describe('Game Flow Integration Tests', () => {
 				expect(playerToken).toBeTruthy();
 
 				// Host should receive lobby update with new player
-				const lobbyMsg = await host.waitForMessage('lobbyUpdate', 5000, (m) => m.players.length === 1);
-				expect(lobbyMsg.players).toHaveLength(1);
-				expect(lobbyMsg.players[0].name).toBe('TestPlayer');
+				const lobbyMessage = await host.waitForMessage('lobbyUpdate', 5000, (m) => m.players.length === 1);
+				expect(lobbyMessage.players).toHaveLength(1);
+				expect(lobbyMessage.players[0].name).toBe('TestPlayer');
 			} finally {
 				host.close();
 				player.close();
@@ -99,8 +99,8 @@ describe('Game Flow Integration Tests', () => {
 
 				// Try to join with same name
 				player2.send({ type: 'join', nickname: 'SameName' });
-				const errorMsg = await player2.waitForMessage('error');
-				expect(errorMsg.code).toBe('NICKNAME_TAKEN');
+				const errorMessage = await player2.waitForMessage('error');
+				expect(errorMessage.code).toBe('NICKNAME_TAKEN');
 			} finally {
 				host.close();
 				player1.close();
@@ -138,11 +138,11 @@ describe('Game Flow Integration Tests', () => {
 				}
 
 				// Host should see all players
-				const lobbyMsg = await host.waitForMessage('lobbyUpdate', 10000, (m) => m.players.length === 3);
-				expect(lobbyMsg.players).toHaveLength(3);
+				const lobbyMessage = await host.waitForMessage('lobbyUpdate', 10_000, (m) => m.players.length === 3);
+				expect(lobbyMessage.players).toHaveLength(3);
 			} finally {
 				host.close();
-				players.forEach((p) => p.close());
+				for (const p of players) p.close();
 			}
 		});
 	});
@@ -179,23 +179,23 @@ describe('Game Flow Integration Tests', () => {
 				}
 
 				// Verify all players in lobby
-				const lobbyMsg = await host.waitForMessage('lobbyUpdate', 10000, (m) => m.players.length === 3);
-				expect(lobbyMsg.players).toHaveLength(3);
+				const lobbyMessage = await host.waitForMessage('lobbyUpdate', 10_000, (m) => m.players.length === 3);
+				expect(lobbyMessage.players).toHaveLength(3);
 
 				// Host starts game
 				await host.startGame();
 
 				// All clients receive getReady
 				for (const player of players) {
-					const readyMsg = await player.waitForMessage('getReady');
-					expect(readyMsg.countdownMs).toBeGreaterThan(0);
-					expect(readyMsg.totalQuestions).toBeGreaterThan(0);
+					const readyMessage = await player.waitForMessage('getReady');
+					expect(readyMessage.countdownMs).toBeGreaterThan(0);
+					expect(readyMessage.totalQuestions).toBeGreaterThan(0);
 				}
 
 				// Wait for question to start (after countdown)
-				const questionMsg = await host.waitForMessage('questionStart', 15000);
-				expect(questionMsg.questionText).toBeTruthy();
-				expect(questionMsg.options.length).toBeGreaterThanOrEqual(2);
+				const questionMessage = await host.waitForMessage('questionStart', 15_000);
+				expect(questionMessage.questionText).toBeTruthy();
+				expect(questionMessage.options.length).toBeGreaterThanOrEqual(2);
 
 				// All players submit answers
 				for (const player of players) {
@@ -205,9 +205,9 @@ describe('Game Flow Integration Tests', () => {
 
 				// Host advances to reveal
 				host.nextState();
-				const revealMsg = await host.waitForMessage('reveal');
-				expect(revealMsg.correctAnswerIndex).toBeGreaterThanOrEqual(0);
-				expect(revealMsg.answerCounts).toBeTruthy();
+				const revealMessage = await host.waitForMessage('reveal');
+				expect(revealMessage.correctAnswerIndex).toBeGreaterThanOrEqual(0);
+				expect(revealMessage.answerCounts).toBeTruthy();
 
 				// Players also receive reveal with their results
 				for (const player of players) {
@@ -219,13 +219,13 @@ describe('Game Flow Integration Tests', () => {
 				host.nextState();
 
 				// Could be leaderboard or gameEnd depending on quiz length
-				const nextMsg = await host.waitForMessage('leaderboard', 5000).catch(() => host.waitForMessage('gameEnd', 5000));
-				expect(nextMsg).toBeTruthy();
+				const nextMessage = await host.waitForMessage('leaderboard', 5000).catch(() => host.waitForMessage('gameEnd', 5000));
+				expect(nextMessage).toBeTruthy();
 			} finally {
 				host.close();
-				players.forEach((p) => p.close());
+				for (const p of players) p.close();
 			}
-		}, 60000); // Extended timeout for full game flow
+		}, 60_000); // Extended timeout for full game flow
 
 		it('should handle emoji sending during reveal phase', async () => {
 			const game = await createGame(BASE_URL);
@@ -250,7 +250,7 @@ describe('Game Flow Integration Tests', () => {
 
 				// Start game and get to question
 				await host.startGame();
-				await player.waitForMessage('questionStart', 15000);
+				await player.waitForMessage('questionStart', 15_000);
 
 				// Submit answer
 				await player.submitAnswer(0);
@@ -266,14 +266,14 @@ describe('Game Flow Integration Tests', () => {
 				}
 
 				// Host should receive emojis
-				const emojiMsg = await host.waitForMessage('emojiReceived', 5000);
-				expect(emojis).toContain(emojiMsg.emoji);
-				expect(emojiMsg.playerId).toBe(player.playerId);
+				const emojiMessage = await host.waitForMessage('emojiReceived', 5000);
+				expect(emojis).toContain(emojiMessage.emoji);
+				expect(emojiMessage.playerId).toBe(player.playerId);
 			} finally {
 				host.close();
 				player.close();
 			}
-		}, 30000);
+		}, 30_000);
 	});
 
 	describe('Player Reconnection', () => {
@@ -371,8 +371,8 @@ describe('Game Flow Integration Tests', () => {
 				});
 				await latePlayer.connect();
 
-				const errorMsg = await latePlayer.waitForMessage('error');
-				expect(errorMsg.code).toBe('GAME_ALREADY_STARTED');
+				const errorMessage = await latePlayer.waitForMessage('error');
+				expect(errorMessage.code).toBe('GAME_ALREADY_STARTED');
 				latePlayer.close();
 			} finally {
 				host.close();
@@ -403,8 +403,8 @@ describe('Game Flow Integration Tests', () => {
 
 				// Try to answer in lobby phase
 				player.send({ type: 'submitAnswer', answerIndex: 0 });
-				const errorMsg = await player.waitForMessage('error');
-				expect(errorMsg.code).toBe('NOT_IN_QUESTION_PHASE');
+				const errorMessage = await player.waitForMessage('error');
+				expect(errorMessage.code).toBe('NOT_IN_QUESTION_PHASE');
 			} finally {
 				host.close();
 				player.close();

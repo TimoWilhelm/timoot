@@ -2,26 +2,26 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ErrorFallback } from './error-fallback';
 import { Sentry } from '@/lib/sentry';
 
-interface Props {
+interface Properties {
 	children: ReactNode;
 	fallback?: (error: Error, errorInfo: ErrorInfo, retry: () => void) => ReactNode;
 }
 
 interface State {
 	hasError: boolean;
-	error: Error | null;
-	errorInfo: ErrorInfo | null;
+	error: Error | undefined;
+	errorInfo: ErrorInfo | undefined;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Properties, State> {
 	public state: State = {
 		hasError: false,
-		error: null,
-		errorInfo: null,
+		error: undefined,
+		errorInfo: undefined,
 	};
 
 	public static getDerivedStateFromError(error: Error): State {
-		return { hasError: true, error, errorInfo: null };
+		return { hasError: true, error, errorInfo: undefined };
 	}
 
 	public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -43,13 +43,13 @@ export class ErrorBoundary extends Component<Props, State> {
 	}
 
 	private retry = () => {
-		this.setState({ hasError: false, error: null, errorInfo: null });
+		this.setState({ hasError: false, error: undefined, errorInfo: undefined });
 		// Reload the page to ensure clean state
-		window.location.reload();
+		globalThis.location.reload();
 	};
 
 	private goHome = () => {
-		window.location.href = '/';
+		globalThis.location.href = '/';
 	};
 
 	public render() {

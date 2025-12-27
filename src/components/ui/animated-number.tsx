@@ -1,7 +1,7 @@
 import { animate, motion, useMotionValue, useTransform } from 'framer-motion';
 import { useEffect } from 'react';
 
-interface AnimatedNumberProps {
+interface AnimatedNumberProperties {
 	value: number;
 	className?: string;
 	duration?: number;
@@ -11,7 +11,7 @@ interface AnimatedNumberProps {
 /**
  * Animated number component that tweens between values using Framer Motion
  */
-export function AnimatedNumber({ value, className, duration = 0.6, instant = false }: AnimatedNumberProps) {
+export function AnimatedNumber({ value, className, duration = 0.6, instant = false }: AnimatedNumberProperties) {
 	const motionValue = useMotionValue(value);
 	const display = useTransform(motionValue, (current: number) => Math.round(current));
 

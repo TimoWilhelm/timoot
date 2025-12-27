@@ -12,12 +12,12 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
-interface PlayerNicknameFormProps {
+interface PlayerNicknameFormProperties {
 	onJoin: (nickname: string) => void;
 	isLoading: boolean;
 }
-export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProps) {
-	const formRef = useRef<HTMLFormElement>(null);
+export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProperties) {
+	const formReference = useRef<HTMLFormElement>(null);
 	const {
 		register,
 		handleSubmit,
@@ -42,7 +42,7 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 					<CardTitle className="font-display text-4xl text-white">Enter a Nickname</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+					<form ref={formReference} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 						<div>
 							<Input
 								{...register('nickname')}

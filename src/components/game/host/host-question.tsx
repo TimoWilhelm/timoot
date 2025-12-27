@@ -3,12 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shared';
 
-interface CountdownTimerProps {
+interface CountdownTimerProperties {
 	timeLeft: number;
 	totalTime: number;
 }
 
-function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProps) {
+function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 	const progress = timeLeft / totalTime;
 	const isUrgent = timeLeft <= 5;
 	const isCritical = timeLeft <= 3;
@@ -144,7 +144,7 @@ function DoublePointsBadge() {
 	);
 }
 
-interface HostQuestionProps {
+interface HostQuestionProperties {
 	onNext: () => void;
 	questionText: string;
 	options: string[];
@@ -174,27 +174,27 @@ export function HostQuestion({
 	backgroundImage,
 	onCountdownTick,
 	onTimeUp,
-}: HostQuestionProps) {
+}: HostQuestionProperties) {
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
 	const [imageError, setImageError] = useState(false);
-	const [prevBackgroundImage, setPrevBackgroundImage] = useState(backgroundImage);
+	const [previousBackgroundImage, setPreviousBackgroundImage] = useState(backgroundImage);
 
 	// Reset image error state when backgroundImage changes (adjusting state during render)
-	if (backgroundImage !== prevBackgroundImage) {
-		setPrevBackgroundImage(backgroundImage);
+	if (backgroundImage !== previousBackgroundImage) {
+		setPreviousBackgroundImage(backgroundImage);
 		setImageError(false);
 	}
 
 	// Use refs for callbacks to prevent effect restart on parent re-renders
-	const onNextRef = useRef(onNext);
-	const onCountdownTickRef = useRef(onCountdownTick);
-	const onTimeUpRef = useRef(onTimeUp);
+	const onNextReference = useRef(onNext);
+	const onCountdownTickReference = useRef(onCountdownTick);
+	const onTimeUpReference = useRef(onTimeUp);
 
 	useEffect(() => {
-		onNextRef.current = onNext;
-		onCountdownTickRef.current = onCountdownTick;
-		onTimeUpRef.current = onTimeUp;
+		onNextReference.current = onNext;
+		onCountdownTickReference.current = onCountdownTick;
+		onTimeUpReference.current = onTimeUp;
 	});
 
 	useEffect(() => {
@@ -207,14 +207,14 @@ export function HostQuestion({
 
 			// Play countdown tick sounds (once per second change)
 			if (remaining !== lastTickedSecond && remaining <= 5 && remaining > 0) {
-				onCountdownTickRef.current?.(remaining);
+				onCountdownTickReference.current?.(remaining);
 				lastTickedSecond = remaining;
 			}
 
 			if (elapsedMs >= timeLimitMs) {
 				clearInterval(timer);
-				onTimeUpRef.current?.();
-				onNextRef.current();
+				onTimeUpReference.current?.();
+				onNextReference.current();
 			}
 		}, 100);
 		return () => clearInterval(timer);
@@ -255,16 +255,16 @@ export function HostQuestion({
 				</div>
 			</div>
 			<div className="grid grid-cols-1 gap-2 sm:gap-4 md:grid-cols-2">
-				{options.map((option, i) => (
+				{options.map((option, index) => (
 					<motion.div
-						key={i}
+						key={index}
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: i * 0.1 }}
-						className={`flex items-center rounded-2xl p-4 text-xl font-bold text-white shadow-md sm:p-6 sm:text-3xl ${shapeColors[i]}`}
+						transition={{ delay: index * 0.1 }}
+						className={`flex items-center rounded-2xl p-4 text-xl font-bold text-white shadow-md sm:p-6 sm:text-3xl ${shapeColors[index]}`}
 					>
 						<svg viewBox="0 0 24 24" className="mr-4 h-8 w-8 fill-current sm:h-12 sm:w-12">
-							<path d={shapePaths[i]} />
+							<path d={shapePaths[index]} />
 						</svg>
 						{option}
 					</motion.div>

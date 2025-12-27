@@ -11,10 +11,10 @@ interface TurnstileValidationResponse {
  * Validate a Turnstile token server-side.
  * Returns null if valid, or an error Response if invalid.
  */
-export async function validateTurnstile(c: Context<{ Bindings: Env }>, token: string | null | undefined): Promise<Response | null> {
+export async function validateTurnstile(c: Context<{ Bindings: Env }>, token: string | null | undefined): Promise<Response | undefined> {
 	// Skip validation in development
 	if (import.meta.env.DEV) {
-		return null;
+		return undefined;
 	}
 
 	if (!token) {
@@ -41,7 +41,7 @@ export async function validateTurnstile(c: Context<{ Bindings: Env }>, token: st
 			return c.json({ success: false, error: 'Turnstile verification failed' }, 403);
 		}
 
-		return null;
+		return undefined;
 	} catch (error) {
 		console.error('[Turnstile Validation Error]', error);
 		return c.json({ success: false, error: 'Turnstile verification error' }, 500);
@@ -51,6 +51,6 @@ export async function validateTurnstile(c: Context<{ Bindings: Env }>, token: st
 /**
  * Extract Turnstile token from request body or header.
  */
-export function getTurnstileToken(c: Context): string | null {
-	return c.req.header('X-Turnstile-Token') ?? null;
+export function getTurnstileToken(c: Context): string | undefined {
+	return c.req.header('X-Turnstile-Token');
 }

@@ -18,18 +18,25 @@ type SoundType =
 
 // Sound definitions using Web Audio API synthesis
 interface SoundDefinition {
-	play: (ctx: AudioContext, gainNode: GainNode) => void;
+	play: (context: AudioContext, gainNode: GainNode) => void;
 }
 
-const createOscillator = (ctx: AudioContext, type: OscillatorType, frequency: number, duration: number, gain: GainNode, startTime = 0) => {
-	const osc = ctx.createOscillator();
-	const oscGain = ctx.createGain();
+const createOscillator = (
+	context: AudioContext,
+	type: OscillatorType,
+	frequency: number,
+	duration: number,
+	gain: GainNode,
+	startTime = 0,
+) => {
+	const osc = context.createOscillator();
+	const oscGain = context.createGain();
 	osc.type = type;
 	osc.frequency.value = frequency;
 	osc.connect(oscGain);
 	oscGain.connect(gain);
 
-	const now = ctx.currentTime + startTime;
+	const now = context.currentTime + startTime;
 	oscGain.gain.setValueAtTime(0.3, now);
 	oscGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
 
@@ -39,124 +46,124 @@ const createOscillator = (ctx: AudioContext, type: OscillatorType, frequency: nu
 
 const sounds: Record<SoundType, SoundDefinition> = {
 	tick: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Soft tick - low pitch click
-			createOscillator(ctx, 'sine', 800, 0.08, gain);
+			createOscillator(context, 'sine', 800, 0.08, gain);
 		},
 	},
 	tickUrgent: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Urgent tick - higher pitch, sharper
-			createOscillator(ctx, 'square', 1200, 0.1, gain);
-			createOscillator(ctx, 'sine', 600, 0.05, gain, 0.05);
+			createOscillator(context, 'square', 1200, 0.1, gain);
+			createOscillator(context, 'sine', 600, 0.05, gain, 0.05);
 		},
 	},
 	timeUp: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Buzzer sound - descending tone
-			const osc = ctx.createOscillator();
-			const oscGain = ctx.createGain();
+			const osc = context.createOscillator();
+			const oscGain = context.createGain();
 			osc.type = 'sawtooth';
-			osc.frequency.setValueAtTime(400, ctx.currentTime);
-			osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.3);
+			osc.frequency.setValueAtTime(400, context.currentTime);
+			osc.frequency.exponentialRampToValueAtTime(150, context.currentTime + 0.3);
 			osc.connect(oscGain);
 			oscGain.connect(gain);
-			oscGain.gain.setValueAtTime(0.2, ctx.currentTime);
-			oscGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+			oscGain.gain.setValueAtTime(0.2, context.currentTime);
+			oscGain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.3);
 			osc.start();
-			osc.stop(ctx.currentTime + 0.3);
+			osc.stop(context.currentTime + 0.3);
 		},
 	},
 	playerJoin: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Cheerful two-note chime
-			createOscillator(ctx, 'sine', 523, 0.15, gain); // C5
-			createOscillator(ctx, 'sine', 659, 0.2, gain, 0.1); // E5
+			createOscillator(context, 'sine', 523, 0.15, gain); // C5
+			createOscillator(context, 'sine', 659, 0.2, gain, 0.1); // E5
 		},
 	},
 	gameStart: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Exciting ascending fanfare
-			createOscillator(ctx, 'sine', 523, 0.15, gain); // C5
-			createOscillator(ctx, 'sine', 659, 0.15, gain, 0.12); // E5
-			createOscillator(ctx, 'sine', 784, 0.15, gain, 0.24); // G5
-			createOscillator(ctx, 'sine', 1047, 0.3, gain, 0.36); // C6
+			createOscillator(context, 'sine', 523, 0.15, gain); // C5
+			createOscillator(context, 'sine', 659, 0.15, gain, 0.12); // E5
+			createOscillator(context, 'sine', 784, 0.15, gain, 0.24); // G5
+			createOscillator(context, 'sine', 1047, 0.3, gain, 0.36); // C6
 		},
 	},
 	questionStart: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Quick attention-getting swoosh
-			const osc = ctx.createOscillator();
-			const oscGain = ctx.createGain();
+			const osc = context.createOscillator();
+			const oscGain = context.createGain();
 			osc.type = 'sine';
-			osc.frequency.setValueAtTime(300, ctx.currentTime);
-			osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+			osc.frequency.setValueAtTime(300, context.currentTime);
+			osc.frequency.exponentialRampToValueAtTime(800, context.currentTime + 0.15);
 			osc.connect(oscGain);
 			oscGain.connect(gain);
-			oscGain.gain.setValueAtTime(0.25, ctx.currentTime);
-			oscGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+			oscGain.gain.setValueAtTime(0.25, context.currentTime);
+			oscGain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
 			osc.start();
-			osc.stop(ctx.currentTime + 0.2);
+			osc.stop(context.currentTime + 0.2);
 		},
 	},
 	doublePoints: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Exciting power-up sound
 			const freqs = [392, 523, 659, 784, 1047]; // G4, C5, E5, G5, C6
-			freqs.forEach((freq, i) => {
-				createOscillator(ctx, 'sine', freq, 0.2, gain, i * 0.08);
-				createOscillator(ctx, 'triangle', freq * 2, 0.15, gain, i * 0.08);
-			});
+			for (const [index, freq] of freqs.entries()) {
+				createOscillator(context, 'sine', freq, 0.2, gain, index * 0.08);
+				createOscillator(context, 'triangle', freq * 2, 0.15, gain, index * 0.08);
+			}
 		},
 	},
 	reveal: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Dramatic reveal sound
-			createOscillator(ctx, 'sine', 400, 0.3, gain);
-			createOscillator(ctx, 'triangle', 600, 0.25, gain, 0.1);
+			createOscillator(context, 'sine', 400, 0.3, gain);
+			createOscillator(context, 'triangle', 600, 0.25, gain, 0.1);
 		},
 	},
 	correct: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Celebratory correct sound
-			createOscillator(ctx, 'sine', 523, 0.12, gain); // C5
-			createOscillator(ctx, 'sine', 659, 0.12, gain, 0.1); // E5
-			createOscillator(ctx, 'sine', 784, 0.2, gain, 0.2); // G5
+			createOscillator(context, 'sine', 523, 0.12, gain); // C5
+			createOscillator(context, 'sine', 659, 0.12, gain, 0.1); // E5
+			createOscillator(context, 'sine', 784, 0.2, gain, 0.2); // G5
 		},
 	},
 	leaderboard: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Triumphant leaderboard reveal
-			createOscillator(ctx, 'sine', 392, 0.2, gain); // G4
-			createOscillator(ctx, 'sine', 494, 0.2, gain, 0.15); // B4
-			createOscillator(ctx, 'sine', 587, 0.25, gain, 0.3); // D5
+			createOscillator(context, 'sine', 392, 0.2, gain); // G4
+			createOscillator(context, 'sine', 494, 0.2, gain, 0.15); // B4
+			createOscillator(context, 'sine', 587, 0.25, gain, 0.3); // D5
 		},
 	},
 	rankUp: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Quick ascending arpeggio for rank change
-			createOscillator(ctx, 'sine', 440, 0.1, gain);
-			createOscillator(ctx, 'sine', 554, 0.1, gain, 0.08);
-			createOscillator(ctx, 'sine', 659, 0.15, gain, 0.16);
+			createOscillator(context, 'sine', 440, 0.1, gain);
+			createOscillator(context, 'sine', 554, 0.1, gain, 0.08);
+			createOscillator(context, 'sine', 659, 0.15, gain, 0.16);
 		},
 	},
 	gameEnd: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Grand finale fanfare
 			const notes = [523, 659, 784, 880, 1047]; // C5, E5, G5, A5, C6
-			notes.forEach((freq, i) => {
-				createOscillator(ctx, 'sine', freq, 0.25, gain, i * 0.12);
-				if (i === notes.length - 1) {
+			for (const [index, freq] of notes.entries()) {
+				createOscillator(context, 'sine', freq, 0.25, gain, index * 0.12);
+				if (index === notes.length - 1) {
 					// Final note is longer and richer
-					createOscillator(ctx, 'triangle', freq / 2, 0.5, gain, i * 0.12);
+					createOscillator(context, 'triangle', freq / 2, 0.5, gain, index * 0.12);
 				}
-			});
+			}
 		},
 	},
 	countdown321: {
-		play: (ctx, gain) => {
+		play: (context, gain) => {
 			// Single countdown beep
-			createOscillator(ctx, 'sine', 880, 0.15, gain); // A5
+			createOscillator(context, 'sine', 880, 0.15, gain); // A5
 		},
 	},
 };
@@ -176,36 +183,36 @@ const MUSIC_TRACKS: Record<MusicTrack, string> = {
 const BACKGROUND_MUSIC_VOLUME = 0.3; // Lower volume for background music
 
 export function useHostSound() {
-	const audioContextRef = useRef<AudioContext | null>(null);
-	const masterGainRef = useRef<GainNode | null>(null);
-	const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
-	const currentTrackRef = useRef<MusicTrack | null>(null);
+	const audioContextReference = useRef<AudioContext | null>(null);
+	const masterGainReference = useRef<GainNode | null>(null);
+	const backgroundMusicReference = useRef<HTMLAudioElement | null>(null);
+	const currentTrackReference = useRef<MusicTrack | null>(null);
 	const { isMuted, volume, setBlocked } = useSoundStore();
-	const lastTickTimeRef = useRef<number>(0);
+	const lastTickTimeReference = useRef<number>(0);
 
 	// Initialize audio context lazily (must be triggered by user interaction)
 	const initAudio = useCallback(() => {
-		if (!audioContextRef.current) {
-			audioContextRef.current = new AudioContext();
-			masterGainRef.current = audioContextRef.current.createGain();
-			masterGainRef.current.connect(audioContextRef.current.destination);
+		if (!audioContextReference.current) {
+			audioContextReference.current = new AudioContext();
+			masterGainReference.current = audioContextReference.current.createGain();
+			masterGainReference.current.connect(audioContextReference.current.destination);
 		}
 		// Resume if suspended (browser autoplay policy)
-		if (audioContextRef.current.state === 'suspended') {
-			audioContextRef.current.resume();
+		if (audioContextReference.current.state === 'suspended') {
+			void audioContextReference.current.resume();
 		}
 		setBlocked(false);
-		return { ctx: audioContextRef.current, gain: masterGainRef.current! };
+		return { ctx: audioContextReference.current, gain: masterGainReference.current! };
 	}, [setBlocked]);
 
 	// Update master volume when settings change
 	useEffect(() => {
-		if (masterGainRef.current) {
-			masterGainRef.current.gain.value = isMuted ? 0 : volume;
+		if (masterGainReference.current) {
+			masterGainReference.current.gain.value = isMuted ? 0 : volume;
 		}
 		// Update background music volume/mute
-		if (backgroundMusicRef.current) {
-			backgroundMusicRef.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
+		if (backgroundMusicReference.current) {
+			backgroundMusicReference.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
 		}
 	}, [isMuted, volume]);
 
@@ -231,8 +238,8 @@ export function useHostSound() {
 
 			// Debounce to prevent multiple ticks per second
 			const now = Date.now();
-			if (now - lastTickTimeRef.current < 800) return;
-			lastTickTimeRef.current = now;
+			if (now - lastTickTimeReference.current < 800) return;
+			lastTickTimeReference.current = now;
 
 			if (timeLeft <= 3 && timeLeft > 0) {
 				playSound('tickUrgent');
@@ -248,23 +255,23 @@ export function useHostSound() {
 		(track: MusicTrack = 'question', forceRestart = false) => {
 			try {
 				const newTrackPath = MUSIC_TRACKS[track];
-				const currentTrackPath = currentTrackRef.current ? MUSIC_TRACKS[currentTrackRef.current] : null;
+				const currentTrackPath = currentTrackReference.current ? MUSIC_TRACKS[currentTrackReference.current] : undefined;
 				const isSameFile = currentTrackPath === newTrackPath;
 
 				// If same file and not forcing restart, ensure it's playing and update volume
-				if (isSameFile && backgroundMusicRef.current && !forceRestart) {
-					backgroundMusicRef.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
-					currentTrackRef.current = track;
+				if (isSameFile && backgroundMusicReference.current && !forceRestart) {
+					backgroundMusicReference.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
+					currentTrackReference.current = track;
 					// Resume if paused (e.g., after reconnection) without restarting from beginning
-					if (backgroundMusicRef.current.paused) {
-						backgroundMusicRef.current
+					if (backgroundMusicReference.current.paused) {
+						backgroundMusicReference.current
 							.play()
 							.then(() => setBlocked(false))
-							.catch((err) => {
-								if (err.name === 'NotAllowedError') {
+							.catch((error) => {
+								if (error.name === 'NotAllowedError') {
 									setBlocked(true);
 								}
-								console.warn('Failed to resume background music:', err);
+								console.warn('Failed to resume background music:', error);
 							});
 					} else {
 						// Already playing - audio is working
@@ -274,30 +281,30 @@ export function useHostSound() {
 				}
 
 				// If switching to a different file, create new audio element
-				if (!isSameFile || !backgroundMusicRef.current) {
-					if (backgroundMusicRef.current) {
-						backgroundMusicRef.current.pause();
+				if (!isSameFile || !backgroundMusicReference.current) {
+					if (backgroundMusicReference.current) {
+						backgroundMusicReference.current.pause();
 					}
-					backgroundMusicRef.current = new Audio(newTrackPath);
-					backgroundMusicRef.current.loop = true;
+					backgroundMusicReference.current = new Audio(newTrackPath);
+					backgroundMusicReference.current.loop = true;
 				}
 
-				currentTrackRef.current = track;
-				backgroundMusicRef.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
+				currentTrackReference.current = track;
+				backgroundMusicReference.current.volume = isMuted ? 0 : volume * BACKGROUND_MUSIC_VOLUME;
 
 				// Only reset to beginning if switching files or forcing restart
 				if (!isSameFile || forceRestart) {
-					backgroundMusicRef.current.currentTime = 0;
+					backgroundMusicReference.current.currentTime = 0;
 				}
 
-				backgroundMusicRef.current
+				backgroundMusicReference.current
 					.play()
 					.then(() => setBlocked(false))
-					.catch((err) => {
-						if (err.name === 'NotAllowedError') {
+					.catch((error) => {
+						if (error.name === 'NotAllowedError') {
 							setBlocked(true);
 						}
-						console.warn('Failed to play background music:', err);
+						console.warn('Failed to play background music:', error);
 					});
 			} catch (error) {
 				console.warn('Failed to start background music:', error);
@@ -308,8 +315,8 @@ export function useHostSound() {
 
 	// Stop background music with fade out
 	const stopBackgroundMusic = useCallback(() => {
-		if (backgroundMusicRef.current) {
-			const audio = backgroundMusicRef.current;
+		if (backgroundMusicReference.current) {
+			const audio = backgroundMusicReference.current;
 			// Fade out over 300ms
 			const fadeOut = () => {
 				if (audio.volume > 0.05) {
@@ -327,12 +334,12 @@ export function useHostSound() {
 	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
-			if (audioContextRef.current) {
-				audioContextRef.current.close();
+			if (audioContextReference.current) {
+				void audioContextReference.current.close();
 			}
-			if (backgroundMusicRef.current) {
-				backgroundMusicRef.current.pause();
-				backgroundMusicRef.current = null;
+			if (backgroundMusicReference.current) {
+				backgroundMusicReference.current.pause();
+				backgroundMusicReference.current = undefined;
 			}
 		};
 	}, []);

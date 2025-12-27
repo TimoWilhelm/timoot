@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
 	BookOpen,
@@ -49,37 +49,37 @@ export function HomePage() {
 	const [isGameStarting, setIsGameStarting] = useState(false);
 	const [predefinedQuizzes, setPredefinedQuizzes] = useState<Quiz[]>([]);
 	const [customQuizzes, setCustomQuizzes] = useState<Quiz[]>([]);
-	const [startingQuizId, setStartingQuizId] = useState<string | null>(null);
+	const [startingQuizId, setStartingQuizId] = useState<string | undefined>();
 	const [aiPrompt, setAiPrompt] = useState('');
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
-	const [generationStatus, setGenerationStatus] = useState<{ stage: string; detail?: string } | null>(null);
-	const [generatingPrompt, setGeneratingPrompt] = useState<string | null>(null);
-	const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
-	const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+	const [generationStatus, setGenerationStatus] = useState<{ stage: string; detail?: string } | undefined>();
+	const [generatingPrompt, setGeneratingPrompt] = useState<string | undefined>();
+	const [quizToDelete, setQuizToDelete] = useState<string | undefined>();
+	const [selectedQuiz, setSelectedQuiz] = useState<Quiz | undefined>();
 	const [isMusicCreditsOpen, setIsMusicCreditsOpen] = useState(false);
 	const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
-	const [syncCode, setSyncCode] = useState<string | null>(null);
-	const [syncCodeExpiry, setSyncCodeExpiry] = useState<number | null>(null);
+	const [syncCode, setSyncCode] = useState<string | undefined>();
+	const [syncCodeExpiry, setSyncCodeExpiry] = useState<number | undefined>();
 	const [isGeneratingSyncCode, setIsGeneratingSyncCode] = useState(false);
 	const [syncCodeInput, setSyncCodeInput] = useState('');
 	const [isRedeemingSyncCode, setIsRedeemingSyncCode] = useState(false);
 	const [codeCopied, setCodeCopied] = useState(false);
 	const [showSyncWarning, setShowSyncWarning] = useState(false);
 	const addSecret = useHostStore((s) => s.addSecret);
-	const generatingCardRef = useRef<HTMLDivElement>(null);
+	const generatingCardReference = useRef<HTMLDivElement>(null);
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 	const { userId, setUserId } = useUserId();
 
-	const fetchQuizzes = async () => {
+	const fetchQuizzes = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const [predefinedRes, customRes] = await Promise.all([
+			const [predefinedResponse, customResponse] = await Promise.all([
 				client.api.quizzes.$get(),
 				client.api.quizzes.custom.$get({ header: { 'x-user-id': userId } }),
 			]);
-			const predefinedResult = await predefinedRes.json();
-			const customResult = await customRes.json();
+			const predefinedResult = await predefinedResponse.json();
+			const customResult = await customResponse.json();
 			if (predefinedResult.success && predefinedResult.data) {
 				setPredefinedQuizzes(predefinedResult.data);
 			}
@@ -92,11 +92,11 @@ export function HomePage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [userId]);
 
 	useEffect(() => {
-		fetchQuizzes();
-	}, []);
+		void fetchQuizzes();
+	}, [fetchQuizzes]);
 
 	const handleStartGame = async (quizId: string) => {
 		if (isGameStarting) return;
@@ -108,8 +108,11 @@ export function HomePage() {
 		setStartingQuizId(quizId);
 		try {
 			resetToken();
-			const res = await client.api.games.$post({ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken }, json: { quizId } });
-			const result = await res.json();
+			const response = await client.api.games.$post({
+				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
+				json: { quizId },
+			});
+			const result = await response.json();
 			if (result.success && result.data) {
 				if ('error' in result.data) {
 					throw new Error((result.data as { error: string }).error);
@@ -128,21 +131,21 @@ export function HomePage() {
 			console.error(error);
 			toast.error(error instanceof Error ? error.message : 'Could not start a new game. Please try again.');
 			setIsGameStarting(false);
-			setStartingQuizId(null);
+			setStartingQuizId(undefined);
 		}
 	};
 
 	const handleDeleteQuiz = async () => {
 		if (!quizToDelete) return;
 		try {
-			const res = await client.api.quizzes.custom[':id'].$delete({ header: { 'x-user-id': userId }, param: { id: quizToDelete } });
-			if (!res.ok) throw new Error('Failed to delete quiz');
+			const response = await client.api.quizzes.custom[':id'].$delete({ header: { 'x-user-id': userId }, param: { id: quizToDelete } });
+			if (!response.ok) throw new Error('Failed to delete quiz');
 			toast.success('Quiz deleted!');
-			setCustomQuizzes((prev) => prev.filter((q) => q.id !== quizToDelete));
+			setCustomQuizzes((previous) => previous.filter((q) => q.id !== quizToDelete));
 		} catch {
 			toast.error('Could not delete quiz.');
 		} finally {
-			setQuizToDelete(null);
+			setQuizToDelete(undefined);
 		}
 	};
 
@@ -154,8 +157,8 @@ export function HomePage() {
 		setIsGeneratingSyncCode(true);
 		try {
 			resetToken();
-			const res = await client.api.sync.generate.$post({ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } });
-			const result = await res.json();
+			const response = await client.api.sync.generate.$post({ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } });
+			const result = await response.json();
 			if (result.success && result.data) {
 				setSyncCode(result.data.code);
 				setSyncCodeExpiry(Date.now() + result.data.expiresIn * 1000);
@@ -182,14 +185,14 @@ export function HomePage() {
 		setShowSyncWarning(false);
 		setIsRedeemingSyncCode(true);
 		try {
-			const res = await client.api.sync.redeem.$post({ header: { 'x-user-id': userId }, json: { code: syncCodeInput.toUpperCase() } });
-			const result = await res.json();
+			const response = await client.api.sync.redeem.$post({ header: { 'x-user-id': userId }, json: { code: syncCodeInput.toUpperCase() } });
+			const result = await response.json();
 			if (result.success && result.data) {
 				setUserId(result.data.userId);
 				toast.success('Device synced! Refreshing...');
 				setIsSyncDialogOpen(false);
 				// Reload to fetch data with new userId
-				setTimeout(() => window.location.reload(), 500);
+				setTimeout(() => globalThis.location.reload(), 500);
 			} else {
 				throw new Error('error' in result ? result.error : 'Invalid or expired sync code');
 			}
@@ -202,25 +205,30 @@ export function HomePage() {
 
 	const copyCodeToClipboard = () => {
 		if (syncCode) {
-			navigator.clipboard.writeText(syncCode);
+			void navigator.clipboard.writeText(syncCode);
 			setCodeCopied(true);
 			setTimeout(() => setCodeCopied(false), 2000);
 		}
 	};
 
-	const getStatusMessage = (status: { stage: string; detail?: string } | null): string => {
+	const getStatusMessage = (status: { stage: string; detail?: string } | undefined): string => {
 		if (!status) return 'Preparing...';
 		switch (status.stage) {
-			case 'researching':
+			case 'researching': {
 				return `Researching ${status.detail || 'topic'}...`;
-			case 'reading_docs':
+			}
+			case 'reading_docs': {
 				return `Reading documentation for ${status.detail || 'topic'}...`;
-			case 'searching_web':
+			}
+			case 'searching_web': {
 				return `Searching the web for ${status.detail || 'relevant information'}...`;
-			case 'generating':
+			}
+			case 'generating': {
 				return 'Generating quiz questions...';
-			default:
+			}
+			default: {
 				return 'Processing...';
+			}
 		}
 	};
 
@@ -239,13 +247,13 @@ export function HomePage() {
 		const prompt = aiPrompt.trim();
 		setGeneratingPrompt(prompt);
 		setIsGenerating(true);
-		setGenerationStatus(null);
+		setGenerationStatus(undefined);
 		setAiPrompt('');
 		setIsAiDialogOpen(false);
 
 		// Scroll to generating card after state updates
 		setTimeout(() => {
-			generatingCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			generatingCardReference.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}, 100);
 
 		// SSE streaming requires direct fetch, not Hono client
@@ -282,15 +290,24 @@ export function HomePage() {
 					} else if (line.startsWith('data: ')) {
 						const data = JSON.parse(line.slice(6)) as { success?: boolean; data?: Quiz; error?: string; stage?: string; detail?: string };
 
-						if (currentEvent === 'status') {
-							setGenerationStatus(data as { stage: string; detail?: string });
-						} else if (currentEvent === 'complete') {
-							if (data.success && data.data) {
-								toast.success(`Quiz "${data.data.title}" generated successfully!`);
-								setCustomQuizzes((prev) => [...prev, data.data!]);
+						switch (currentEvent) {
+							case 'status': {
+								setGenerationStatus(data as { stage: string; detail?: string });
+
+								break;
 							}
-						} else if (currentEvent === 'error') {
-							throw new Error(data.error || 'Failed to generate quiz');
+							case 'complete': {
+								if (data.success && data.data) {
+									toast.success(`Quiz "${data.data.title}" generated successfully!`);
+									setCustomQuizzes((previous) => [...previous, data.data!]);
+								}
+
+								break;
+							}
+							case 'error': {
+								throw new Error(data.error || 'Failed to generate quiz');
+							}
+							// No default
 						}
 						currentEvent = '';
 					}
@@ -301,8 +318,8 @@ export function HomePage() {
 			toast.error(error instanceof Error ? error.message : 'Could not generate quiz. Please try again.');
 		} finally {
 			setIsGenerating(false);
-			setGenerationStatus(null);
-			setGeneratingPrompt(null);
+			setGenerationStatus(undefined);
+			setGeneratingPrompt(undefined);
 		}
 	};
 
@@ -449,8 +466,8 @@ export function HomePage() {
 																	variant="ghost"
 																	size="icon"
 																	className="h-7 w-7"
-																	onClick={(e) => {
-																		e.stopPropagation();
+																	onClick={(event) => {
+																		event.stopPropagation();
 																		navigate(`/edit/${quiz.id}`);
 																	}}
 																>
@@ -460,8 +477,8 @@ export function HomePage() {
 																	variant="ghost"
 																	size="icon"
 																	className="h-7 w-7 text-red-500 hover:text-red-700"
-																	onClick={(e) => {
-																		e.stopPropagation();
+																	onClick={(event) => {
+																		event.stopPropagation();
 																		setQuizToDelete(quiz.id);
 																	}}
 																>
@@ -503,7 +520,7 @@ export function HomePage() {
 									{/* Generate with AI Card / AI Generating Card */}
 									{isGenerating ? (
 										<motion.div
-											ref={generatingCardRef}
+											ref={generatingCardReference}
 											key="generating"
 											initial={{ opacity: 0, scale: 0.9 }}
 											animate={{ opacity: 1, scale: 1 }}
@@ -576,8 +593,8 @@ export function HomePage() {
 																id="ai-prompt"
 																placeholder="JavaScript basics, Famous artists, Holiday movies..."
 																value={aiPrompt}
-																onChange={(e) => setAiPrompt(e.target.value)}
-																onKeyDown={(e) => e.key === 'Enter' && handleGenerateAiQuiz()}
+																onChange={(event) => setAiPrompt(event.target.value)}
+																onKeyDown={(event) => event.key === 'Enter' && handleGenerateAiQuiz()}
 																className="col-span-3"
 																maxLength={LIMITS.AI_PROMPT_MAX}
 															/>
@@ -629,7 +646,7 @@ export function HomePage() {
 					</button>
 					<button
 						onClick={() => {
-							setSyncCode(null);
+							setSyncCode(undefined);
 							setSyncCodeInput('');
 							setIsSyncDialogOpen(true);
 						}}
@@ -642,7 +659,7 @@ export function HomePage() {
 			</footer>
 
 			{/* Start Quiz Confirmation Dialog */}
-			<Dialog open={!!selectedQuiz} onOpenChange={(open) => !open && !isGameStarting && setSelectedQuiz(null)}>
+			<Dialog open={!!selectedQuiz} onOpenChange={(open) => !open && !isGameStarting && setSelectedQuiz(undefined)}>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2 text-2xl">
@@ -662,13 +679,13 @@ export function HomePage() {
 						<TurnstileWidget className="flex justify-center" />
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setSelectedQuiz(null)} disabled={isGameStarting}>
+						<Button variant="outline" onClick={() => setSelectedQuiz(undefined)} disabled={isGameStarting}>
 							Cancel
 						</Button>
 						<Button
 							onClick={() => {
 								if (selectedQuiz) {
-									handleStartGame(selectedQuiz.id);
+									void handleStartGame(selectedQuiz.id);
 								}
 							}}
 							disabled={isGameStarting || !turnstileToken}
@@ -691,7 +708,7 @@ export function HomePage() {
 			</Dialog>
 
 			{/* Delete Quiz Confirmation Dialog */}
-			<AlertDialog open={!!quizToDelete} onOpenChange={(open) => !open && setQuizToDelete(null)}>
+			<AlertDialog open={!!quizToDelete} onOpenChange={(open) => !open && setQuizToDelete(undefined)}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Quiz</AlertDialogTitle>
@@ -724,12 +741,12 @@ export function HomePage() {
 								<div className="space-y-2">
 									<div className="flex items-center justify-center gap-2">
 										<code className="rounded-lg bg-slate-100 px-4 py-3 font-mono text-2xl font-bold tracking-widest">{syncCode}</code>
-										<Button variant="outline" size="icon" onClick={copyCodeToClipboard}>
+										<Button variant="outline" size="icon" className="h-7 w-7" onClick={copyCodeToClipboard}>
 											{codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
 										</Button>
 									</div>
 									<p className="text-center text-xs text-muted-foreground">
-										Expires in {Math.max(0, Math.ceil(((syncCodeExpiry || 0) - Date.now()) / 60000))} minutes
+										Expires in {Math.max(0, Math.ceil(((syncCodeExpiry || 0) - Date.now()) / 60_000))} minutes
 									</p>
 								</div>
 							) : (
@@ -759,7 +776,7 @@ export function HomePage() {
 								<div className="space-y-3">
 									<div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
 										<p className="font-medium text-amber-800">
-											Warning: You have {customQuizzes.length} custom quiz{customQuizzes.length !== 1 ? 'es' : ''} on this device.
+											Warning: You have {customQuizzes.length} custom quiz{customQuizzes.length === 1 ? '' : 'es'} on this device.
 										</p>
 										<p className="mt-1 text-amber-700">
 											Syncing will switch to a different account and you'll lose access to your current quizzes and images.
@@ -784,16 +801,17 @@ export function HomePage() {
 										<Input
 											placeholder="Enter 6-digit code"
 											value={syncCodeInput}
-											onChange={(e) => setSyncCodeInput(e.target.value.toUpperCase().slice(0, 6))}
+											onChange={(event) => setSyncCodeInput(event.target.value.toUpperCase().slice(0, 6))}
 											maxLength={6}
 											className="text-center font-mono text-lg tracking-widest"
-											onKeyDown={(e) => e.key === 'Enter' && handleRedeemSyncCode()}
+											onKeyDown={(event) => event.key === 'Enter' && handleRedeemSyncCode()}
 										/>
 										<Button
 											onClick={() => handleRedeemSyncCode()}
 											disabled={isRedeemingSyncCode || syncCodeInput.length !== 6}
 											className="bg-quiz-orange hover:bg-quiz-orange/90"
 										>
+											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync'}
 											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync'}
 										</Button>
 									</div>

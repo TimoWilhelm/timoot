@@ -41,8 +41,8 @@ const phaseIsActiveForPlayer: Record<GamePhase, boolean> = {
 
 export function PlayerPage() {
 	const navigate = useNavigate();
-	const [searchParams] = useSearchParams();
-	const urlGameId = searchParams.get('gameId');
+	const [searchParameters] = useSearchParams();
+	const urlGameId = searchParameters.get('gameId');
 
 	// Zustand state for session persistence
 	const sessionGameId = useGameStore((s) => s.gameId);
@@ -68,12 +68,12 @@ export function PlayerPage() {
 		isReconnecting ? (storedPlayerToken ?? undefined) : undefined,
 	);
 	const [currentNickname, setCurrentNickname] = useState<string>(() => (isReconnecting ? (nickname ?? '') : ''));
-	const pendingNicknameRef = useRef<string>(isReconnecting ? (nickname ?? '') : '');
+	const pendingNicknameReference = useRef<string>(isReconnecting ? (nickname ?? '') : '');
 	// Track which question index we've processed side effects for (sound, score update)
-	const processedRevealRef = useRef<number | null>(null);
+	const processedRevealReference = useRef<number | undefined>(undefined);
 	// For reconnecting players, initialize score as null until synced from leaderboard
 	// For new players, start at 0
-	const [totalScore, setTotalScore] = useState<number | null>(() => (storedPlayerId ? null : 0));
+	const [totalScore, setTotalScore] = useState<number | undefined>(() => (storedPlayerId ? undefined : 0));
 	// Track if we've done the initial score sync for reconnecting players
 	const [hasInitialScoreSync, setHasInitialScoreSync] = useState(!storedPlayerId);
 	const { playSound } = useSound();
@@ -92,7 +92,7 @@ export function PlayerPage() {
 				setCurrentPlayerToken(playerToken);
 				// Update session with server-assigned playerId and secure token
 				// Use ref to get the latest nickname (avoids race condition with state)
-				const nicknameToSave = pendingNicknameRef.current;
+				const nicknameToSave = pendingNicknameReference.current;
 				if (nicknameToSave) {
 					setSession({ gameId: urlGameId, playerId, playerToken, nickname: nicknameToSave });
 				}
@@ -105,7 +105,7 @@ export function PlayerPage() {
 					clearSession();
 					setCurrentPlayerId(undefined);
 					setCurrentPlayerToken(undefined);
-					pendingNicknameRef.current = '';
+					pendingNicknameReference.current = '';
 					setCurrentNickname('');
 				}
 				// Game exists, show nickname form (handleError will override to GAME_IN_PROGRESS if game started)
@@ -118,26 +118,31 @@ export function PlayerPage() {
 	const handleError = useCallback(
 		(code: string, message: string) => {
 			switch (code) {
-				case ErrorCode.GAME_ALREADY_STARTED:
+				case ErrorCode.GAME_ALREADY_STARTED: {
 					setView('GAME_IN_PROGRESS');
 					break;
-				case ErrorCode.GAME_NOT_FOUND:
+				}
+				case ErrorCode.GAME_NOT_FOUND: {
 					setView('ROOM_NOT_FOUND');
 					break;
-				case ErrorCode.INVALID_SESSION_TOKEN:
+				}
+				case ErrorCode.INVALID_SESSION_TOKEN: {
 					// Session token was invalid or missing - clear session and show friendly message
 					clearSession();
 					setCurrentPlayerId(undefined);
 					setCurrentPlayerToken(undefined);
-					pendingNicknameRef.current = '';
+					pendingNicknameReference.current = '';
 					setCurrentNickname('');
 					setView('SESSION_EXPIRED');
 					break;
-				case ErrorCode.GAME_FULL:
+				}
+				case ErrorCode.GAME_FULL: {
 					setView('GAME_FULL');
 					break;
-				default:
+				}
+				default: {
 					toast.error(message);
+				}
 			}
 		},
 		[clearSession],
@@ -154,17 +159,19 @@ export function PlayerPage() {
 
 	// Derive answerResult from gameState.playerResult (no state needed)
 	// playerResult persists until next question starts, so this works for REVEAL and LEADERBOARD phases
-	const answerResult = gameState.playerResult ? { isCorrect: gameState.playerResult.isCorrect, score: gameState.playerResult.score } : null;
+	const answerResult = gameState.playerResult
+		? { isCorrect: gameState.playerResult.isCorrect, score: gameState.playerResult.score }
+		: undefined;
 
 	// Handle reveal side effects (sound, score update) - only once per question
 	useEffect(() => {
-		if (gameState.phase === 'REVEAL' && gameState.playerResult && processedRevealRef.current !== gameState.questionIndex) {
-			processedRevealRef.current = gameState.questionIndex;
+		if (gameState.phase === 'REVEAL' && gameState.playerResult && processedRevealReference.current !== gameState.questionIndex) {
+			processedRevealReference.current = gameState.questionIndex;
 			const scoreToAdd = gameState.playerResult.score;
 			const isCorrect = gameState.playerResult.isCorrect;
 			// Defer setState to avoid synchronous cascading render
 			requestAnimationFrame(() => {
-				setTotalScore((prev) => (prev ?? 0) + scoreToAdd);
+				setTotalScore((previous) => (previous ?? 0) + scoreToAdd);
 			});
 			playSound(isCorrect ? 'correct' : 'incorrect');
 		}
@@ -188,7 +195,7 @@ export function PlayerPage() {
 	// Reset processed reveal ref on new question (answerResult is now derived, no state to reset)
 	useEffect(() => {
 		if (gameState.phase === 'QUESTION') {
-			processedRevealRef.current = null;
+			processedRevealReference.current = undefined;
 		}
 	}, [gameState.phase, gameState.questionIndex]);
 
@@ -198,9 +205,9 @@ export function PlayerPage() {
 
 	// Warn before browser/tab close when game is active
 	useEffect(() => {
-		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			if (isGameActive) {
-				e.preventDefault();
+				event.preventDefault();
 			}
 		};
 		window.addEventListener('beforeunload', handleBeforeUnload);
@@ -210,7 +217,7 @@ export function PlayerPage() {
 	const handleJoin = useCallback(
 		(name: string) => {
 			if (!name.trim() || !urlGameId) return;
-			pendingNicknameRef.current = name; // Update ref immediately
+			pendingNicknameReference.current = name; // Update ref immediately
 			setCurrentNickname(name);
 			join(name);
 			toast.success(`Welcome, ${name}!`);
@@ -337,7 +344,7 @@ export function PlayerPage() {
 
 		// Show answer buttons only during QUESTION phase (not GET_READY)
 		if (gameState.phase === 'QUESTION' && gameState.options.length > 0) {
-			const optionIndices = Array.from({ length: gameState.options.length }, (_, i) => i);
+			const optionIndices = Array.from({ length: gameState.options.length }, (_, index) => index);
 			return <PlayerAnswerScreen onAnswer={handleAnswer} submittedAnswer={submittedAnswer} optionIndices={optionIndices} />;
 		}
 
@@ -347,7 +354,7 @@ export function PlayerPage() {
 				phase={gameState.phase}
 				answerResult={answerResult}
 				finalScore={myScore}
-				playerId={currentPlayerId ?? null}
+				playerId={currentPlayerId}
 				leaderboard={gameState.leaderboard}
 				modifiers={gameState.modifiers}
 			/>

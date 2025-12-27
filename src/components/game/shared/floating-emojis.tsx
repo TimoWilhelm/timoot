@@ -14,7 +14,7 @@ export interface FloatingEmojisHandle {
 	clearAll: () => void;
 }
 
-export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function FloatingEmojis(_, ref) {
+export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function FloatingEmojis(_, reference) {
 	const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
 	const [clearing, setClearing] = useState(false);
 
@@ -23,11 +23,11 @@ export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function Floating
 		const x = 5 + Math.random() * 90; // Random position 5-95%
 		const duration = 2 + Math.random() * 2; // Random 2-4 seconds
 
-		setEmojis((prev) => [...prev, { id, emoji, x, duration }]);
+		setEmojis((previous) => [...previous, { id, emoji, x, duration }]);
 
 		// Auto-remove after animation completes
 		setTimeout(() => {
-			setEmojis((prev) => prev.filter((e) => e.id !== id));
+			setEmojis((previous) => previous.filter((emoji) => emoji.id !== id));
 		}, duration * 1000);
 	}, []);
 
@@ -40,7 +40,7 @@ export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function Floating
 		}, 300);
 	}, []);
 
-	useImperativeHandle(ref, () => ({
+	useImperativeHandle(reference, () => ({
 		addEmoji,
 		clearAll,
 	}));

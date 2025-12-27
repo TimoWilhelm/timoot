@@ -74,29 +74,29 @@ export function HostPage() {
 	const hasMissingSecret = !hostSecret;
 
 	const { playSound, playCountdownTick, initAudio, startBackgroundMusic, stopBackgroundMusic } = useHostSound();
-	const prevPhaseRef = useRef<GamePhase | null>(null);
-	const wasConnectedRef = useRef<boolean>(false);
-	const prevPlayersCountRef = useRef<number | null>(null);
-	const floatingEmojisRef = useRef<FloatingEmojisHandle>(null);
-	const keyboardNavEnabledAtRef = useRef<number>(0);
+	const previousPhaseReference = useRef<GamePhase | null>(null);
+	const wasConnectedReference = useRef<boolean>(false);
+	const previousPlayersCountReference = useRef<number | null>(null);
+	const floatingEmojisReference = useRef<FloatingEmojisHandle>(null);
+	const keyboardNavEnabledAtReference = useRef<number>(0);
 
 	// Handle emoji received from players
 	const handleEmojiReceived = useCallback((emoji: EmojiReaction) => {
-		floatingEmojisRef.current?.addEmoji(emoji);
+		floatingEmojisReference.current?.addEmoji(emoji);
 	}, []);
 
 	const { isConnecting, isConnected, error, gameState, startGame, nextState } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
-		onError: (msg) => toast.error(msg),
+		onError: (message) => toast.error(message),
 		onEmojiReceived: handleEmojiReceived,
 	});
 
 	// Clear floating emojis when question starts
 	useEffect(() => {
 		if (gameState.phase === 'QUESTION') {
-			floatingEmojisRef.current?.clearAll();
+			floatingEmojisReference.current?.clearAll();
 		}
 	}, [gameState.phase]);
 
@@ -118,7 +118,7 @@ export function HostPage() {
 	// Set delay before keyboard navigation is allowed after phase change
 	useEffect(() => {
 		const KEYBOARD_NAV_DELAY_MS = 1000;
-		keyboardNavEnabledAtRef.current = Date.now() + KEYBOARD_NAV_DELAY_MS;
+		keyboardNavEnabledAtReference.current = Date.now() + KEYBOARD_NAV_DELAY_MS;
 	}, [gameState.phase]);
 
 	// Allow host to advance with common presenter keys (right arrow, page down, space, enter)
@@ -135,7 +135,7 @@ export function HostPage() {
 			if (!phaseAllowsManualAdvance[gameState.phase]) return;
 
 			// Prevent advancing too quickly after phase change
-			if (Date.now() < keyboardNavEnabledAtRef.current) return;
+			if (Date.now() < keyboardNavEnabledAtReference.current) return;
 
 			// Only allow advancing when a visible Next button is rendered and enabled
 			const nextButton = document.querySelector<HTMLButtonElement>('[data-host-next-button]');
@@ -146,24 +146,24 @@ export function HostPage() {
 			nextState();
 		};
 
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
+		globalThis.addEventListener('keydown', handleKeyDown);
+		return () => globalThis.removeEventListener('keydown', handleKeyDown);
 	}, [isConnected, gameState.phase, nextState]);
 
 	// Play sounds on game phase changes or reconnection
 	useEffect(() => {
 		if (!isConnected) {
-			wasConnectedRef.current = false;
+			wasConnectedReference.current = false;
 			return;
 		}
 
 		const currentPhase = gameState.phase;
-		const prevPhase = prevPhaseRef.current;
-		const isReconnecting = !wasConnectedRef.current;
-		wasConnectedRef.current = true;
+		const previousPhase = previousPhaseReference.current;
+		const isReconnecting = !wasConnectedReference.current;
+		wasConnectedReference.current = true;
 
 		// Play music on phase change OR on reconnection (to resume music)
-		if (prevPhase !== currentPhase || isReconnecting) {
+		if (previousPhase !== currentPhase || isReconnecting) {
 			const track = phaseToMusicTrack[currentPhase];
 			if (track) {
 				startBackgroundMusic(track);
@@ -171,45 +171,53 @@ export function HostPage() {
 		}
 
 		// Play sound effects only on actual phase changes (not reconnection)
-		if (prevPhase !== currentPhase) {
+		if (previousPhase !== currentPhase) {
 			// Play sound effects
 			switch (currentPhase) {
-				case 'LOBBY':
+				case 'LOBBY': {
 					// No specific sound when entering lobby from another phase
 					break;
-				case 'GET_READY':
+				}
+				case 'GET_READY': {
 					playSound('gameStart');
 					break;
-				case 'QUESTION_MODIFIER':
+				}
+				case 'QUESTION_MODIFIER': {
 					// Play double points sound when entering modifier phase
 					if (gameState.modifiers.includes('doublePoints')) {
 						playSound('doublePoints');
 					}
 					break;
-				case 'QUESTION':
+				}
+				case 'QUESTION': {
 					// Only play question start sound if coming from non-modifier phase
-					if (prevPhase !== 'QUESTION_MODIFIER') {
+					if (previousPhase !== 'QUESTION_MODIFIER') {
 						playSound('questionStart');
 					}
 					break;
-				case 'REVEAL':
+				}
+				case 'REVEAL': {
 					playSound('reveal');
 					break;
-				case 'LEADERBOARD':
+				}
+				case 'LEADERBOARD': {
 					playSound('leaderboard');
 					break;
-				case 'END_INTRO':
+				}
+				case 'END_INTRO': {
 					playSound('gameEnd');
 					break;
-				case 'END_REVEALED':
+				}
+				case 'END_REVEALED': {
 					// No sound for reveal transition
 					break;
+				}
 				default: {
 					const _exhaustiveCheck: never = currentPhase;
 					return _exhaustiveCheck;
 				}
 			}
-			prevPhaseRef.current = currentPhase;
+			previousPhaseReference.current = currentPhase;
 		}
 	}, [isConnected, gameState.phase, gameState.modifiers, playSound, startBackgroundMusic, stopBackgroundMusic]);
 
@@ -219,17 +227,17 @@ export function HostPage() {
 
 		const currentCount = gameState.players.length;
 		// Only play sound if we have a previous count to compare against (not initial render)
-		if (prevPlayersCountRef.current !== null && currentCount > prevPlayersCountRef.current) {
+		if (previousPlayersCountReference.current !== null && currentCount > previousPlayersCountReference.current) {
 			playSound('playerJoin');
 		}
-		prevPlayersCountRef.current = currentCount;
+		previousPlayersCountReference.current = currentCount;
 	}, [isConnected, gameState.phase, gameState.players.length, playSound]);
 
 	// Warn before browser/tab close when game is active
 	useEffect(() => {
-		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			if (isGameActive) {
-				e.preventDefault();
+				event.preventDefault();
 			}
 		};
 		window.addEventListener('beforeunload', handleBeforeUnload);
@@ -265,7 +273,7 @@ export function HostPage() {
 
 	const renderContent = () => {
 		switch (gameState.phase) {
-			case 'LOBBY':
+			case 'LOBBY': {
 				return (
 					<HostLobby
 						onStart={() => {
@@ -276,7 +284,8 @@ export function HostPage() {
 						gameId={gameState.gameId}
 					/>
 				);
-			case 'GET_READY':
+			}
+			case 'GET_READY': {
 				return (
 					<HostGetReady
 						countdownMs={gameState.getReadyCountdownMs}
@@ -284,7 +293,8 @@ export function HostPage() {
 						onCountdownBeep={() => playSound('countdown321')}
 					/>
 				);
-			case 'QUESTION_MODIFIER':
+			}
+			case 'QUESTION_MODIFIER': {
 				return (
 					<HostQuestionModifier
 						questionIndex={gameState.questionIndex}
@@ -292,7 +302,8 @@ export function HostPage() {
 						modifiers={gameState.modifiers}
 					/>
 				);
-			case 'QUESTION':
+			}
+			case 'QUESTION': {
 				return (
 					<HostQuestion
 						onNext={nextState}
@@ -310,7 +321,8 @@ export function HostPage() {
 						onTimeUp={() => playSound('timeUp')}
 					/>
 				);
-			case 'REVEAL':
+			}
+			case 'REVEAL': {
 				return (
 					<HostReveal
 						onNext={nextState}
@@ -320,13 +332,17 @@ export function HostPage() {
 						answerCounts={gameState.answerCounts}
 					/>
 				);
-			case 'LEADERBOARD':
+			}
+			case 'LEADERBOARD': {
 				return <HostLeaderboard onNext={nextState} leaderboard={gameState.leaderboard} isLastQuestion={gameState.isLastQuestion} />;
+			}
 			case 'END_INTRO':
-			case 'END_REVEALED':
+			case 'END_REVEALED': {
 				return <HostEnd leaderboard={gameState.leaderboard} revealed={gameState.endRevealed} />;
-			default:
+			}
+			default: {
 				return <div>Unknown game phase.</div>;
+			}
 		}
 	};
 
@@ -352,7 +368,7 @@ export function HostPage() {
 			<Toaster richColors />
 
 			{/* Floating emojis from players */}
-			<FloatingEmojis ref={floatingEmojisRef} />
+			<FloatingEmojis ref={floatingEmojisReference} />
 
 			{/* Leave game confirmation dialog */}
 			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>

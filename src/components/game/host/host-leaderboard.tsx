@@ -5,13 +5,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
-interface HostLeaderboardProps {
+interface HostLeaderboardProperties {
 	onNext: () => void;
 	leaderboard: LeaderboardEntry[];
 	isLastQuestion: boolean;
 }
 
-export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLeaderboardProps) {
+export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLeaderboardProperties) {
 	const top5 = leaderboard.slice(0, 5);
 	const [animationPhase, setAnimationPhase] = useState<'intro' | 'reorder' | 'done'>('intro');
 
@@ -23,9 +23,9 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 		if (animationPhase === 'intro' && hasRankChanges) {
 			// Sort by previous rank, new entries go to end
 			return [...top5].sort((a, b) => {
-				const aPrev = a.previousRank ?? 999;
-				const bPrev = b.previousRank ?? 999;
-				return aPrev - bPrev;
+				const aPrevious = a.previousRank ?? 999;
+				const bPrevious = b.previousRank ?? 999;
+				return aPrevious - bPrevious;
 			});
 		}
 		return top5;
@@ -89,7 +89,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 			);
 		}
 
-		return null;
+		return;
 	};
 
 	return (
@@ -106,7 +106,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 					<LayoutGroup>
 						<ul className="divide-y">
 							<AnimatePresence mode="popLayout">
-								{sortedPlayers.map((player, i) => {
+								{sortedPlayers.map((player, index) => {
 									// Get the visual position for rank display
 									const displayRank = player.rank;
 									const isMovingUp = player.previousRank !== undefined && player.previousRank > displayRank;
@@ -127,8 +127,8 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 											exit={{ opacity: 0, x: 100 }}
 											transition={{
 												layout: { type: 'spring', stiffness: 300, damping: 30 },
-												opacity: { duration: 0.3, delay: i * 0.15 },
-												x: { duration: 0.3, delay: i * 0.15 },
+												opacity: { duration: 0.3, delay: index * 0.15 },
+												x: { duration: 0.3, delay: index * 0.15 },
 												scale: { duration: 0.5 },
 											}}
 										>

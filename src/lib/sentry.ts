@@ -10,11 +10,11 @@ Sentry.init({
 	],
 
 	// Performance monitoring
-	tracesSampleRate: 1.0,
+	tracesSampleRate: 1,
 
 	// Session replay
 	replaysSessionSampleRate: 0.1,
-	replaysOnErrorSampleRate: 1.0,
+	replaysOnErrorSampleRate: 1,
 
 	// Logging
 	_experiments: {
@@ -26,7 +26,7 @@ Sentry.init({
 });
 
 void fetch('/api/version')
-	.then((res) => res.json())
+	.then((response) => response.json())
 	.then((data: { success: boolean; data: { release: string | null } }) => {
 		if (data.success && data.data.release) {
 			const client = Sentry.getClient();
@@ -37,4 +37,4 @@ void fetch('/api/version')
 	})
 	.catch(() => {});
 
-export { Sentry };
+export * as Sentry from '@sentry/react';

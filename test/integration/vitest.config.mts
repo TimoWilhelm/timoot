@@ -15,14 +15,14 @@ import { loadEnv } from 'vite';
  * - LOAD_TEST_EMOJI_BURST: Emojis per player during burst test (default: 5)
  */
 export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd(), '');
+	const environment = loadEnv(mode, process.cwd(), '');
 	return {
 		test: {
 			include: ['test/integration/**/*.test.ts'],
 			exclude: ['test/integration/utils/**'],
 			globals: true,
-			testTimeout: 60000,
-			hookTimeout: 30000,
+			testTimeout: 60_000,
+			hookTimeout: 30_000,
 			pool: 'threads',
 			poolOptions: {
 				threads: {
@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
 			reporters: ['verbose'],
 			env: {
 				// Default values - can be overridden via .env or CLI
-				TEST_BASE_URL: env.TEST_BASE_URL || 'http://localhost:3000',
+				TEST_BASE_URL: environment.TEST_BASE_URL || 'http://localhost:3000',
 			},
 		},
 		resolve: {

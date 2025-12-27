@@ -3,7 +3,7 @@ import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-export interface ErrorFallbackProps {
+export interface ErrorFallbackProperties {
 	title?: string;
 	message?: string;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,12 +22,12 @@ export function ErrorFallback({
 	onGoHome,
 	showErrorDetails = true,
 	statusMessage = 'Our team has been notified',
-}: ErrorFallbackProps) {
+}: ErrorFallbackProperties) {
 	const handleRetry = () => {
 		if (onRetry) {
 			onRetry();
 		} else {
-			window.location.reload();
+			globalThis.location.reload();
 		}
 	};
 
@@ -35,7 +35,7 @@ export function ErrorFallback({
 		if (onGoHome) {
 			onGoHome();
 		} else {
-			window.location.href = '/';
+			globalThis.location.href = '/';
 		}
 	};
 

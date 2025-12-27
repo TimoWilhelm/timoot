@@ -88,7 +88,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				server.close(4004, 'Game not found');
 			}
 
-			return new Response(null, { status: 101, webSocket: client });
+			return new Response(undefined, { status: 101, webSocket: client });
 		}
 
 		// Handle WebSocket upgrade requests - player path
@@ -113,14 +113,14 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			// Cancel any pending cleanup alarm since we have a new connection
 			await this.ctx.storage.deleteAlarm();
 
-			return new Response(null, { status: 101, webSocket: client });
+			return new Response(undefined, { status: 101, webSocket: client });
 		}
 
 		return new Response('Not Found', { status: 404 });
 	}
 
 	async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
-		const ctx = this.getHandlerContext();
+		const context = this.getHandlerContext();
 		const getState = () => this.getFullGameState();
 
 		try {
@@ -140,7 +140,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 					sendMessage(ws, { type: 'error', ...createError(ErrorCode.HOST_ALREADY_AUTHENTICATED) });
 					return;
 				}
-				await handlePlayerConnect(ctx, ws, data, getState);
+				await handlePlayerConnect(context, ws, data, getState);
 				return;
 			}
 
@@ -152,26 +152,32 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 			// Route message based on type
 			switch (data.type) {
-				case 'join':
-					await handleJoin(ctx, ws, attachment, data.nickname, getState);
+				case 'join': {
+					await handleJoin(context, ws, attachment, data.nickname, getState);
 					break;
-				case 'startGame':
-					await handleStartGame(ctx, ws, attachment, getState);
+				}
+				case 'startGame': {
+					await handleStartGame(context, ws, attachment, getState);
 					break;
-				case 'submitAnswer':
-					await handleSubmitAnswer(ctx, ws, attachment, data.answerIndex, getState);
+				}
+				case 'submitAnswer': {
+					await handleSubmitAnswer(context, ws, attachment, data.answerIndex, getState);
 					break;
-				case 'nextState':
-					await handleNextState(ctx, ws, attachment, getState);
+				}
+				case 'nextState': {
+					await handleNextState(context, ws, attachment, getState);
 					break;
-				case 'sendEmoji':
-					await handleSendEmoji(ctx, ws, attachment, data.emoji, getState);
+				}
+				case 'sendEmoji': {
+					await handleSendEmoji(context, ws, attachment, data.emoji, getState);
 					break;
-				default:
+				}
+				default: {
 					sendMessage(ws, { type: 'error', ...createError(ErrorCode.UNKNOWN_MESSAGE_TYPE) });
+				}
 			}
-		} catch (err) {
-			console.error('WebSocket message error:', err);
+		} catch (error) {
+			console.error('WebSocket message error:', error);
 			sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_MESSAGE_FORMAT) });
 		}
 	}
@@ -202,7 +208,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 	 * Alarm handler - triggered for phase transitions or cleanup
 	 */
 	async alarm(): Promise<void> {
-		const ctx = this.getHandlerContext();
+		const context = this.getHandlerContext();
 		const sockets = this.ctx.getWebSockets();
 		const state = await this.getFullGameState();
 
@@ -211,14 +217,14 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			if (questionHasModifiers(state)) {
 				state.phase = 'QUESTION_MODIFIER';
 				await this.ctx.storage.put('game_state', state);
-				broadcastQuestionModifier(ctx, state);
+				broadcastQuestionModifier(context, state);
 				// Schedule transition to QUESTION after modifier display
 				await this.ctx.storage.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 			} else {
 				state.phase = 'QUESTION';
 				state.questionStartTime = Date.now();
 				await this.ctx.storage.put('game_state', state);
-				broadcastQuestionStart(ctx, state);
+				broadcastQuestionStart(context, state);
 			}
 			return;
 		}
@@ -228,13 +234,13 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			state.phase = 'QUESTION';
 			state.questionStartTime = Date.now();
 			await this.ctx.storage.put('game_state', state);
-			broadcastQuestionStart(ctx, state);
+			broadcastQuestionStart(context, state);
 			return;
 		}
 
 		// Handle QUESTION -> REVEAL transition (when all players answered or time expired)
 		if (state?.phase === 'QUESTION' && state.answers.length === state.players.length) {
-			await advanceToReveal(ctx, state);
+			await advanceToReveal(context, state);
 			return;
 		}
 
@@ -242,7 +248,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		if (state?.phase === 'END_INTRO') {
 			state.phase = 'END_REVEALED';
 			await this.ctx.storage.put('game_state', state);
-			broadcastGameEnd(ctx, state, true);
+			broadcastGameEnd(context, state, true);
 			return;
 		}
 
@@ -273,7 +279,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			return { error: 'Cannot start a game with an empty quiz.' };
 		}
 
-		const pin = Math.floor(100000 + Math.random() * 900000).toString();
+		const pin = Math.floor(100_000 + Math.random() * 900_000).toString();
 
 		const newGame: GameState = {
 			id: gameId,
@@ -291,9 +297,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		return newGame;
 	}
 
-	async getFullGameState(): Promise<GameState | null> {
+	async getFullGameState(): Promise<GameState | undefined> {
 		const state = await this.ctx.storage.get<GameState>('game_state');
-		return state ?? null;
+		return state;
 	}
 
 	/**

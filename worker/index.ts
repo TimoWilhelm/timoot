@@ -5,11 +5,8 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import * as Sentry from '@sentry/cloudflare';
 import { userRoutes } from './user-routes';
-import { QuizStoreDurableObject } from './quiz-store';
-import { GameRoomDurableObject } from './game-room';
 
 // Export Durable Object classes to make them available in wrangler
-export { QuizStoreDurableObject, GameRoomDurableObject };
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -27,18 +24,18 @@ userRoutes(app);
 app.get('/api/health', (c) => c.json({ success: true, data: { status: 'healthy', timestamp: new Date().toISOString() } }));
 
 app.notFound((c) => c.json({ success: false, error: 'Not Found' }, 404));
-app.onError((err, c) => {
-	console.error(`[ERROR] ${err}`);
+app.onError((error, c) => {
+	console.error(`[ERROR] ${error}`);
 	return c.json({ success: false, error: 'Internal Server Error' }, 500);
 });
 
 console.log(`Server is running`);
 
 export default Sentry.withSentry(
-	(env: Env) => ({
+	(environment: Env) => ({
 		dsn: import.meta.env.VITE_SENTRY_DSN,
-		release: env.CF_VERSION_METADATA?.id,
-		tracesSampleRate: 1.0,
+		release: environment.CF_VERSION_METADATA?.id,
+		tracesSampleRate: 1,
 		sendDefaultPii: true,
 		_experiments: {
 			enableLogs: true,
@@ -46,3 +43,6 @@ export default Sentry.withSentry(
 	}),
 	app,
 );
+
+export { QuizStoreDurableObject } from './quiz-store';
+export { GameRoomDurableObject } from './game-room';

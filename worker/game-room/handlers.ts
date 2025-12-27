@@ -47,10 +47,10 @@ export interface HandlerContext extends BroadcastContext, StorageContext {
  * Handle player connect message - hosts are pre-authenticated via /websocket/host
  */
 export async function handlePlayerConnect(
-	ctx: HandlerContext,
+	context: HandlerContext,
 	ws: WebSocket,
 	data: Extract<ClientMessage, { type: 'connect' }>,
-	getFullGameState: () => Promise<GameState | null>,
+	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	const state = await getFullGameState();
 	if (!state) {
@@ -69,7 +69,7 @@ export async function handlePlayerConnect(
 	// Player connection
 	const playerId = data.playerId;
 	const playerToken = data.playerToken;
-	const existingPlayer = playerId ? state.players.find((p) => p.id === playerId) : null;
+	const existingPlayer = playerId ? state.players.find((p) => p.id === playerId) : undefined;
 
 	// If reconnecting with valid playerId, verify the secure token
 	if (existingPlayer) {
@@ -88,7 +88,7 @@ export async function handlePlayerConnect(
 
 		// Send back the token so client can verify/restore it
 		sendMessage(ws, { type: 'connected', role: 'player', playerId, playerToken: existingPlayer.token });
-		sendCurrentStateToPlayer(ws, state, playerId!, ctx.env);
+		sendCurrentStateToPlayer(ws, state, playerId!, context.env);
 	} else {
 		// New player - needs to join
 		ws.serializeAttachment({
@@ -109,11 +109,11 @@ export async function handlePlayerConnect(
  * Handle player join request.
  */
 export async function handleJoin(
-	ctx: HandlerContext,
+	context: HandlerContext,
 	ws: WebSocket,
 	attachment: WebSocketAttachment,
 	nickname: string,
-	getFullGameState: () => Promise<GameState | null>,
+	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	if (attachment.role !== 'player') {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_PLAYERS_CAN_JOIN) });
@@ -153,7 +153,7 @@ export async function handleJoin(
 	const playerToken = crypto.randomUUID();
 	const newPlayer: Player = { id: playerId, name: validatedNickname, score: 0, answered: false, token: playerToken };
 	state.players.push(newPlayer);
-	await ctx.storage.put('game_state', state);
+	await context.storage.put('game_state', state);
 
 	// Update WebSocket attachment with playerId
 	ws.serializeAttachment({
@@ -165,17 +165,17 @@ export async function handleJoin(
 	sendMessage(ws, { type: 'connected', role: 'player', playerId, playerToken });
 
 	// Broadcast lobby update to all connected clients
-	broadcastLobbyUpdate(ctx, state);
+	broadcastLobbyUpdate(context, state);
 }
 
 /**
  * Handle host starting the game.
  */
 export async function handleStartGame(
-	ctx: HandlerContext,
+	context: HandlerContext,
 	ws: WebSocket,
 	attachment: WebSocketAttachment,
-	getFullGameState: () => Promise<GameState | null>,
+	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	if (attachment.role !== 'host') {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_HOST_CAN_START) });
@@ -190,24 +190,24 @@ export async function handleStartGame(
 
 	// Transition to GET_READY phase with countdown before first question
 	state.phase = 'GET_READY';
-	await ctx.storage.put('game_state', state);
+	await context.storage.put('game_state', state);
 
 	// Broadcast get ready message to all clients
-	broadcastGetReady(ctx, state);
+	broadcastGetReady(context, state);
 
 	// Schedule automatic transition to QUESTION phase after countdown
-	await ctx.setAlarm(Date.now() + getReadyCountdownMs(ctx.env));
+	await context.setAlarm(Date.now() + getReadyCountdownMs(context.env));
 }
 
 /**
  * Handle player submitting an answer.
  */
 export async function handleSubmitAnswer(
-	ctx: HandlerContext,
+	context: HandlerContext,
 	ws: WebSocket,
 	attachment: WebSocketAttachment,
 	answerIndex: number,
-	getFullGameState: () => Promise<GameState | null>,
+	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	if (attachment.role !== 'player' || !attachment.playerId) {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_PLAYERS_CAN_ANSWER) });
@@ -240,13 +240,13 @@ export async function handleSubmitAnswer(
 
 	const answer: Answer = { playerId, answerIndex, time: timeTaken };
 	state.answers.push(answer);
-	await ctx.storage.put('game_state', state);
+	await context.storage.put('game_state', state);
 
 	// Confirm to player
 	sendMessage(ws, { type: 'answerReceived', answerIndex });
 
 	// Notify host of answer count
-	broadcastToRole(ctx, 'host', {
+	broadcastToRole(context, 'host', {
 		type: 'playerAnswered',
 		playerId,
 		answeredCount: state.answers.length,
@@ -258,7 +258,7 @@ export async function handleSubmitAnswer(
 		const elapsed = Date.now() - state.questionStartTime;
 		const remainingTime = QUESTION_TIME_LIMIT_MS - elapsed;
 		const delay = Math.min(ALL_ANSWERED_DELAY_MS, Math.max(0, remainingTime));
-		await ctx.setAlarm(Date.now() + delay);
+		await context.setAlarm(Date.now() + delay);
 	}
 }
 
@@ -266,11 +266,11 @@ export async function handleSubmitAnswer(
  * Handle player sending an emoji reaction.
  */
 export async function handleSendEmoji(
-	ctx: HandlerContext,
+	context: HandlerContext,
 	ws: WebSocket,
 	attachment: WebSocketAttachment,
 	emoji: EmojiReaction,
-	getFullGameState: () => Promise<GameState | null>,
+	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	if (attachment.role !== 'player' || !attachment.playerId) {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_PLAYERS_CAN_SEND_EMOJI) });
@@ -284,7 +284,7 @@ export async function handleSendEmoji(
 	}
 
 	// Broadcast emoji to host only
-	broadcastToRole(ctx, 'host', {
+	broadcastToRole(context, 'host', {
 		type: 'emojiReceived',
 		emoji,
 		playerId: attachment.playerId,
@@ -294,23 +294,23 @@ export async function handleSendEmoji(
 /**
  * Advance the game state to the reveal phase.
  */
-export async function advanceToReveal(ctx: HandlerContext, state: GameState): Promise<void> {
+export async function advanceToReveal(context: HandlerContext, state: GameState): Promise<void> {
 	processAnswersAndUpdateScores(state);
 	state.phase = 'REVEAL';
-	await ctx.storage.put('game_state', state);
+	await context.storage.put('game_state', state);
 
 	// Broadcast reveal with appropriate data for each role
-	broadcastReveal(ctx, state);
+	broadcastReveal(context, state);
 }
 
 /**
  * Handle host advancing to the next game state.
  */
 export async function handleNextState(
-	ctx: HandlerContext,
+	context: HandlerContext,
 	ws: WebSocket,
 	attachment: WebSocketAttachment,
-	getFullGameState: () => Promise<GameState | null>,
+	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	if (attachment.role !== 'host') {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_HOST_CAN_ADVANCE) });
@@ -324,58 +324,62 @@ export async function handleNextState(
 	}
 
 	switch (state.phase) {
-		case 'QUESTION':
-			await advanceToReveal(ctx, state);
+		case 'QUESTION': {
+			await advanceToReveal(context, state);
 			break;
-		case 'REVEAL':
+		}
+		case 'REVEAL': {
 			// After revealing the final question, skip the LEADERBOARD phase
 			// and go straight to END_INTRO to show the podium screen without spoilers.
 			if (state.currentQuestionIndex >= state.questions.length - 1) {
 				state.phase = 'END_INTRO';
 				state.players.sort((a, b) => b.score - a.score);
-				await ctx.storage.put('game_state', state);
-				broadcastGameEnd(ctx, state, false);
+				await context.storage.put('game_state', state);
+				broadcastGameEnd(context, state, false);
 				// Schedule transition to END_REVEALED after intro animation
-				await ctx.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
+				await context.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
 			} else {
 				state.phase = 'LEADERBOARD';
 				state.players.sort((a, b) => b.score - a.score);
-				await ctx.storage.put('game_state', state);
-				broadcastLeaderboard(ctx, state);
+				await context.storage.put('game_state', state);
+				broadcastLeaderboard(context, state);
 			}
 			break;
-		case 'LEADERBOARD':
+		}
+		case 'LEADERBOARD': {
 			if (state.currentQuestionIndex < state.questions.length - 1) {
 				state.currentQuestionIndex++;
 				state.answers = [];
-				state.players.forEach((p) => (p.answered = false));
+				for (const p of state.players) p.answered = false;
 				// Check if next question has modifiers
 				if (questionHasModifiers(state)) {
 					state.phase = 'QUESTION_MODIFIER';
-					await ctx.storage.put('game_state', state);
-					broadcastQuestionModifier(ctx, state);
+					await context.storage.put('game_state', state);
+					broadcastQuestionModifier(context, state);
 					// Schedule automatic transition to QUESTION after modifier display
-					await ctx.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
+					await context.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 				} else {
 					state.phase = 'QUESTION';
 					state.questionStartTime = Date.now();
-					await ctx.storage.put('game_state', state);
-					broadcastQuestionStart(ctx, state);
+					await context.storage.put('game_state', state);
+					broadcastQuestionStart(context, state);
 				}
 			} else {
 				state.phase = 'END_INTRO';
-				await ctx.storage.put('game_state', state);
-				broadcastGameEnd(ctx, state, false);
+				await context.storage.put('game_state', state);
+				broadcastGameEnd(context, state, false);
 				// Schedule transition to END_REVEALED after intro animation
-				await ctx.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
+				await context.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
 			}
 			break;
+		}
 		case 'LOBBY':
 		case 'GET_READY':
 		case 'QUESTION_MODIFIER':
 		case 'END_INTRO':
-		case 'END_REVEALED':
+		case 'END_REVEALED': {
 			break;
+		}
 		default: {
 			const _exhaustiveCheck: never = state.phase;
 			sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_STATE_TRANSITION) });

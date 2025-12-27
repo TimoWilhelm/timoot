@@ -45,7 +45,7 @@ export function RouteErrorBoundary() {
 			<ErrorFallback
 				title={`${error.status} ${error.statusText}`}
 				message="Sorry, an error occurred while loading this page."
-				error={error.data ? { message: JSON.stringify(error.data, null, 2) } : error}
+				error={error.data ? { message: JSON.stringify(error.data, undefined, 2) } : error}
 				statusMessage="Navigation error detected"
 			/>
 		);

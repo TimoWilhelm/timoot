@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { GameState } from '@shared/types';
 interface GameStoreState {
-	gameState: GameState | null;
-	gameId: string | null;
-	playerId: string | null;
-	playerToken: string | null;
-	nickname: string | null;
+	gameState: GameState | undefined;
+	gameId: string | undefined;
+	playerId: string | undefined;
+	playerToken: string | undefined;
+	nickname: string | undefined;
 	setGameState: (state: GameState) => void;
 	setSession: (session: { gameId: string; playerId: string; playerToken: string; nickname: string }) => void;
 	clearSession: () => void;
@@ -14,11 +14,11 @@ interface GameStoreState {
 export const useGameStore = create<GameStoreState>()(
 	persist(
 		(set) => ({
-			gameState: null,
-			gameId: null,
-			playerId: null,
-			playerToken: null,
-			nickname: null,
+			gameState: undefined,
+			gameId: undefined,
+			playerId: undefined,
+			playerToken: undefined,
+			nickname: undefined,
 			setGameState: (state) => set({ gameState: state }),
 			setSession: (session) =>
 				set({
@@ -29,11 +29,11 @@ export const useGameStore = create<GameStoreState>()(
 				}),
 			clearSession: () =>
 				set({
-					gameId: null,
-					playerId: null,
-					playerToken: null,
-					nickname: null,
-					gameState: null,
+					gameId: undefined,
+					playerId: undefined,
+					playerToken: undefined,
+					nickname: undefined,
+					gameState: undefined,
 				}),
 		}),
 		{
