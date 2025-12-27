@@ -6,7 +6,7 @@ import { cloudflare } from '@cloudflare/vite-plugin';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 // https://vite.dev/config/
-export default (): UserConfig => {
+export default function defineViteConfig(): UserConfig {
 	return defineConfig({
 		plugins: [
 			devtoolsJson(),
@@ -22,6 +22,7 @@ export default (): UserConfig => {
 		build: {
 			sourcemap: true,
 			minify: true,
+			target: 'ES2023',
 		},
 		css: {
 			devSourcemap: true,
@@ -41,4 +42,4 @@ export default (): UserConfig => {
 		// Clear cache more aggressively
 		cacheDir: 'node_modules/.vite',
 	});
-};
+}

@@ -4,7 +4,7 @@ import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { adjectives, animals, colors, findMatches, isValidGameId, isValidWord } from '@/lib/words';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utilities';
 
 // Determine which word list to use based on current position
 function getWordListForPosition(parts: string[]): { list: string[]; label: string } | undefined {

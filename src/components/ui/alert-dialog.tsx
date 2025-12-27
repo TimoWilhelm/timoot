@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utilities';
 import { buttonVariants } from '@/components/ui/button';
 import { useDialogBackHandler } from '@/hooks/use-dialog-back-handler';
 

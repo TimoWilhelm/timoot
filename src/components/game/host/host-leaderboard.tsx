@@ -22,7 +22,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 	const sortedPlayers = useMemo(() => {
 		if (animationPhase === 'intro' && hasRankChanges) {
 			// Sort by previous rank, new entries go to end
-			return [...top5].sort((a, b) => {
+			return [...top5].toSorted((a, b) => {
 				const aPrevious = a.previousRank ?? 999;
 				const bPrevious = b.previousRank ?? 999;
 				return aPrevious - bPrevious;

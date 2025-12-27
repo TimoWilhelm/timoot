@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utilities';
 import { useDialogBackHandler } from '@/hooks/use-dialog-back-handler';
 
 interface DialogProperties extends React.ComponentProps<typeof DialogPrimitive.Root> {

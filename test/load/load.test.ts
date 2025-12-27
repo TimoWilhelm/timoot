@@ -105,7 +105,8 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	console.log(`  Connecting ${playerCount} players...`);
 	const playerNames = generatePlayerNames(playerCount, 'LoadPlayer');
 	const playerPromises = playerNames.map((name) => simulatePlayer(baseUrl, game.gameId, name, metrics));
-	const players = (await Promise.all(playerPromises)).filter((p): p is WsTestClient => p !== null);
+	const playerResults = await Promise.all(playerPromises);
+	const players = playerResults.filter((p): p is WsTestClient => p !== null);
 	console.log(`  ${players.length}/${playerCount} players connected`);
 
 	// Wait for all players to be in lobby (with graceful timeout)
@@ -297,38 +298,35 @@ describe('Load Tests', () => {
 			const totalTime = Date.now() - startTime;
 
 			// Aggregate metrics
-			const aggregated = allMetrics.reduce(
-				(accumulator, m) => ({
-					totalPlayers: accumulator.totalPlayers + m.totalPlayers,
-					successfulConnections: accumulator.successfulConnections + m.successfulConnections,
-					failedConnections: accumulator.failedConnections + m.failedConnections,
-					successfulJoins: accumulator.successfulJoins + m.successfulJoins,
-					failedJoins: accumulator.failedJoins + m.failedJoins,
-					successfulAnswers: accumulator.successfulAnswers + m.successfulAnswers,
-					failedAnswers: accumulator.failedAnswers + m.failedAnswers,
-					emojisSent: accumulator.emojisSent + m.emojisSent,
-					avgConnectionTimeMs: accumulator.avgConnectionTimeMs + m.avgConnectionTimeMs,
-					avgJoinTimeMs: accumulator.avgJoinTimeMs + m.avgJoinTimeMs,
-					avgAnswerTimeMs: accumulator.avgAnswerTimeMs + m.avgAnswerTimeMs,
-					totalTimeMs: 0,
-					errors: [...accumulator.errors, ...m.errors],
-				}),
-				{
-					totalPlayers: 0,
-					successfulConnections: 0,
-					failedConnections: 0,
-					successfulJoins: 0,
-					failedJoins: 0,
-					successfulAnswers: 0,
-					failedAnswers: 0,
-					emojisSent: 0,
-					avgConnectionTimeMs: 0,
-					avgJoinTimeMs: 0,
-					avgAnswerTimeMs: 0,
-					totalTimeMs: 0,
-					errors: [] as string[],
-				},
-			);
+			const aggregated: LoadTestMetrics = {
+				totalPlayers: 0,
+				successfulConnections: 0,
+				failedConnections: 0,
+				successfulJoins: 0,
+				failedJoins: 0,
+				successfulAnswers: 0,
+				failedAnswers: 0,
+				emojisSent: 0,
+				avgConnectionTimeMs: 0,
+				avgJoinTimeMs: 0,
+				avgAnswerTimeMs: 0,
+				totalTimeMs: 0,
+				errors: [],
+			};
+			for (const m of allMetrics) {
+				aggregated.totalPlayers += m.totalPlayers;
+				aggregated.successfulConnections += m.successfulConnections;
+				aggregated.failedConnections += m.failedConnections;
+				aggregated.successfulJoins += m.successfulJoins;
+				aggregated.failedJoins += m.failedJoins;
+				aggregated.successfulAnswers += m.successfulAnswers;
+				aggregated.failedAnswers += m.failedAnswers;
+				aggregated.emojisSent += m.emojisSent;
+				aggregated.avgConnectionTimeMs += m.avgConnectionTimeMs;
+				aggregated.avgJoinTimeMs += m.avgJoinTimeMs;
+				aggregated.avgAnswerTimeMs += m.avgAnswerTimeMs;
+				aggregated.errors.push(...m.errors);
+			}
 
 			// Average the averages
 			aggregated.avgConnectionTimeMs /= allMetrics.length;

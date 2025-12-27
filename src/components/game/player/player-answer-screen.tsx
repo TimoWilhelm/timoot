@@ -8,6 +8,15 @@ interface PlayerAnswerScreenProperties {
 	optionIndices: number[];
 }
 
+function getPosition(displayIndex: number) {
+	const row = Math.floor(displayIndex / 2);
+	const col = displayIndex % 2;
+	return {
+		top: `calc(${row * 50}% + 6px)`,
+		left: `calc(${col * 50}% + 6px)`,
+	};
+}
+
 export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerScreenProperties) {
 	const [showPulse, setShowPulse] = useState(false);
 
@@ -20,16 +29,6 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 		// No need to setShowPulse(false) - state is initialized as false,
 		// and render guards (isSelected && showPulse) prevent showing pulse when submittedAnswer is null
 	}, [submittedAnswer]);
-
-	// Calculate positions for 2x2 grid with rectangular buttons (wider horizontally)
-	const getPosition = (displayIndex: number) => {
-		const row = Math.floor(displayIndex / 2);
-		const col = displayIndex % 2;
-		return {
-			top: `calc(${row * 50}% + 6px)`,
-			left: `calc(${col * 50}% + 6px)`,
-		};
-	};
 
 	const canAnswer = submittedAnswer === undefined;
 

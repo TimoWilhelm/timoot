@@ -8,5 +8,5 @@
 	"entry": ["src/main.tsx", "worker/index.ts", "worker/user-routes.ts"],
 	"ignoreDependencies": ["cloudflare"],
 	"ignoreBinaries": ["wrangler"],
-	"ignoreFiles": ["test/unit/env.d.ts"]
+	"ignoreFiles": ["src/vite-environment.d.ts", "test/unit/environment.d.ts"]
 }

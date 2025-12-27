@@ -1,4 +1,4 @@
-import * as path from 'node:path';
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 import { loadEnv } from 'vite';
 

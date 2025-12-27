@@ -3,6 +3,19 @@ import { buildLeaderboard, calculateAnswerScore, processAnswersAndUpdateScores }
 import { QUESTION_TIME_LIMIT_MS } from '../../worker/game/constants';
 import type { Answer, GameState, Player, Question } from '@shared/types';
 
+function createMockState(players: Player[], answers: Answer[], questions: Question[]): GameState {
+	return {
+		id: 'test-game',
+		pin: '1234',
+		phase: 'REVEAL',
+		players,
+		questions,
+		currentQuestionIndex: 0,
+		questionStartTime: Date.now(),
+		answers,
+	};
+}
+
 describe('scoring.ts', () => {
 	describe('calculateAnswerScore', () => {
 		it('returns zero score for incorrect answer', () => {
@@ -58,17 +71,6 @@ describe('scoring.ts', () => {
 	});
 
 	describe('processAnswersAndUpdateScores', () => {
-		const createMockState = (players: Player[], answers: Answer[], questions: Question[]): GameState => ({
-			id: 'test-game',
-			pin: '1234',
-			phase: 'REVEAL',
-			players,
-			questions,
-			currentQuestionIndex: 0,
-			questionStartTime: Date.now(),
-			answers,
-		});
-
 		it('updates player scores for correct answers', () => {
 			const players: Player[] = [{ id: 'p1', name: 'Player 1', score: 0, answered: true }];
 			const answers: Answer[] = [{ playerId: 'p1', answerIndex: 0, time: 1000 }];

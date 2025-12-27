@@ -37,11 +37,32 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utilities';
 import { useHostStore } from '@/lib/host-store';
 import { client } from '@/lib/api-client';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
+
+function getStatusMessage(status: { stage: string; detail?: string } | undefined): string {
+	if (!status) return 'Preparing...';
+	switch (status.stage) {
+		case 'researching': {
+			return `Researching ${status.detail || 'topic'}...`;
+		}
+		case 'reading_docs': {
+			return `Reading documentation for ${status.detail || 'topic'}...`;
+		}
+		case 'searching_web': {
+			return `Searching the web for ${status.detail || 'relevant information'}...`;
+		}
+		case 'generating': {
+			return 'Generating quiz questions...';
+		}
+		default: {
+			return 'Processing...';
+		}
+	}
+}
 
 export function HomePage() {
 	const navigate = useNavigate();
@@ -208,27 +229,6 @@ export function HomePage() {
 			void navigator.clipboard.writeText(syncCode);
 			setCodeCopied(true);
 			setTimeout(() => setCodeCopied(false), 2000);
-		}
-	};
-
-	const getStatusMessage = (status: { stage: string; detail?: string } | undefined): string => {
-		if (!status) return 'Preparing...';
-		switch (status.stage) {
-			case 'researching': {
-				return `Researching ${status.detail || 'topic'}...`;
-			}
-			case 'reading_docs': {
-				return `Reading documentation for ${status.detail || 'topic'}...`;
-			}
-			case 'searching_web': {
-				return `Searching the web for ${status.detail || 'relevant information'}...`;
-			}
-			case 'generating': {
-				return 'Generating quiz questions...';
-			}
-			default: {
-				return 'Processing...';
-			}
 		}
 	};
 

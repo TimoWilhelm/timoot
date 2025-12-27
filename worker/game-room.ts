@@ -121,7 +121,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 	async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
 		const context = this.getHandlerContext();
-		const getState = () => this.getFullGameState();
+		const getState = this.getFullGameState.bind(this);
 
 		try {
 			const rawData = JSON.parse(message.toString());

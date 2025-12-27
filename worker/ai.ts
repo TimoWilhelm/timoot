@@ -15,7 +15,7 @@ import { stripIndent } from 'common-tags';
 import { z } from 'zod';
 import { env, waitUntil } from 'cloudflare:workers';
 
-const getCloudflareDocsMCP: () => Promise<MCPClient> = async () => {
+const getCloudflareDocumentationMCP: () => Promise<MCPClient> = async () => {
 	return await createMCPClient({
 		transport: new StreamableHTTPClientTransport(new URL('https://docs.mcp.cloudflare.com/mcp')),
 	});
@@ -78,7 +78,7 @@ export async function generateQuizFromPrompt(
 	metadata?: Record<string, string>,
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
-	const mcpServers = await Promise.all([getCloudflareDocsMCP(), webSearchMCP()]);
+	const mcpServers = await Promise.all([getCloudflareDocumentationMCP(), webSearchMCP()]);
 	const activeModel = metadata ? createModel(metadata) : model;
 
 	try {

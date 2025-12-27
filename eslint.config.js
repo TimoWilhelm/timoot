@@ -46,48 +46,6 @@ export default defineConfig(
 	},
 
 	unicorn.configs.recommended,
-	{
-		rules: {
-			// Disable rules that require major refactoring or ES2023+ features
-			'unicorn/prevent-abbreviations': [
-				'error',
-				{
-					allowList: {
-						// Allow common abbreviations
-						env: true,
-						Env: true,
-						props: true,
-						Props: true,
-						ref: true,
-						Ref: true,
-						params: true,
-						Params: true,
-						args: true,
-						Args: true,
-						res: true,
-						req: true,
-						docs: true,
-						Docs: true,
-					},
-					ignore: [
-						// Ignore file naming rules for these patterns
-						'vite-env',
-						String.raw`\.d\.ts$`,
-						'utils',
-					],
-				},
-			],
-			'unicorn/consistent-function-scoping': 'off', // Would require significant refactoring
-			'unicorn/no-array-sort': 'off', // toSorted requires ES2023
-			'unicorn/prefer-top-level-await': 'off', // Not all contexts support top-level await
-			'unicorn/import-style': 'off', // Conflicts with some import patterns
-			'unicorn/no-anonymous-default-export': 'off', // Vite config pattern
-			'unicorn/prefer-code-point': 'off', // codePointAt vs charCodeAt
-			'unicorn/no-array-reduce': 'off', // reduce is sometimes clearer
-			'unicorn/no-await-expression-member': 'off', // Pattern is common and readable
-			'unicorn/prefer-add-event-listener': 'off', // WebSocket patterns use onmessage/onerror
-		},
-	},
 
 	reactHooks.configs.flat.recommended,
 	reactRefresh.configs.vite,

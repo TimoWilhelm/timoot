@@ -5,7 +5,7 @@ import { zValidator } from '@hono/zod-validator';
 import { exports, waitUntil } from 'cloudflare:workers';
 import { type GeneratedQuestion, type GenerationStatus, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
 import { PREDEFINED_QUIZZES } from '../quizzes';
-import { checkRateLimit } from './utils';
+import { checkRateLimit } from './utilities';
 import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
 import { aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 import type { ApiResponse, Quiz } from '@shared/types';

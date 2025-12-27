@@ -93,7 +93,7 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 				const binaryString = atob(image);
 				const bytes = new Uint8Array(binaryString.length);
 				for (let index = 0; index < binaryString.length; index++) {
-					bytes[index] = binaryString.charCodeAt(index);
+					bytes[index] = binaryString.codePointAt(index) ?? 0;
 				}
 
 				// Store image in KV with metadata
