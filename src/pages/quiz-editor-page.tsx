@@ -376,7 +376,7 @@ export function QuizEditorPage() {
 					</Card>
 					{fields.map((field, qIndex) => (
 						<Card key={field.id} className="rounded-2xl shadow-lg">
-							<CardHeader className="flex flex-row items-center justify-between">
+							<CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
 								<CardTitle>Question {qIndex + 1}</CardTitle>
 								<div className="flex items-center gap-2">
 									<Controller
@@ -467,7 +467,7 @@ export function QuizEditorPage() {
 																			<button
 																				type="button"
 																				onClick={(event) => deleteImage(img.id, event)}
-																				className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
+																				className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover-never:bg-red-500 group-hover-always:opacity-100"
 																				title="Delete image"
 																			>
 																				<X className="h-3 w-3" />

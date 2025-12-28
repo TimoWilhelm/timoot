@@ -5,11 +5,11 @@ import type { Quiz } from '@shared/types';
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
 
 /**
- * QuizStoreDurableObject - Per-user DO for storing custom quizzes
+ * UserStoreDurableObject - Per-user DO for storing custom quizzes
  * Accessed via idFromName('user:{userId}') for user isolation
  * Data expires after 6 months of inactivity
  */
-export class QuizStoreDurableObject extends DurableObject<Env> {
+export class UserStoreDurableObject extends DurableObject<Env> {
 	/**
 	 * Update last access timestamp and schedule cleanup alarm
 	 * Called on every user interaction to reset the 6-month expiration
@@ -32,7 +32,7 @@ export class QuizStoreDurableObject extends DurableObject<Env> {
 		// If no activity in 6 months, delete all data
 		if (!lastAccess || now - lastAccess >= SIX_MONTHS_MS) {
 			const userId = await this.ctx.storage.get<string>('user_id');
-			console.log(`[QuizStore] Cleaning up inactive user data for user: ${userId || 'unknown'}`);
+			console.log(`[UserStore] Cleaning up inactive user data for user: ${userId || 'unknown'}`);
 
 			// Clean up KV images for this user
 			if (userId) {

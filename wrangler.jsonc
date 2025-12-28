@@ -14,8 +14,8 @@
 				"class_name": "GameRoomDurableObject"
 			},
 			{
-				"name": "QUIZ_STORE",
-				"class_name": "QuizStoreDurableObject"
+				"name": "USER_STORE",
+				"class_name": "UserStoreDurableObject"
 			}
 		]
 	},
@@ -49,6 +49,15 @@
 		{
 			"tag": "v1",
 			"new_sqlite_classes": ["QuizStoreDurableObject", "GameRoomDurableObject"]
+		},
+		{
+			"tag": "v2",
+			"renamed_classes": [
+				{
+					"from": "QuizStoreDurableObject",
+					"to": "UserStoreDurableObject"
+				}
+			]
 		}
 	],
 	"vars": {

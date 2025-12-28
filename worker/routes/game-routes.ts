@@ -98,7 +98,7 @@ export const gameRoutes = new Hono<{ Bindings: Env }>()
 			let questions = GENERAL_KNOWLEDGE_QUIZ;
 			if (quizId) {
 				const userId = getUserId(c);
-				const quizStoreStub = exports.QuizStoreDurableObject.getByName(`user:${userId}`);
+				const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
 				const customQuiz = await quizStoreStub.getCustomQuizById(quizId);
 				if (customQuiz) {
 					questions = customQuiz.questions;

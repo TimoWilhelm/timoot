@@ -44,5 +44,5 @@ export default Sentry.withSentry(
 	app,
 );
 
-export { QuizStoreDurableObject } from './quiz-store';
-export { GameRoomDurableObject } from './game-room';
+export { UserStoreDurableObject } from './durable/user-store';
+export { GameRoomDurableObject } from './durable/game-room';
