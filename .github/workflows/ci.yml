@@ -18,8 +18,43 @@ env:
   DO_NOT_TRACK: 1
 
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      playwright-version: ${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(bun pm pkg get devDependencies.playwright)
+          echo "Playwright Version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+
   lint:
     name: Lint
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -32,22 +67,19 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Run ESLint
         run: bun run lint
 
   format:
     name: Format
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -60,22 +92,19 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Check formatting with Prettier
         run: bun run format:check
 
   typecheck:
     name: Typecheck
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -88,13 +117,12 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Cache turbo
         uses: actions/cache@v4
@@ -104,14 +132,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
       - name: Run Typecheck
         run: bun run typecheck
 
   knip:
     name: Knip
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -124,22 +150,19 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Run Knip
         run: bun run knip
 
   test:
     name: Unit Tests
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -158,16 +181,12 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Create dist directory
         run: mkdir -p dist
@@ -180,6 +199,7 @@ jobs:
 
   test-storybook:
     name: Storybook Tests
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -197,37 +217,22 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: |
-          PLAYWRIGHT_VERSION=$(bun pm pkg get devDependencies.playwright)
-          echo "Playwright Version: $PLAYWRIGHT_VERSION"
-          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Cache Playwright
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: playwright-cache
-        env:
-          cache-name: playwright
         with:
           path: '~/.cache/ms-playwright'
-          key: |
-            ${{ env.cache-name }}-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
-          restore-keys: |
-            ${{ env.cache-name }}-${{ runner.os }}-
+          key: playwright-${{ runner.os }}-${{ needs.setup.outputs.playwright-version }}
 
-      - name: Install Playwright browsers ${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: bunx playwright install chromium
 
       - name: Run Storybook tests
@@ -235,6 +240,7 @@ jobs:
 
   e2e:
     name: E2E Tests
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -252,37 +258,22 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: |
-          PLAYWRIGHT_VERSION=$(bun pm pkg get devDependencies.playwright)
-          echo "Playwright Version: $PLAYWRIGHT_VERSION"
-          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Cache Playwright
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: playwright-cache
-        env:
-          cache-name: playwright
         with:
           path: '~/.cache/ms-playwright'
-          key: |
-            ${{ env.cache-name }}-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
-          restore-keys: |
-            ${{ env.cache-name }}-${{ runner.os }}-
+          key: playwright-${{ runner.os }}-${{ needs.setup.outputs.playwright-version }}
 
-      - name: Install Playwright browsers ${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: bunx playwright install chromium
 
       - name: Start dev server
@@ -326,6 +317,7 @@ jobs:
 
   integration-tests:
     name: Integration Tests
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -344,16 +336,12 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Cache dependencies
+      - name: Restore node_modules
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('bun.lock') }}
+          fail-on-cache-miss: true
 
       - name: Start dev server
         run: |
