@@ -165,6 +165,12 @@ export function PlayerPage() {
 
 	// Handle reveal side effects (sound, score update) - only once per question
 	useEffect(() => {
+		// Reset processed reveal ref when a new question starts
+		if (gameState.phase === 'QUESTION') {
+			processedRevealReference.current = undefined;
+			return;
+		}
+
 		if (gameState.phase === 'REVEAL' && gameState.playerResult && processedRevealReference.current !== gameState.questionIndex) {
 			processedRevealReference.current = gameState.questionIndex;
 			const scoreToAdd = gameState.playerResult.score;
@@ -191,13 +197,6 @@ export function PlayerPage() {
 			}
 		}
 	}, [gameState.leaderboard, currentPlayerId, hasInitialScoreSync]);
-
-	// Reset processed reveal ref on new question (answerResult is now derived, no state to reset)
-	useEffect(() => {
-		if (gameState.phase === 'QUESTION') {
-			processedRevealReference.current = undefined;
-		}
-	}, [gameState.phase, gameState.questionIndex]);
 
 	// Block navigation when game is active (not in LOBBY or END)
 	const isGameActive = view === 'GAME' && isConnected && phaseIsActiveForPlayer[gameState.phase];

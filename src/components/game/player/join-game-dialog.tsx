@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,13 +42,6 @@ export function JoinGameDialog() {
 	const wordInfo = useMemo(() => getWordListForPosition(parts), [partsCount]); // eslint-disable-line react-hooks/exhaustive-deps
 	const suggestions = useMemo(() => (wordInfo ? findMatches(currentPart, wordInfo.list).slice(0, 8) : []), [currentPart, wordInfo]);
 
-	// Reset selection, gameNotFound, and error tooltip when user types (currentPart changes)
-	useEffect(() => {
-		setSelectedIndex(-1);
-		setGameNotFound(false);
-		setShowInvalidTooltip(false);
-	}, [currentPart]);
-
 	const isComplete = isValidGameId(value);
 
 	// Validate each part for visual feedback
@@ -71,6 +64,37 @@ export function JoinGameDialog() {
 	const showInvalidInput = useCallback(() => {
 		showError('Please check the game code');
 	}, [showError]);
+
+	// Try to auto-complete when only one valid option remains
+	// Returns the auto-completed value or undefined if no auto-complete should happen
+	const tryAutoComplete = useCallback((inputValue: string): string | undefined => {
+		const inputParts = inputValue.split('-');
+		const inputCurrentPart = inputParts.at(-1) || '';
+
+		if (!inputCurrentPart || inputCurrentPart.length < 2) return undefined;
+
+		const inputWordInfo = getWordListForPosition(inputParts);
+		if (!inputWordInfo) return undefined;
+
+		const matches = findMatches(inputCurrentPart, inputWordInfo.list);
+
+		// Auto-complete if there's exactly one match and user has typed enough
+		if (matches.length === 1) {
+			const match = matches[0].toLowerCase();
+			// Only auto-complete if user hasn't already completed this word
+			if (match !== inputCurrentPart.toLowerCase()) {
+				const newParts = [...inputParts];
+				newParts[newParts.length - 1] = match;
+
+				// Add hyphen if not the last part (animal)
+				return inputParts.length < 3 ? newParts.join('-') + '-' : newParts.join('-');
+			} else if (inputParts.length < 3 && !inputValue.endsWith('-')) {
+				// Word is complete, just add hyphen
+				return inputValue + '-';
+			}
+		}
+		return undefined;
+	}, []);
 
 	const handleInputChange = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,12 +130,23 @@ export function JoinGameDialog() {
 				}
 			}
 
-			setValue(newValue);
+			// Auto-complete when only one valid option remains
+			const autoCompleteResult = tryAutoComplete(newValue);
+			if (autoCompleteResult) {
+				setValue(autoCompleteResult);
+				setAutoCompleteFlash(true);
+				setTimeout(() => setAutoCompleteFlash(false), 300);
+			} else {
+				setValue(newValue);
+			}
+
+			// Reset UI state when input changes (moved from useEffect)
+			setSelectedIndex(-1);
+			setGameNotFound(false);
 			setShowSuggestions(true);
-			// Hide invalid tooltip when valid input is entered
 			setShowInvalidTooltip(false);
 		},
-		[showInvalidInput],
+		[showInvalidInput, tryAutoComplete],
 	);
 
 	const handleSelectSuggestion = useCallback(
@@ -231,40 +266,6 @@ export function JoinGameDialog() {
 	const handleGoHome = () => {
 		navigate('/');
 	};
-
-	// Auto-complete when only one valid option remains
-	useEffect(() => {
-		if (!currentPart || currentPart.length < 2) return;
-
-		const wordInfo = getWordListForPosition(parts);
-		if (!wordInfo) return;
-
-		const matches = findMatches(currentPart, wordInfo.list);
-
-		// Auto-complete if there's exactly one match and user has typed enough
-		if (matches.length === 1) {
-			const match = matches[0].toLowerCase();
-			// Only auto-complete if user hasn't already completed this word
-			if (match !== currentPart.toLowerCase()) {
-				const newParts = [...parts];
-				newParts[newParts.length - 1] = match;
-
-				// Add hyphen if not the last part (animal)
-				if (parts.length < 3) {
-					setValue(newParts.join('-') + '-');
-				} else {
-					setValue(newParts.join('-'));
-				}
-
-				// Trigger flash animation
-				setAutoCompleteFlash(true);
-				setTimeout(() => setAutoCompleteFlash(false), 300);
-			} else if (parts.length < 3 && !value.endsWith('-')) {
-				// Word is complete, just add hyphen
-				setValue((previous) => previous + '-');
-			}
-		}
-	}, [currentPart, parts, value]);
 
 	return (
 		<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-4 text-white">

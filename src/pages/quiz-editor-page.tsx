@@ -99,6 +99,7 @@ export function QuizEditorPage() {
 	});
 	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
 	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
+	const [imageToDelete, setImageToDelete] = useState<string | undefined>();
 	const [imagePrompt, setImagePrompt] = useState('');
 	const turnstileReference = useRef<HTMLDivElement>(null);
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
@@ -253,12 +254,14 @@ export function QuizEditorPage() {
 		);
 	};
 
-	const deleteImage = (imageId: string, event: React.MouseEvent) => {
-		event.stopPropagation();
+	const deleteImage = (imageId: string) => {
 		deleteImageMutation.mutate(
 			{ userId, imageId },
 			{
-				onSuccess: () => toast.success('Image deleted'),
+				onSuccess: () => {
+					toast.success('Image deleted');
+					setImageToDelete(undefined);
+				},
 				onError: (error) => toast.error(error.message || 'Failed to delete image'),
 			},
 		);
@@ -401,8 +404,8 @@ export function QuizEditorPage() {
 														)}
 													</button>
 												</PopoverTrigger>
-												<PopoverContent className="w-96 p-3" align="end">
-													<div className="max-h-[70vh] space-y-4">
+												<PopoverContent className="w-[calc(100vw-2rem)] max-w-96 p-3" align="end">
+													<div className="max-h-[70vh] space-y-4 overflow-y-auto">
 														{/* Default Images */}
 														<div className="space-y-2">
 															<h4 className="text-sm font-semibold">Background Image</h4>
@@ -466,7 +469,10 @@ export function QuizEditorPage() {
 																			</button>
 																			<button
 																				type="button"
-																				onClick={(event) => deleteImage(img.id, event)}
+																				onClick={(event) => {
+																					event.stopPropagation();
+																					setImageToDelete(img.id);
+																				}}
 																				className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover-never:bg-red-500 group-hover-always:opacity-100"
 																				title="Delete image"
 																			>
@@ -733,6 +739,22 @@ export function QuizEditorPage() {
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay on Page</AlertDialogCancel>
 						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
 							Leave Page
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			{/* Delete image confirmation dialog */}
+			<AlertDialog open={!!imageToDelete} onOpenChange={(open) => !open && setImageToDelete(undefined)}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Image?</AlertDialogTitle>
+						<AlertDialogDescription>Are you sure you want to delete this image? This action cannot be undone.</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={() => imageToDelete && deleteImage(imageToDelete)} className="bg-red-500 hover:bg-red-600">
+							Delete
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
