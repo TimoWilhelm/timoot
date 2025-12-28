@@ -1,4 +1,5 @@
 {
+	"private": true,
 	"name": "timoot",
 	"version": "0.0.0",
 	"type": "module",
@@ -82,7 +83,6 @@
 		"zod": "^4.2.1",
 		"zustand": "^5.0.9"
 	},
-	"private": true,
 	"scripts": {
 		"prepare": "husky",
 		"dev": "bun run build:worker-types && concurrently -n vite,types -c blue,yellow \"vite --host 0.0.0.0 --port 3000\" \"tsc -p tsconfig.worker.json --watch --preserveWatchOutput\"",

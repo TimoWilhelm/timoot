@@ -1,19 +1,20 @@
 import path from 'node:path';
-import { defineConfig, UserConfig } from 'vite';
+import { defineConfig, loadEnv, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import devtoolsJson from 'vite-plugin-devtools-json';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 // https://vite.dev/config/
-export default function defineViteConfig(): UserConfig {
+export default function defineViteConfig({ mode }: { mode: string }): UserConfig {
+	const environment = loadEnv(mode, process.cwd(), '');
 	return defineConfig({
 		plugins: [
 			devtoolsJson(),
 			react(),
 			cloudflare(),
 			sentryVitePlugin({
-				authToken: process.env.SENTRY_AUTH_TOKEN,
+				authToken: environment.SENTRY_AUTH_TOKEN,
 				org: 'daxo',
 				project: 'timoot',
 				telemetry: false,
