@@ -17,7 +17,7 @@
 - `src/` - React app (pages, components, hooks)
 - `worker/` - Cloudflare Worker (API routes, Durable Objects)
 - `shared/` - Shared code between frontend and worker
-- `test/` - Unit, integration, and load tests
+- `test/` - Unit, integration and end-to-end tests
 - `.storybook/` - Storybook configuration
 </directories>
 
@@ -58,9 +58,9 @@
 
 <testing>
 - Unit tests: Vitest (`bun test`)
-- Integration tests: Playwright (`bun test:integration`)
+- Integration tests: Vitest (`bun test:integration`)
 - Component tests: Storybook (`bun test:storybook`)
-- Load tests: `bun test:load`
+- E2E tests: Playwright (`bun test:e2e`)
 </testing>
 
 <code_quality>

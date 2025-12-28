@@ -224,3 +224,94 @@ jobs:
 
       - name: Run Storybook tests
         run: bun run test:storybook --run
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(bun pm pkg get devDependencies.playwright)
+          echo "Playwright Version: $PLAYWRIGHT_VERSION"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright
+        uses: actions/cache@v3
+        id: playwright-cache
+        env:
+          cache-name: playwright
+        with:
+          path: '~/.cache/ms-playwright'
+          key: |
+            ${{ env.cache-name }}-${{ runner.os }}-${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+          restore-keys: |
+            ${{ env.cache-name }}-${{ runner.os }}-
+
+      - name: Install Playwright browsers ${{ steps.playwright-version.outputs.PLAYWRIGHT_VERSION }}
+        run: bunx playwright install chromium
+
+      - name: Start dev server
+        run: |
+          bun run dev &
+          echo "DEV_SERVER_PID=$!" >> $GITHUB_ENV
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GET_READY_COUNTDOWN_MS: '500'
+
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for server..."
+          timeout 60 bash -c 'until curl -sf http://localhost:3000/api/health > /dev/null 2>&1; do sleep 2; done'
+          echo "Server is ready!"
+
+      - name: Run E2E tests
+        id: e2e
+        run: |
+          xvfb-run --auto-servernum -- bun run test:e2e
+        env:
+          TEST_BASE_URL: 'http://localhost:3000'
+
+      - name: Stop dev server
+        if: always()
+        run: |
+          if [ -n "$DEV_SERVER_PID" ]; then
+            kill $DEV_SERVER_PID || true
+          fi
+
+      - name: Upload Playwright Test Report
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() && steps.e2e.conclusion == 'failure' }}
+        with:
+          name: playwright-e2e
+          path: |
+            playwright-report/
+            playwright-artifacts/
+          if-no-files-found: error

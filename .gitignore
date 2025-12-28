@@ -4,8 +4,10 @@ dist
 .env.*
 !.env.example
 tsconfig.tsbuildinfo
+.eslintcache
 
 *storybook.log
 storybook-static
 
-.eslintcache
+test-results
+playwright-report

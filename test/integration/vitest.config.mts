@@ -3,16 +3,12 @@ import { defineConfig } from 'vitest/config';
 import { loadEnv } from 'vite';
 
 /**
- * Vitest configuration for integration and load tests.
+ * Vitest configuration for integration tests.
  *
  * These tests run against a live server instance (local or remote).
  *
  * Environment Variables:
  * - TEST_BASE_URL: Target server URL (default: http://localhost:3000)
- * - RUN_LOAD_TESTS: Set to 'true' to enable load tests
- * - LOAD_TEST_PLAYERS: Number of players per game (default: 20)
- * - LOAD_TEST_CONCURRENT_GAMES: Number of concurrent games (default: 3)
- * - LOAD_TEST_EMOJI_BURST: Emojis per player during burst test (default: 5)
  */
 export default defineConfig(({ mode }) => {
 	const environment = loadEnv(mode, process.cwd(), '');

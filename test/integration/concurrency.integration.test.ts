@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { WsTestClient, createGame, generatePlayerNames } from '../integration/utils/ws-client';
+import { WsTestClient, createGame, generatePlayerNames } from './utils/ws-client';
 import type { EmojiReaction } from '@shared/types';
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 
-// Load test configuration via env vars
-const LOAD_TEST_PLAYERS = Number.parseInt(process.env.LOAD_TEST_PLAYERS || '20', 10);
-const LOAD_TEST_CONCURRENT_GAMES = Number.parseInt(process.env.LOAD_TEST_CONCURRENT_GAMES || '3', 10);
-const LOAD_TEST_EMOJI_BURST = Number.parseInt(process.env.LOAD_TEST_EMOJI_BURST || '10', 10);
+// Concurrency test configuration
+const CONCURRENCY_TEST_PLAYERS = 15;
+const CONCURRENCY_TEST_GAMES = 2;
+const CONCURRENCY_TEST_EMOJI_BURST = 10;
 
-interface LoadTestMetrics {
+interface ConcurrencyTestMetrics {
 	totalPlayers: number;
 	successfulConnections: number;
 	failedConnections: number;
@@ -32,14 +32,9 @@ async function simulatePlayer(
 	baseUrl: string,
 	gameId: string,
 	playerName: string,
-	metrics: LoadTestMetrics,
+	metrics: ConcurrencyTestMetrics,
 ): Promise<WsTestClient | undefined> {
-	const player = new WsTestClient({
-		baseUrl,
-		gameId,
-		role: 'player',
-		timeout: 30_000,
-	});
+	const player = new WsTestClient({ baseUrl, gameId, role: 'player', timeout: 30_000 });
 
 	const startConnect = Date.now();
 	try {
@@ -69,8 +64,8 @@ async function simulatePlayer(
 /**
  * Runs a complete game with multiple players
  */
-async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmojis: boolean): Promise<LoadTestMetrics> {
-	const metrics: LoadTestMetrics = {
+async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmojis: boolean): Promise<ConcurrencyTestMetrics> {
+	const metrics: ConcurrencyTestMetrics = {
 		totalPlayers: playerCount,
 		successfulConnections: 0,
 		failedConnections: 0,
@@ -103,7 +98,7 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 
 	// Connect all players concurrently
 	console.log(`  Connecting ${playerCount} players...`);
-	const playerNames = generatePlayerNames(playerCount, 'LoadPlayer');
+	const playerNames = generatePlayerNames(playerCount, 'Player');
 	const playerPromises = playerNames.map((name) => simulatePlayer(baseUrl, game.gameId, name, metrics));
 	const playerResults = await Promise.all(playerPromises);
 	const players = playerResults.filter((p): p is WsTestClient => p !== null);
@@ -146,7 +141,7 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 		const startAnswer = Date.now();
 		try {
 			const answerIndex = index % 4;
-			// Fire and forget - don't wait for confirmation in load test
+			// Fire and forget - don't wait for confirmation
 			player.send({ type: 'submitAnswer', answerIndex });
 			metrics.successfulAnswers++;
 			metrics.avgAnswerTimeMs += Date.now() - startAnswer;
@@ -167,10 +162,10 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 
 	// Send emojis burst
 	if (sendEmojis) {
-		console.log(`  Sending emoji burst (${LOAD_TEST_EMOJI_BURST} per player)...`);
+		console.log(`  Sending emoji burst (${CONCURRENCY_TEST_EMOJI_BURST} per player)...`);
 		const emojis: EmojiReaction[] = ['❤️', '😂', '🤔', '🎉'];
 		for (const player of players) {
-			for (let index = 0; index < LOAD_TEST_EMOJI_BURST; index++) {
+			for (let index = 0; index < CONCURRENCY_TEST_EMOJI_BURST; index++) {
 				const emoji = emojis[Math.floor(Math.random() * emojis.length)];
 				player.sendEmoji(emoji);
 				metrics.emojisSent++;
@@ -245,17 +240,14 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	return metrics;
 }
 
-describe('Load Tests', () => {
-	// Skip load tests in CI unless explicitly enabled
-	const runLoadTests = process.env.RUN_LOAD_TESTS === 'true';
+describe('Concurrency Tests', () => {
+	describe('Single Game Concurrency', () => {
+		it(`should handle ${CONCURRENCY_TEST_PLAYERS} concurrent players in a single game`, async () => {
+			console.log(`\n🚀 Running concurrency test with ${CONCURRENCY_TEST_PLAYERS} players against ${BASE_URL}`);
 
-	describe.skipIf(!runLoadTests)('Single Game Load Test', () => {
-		it(`should handle ${LOAD_TEST_PLAYERS} concurrent players in a single game`, async () => {
-			console.log(`\n🚀 Running load test with ${LOAD_TEST_PLAYERS} players against ${BASE_URL}`);
+			const metrics = await runGameWithPlayers(BASE_URL, CONCURRENCY_TEST_PLAYERS, true);
 
-			const metrics = await runGameWithPlayers(BASE_URL, LOAD_TEST_PLAYERS, true);
-
-			console.log('\n📊 Load Test Results:');
+			console.log('\n📊 Concurrency Test Results:');
 			console.log(`  Total Players: ${metrics.totalPlayers}`);
 			console.log(`  Successful Connections: ${metrics.successfulConnections}`);
 			console.log(`  Failed Connections: ${metrics.failedConnections}`);
@@ -281,24 +273,24 @@ describe('Load Tests', () => {
 		}, 120_000); // 2 minute timeout
 	});
 
-	describe.skipIf(!runLoadTests)('Multiple Concurrent Games Load Test', () => {
-		it(`should handle ${LOAD_TEST_CONCURRENT_GAMES} concurrent games with ${LOAD_TEST_PLAYERS} players each`, async () => {
+	describe('Multiple Concurrent Games', () => {
+		it(`should handle ${CONCURRENCY_TEST_GAMES} concurrent games with ${CONCURRENCY_TEST_PLAYERS} players each`, async () => {
 			console.log(
-				`\n🚀 Running concurrent games test: ${LOAD_TEST_CONCURRENT_GAMES} games x ${LOAD_TEST_PLAYERS} players against ${BASE_URL}`,
+				`\n🚀 Running concurrent games test: ${CONCURRENCY_TEST_GAMES} games x ${CONCURRENCY_TEST_PLAYERS} players against ${BASE_URL}`,
 			);
 
 			const startTime = Date.now();
-			const gamePromises: Promise<LoadTestMetrics>[] = [];
+			const gamePromises: Promise<ConcurrencyTestMetrics>[] = [];
 
-			for (let index = 0; index < LOAD_TEST_CONCURRENT_GAMES; index++) {
-				gamePromises.push(runGameWithPlayers(BASE_URL, LOAD_TEST_PLAYERS, true));
+			for (let index = 0; index < CONCURRENCY_TEST_GAMES; index++) {
+				gamePromises.push(runGameWithPlayers(BASE_URL, CONCURRENCY_TEST_PLAYERS, true));
 			}
 
 			const allMetrics = await Promise.all(gamePromises);
 			const totalTime = Date.now() - startTime;
 
 			// Aggregate metrics
-			const aggregated: LoadTestMetrics = {
+			const aggregated: ConcurrencyTestMetrics = {
 				totalPlayers: 0,
 				successfulConnections: 0,
 				failedConnections: 0,
@@ -334,8 +326,8 @@ describe('Load Tests', () => {
 			aggregated.avgAnswerTimeMs /= allMetrics.length;
 			aggregated.totalTimeMs = totalTime;
 
-			console.log('\n📊 Aggregated Load Test Results:');
-			console.log(`  Total Games: ${LOAD_TEST_CONCURRENT_GAMES}`);
+			console.log('\n📊 Aggregated Concurrency Test Results:');
+			console.log(`  Total Games: ${CONCURRENCY_TEST_GAMES}`);
 			console.log(`  Total Players: ${aggregated.totalPlayers}`);
 			console.log(`  Successful Connections: ${aggregated.successfulConnections}`);
 			console.log(`  Failed Connections: ${aggregated.failedConnections}`);
@@ -360,7 +352,7 @@ describe('Load Tests', () => {
 		}, 300_000); // 5 minute timeout
 	});
 
-	describe.skipIf(!runLoadTests)('Emoji Burst Test', () => {
+	describe('Emoji Burst', () => {
 		it('should handle rapid emoji sending from multiple players', async () => {
 			const playerCount = 10;
 			const emojisPerPlayer = 20;
@@ -450,7 +442,7 @@ describe('Load Tests', () => {
 				}
 				console.log(`  Total player errors: ${totalErrors}`);
 
-				// Should receive most emojis (at least 50% delivered under load)
+				// Should receive most emojis (at least 50% delivered)
 				expect(receivedEmojis.length).toBeGreaterThanOrEqual(totalEmojis * 0.5);
 			} finally {
 				// Cleanup
@@ -460,7 +452,7 @@ describe('Load Tests', () => {
 		}, 60_000);
 	});
 
-	describe.skipIf(!runLoadTests)('Stress Test - Rapid Player Joins', () => {
+	describe('Rapid Player Joins', () => {
 		it('should handle rapid player joins without race conditions', async () => {
 			const playerCount = 30;
 
@@ -521,29 +513,3 @@ describe('Load Tests', () => {
 		}, 60_000);
 	});
 });
-
-// Standalone load test runner for CI/manual execution
-export async function runLoadTest(config: {
-	baseUrl: string;
-	playerCount: number;
-	gameCount: number;
-	sendEmojis?: boolean;
-}): Promise<{ success: boolean; metrics: LoadTestMetrics[] }> {
-	const { baseUrl, playerCount, gameCount, sendEmojis = true } = config;
-	const metrics: LoadTestMetrics[] = [];
-
-	try {
-		const gamePromises = Array.from({ length: gameCount }, () => runGameWithPlayers(baseUrl, playerCount, sendEmojis));
-		const results = await Promise.all(gamePromises);
-		metrics.push(...results);
-
-		const totalSuccess = results.every(
-			(m) => m.successfulConnections >= m.totalPlayers * 0.9 && m.successfulJoins >= m.successfulConnections * 0.95,
-		);
-
-		return { success: totalSuccess, metrics };
-	} catch (error) {
-		console.error('Load test failed:', error);
-		return { success: false, metrics };
-	}
-}
