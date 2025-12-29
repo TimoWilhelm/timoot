@@ -16,7 +16,7 @@
 }
 @custom-variant group-hover-always {
 	@media (hover: hover) and (pointer: fine) {
-		:merge(.group):hover & {
+		.group:hover & {
 			@slot;
 		}
 	}
