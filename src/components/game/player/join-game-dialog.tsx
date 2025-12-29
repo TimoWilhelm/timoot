@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { adjectives, animals, colors, findMatches, isValidGameId, isValidWord } from '@/lib/words';
 import { cn } from '@/lib/utilities';
+import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
 
 // Determine which word list to use based on current position
 function getWordListForPosition(parts: string[]): { list: string[]; label: string } | undefined {
@@ -23,7 +23,7 @@ function generateRandomPlaceholder(): string {
 }
 
 export function JoinGameDialog() {
-	const navigate = useNavigate();
+	const navigate = useViewTransitionNavigate();
 	const [value, setValue] = useState('');
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const [autoCompleteFlash, setAutoCompleteFlash] = useState(false);
@@ -385,7 +385,7 @@ export function JoinGameDialog() {
 									? 'bg-green-500/20 text-green-400'
 									: partValidation.adjective === false
 										? 'bg-red-500/20 text-red-400'
-										: 'bg-slate-700 text-slate-500',
+										: 'bg-slate-700 text-slate-300',
 							)}
 						>
 							adjective
@@ -398,7 +398,7 @@ export function JoinGameDialog() {
 									? 'bg-green-500/20 text-green-400'
 									: partValidation.color === false
 										? 'bg-red-500/20 text-red-400'
-										: 'bg-slate-700 text-slate-500',
+										: 'bg-slate-700 text-slate-300',
 							)}
 						>
 							color
@@ -411,7 +411,7 @@ export function JoinGameDialog() {
 									? 'bg-green-500/20 text-green-400'
 									: partValidation.animal === false
 										? 'bg-red-500/20 text-red-400'
-										: 'bg-slate-700 text-slate-500',
+										: 'bg-slate-700 text-slate-300',
 							)}
 						>
 							animal

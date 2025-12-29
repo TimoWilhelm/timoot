@@ -105,9 +105,9 @@ test.describe('Player Game Flow E2E', () => {
 				host.nextState();
 				await host.waitForMessage('reveal', 10_000);
 
-				// Player should see correct/incorrect feedback (check icon appears)
-				const resultIcon = page.locator('svg.h-24');
-				await expect(resultIcon).toBeVisible({ timeout: 5000 });
+				// Player should see correct/incorrect feedback
+				const resultText = page.getByText(/^(Correct!|Incorrect)$/);
+				await expect(resultText).toBeVisible({ timeout: 5000 });
 
 				// Advance to leaderboard
 				host.nextState();

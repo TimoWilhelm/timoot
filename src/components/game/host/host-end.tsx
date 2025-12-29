@@ -38,9 +38,9 @@ function getPodiumEntries(leaderboard: LeaderboardEntry[]): Map<number, PodiumEn
 }
 
 const PODIUM_CONFIG = {
-	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400', emoji: '🥇', delay: 2 },
-	2: { height: 'h-28 sm:h-40', color: 'bg-gray-400', emoji: '🥈', delay: 1 },
-	3: { height: 'h-20 sm:h-28', color: 'bg-amber-600', emoji: '🥉', delay: 0 },
+	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400 border-4 border-black', emoji: '🥇', delay: 2 },
+	2: { height: 'h-28 sm:h-40', color: 'bg-gray-300 border-4 border-black', emoji: '🥈', delay: 1 },
+	3: { height: 'h-20 sm:h-28', color: 'bg-amber-600 border-4 border-black', emoji: '🥉', delay: 0 },
 } as const;
 
 function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; position: 1 | 2 | 3 }) {
@@ -287,9 +287,10 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }}>
 							<Button
 								onClick={() => (globalThis.location.href = '/')}
+								variant="primary"
 								size="lg"
 								className={`
-									rounded-2xl bg-quiz-orange px-8 py-6 text-xl font-bold text-white
+									rounded-xl border-4 px-8 py-6 text-xl font-black uppercase
 									sm:px-12 sm:py-8 sm:text-2xl
 								`}
 							>

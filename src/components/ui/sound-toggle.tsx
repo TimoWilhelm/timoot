@@ -1,5 +1,4 @@
 import { Volume2, VolumeOff, VolumeX } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useSoundStore } from '@/lib/sound-store';
 import { cn } from '@/lib/utilities';
 
@@ -23,9 +22,9 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 			return <VolumeOff className="size-5 text-red-500" />;
 		}
 		if (isMuted) {
-			return <VolumeX className="size-5 text-slate-500" />;
+			return <VolumeX className="size-5 text-black" />;
 		}
-		return <Volume2 className="size-5 text-quiz-orange" />;
+		return <Volume2 className="size-5 text-black" />;
 	};
 
 	const getAriaLabel = () => {
@@ -35,13 +34,13 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 	};
 
 	return (
-		<Button
-			variant="outline"
-			size="icon"
+		<button
+			type="button"
 			onClick={handleClick}
 			className={cn(
 				`
-					size-10 rounded-full bg-white/90 shadow-md backdrop-blur-xs transition-all
+					flex size-10 cursor-pointer items-center justify-center rounded-full
+					border-2 border-black bg-muted shadow-md backdrop-blur-xs transition-all
 					hover:scale-105
 				`,
 				isBlocked && 'animate-pulse ring-2 ring-red-400',
@@ -50,6 +49,6 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 			aria-label={getAriaLabel()}
 		>
 			{getIcon()}
-		</Button>
+		</button>
 	);
 }

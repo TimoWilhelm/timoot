@@ -40,41 +40,46 @@ export function ErrorFallback({
 	};
 
 	return (
-		<div className={`flex min-h-screen items-center justify-center bg-background p-4`}>
-			<div className="w-full max-w-md">
-				{/* Animated background gradient */}
-				<div
-					className={`
-						absolute inset-0 opacity-5 bg-gradient-rainbow
-						dark:opacity-10
-					`}
-				/>
+		<div
+			className="
+				relative flex min-h-screen items-center justify-center bg-gray-50 p-4
+			"
+		>
+			{/* Background grid */}
+			<div
+				className={`
+					absolute inset-0 bg-[radial-gradient(#00000008_1px,transparent_1px)]
+					bg-size-[20px_20px]
+				`}
+			/>
 
+			<div className="relative w-full max-w-md">
 				{/* Error card */}
-				<Card className="relative shadow-2xl backdrop-blur-xs">
+				<Card>
 					<CardContent className="space-y-6 p-8">
 						{/* Icon and title */}
 						<div className="space-y-4 text-center">
 							<div
 								className={`
-									mx-auto flex size-16 items-center justify-center rounded-2xl
-									bg-destructive/10
+									mx-auto flex size-16 items-center justify-center rounded-xl border-2
+									border-black bg-red-100 shadow-brutal-sm
 								`}
 							>
-								<AlertTriangle className="size-8 text-destructive" />
+								<AlertTriangle className="size-8 text-red-600" />
 							</div>
-							<h1 className="text-2xl font-bold">{title}</h1>
-							<p className="text-muted-foreground">{message}</p>
+							<h1 className="font-display text-2xl font-bold">{title}</h1>
+							<p className="font-medium text-gray-600">{message}</p>
 						</div>
 
 						{/* Status indicator */}
 						{statusMessage && (
 							<div
 								className={`
-									flex items-center justify-center gap-2 text-sm text-muted-foreground
+									flex items-center justify-center gap-2 rounded-lg border-2 border-black
+									bg-yellow-100 px-3 py-2 text-sm font-bold
 								`}
 							>
-								<div className="size-2 animate-pulse rounded-full bg-orange-500" />
+								<div className="size-2 animate-pulse rounded-full bg-quiz-orange" />
 								<span>{statusMessage}</span>
 							</div>
 						)}
@@ -93,17 +98,20 @@ export function ErrorFallback({
 
 						{/* Error details (collapsible) */}
 						{process.env.NODE_ENV === 'development' && showErrorDetails && error && (
-							<details className="mt-6 rounded-lg bg-muted/50 p-4">
+							<details
+								className={`
+									mt-6 rounded-lg border-2 border-black bg-gray-100 p-4 shadow-brutal-sm
+								`}
+							>
 								<summary
-									className={`
-										cursor-pointer text-sm font-medium text-muted-foreground
-										transition-colors
-										hover:text-foreground
-									`}
+									className="
+										cursor-pointer text-sm font-bold transition-colors
+										hover:text-quiz-orange
+									"
 								>
 									Error details (Development only)
 								</summary>
-								<pre className={`mt-3 max-h-40 overflow-auto text-xs text-muted-foreground`}>
+								<pre className="mt-3 max-h-40 overflow-auto text-xs text-gray-600">
 									{error.message || error.toString()}
 									{error.stack && '\n\n' + error.stack}
 									{error.componentStack && '\n\n' + error.componentStack}
@@ -114,7 +122,7 @@ export function ErrorFallback({
 				</Card>
 
 				{/* Support text */}
-				<p className="mt-6 text-center text-sm text-muted-foreground">If this problem persists, please contact our support team</p>
+				<p className="mt-6 text-center text-sm font-medium text-gray-500">If this problem persists, please contact our support team</p>
 			</div>
 		</div>
 	);

@@ -178,8 +178,8 @@ export function PlayerWaitingScreen({
 			case 'LOBBY': {
 				return (
 					<div className="text-center">
-						<h2 className="text-4xl font-bold">You're in!</h2>
-						<p>See your name on the big screen.</p>
+						<h2 className="font-display text-4xl font-bold text-white">You're in!</h2>
+						<p className="mt-2 font-medium text-slate-300">See your name on the big screen.</p>
 					</div>
 				);
 			}
@@ -193,8 +193,8 @@ export function PlayerWaitingScreen({
 						>
 							🎮
 						</motion.div>
-						<h2 className="text-4xl font-bold">Get Ready!</h2>
-						<p className="mt-2 text-lg text-slate-300">Look at the main screen</p>
+						<h2 className="font-display text-4xl font-bold text-white">Get Ready!</h2>
+						<p className="mt-2 text-lg font-medium text-slate-300">Look at the main screen</p>
 					</div>
 				);
 			}
@@ -218,19 +218,26 @@ export function PlayerWaitingScreen({
 						<div
 							className={cn(
 								'flex flex-col items-center justify-center text-center',
-								answerResult.isCorrect ? 'text-green-300' : 'text-red-300',
+								answerResult.isCorrect ? 'text-green-400' : 'text-red-400',
 							)}
 						>
-							{answerResult.isCorrect ? <CheckCircle className="size-24" /> : <XCircle className={`size-24`} />}
-							<h2 className="mt-4 text-5xl font-bold">{answerResult.isCorrect ? 'Correct!' : 'Incorrect'}</h2>
-							<p className="text-3xl">+ {answerResult.score} points</p>
+							<div
+								className={cn(
+									'flex size-28 items-center justify-center rounded-full border-4',
+									answerResult.isCorrect ? 'border-green-400 bg-green-400/20' : 'border-red-400 bg-red-400/20',
+								)}
+							>
+								{answerResult.isCorrect ? <CheckCircle className="size-16" /> : <XCircle className="size-16" />}
+							</div>
+							<h2 className="mt-4 font-display text-5xl font-bold">{answerResult.isCorrect ? 'Correct!' : 'Incorrect'}</h2>
+							<p className="mt-2 text-3xl font-bold">+ {answerResult.score} points</p>
 						</div>
 					);
 				}
 				return (
 					<div className="text-center">
-						<h2 className="text-4xl font-bold">Get ready...</h2>
-						<p>Look at the main screen</p>
+						<h2 className="font-display text-4xl font-bold text-white">Get ready...</h2>
+						<p className="mt-2 font-medium text-slate-300">Look at the main screen</p>
 					</div>
 				);
 			}
@@ -240,25 +247,31 @@ export function PlayerWaitingScreen({
 				const top3 = leaderboard.slice(0, 3);
 				return (
 					<div className="text-center">
-						<h2 className="mb-4 text-4xl font-bold">Current Standings</h2>
+						<h2 className="mb-4 font-display text-4xl font-bold text-white">Current Standings</h2>
 						{myRank > 0 && (
-							<p className="mb-6 text-2xl">
+							<p className="mb-6 text-2xl font-medium text-slate-200">
 								You are in <span className="font-bold text-quiz-gold">#{myRank}</span> place!
 							</p>
 						)}
-						<ul className="space-y-2 text-lg">
+						<ul className="space-y-3 text-lg">
 							{top3.map((player, index) => (
-								<li key={player.id} className="mx-auto flex w-64 justify-between">
-									<span>
+								<li
+									key={player.id}
+									className={`
+										mx-auto flex w-64 items-center justify-between rounded-lg border-2
+										border-white/20 bg-slate-800/50 px-4 py-2
+									`}
+								>
+									<span className="flex items-center font-bold text-white">
 										<Trophy
 											className={cn(
 												'mr-2 inline size-5',
-												index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-400' : `text-yellow-600`,
+												index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-400' : 'text-yellow-600',
 											)}
 										/>
 										{player.name}
 									</span>
-									<span>{player.score}</span>
+									<span className="font-mono font-bold text-quiz-gold">{player.score}</span>
 								</li>
 							))}
 						</ul>
@@ -294,22 +307,29 @@ export function PlayerWaitingScreen({
 								className="mb-4"
 							>
 								<span className="mb-2 block text-5xl">⭐</span>
-								<span className="text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
-								<p className="mt-2 text-xl text-slate-300">Thanks for playing!</p>
+								<span className="font-display text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
+								<p className="mt-2 text-xl font-medium text-slate-300">Thanks for playing!</p>
 							</motion.div>
 						) : undefined}
 
-						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className={`mt-4 text-2xl`}>
+						<motion.p
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.8 }}
+							className="mt-4 text-2xl font-medium text-white"
+						>
 							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
 						</motion.p>
 
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
 							<Link
 								to="/"
+								viewTransition
 								className={`
-									mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2
-									text-sm text-slate-300 transition-colors
-									hover:bg-slate-600
+									mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-white/20
+									bg-slate-700 px-4 py-2 font-bold text-white transition-all
+									hover:-translate-y-px hover:bg-slate-600
+									hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
 								`}
 							>
 								<Home className="size-4" />
@@ -322,8 +342,8 @@ export function PlayerWaitingScreen({
 			default: {
 				return (
 					<div className="flex flex-col items-center text-center">
-						<Loader2 className="mb-4 size-12 animate-spin" />
-						<h2 className="text-4xl font-bold">Waiting...</h2>
+						<Loader2 className="mb-4 size-12 animate-spin text-quiz-orange" />
+						<h2 className="font-display text-4xl font-bold text-white">Waiting...</h2>
 					</div>
 				);
 			}

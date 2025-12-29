@@ -22,7 +22,7 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 		>
 			<h2
 				className={`
-					mb-4 text-center text-3xl font-bold
+					mb-4 text-center font-display text-3xl font-bold
 					sm:text-5xl
 				`}
 			>
@@ -53,12 +53,15 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 								}),
 							}}
 							className={cn(
-								'relative overflow-hidden rounded-lg p-4 shadow-md',
-								isCorrect ? 'border-2 border-green-500 bg-green-100' : 'bg-white',
+								`
+									relative overflow-hidden rounded-xl border-2 border-black p-4
+									shadow-brutal
+								`,
+								isCorrect ? 'border-4 border-green-600 bg-green-100 shadow-brutal-green' : 'bg-white',
 							)}
 						>
 							<motion.div
-								className="absolute top-0 left-0 h-full bg-green-300/50"
+								className="absolute top-0 left-0 h-full bg-green-400/40"
 								initial={{ width: 0 }}
 								animate={{ width: `${percentage}%` }}
 								transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
@@ -73,7 +76,14 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 									<span>{option}</span>
 									<CheckCircle className={cn('size-6 shrink-0', isCorrect ? `text-green-600` : `invisible`)} />
 								</span>
-								<span className="shrink-0">{count}</span>
+								<span
+									className={`
+										shrink-0 rounded-lg border-2 border-black bg-black px-3 py-1 font-mono
+										text-white
+									`}
+								>
+									{count}
+								</span>
 							</div>
 						</motion.div>
 					);
@@ -83,10 +93,9 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 				<Button
 					data-host-next-button
 					onClick={onNext}
+					variant="primary"
 					size="lg"
-					className={`
-						rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white
-					`}
+					className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
 				>
 					Next
 				</Button>

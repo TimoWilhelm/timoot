@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom';
+import { Link, useBlocker, useParams } from 'react-router-dom';
 import { Control, Controller, SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -36,7 +36,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
 import { cn } from '@/lib/utilities';
 import {
@@ -51,6 +51,7 @@ import {
 } from '@/hooks/use-api';
 import { useUserId } from '@/hooks/use-user-id';
 import { useTurnstile } from '@/hooks/use-turnstile';
+import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
 
 type QuizFormData = {
 	title: string;
@@ -101,7 +102,7 @@ function OptionCharCount({ control, qIndex, oIndex }: { control: Control<QuizFor
 
 export function QuizEditorPage() {
 	const { quizId } = useParams<{ quizId?: string }>();
-	const navigate = useNavigate();
+	const navigate = useViewTransitionNavigate();
 	const {
 		register,
 		control,
@@ -302,7 +303,6 @@ export function QuizEditorPage() {
 				onSuccess: (data) => {
 					onImageGenerated(data.path);
 					setImagePrompt('');
-					setOpenImagePopover(undefined);
 					toast.success('Image generated!');
 				},
 				onError: (error) => {
@@ -363,18 +363,25 @@ export function QuizEditorPage() {
 		});
 	};
 	return (
-		<div className="min-h-screen bg-slate-50">
+		<div className="relative min-h-screen bg-gray-50">
+			{/* Decorative grid background */}
 			<div
 				className={`
-					mx-auto max-w-4xl px-4 py-12
+					absolute inset-0 bg-[radial-gradient(#00000008_1px,transparent_1px)]
+					bg-size-[20px_20px]
+				`}
+			/>
+			<div
+				className={`
+					relative mx-auto max-w-4xl px-4 py-12
 					sm:px-6
 					lg:px-8
 				`}
 			>
 				<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
 					<div className="flex items-center gap-4">
-						<Link to="/">
-							<Button type="button" variant="outline" size="icon">
+						<Link to="/" viewTransition>
+							<Button type="button" variant="secondary" size="icon" className="size-12">
 								<ArrowLeft className="size-5" />
 							</Button>
 						</Link>
@@ -387,7 +394,7 @@ export function QuizEditorPage() {
 							{quizId ? 'Edit Quiz' : 'Create a New Quiz'}
 						</h1>
 					</div>
-					<Card className="rounded-2xl shadow-lg">
+					<Card>
 						<CardHeader>
 							<CardTitle>Quiz Details</CardTitle>
 						</CardHeader>
@@ -407,7 +414,7 @@ export function QuizEditorPage() {
 						</CardContent>
 					</Card>
 					{fields.map((field, qIndex) => (
-						<Card key={field.id} className="rounded-2xl shadow-lg">
+						<Card key={field.id}>
 							<CardHeader className={`flex flex-row flex-wrap items-center justify-between gap-2`}>
 								<CardTitle>Question {qIndex + 1}</CardTitle>
 								<div className="flex items-center gap-2">
@@ -415,207 +422,228 @@ export function QuizEditorPage() {
 										control={control}
 										name={`questions.${qIndex}.backgroundImage`}
 										render={({ field: bgField }) => (
-											<Popover open={openImagePopover === qIndex} onOpenChange={(open) => setOpenImagePopover(open ? qIndex : undefined)}>
-												<PopoverTrigger asChild>
-													<button
-														type="button"
-														className={cn(
-															`
-																relative flex h-8 w-20 items-center justify-center
-																overflow-hidden rounded-full text-sm font-semibold
-																transition-all
+											<>
+												<button
+													type="button"
+													onClick={() => setOpenImagePopover(qIndex)}
+													className={cn(
+														`
+															relative flex h-8 w-20 cursor-pointer items-center justify-center
+															overflow-hidden rounded-full text-sm font-semibold transition-all
+														`,
+														bgField.value
+															? 'shadow-md'
+															: `
+																bg-muted text-muted-foreground
+																hover:bg-muted/80
 															`,
-															bgField.value
-																? 'shadow-md'
-																: `
-																	bg-muted text-muted-foreground
-																	hover:bg-muted/80
-																`,
-														)}
+													)}
+												>
+													{bgField.value ? (
+														<img src={bgField.value} alt="" className={`absolute inset-0 size-full object-cover`} />
+													) : (
+														<span className="flex items-center gap-1.5">
+															<ImageIcon className="size-4" />
+															Image
+														</span>
+													)}
+												</button>
+												<Dialog
+													open={openImagePopover === qIndex}
+													onOpenChange={(open) => {
+														if (!open && !isGeneratingImage) {
+															setOpenImagePopover(undefined);
+														}
+													}}
+												>
+													<DialogContent
+														className="
+															flex max-h-[90dvh] max-w-md flex-col overflow-hidden p-0
+														"
 													>
-														{bgField.value ? (
-															<img src={bgField.value} alt="" className={`absolute inset-0 size-full object-cover`} />
-														) : (
-															<span className="flex items-center gap-1.5">
-																<ImageIcon className="size-4" />
-																Image
-															</span>
-														)}
-													</button>
-												</PopoverTrigger>
-												<PopoverContent className="w-[calc(100vw-2rem)] max-w-96 p-3" align="end">
-													<div className="max-h-[70vh] space-y-4 overflow-y-auto">
-														{/* Default Images */}
-														<div className="space-y-2">
-															<h4 className="text-sm font-semibold">Background Image</h4>
-															<div className="grid grid-cols-2 gap-2">
-																<button
-																	type="button"
-																	onClick={() => {
-																		bgField.onChange('');
-																		setOpenImagePopover(undefined);
-																	}}
-																	className={cn(
-																		`
-																			relative flex aspect-video items-center justify-center
-																			overflow-hidden rounded-lg bg-muted transition-all
-																		`,
-																		bgField.value ? 'hover:ring-2 hover:ring-muted-foreground/30' : `ring-2 ring-quiz-orange ring-offset-2`,
-																	)}
-																>
-																	<div
-																		className={`
-																			flex flex-col items-center gap-1 text-muted-foreground
-																		`}
-																	>
-																		<ImageOff className="size-6" />
-																		<span className="text-xs">No Image</span>
-																	</div>
-																</button>
-																{DEFAULT_BACKGROUND_IMAGES.map((img) => (
+														<DialogHeader className="shrink-0 border-b px-4 pt-4 pb-3">
+															<DialogTitle>Background Image</DialogTitle>
+														</DialogHeader>
+														<div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+															{/* Default Images */}
+															<div className="space-y-2">
+																<h4 className="text-sm font-medium text-muted-foreground">Default</h4>
+																<div className="grid grid-cols-3 gap-2">
 																	<button
-																		key={img.id}
 																		type="button"
-																		onClick={() => {
-																			bgField.onChange(img.path);
-																			setOpenImagePopover(undefined);
-																		}}
+																		onClick={() => bgField.onChange('')}
 																		className={cn(
 																			`
-																				relative aspect-video overflow-hidden rounded-lg
-																				transition-all
+																				relative flex aspect-video cursor-pointer items-center
+																				justify-center rounded-lg bg-muted transition-all
 																			`,
-																			bgField.value === img.path
-																				? 'ring-2 ring-quiz-orange ring-offset-2'
-																				: 'hover:ring-2 hover:ring-muted-foreground/30',
+																			bgField.value
+																				? 'hover:ring-2 hover:ring-muted-foreground/30'
+																				: 'ring-2 ring-quiz-orange ring-offset-2',
 																		)}
 																	>
-																		<img src={img.path} alt={img.name} className={`size-full object-cover`} />
-																	</button>
-																))}
-															</div>
-														</div>
-
-														{/* AI Generated Images */}
-														{aiImages.length > 0 && (
-															<div className="space-y-2">
-																<h4 className="text-sm font-semibold text-muted-foreground">AI Generated</h4>
-																<div className="grid grid-cols-2 gap-2">
-																	{aiImages.map((img) => (
-																		<div key={img.id} className="group relative">
-																			<button
-																				type="button"
-																				onClick={() => {
-																					bgField.onChange(img.path);
-																					setOpenImagePopover(undefined);
-																				}}
-																				className={cn(
-																					`
-																						relative aspect-video w-full overflow-hidden rounded-lg
-																						transition-all
-																					`,
-																					bgField.value === img.path
-																						? 'ring-2 ring-quiz-orange ring-offset-2'
-																						: 'hover:ring-2 hover:ring-muted-foreground/30',
-																				)}
-																				title={img.prompt}
-																			>
-																				<img src={img.path} alt={img.name} className={`size-full object-cover`} />
-																			</button>
-																			<button
-																				type="button"
-																				onClick={(event) => {
-																					event.stopPropagation();
-																					setImageToDelete(img.id);
-																				}}
-																				className={`
-																					absolute top-1 right-1 rounded-full bg-black/60 p-1
-																					text-white opacity-0 transition-opacity
-																					hover-never:bg-red-500
-																					group-hover-always:opacity-100
-																				`}
-																				title="Delete image"
-																			>
-																				<X className="size-3" />
-																			</button>
+																		<div
+																			className="
+																				flex flex-col items-center gap-1 text-muted-foreground
+																			"
+																		>
+																			<ImageOff className="size-5" />
+																			<span className="text-[10px]">None</span>
 																		</div>
+																	</button>
+																	{DEFAULT_BACKGROUND_IMAGES.map((img) => (
+																		<button
+																			key={img.id}
+																			type="button"
+																			onClick={() => bgField.onChange(img.path)}
+																			className={cn(
+																				`
+																					relative aspect-video cursor-pointer overflow-hidden
+																					rounded-lg transition-all
+																				`,
+																				bgField.value === img.path
+																					? 'ring-2 ring-quiz-orange ring-offset-2'
+																					: 'hover:ring-2 hover:ring-muted-foreground/30',
+																			)}
+																		>
+																			<img src={img.path} alt={img.name} className="size-full object-cover" />
+																		</button>
 																	))}
 																</div>
-																{aiImagesCursor && (
-																	<Button
-																		type="button"
-																		variant="outline"
-																		size="sm"
-																		className="w-full"
-																		onClick={loadMoreImages}
-																		disabled={isLoadingMoreImages}
-																	>
-																		{isLoadingMoreImages ? <Loader2 className={`mr-2 size-4 animate-spin`} /> : undefined}
-																		Load More
-																	</Button>
-																)}
 															</div>
-														)}
 
-														{/* AI Image Generation */}
-														<div className="space-y-2">
-															<div className="flex items-center justify-between">
-																<h4 className="flex items-center gap-1.5 text-sm font-semibold">
-																	<Sparkles className="size-4 text-quiz-orange" />
-																	Generate with AI
-																</h4>
-																<span
-																	className={`
-																		flex items-center gap-1 text-[10px] text-muted-foreground
-																	`}
-																>
-																	Powered by
-																	<img src="/icons/blackforestlabs.svg" alt="Black Forest Labs" className={`size-3`} />
-																	FLUX.2 [dev]
-																</span>
-															</div>
-															<div className="flex gap-2">
-																<div className="relative flex-1">
-																	<Input
-																		placeholder="Describe the image..."
-																		value={imagePrompt}
-																		onChange={(event) => setImagePrompt(event.target.value)}
-																		className="pr-14 text-sm"
-																		maxLength={LIMITS.AI_IMAGE_PROMPT_MAX}
-																		disabled={isGeneratingImage}
-																		onKeyDown={(event) => {
-																			if (event.key === 'Enter') {
-																				event.preventDefault();
-																				void generateImage(bgField.onChange);
-																			}
-																		}}
-																	/>
+															{/* AI Generated Images */}
+															{aiImages.length > 0 && (
+																<div className="space-y-2">
+																	<h4 className="text-sm font-medium text-muted-foreground">AI Generated</h4>
+																	<div className="grid grid-cols-3 gap-2">
+																		{aiImages.map((img) => (
+																			<div key={img.id} className="group relative">
+																				<button
+																					type="button"
+																					onClick={() => bgField.onChange(img.path)}
+																					className={cn(
+																						`
+																							relative aspect-video w-full cursor-pointer
+																							overflow-hidden rounded-lg transition-all
+																						`,
+																						bgField.value === img.path
+																							? 'ring-2 ring-quiz-orange ring-offset-2'
+																							: 'hover:ring-2 hover:ring-muted-foreground/30',
+																					)}
+																					title={img.prompt}
+																				>
+																					<img src={img.path} alt={img.name} className="size-full object-cover" />
+																				</button>
+																				<button
+																					type="button"
+																					onClick={(event) => {
+																						event.stopPropagation();
+																						setImageToDelete(img.id);
+																					}}
+																					className={`
+																						absolute top-1 right-1 cursor-pointer rounded-full
+																						bg-black/60 p-1 text-white opacity-0 transition-opacity
+																						hover:bg-red-500
+																						group-hover-always:opacity-100
+																					`}
+																					title="Delete image"
+																				>
+																					<X className="size-3" />
+																				</button>
+																			</div>
+																		))}
+																	</div>
+																	{aiImagesCursor && (
+																		<Button
+																			type="button"
+																			variant="secondary"
+																			size="sm"
+																			className="w-full"
+																			onClick={loadMoreImages}
+																			disabled={isLoadingMoreImages}
+																		>
+																			{isLoadingMoreImages ? <Loader2 className="mr-2 size-4 animate-spin" /> : undefined}
+																			Load More
+																		</Button>
+																	)}
+																</div>
+															)}
+
+															{/* AI Image Generation */}
+															<div className="space-y-2">
+																<div className="flex items-center justify-between">
+																	<h4 className="flex items-center gap-1.5 text-sm font-medium">
+																		<Sparkles className="size-4 text-quiz-orange" />
+																		Generate with AI
+																	</h4>
 																	<span
-																		className={`
-																			pointer-events-none absolute top-1/2 right-2 -translate-y-1/2
-																			text-xs text-muted-foreground
-																		`}
+																		className="
+																			flex items-center gap-1 text-[10px] text-muted-foreground
+																		"
 																	>
-																		{imagePrompt.length}/{LIMITS.AI_IMAGE_PROMPT_MAX}
+																		<img src="/icons/blackforestlabs.svg" alt="Black Forest Labs" className="size-3" />
+																		FLUX.2
 																	</span>
 																</div>
-																<Button
-																	type="button"
-																	size="sm"
-																	onClick={() => generateImage(bgField.onChange)}
-																	disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
-																	className={`
-																		shrink-0 bg-quiz-orange
-																		hover:bg-quiz-orange/90
-																	`}
-																>
-																	{isGeneratingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className={`size-4`} />}
-																</Button>
+																<div className="flex items-center gap-2">
+																	<div className="relative flex-1">
+																		<Input
+																			placeholder="Describe the image..."
+																			value={imagePrompt}
+																			onChange={(event) => setImagePrompt(event.target.value)}
+																			className="pr-14 text-sm"
+																			maxLength={LIMITS.AI_IMAGE_PROMPT_MAX}
+																			disabled={isGeneratingImage}
+																			onKeyDown={(event) => {
+																				if (event.key === 'Enter') {
+																					event.preventDefault();
+																					void generateImage(bgField.onChange);
+																				}
+																			}}
+																		/>
+																		<span
+																			className="
+																				pointer-events-none absolute top-1/2 right-2
+																				-translate-y-1/2 text-xs text-muted-foreground
+																			"
+																		>
+																			{imagePrompt.length}/{LIMITS.AI_IMAGE_PROMPT_MAX}
+																		</span>
+																	</div>
+																	<Button
+																		type="button"
+																		variant="primary"
+																		size="icon"
+																		onClick={() => generateImage(bgField.onChange)}
+																		disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
+																		className="shrink-0"
+																	>
+																		{isGeneratingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+																	</Button>
+																</div>
+																{isGeneratingImage && (
+																	<p className="text-center text-xs text-muted-foreground">Generating image, please wait...</p>
+																)}
 															</div>
 														</div>
-													</div>
-												</PopoverContent>
-											</Popover>
+														<DialogFooter className="shrink-0 border-t px-4 py-3">
+															<Button
+																type="button"
+																variant="primary"
+																onClick={() => setOpenImagePopover(undefined)}
+																disabled={isGeneratingImage}
+																className={`
+																	w-full
+																	sm:w-auto
+																`}
+															>
+																Done
+															</Button>
+														</DialogFooter>
+													</DialogContent>
+												</Dialog>
+											</>
 										)}
 									/>
 									<Controller
@@ -627,8 +655,8 @@ export function QuizEditorPage() {
 												onClick={() => field.onChange(!field.value)}
 												className={cn(
 													`
-														flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm
-														font-semibold transition-all
+														flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5
+														text-sm font-semibold transition-all
 													`,
 													field.value
 														? `
@@ -689,13 +717,7 @@ export function QuizEditorPage() {
 												</AlertDialogHeader>
 												<AlertDialogFooter>
 													<AlertDialogCancel>Cancel</AlertDialogCancel>
-													<AlertDialogAction
-														onClick={() => remove(qIndex)}
-														className={`
-															bg-red-500
-															hover:bg-red-600
-														`}
-													>
+													<AlertDialogAction onClick={() => remove(qIndex)} variant="destructive">
 														Delete
 													</AlertDialogAction>
 												</AlertDialogFooter>
@@ -786,7 +808,7 @@ export function QuizEditorPage() {
 									)}
 								</div>
 								{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (
-									<Button type="button" variant="outline" onClick={() => addOption(qIndex)}>
+									<Button type="button" variant="secondary" onClick={() => addOption(qIndex)}>
 										<PlusCircle className="mr-2 size-4" /> Add Option
 									</Button>
 								)}
@@ -795,21 +817,21 @@ export function QuizEditorPage() {
 					))}
 					<div className="flex flex-col gap-3">
 						<div className="flex gap-3">
-							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className={`flex-1`}>
+							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className="flex-1">
 								<PlusCircle className="mr-2 size-5" /> Add Question
 							</Button>
 							<Button
 								type="button"
 								onClick={generateQuestion}
 								disabled={isGeneratingQuestion || !turnstileToken}
-								variant="outline"
+								variant="secondary"
 								size="lg"
 								className={`
-									flex-1 border-quiz-orange/50 text-quiz-orange
-									hover:bg-quiz-orange/10 hover:text-quiz-orange
+									flex-1 border-2 border-quiz-orange bg-quiz-orange/5 text-quiz-orange
+									hover:bg-quiz-orange/10 hover:shadow-brutal-orange-sm
 								`}
 							>
-								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className={`mr-2 size-5`} />}
+								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className="mr-2 size-5" />}
 								Generate with AI
 							</Button>
 						</div>
@@ -818,16 +840,8 @@ export function QuizEditorPage() {
 						</div>
 					</div>
 					<div className="flex items-center justify-end gap-4">
-						<Button
-							type="submit"
-							disabled={isSubmitting}
-							size="lg"
-							className={`
-								bg-quiz-orange
-								hover:bg-quiz-orange/90
-							`}
-						>
-							{isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Save className={`mr-2 size-5`} />}
+						<Button type="submit" variant="primary" disabled={isSubmitting} size="lg">
+							{isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Save className="mr-2 size-5" />}
 							Save Quiz
 						</Button>
 					</div>
@@ -836,7 +850,7 @@ export function QuizEditorPage() {
 			<Toaster richColors />
 
 			{/* Unsaved changes dialog */}
-			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>
+			<AlertDialog open={blocker.state === 'blocked'}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
@@ -846,13 +860,7 @@ export function QuizEditorPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay on Page</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => blocker.proceed?.()}
-							className={`
-								bg-red-500
-								hover:bg-red-600
-							`}
-						>
+						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="destructive">
 							Leave Page
 						</AlertDialogAction>
 					</AlertDialogFooter>
@@ -868,13 +876,7 @@ export function QuizEditorPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => imageToDelete && deleteImage(imageToDelete)}
-							className={`
-								bg-red-500
-								hover:bg-red-600
-							`}
-						>
+						<AlertDialogAction onClick={() => imageToDelete && deleteImage(imageToDelete)} variant="destructive">
 							Delete
 						</AlertDialogAction>
 					</AlertDialogFooter>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useBlocker, useNavigate, useSearchParams } from 'react-router-dom';
+import { useBlocker, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -14,6 +14,7 @@ import { PlayerWaitingScreen } from '@/components/game/player/player-waiting-scr
 import { JoinGameDialog } from '@/components/game/player/join-game-dialog';
 import { EmojiPicker } from '@/components/game/shared';
 import { useSound } from '@/hooks/use-sound';
+import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
 import { AnimatedNumber } from '@/components/ui/animated-number';
 import {
 	AlertDialog,
@@ -40,7 +41,7 @@ const phaseIsActiveForPlayer: Record<GamePhase, boolean> = {
 };
 
 export function PlayerPage() {
-	const navigate = useNavigate();
+	const navigate = useViewTransitionNavigate();
 	const [searchParameters] = useSearchParams();
 	const urlGameId = searchParameters.get('gameId');
 
@@ -241,10 +242,24 @@ export function PlayerPage() {
 		return (
 			<div
 				className={`
-					flex min-h-screen w-full items-center justify-center bg-slate-800
+					relative flex min-h-screen w-full items-center justify-center bg-slate-900
 				`}
 			>
-				<Loader2 className="size-16 animate-spin text-white" />
+				<div
+					className={`
+						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-30
+					`}
+				/>
+				<div
+					className={`
+						relative flex size-20 items-center justify-center rounded-full border-4
+						border-white/20 bg-slate-800
+						shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]
+					`}
+				>
+					<Loader2 className="size-10 animate-spin text-quiz-orange" />
+				</div>
 			</div>
 		);
 	}
@@ -262,83 +277,30 @@ export function PlayerPage() {
 		return (
 			<div
 				className={`
-					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
-					p-8 text-white
+					relative flex min-h-screen w-full flex-col items-center justify-center
+					bg-slate-900 p-8 text-white
 				`}
 			>
-				<div className="mb-6 text-6xl">🎮</div>
-				<h1 className="mb-4 text-center text-3xl font-bold">Game Already In Progress</h1>
-				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
-					Sorry, this game has already started. You can wait for the next round or join a different game.
-				</p>
-				<button
-					onClick={() => navigate('/')}
+				<div
 					className={`
-						rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
-						hover:bg-indigo-700
+						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-30
 					`}
-				>
-					Back to Home
-				</button>
-			</div>
-		);
-	}
-
-	if (view === 'ROOM_NOT_FOUND') {
-		return (
-			<div
-				className={`
-					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
-					p-8 text-white
-				`}
-			>
-				<div className="mb-6 text-6xl">🔍</div>
-				<h1 className="mb-4 text-center text-3xl font-bold">Game Not Found</h1>
-				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
-					We couldn't find a game with that code. It may have ended or the link might be incorrect.
-				</p>
-				<button
-					onClick={() => navigate('/')}
-					className={`
-						rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
-						hover:bg-indigo-700
-					`}
-				>
-					Back to Home
-				</button>
-			</div>
-		);
-	}
-
-	if (view === 'SESSION_EXPIRED') {
-		return (
-			<div
-				className={`
-					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
-					p-8 text-white
-				`}
-			>
-				<div className="mb-6 text-6xl">🔑</div>
-				<h1 className="mb-4 text-center text-3xl font-bold">Session Expired</h1>
-				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
-					Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please rejoin
-					the game with a new nickname.
-				</p>
-				<div className="flex gap-4">
-					<button
-						onClick={() => setView('NICKNAME')}
-						className={`
-							rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
-							hover:bg-indigo-700
-						`}
-					>
-						Rejoin Game
-					</button>
+				/>
+				<div className="relative z-10 flex flex-col items-center">
+					<div className="mb-6 text-6xl">🎮</div>
+					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game Already In Progress</h1>
+					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+						Sorry, this game has already started. You can wait for the next round or join a different game.
+					</p>
 					<button
 						onClick={() => navigate('/')}
 						className={`
-							rounded-lg bg-slate-600 px-6 py-3 font-semibold transition-colors
-							hover:bg-slate-700
+							cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
+							py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+							transition-all
+							hover:-translate-y-px
+							hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
 						`}
 					>
 						Back to Home
@@ -348,28 +310,128 @@ export function PlayerPage() {
 		);
 	}
 
+	if (view === 'ROOM_NOT_FOUND') {
+		return (
+			<div
+				className={`
+					relative flex min-h-screen w-full flex-col items-center justify-center
+					bg-slate-900 p-8 text-white
+				`}
+			>
+				<div
+					className={`
+						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-30
+					`}
+				/>
+				<div className="relative z-10 flex flex-col items-center">
+					<div className="mb-6 text-6xl">🔍</div>
+					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game Not Found</h1>
+					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+						We couldn't find a game with that code. It may have ended or the link might be incorrect.
+					</p>
+					<button
+						onClick={() => navigate('/')}
+						className={`
+							cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
+							py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+							transition-all
+							hover:-translate-y-px
+							hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
+						`}
+					>
+						Back to Home
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	if (view === 'SESSION_EXPIRED') {
+		return (
+			<div
+				className={`
+					relative flex min-h-screen w-full flex-col items-center justify-center
+					bg-slate-900 p-8 text-white
+				`}
+			>
+				<div
+					className={`
+						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-30
+					`}
+				/>
+				<div className="relative z-10 flex flex-col items-center">
+					<div className="mb-6 text-6xl">🔑</div>
+					<h1 className="mb-4 text-center font-display text-3xl font-bold">Session Expired</h1>
+					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+						Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please
+						rejoin the game with a new nickname.
+					</p>
+					<div className="flex gap-4">
+						<button
+							onClick={() => setView('NICKNAME')}
+							className={`
+								cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
+								py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								transition-all
+								hover:-translate-y-0.5
+								hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)]
+							`}
+						>
+							Rejoin Game
+						</button>
+						<button
+							onClick={() => navigate('/')}
+							className={`
+								cursor-pointer rounded-lg border-2 border-white/20 bg-slate-700 px-6
+								py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								transition-all
+								hover:-translate-y-px hover:bg-slate-600
+								hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
+							`}
+						>
+							Back to Home
+						</button>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	if (view === 'GAME_FULL') {
 		return (
 			<div
 				className={`
-					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
-					p-8 text-white
+					relative flex min-h-screen w-full flex-col items-center justify-center
+					bg-slate-900 p-8 text-white
 				`}
 			>
-				<div className="mb-6 text-6xl">👥</div>
-				<h1 className="mb-4 text-center text-3xl font-bold">Game is Full</h1>
-				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
-					Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
-				</p>
-				<button
-					onClick={() => navigate('/')}
+				<div
 					className={`
-						rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
-						hover:bg-indigo-700
+						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-30
 					`}
-				>
-					Back to Home
-				</button>
+				/>
+				<div className="relative z-10 flex flex-col items-center">
+					<div className="mb-6 text-6xl">👥</div>
+					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game is Full</h1>
+					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+						Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
+					</p>
+					<button
+						onClick={() => navigate('/')}
+						className={`
+							cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
+							py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+							transition-all
+							hover:-translate-y-px
+							hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
+						`}
+					>
+						Back to Home
+					</button>
+				</div>
 			</div>
 		);
 	}
@@ -400,14 +462,31 @@ export function PlayerPage() {
 	};
 
 	return (
-		<div className="flex min-h-screen w-full flex-col bg-slate-800 p-4 text-white">
-			<header className="flex items-center justify-between text-2xl font-bold">
-				<span>{currentNickname}</span>
-				<span>
+		<div
+			className="
+				relative flex min-h-screen w-full flex-col bg-slate-900 p-4 text-white
+			"
+		>
+			{/* Background grid */}
+			<div
+				className={`
+					absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+					bg-size-[20px_20px] opacity-30
+				`}
+			/>
+
+			<header
+				className={`
+					relative z-10 flex items-center justify-between rounded-lg border-2
+					border-white/10 bg-slate-800/50 px-4 py-2 text-xl font-bold
+				`}
+			>
+				<span className="font-display">{currentNickname}</span>
+				<span className="font-mono">
 					Score: <AnimatedNumber value={myScore ?? 0} instant={!hasInitialScoreSync} />
 				</span>
 			</header>
-			<main className="flex grow items-center justify-center">
+			<main className="relative z-10 flex grow items-center justify-center">
 				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
 			</main>
 
@@ -428,21 +507,15 @@ export function PlayerPage() {
 			<Toaster richColors theme="dark" />
 
 			{/* Leave game confirmation dialog */}
-			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>
+			<AlertDialog open={blocker.state === 'blocked'}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Leave Game?</AlertDialogTitle>
+						<AlertDialogTitle className="text-red-600">Leave Game?</AlertDialogTitle>
 						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => blocker.proceed?.()}
-							className={`
-								bg-red-500
-								hover:bg-red-600
-							`}
-						>
+						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="destructive">
 							Leave Game
 						</AlertDialogAction>
 					</AlertDialogFooter>

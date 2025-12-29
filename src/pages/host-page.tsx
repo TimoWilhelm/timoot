@@ -254,16 +254,38 @@ export function HostPage() {
 		return (
 			<div
 				className={`
-					flex min-h-screen w-full flex-col items-center justify-center bg-red-100
-					p-4 text-red-800
+					relative flex min-h-screen w-full flex-col items-center justify-center
+					overflow-hidden bg-[#fafafa] p-4
 				`}
 			>
-				<ShieldAlert className="mb-4 size-16" />
-				<h1 className="mb-2 text-3xl font-bold">{errorTitle}</h1>
-				<p className="mb-6 max-w-md text-center">{errorMessage}</p>
-				<Button asChild>
-					<Link to="/">Return to Home</Link>
-				</Button>
+				<div
+					className={`
+						absolute inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-50
+					`}
+				/>
+				<div
+					className={`
+						relative z-10 flex flex-col items-center rounded-xl border-4 border-black
+						bg-red-100 p-8 shadow-brutal-lg
+					`}
+				>
+					<div
+						className={`
+							mb-4 flex size-20 items-center justify-center rounded-full border-2
+							border-black bg-red-500 shadow-brutal
+						`}
+					>
+						<ShieldAlert className="size-10 text-white" />
+					</div>
+					<h1 className="mb-2 font-display text-3xl font-bold text-red-600">{errorTitle}</h1>
+					<p className="mb-6 max-w-md text-center font-medium text-red-800">{errorMessage}</p>
+					<Button asChild className="bg-black text-white">
+						<Link to="/" viewTransition>
+							Return to Home
+						</Link>
+					</Button>
+				</div>
 			</div>
 		);
 	}
@@ -272,10 +294,23 @@ export function HostPage() {
 		return (
 			<div
 				className={`
-					flex min-h-screen w-full items-center justify-center bg-slate-100
+					relative flex min-h-screen w-full items-center justify-center bg-[#fafafa]
 				`}
 			>
-				<Loader2 className="size-16 animate-spin text-quiz-orange" />
+				<div
+					className={`
+						absolute inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)]
+						bg-size-[20px_20px] opacity-50
+					`}
+				/>
+				<div
+					className={`
+						relative flex size-24 items-center justify-center rounded-full border-4
+						border-black bg-yellow-300 shadow-brutal-lg
+					`}
+				>
+					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />
+				</div>
 			</div>
 		);
 	}
@@ -358,10 +393,19 @@ export function HostPage() {
 	return (
 		<div
 			className={`
-				flex min-h-screen w-full flex-col overflow-hidden bg-slate-100
-				text-slate-900
+				relative flex min-h-screen w-full flex-col overflow-hidden bg-[#fafafa]
+				font-sans text-black
+				selection:bg-black selection:text-white
 			`}
 		>
+			{/* Decorative Background Grid */}
+			<div
+				className={`
+					absolute inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)]
+					bg-size-[20px_20px] opacity-50
+				`}
+			/>
+
 			{/* Sound toggle button - fixed position */}
 			<div className="fixed top-4 left-4 z-50">
 				<SoundToggle onToggle={handleAudioInit} />
@@ -374,7 +418,7 @@ export function HostPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="flex grow flex-col"
+					className="relative z-10 flex grow flex-col"
 				>
 					{renderContent()}
 				</motion.main>
@@ -385,21 +429,15 @@ export function HostPage() {
 			<FloatingEmojis ref={floatingEmojisReference} />
 
 			{/* Leave game confirmation dialog */}
-			<AlertDialog open={blocker.state === 'blocked'} preventBackClose>
+			<AlertDialog open={blocker.state === 'blocked'}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Leave Game?</AlertDialogTitle>
+						<AlertDialogTitle className="text-red-600">Leave Game?</AlertDialogTitle>
 						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={() => blocker.proceed?.()}
-							className={`
-								bg-red-500
-								hover:bg-red-600
-							`}
-						>
+						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="destructive">
 							Leave Game
 						</AlertDialogAction>
 					</AlertDialogFooter>

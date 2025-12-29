@@ -2,9 +2,11 @@ import { cva } from 'class-variance-authority';
 
 export const buttonVariants = cva(
 	`
-		inline-flex cursor-pointer items-center justify-center gap-2 rounded-md
-		text-sm font-medium whitespace-nowrap transition-colors
-		focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-hidden
+		inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg
+		border-2 border-black text-sm font-bold whitespace-nowrap transition-all
+		duration-200
+		focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2
+		focus-visible:outline-hidden
 		disabled:pointer-events-none disabled:opacity-50
 		[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0
 	`,
@@ -12,32 +14,39 @@ export const buttonVariants = cva(
 		variants: {
 			variant: {
 				default: `
-					bg-primary text-primary-foreground shadow-sm
-					hover:bg-primary/90
+					bg-primary-foreground text-primary shadow-brutal-sm
+					hover:-translate-y-px hover:shadow-brutal
+					active:translate-y-0 active:shadow-none
 				`,
 				destructive: `
-					bg-destructive text-destructive-foreground shadow-xs
-					hover:bg-destructive/90
+					bg-red-500 text-primary shadow-brutal-sm
+					hover:-translate-y-px hover:bg-red-600 hover:shadow-brutal
+					active:translate-y-0 active:shadow-none
 				`,
-				outline: `
-					border border-input bg-background shadow-xs
-					hover:bg-accent hover:text-accent-foreground
+				primary: `
+					bg-quiz-orange text-primary shadow-brutal-sm
+					hover:-translate-y-px hover:bg-quiz-orange/90 hover:shadow-brutal
+					active:translate-y-0 active:shadow-none
 				`,
 				secondary: `
-					bg-secondary text-secondary-foreground shadow-xs
-					hover:bg-secondary/80
+					bg-primary-foreground text-primary
+					hover:-translate-y-px hover:bg-gray-50 hover:shadow-brutal-sm
+					active:translate-y-0 active:shadow-none
 				`,
-				ghost: 'hover:bg-accent hover:text-accent-foreground',
+				ghost: `
+					border-transparent
+					hover:border-black hover:bg-gray-100
+				`,
 				link: `
-					text-primary underline-offset-4
+					border-transparent text-primary underline-offset-4
 					hover:underline
 				`,
 			},
 			size: {
-				default: 'h-9 px-4 py-2',
+				default: 'h-10 px-4 py-2',
 				sm: 'h-8 rounded-md px-3 text-xs',
-				lg: 'h-10 rounded-md px-8',
-				icon: 'size-9',
+				lg: 'h-12 rounded-xl px-8 text-base',
+				icon: 'size-10 p-0',
 			},
 		},
 		defaultVariants: {

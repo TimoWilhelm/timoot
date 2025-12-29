@@ -3,18 +3,8 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utilities';
-import { useDialogBackHandler } from '@/hooks/use-dialog-back-handler';
 
-interface DialogProperties extends React.ComponentProps<typeof DialogPrimitive.Root> {
-	/** Disable browser back button closing this dialog (use for navigation confirmation dialogs) */
-	preventBackClose?: boolean;
-}
-
-const Dialog = ({ open, onOpenChange, preventBackClose, ...properties }: DialogProperties) => {
-	const { wrappedOnOpenChange } = useDialogBackHandler(preventBackClose ? undefined : open, preventBackClose ? undefined : onOpenChange);
-
-	return <DialogPrimitive.Root open={open} onOpenChange={preventBackClose ? onOpenChange : wrappedOnOpenChange} {...properties} />;
-};
+const Dialog = DialogPrimitive.Root;
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
@@ -55,8 +45,8 @@ const DialogContent = React.forwardRef<
 					ref={reference}
 					className={cn(
 						`
-							relative z-50 grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-lg
-							border bg-background p-6 shadow-lg duration-200
+							relative z-50 grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl
+							border-4 border-black bg-white p-0 duration-200
 							data-[state=closed]:animate-out data-[state=closed]:fade-out-0
 							data-[state=closed]:zoom-out-95
 							data-[state=open]:animate-in data-[state=open]:fade-in-0
@@ -70,12 +60,12 @@ const DialogContent = React.forwardRef<
 					{children}
 					<DialogPrimitive.Close
 						className={`
-							absolute top-4 right-4 cursor-pointer rounded-xs opacity-70
-							ring-offset-background transition-opacity
-							hover:opacity-100
-							focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden
+							absolute top-4 right-4 z-10 flex size-8 cursor-pointer items-center
+							justify-center rounded-lg border-2 border-black bg-white
+							transition-colors
+							hover:bg-black hover:text-white
+							focus:ring-2 focus:ring-black focus:ring-offset-2 focus:outline-hidden
 							disabled:pointer-events-none
-							data-[state=open]:bg-accent data-[state=open]:text-muted-foreground
 						`}
 					>
 						<X className="size-4" />
@@ -120,7 +110,11 @@ const DialogTitle = React.forwardRef<
 	React.ElementRef<typeof DialogPrimitive.Title>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...properties }, reference) => (
-	<DialogPrimitive.Title ref={reference} className={cn(`text-lg leading-none font-semibold tracking-tight`, className)} {...properties} />
+	<DialogPrimitive.Title
+		ref={reference}
+		className={cn(`font-display text-2xl leading-none font-bold tracking-tight`, className)}
+		{...properties}
+	/>
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 

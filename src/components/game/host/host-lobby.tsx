@@ -28,7 +28,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 				sm:p-10
 			`}
 		>
-			<div className="w-full max-w-5xl space-y-6">
+			<div className="w-full max-w-5xl space-y-8">
 				{/* Side-by-side layout */}
 				<div
 					className={`
@@ -47,20 +47,22 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 					>
 						<Card
 							className={`
-								flex w-full flex-col rounded-2xl p-6 shadow-lg
+								flex w-full flex-col p-6
 								sm:p-8
 							`}
 						>
 							<div className="flex grow flex-col items-center justify-center">
-								<p className="mb-4 text-3xl font-medium">Join the Game!</p>
-								<QRCode value={joinUrl} size={240} />
+								<p className="mb-4 font-display text-3xl font-bold">Join the Game!</p>
+								<div className="rounded-lg border-2 border-black p-2 shadow-brutal-sm">
+									<QRCode value={joinUrl} size={240} />
+								</div>
 							</div>
-							<div className="mt-6 border-t pt-6 text-center">
-								<p className="mb-2 text-sm text-muted-foreground">or enter code</p>
+							<div className="mt-6 border-t-2 border-black pt-6 text-center">
+								<p className="mb-2 text-sm font-bold text-gray-500 uppercase">or enter code</p>
 								<p
 									className={`
-										font-mono text-2xl font-bold tracking-wide whitespace-nowrap
-										text-primary
+										rounded-lg border-2 border-black bg-yellow-300 px-4 py-2 font-mono
+										text-2xl font-bold tracking-wider shadow-brutal-sm
 										sm:text-3xl
 									`}
 								>
@@ -70,15 +72,16 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 							<button
 								onClick={copyToClipboard}
 								className={`
-									mt-4 flex items-center justify-center gap-2 text-sm
-									text-muted-foreground transition-colors
-									hover:text-foreground
+									mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-lg
+									border-2 border-black px-4 py-2 font-bold transition-all
+									hover:-translate-y-px hover:shadow-brutal-sm
+									active:translate-y-0 active:shadow-none
 								`}
 							>
 								{copied ? (
 									<>
-										<Check className="size-4 text-green-500" />
-										<span className="text-green-500">Copied!</span>
+										<Check className="size-4 text-green-600" />
+										<span className="text-green-600">Copied!</span>
 									</>
 								) : (
 									<>
@@ -100,16 +103,24 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 							lg:flex-1
 						`}
 					>
-						<Card className="flex grow flex-col rounded-2xl">
-							<CardHeader className="pb-3">
-								<CardTitle className="flex items-center gap-2 text-lg">
-									<Users className="size-5" /> Players ({players.length})
+						<Card className="flex grow flex-col">
+							<CardHeader className="border-b-2 border-black pb-4">
+								<CardTitle className="flex items-center gap-2 text-xl">
+									<div
+										className={`
+											flex size-8 items-center justify-center rounded-lg border-2
+											border-black bg-blue-400 shadow-brutal-sm
+										`}
+									>
+										<Users className="size-4 text-white" />
+									</div>
+									Players ({players.length})
 								</CardTitle>
 							</CardHeader>
-							<CardContent className={`flex grow flex-wrap content-start gap-2 p-4 pt-0`}>
+							<CardContent className={`flex grow flex-wrap content-start gap-2 p-4 pt-4`}>
 								<AnimatePresence>
 									{players.length === 0 ? (
-										<p className="text-sm text-muted-foreground">Waiting for players to join...</p>
+										<p className="font-medium text-gray-500">Waiting for players to join...</p>
 									) : (
 										players.map((p) => (
 											<motion.div
@@ -119,8 +130,8 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 												exit={{ opacity: 0, scale: 0.5 }}
 												layout
 												className={`
-													h-fit rounded-lg bg-quiz-orange px-4 py-2 font-semibold text-white
-													shadow-sm
+													h-fit rounded-lg border-2 border-black bg-quiz-orange px-4 py-2
+													font-bold text-white shadow-brutal-sm
 												`}
 											>
 												{p.name}
@@ -142,13 +153,9 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 				>
 					<Button
 						onClick={onStart}
+						variant="primary"
 						size="lg"
-						className={`
-							transform rounded-2xl bg-quiz-orange px-10 py-6 text-xl font-bold
-							text-white shadow-lg transition-all duration-300
-							hover:-translate-y-1 hover:shadow-xl
-							active:scale-95
-						`}
+						className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
 						disabled={players.length === 0}
 					>
 						{players.length === 0 ? 'Waiting for players...' : 'Start Game'}

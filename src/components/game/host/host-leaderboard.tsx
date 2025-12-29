@@ -104,22 +104,30 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				initial={{ opacity: 0, y: -30 }}
 				animate={{ opacity: 1, y: 0 }}
 				className={`
-					flex items-center gap-4 text-5xl font-bold
+					flex items-center gap-4 font-display text-5xl font-bold
 					sm:text-6xl
 				`}
 			>
-				<Trophy
+				<div
 					className={`
-						size-12 text-quiz-gold
-						sm:size-16
+						flex size-16 items-center justify-center rounded-full border-4
+						border-black bg-yellow-300 shadow-brutal
+						sm:size-20
 					`}
-				/>{' '}
+				>
+					<Trophy
+						className={`
+							size-8 text-black
+							sm:size-10
+						`}
+					/>
+				</div>
 				Leaderboard
 			</motion.h1>
-			<Card className="w-full max-w-2xl overflow-hidden rounded-2xl shadow-lg">
+			<Card className="w-full max-w-2xl overflow-hidden">
 				<CardContent className="p-0">
 					<LayoutGroup>
-						<ul className="divide-y">
+						<ul className="divide-y-2 divide-black">
 							<AnimatePresence mode="popLayout">
 								{sortedPlayers.map((player, index) => {
 									// Get the visual position for rank display
@@ -133,7 +141,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 											key={player.id}
 											layout
 											className={`
-												flex items-center justify-between bg-card p-4 text-xl font-bold
+												flex items-center justify-between bg-white p-4 text-xl font-bold
 												sm:text-2xl
 											`}
 											initial={{ opacity: 0, x: -100 }}
@@ -151,22 +159,41 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 											}}
 										>
 											<span className="flex items-center">
-												<span className="w-10 text-center">
+												<span className="w-12 text-center">
 													{displayRank <= 3 ? (
-														<Crown
+														<div
 															className={cn(
-																'mr-4 size-8',
-																displayRank === 1 ? 'text-yellow-400' : displayRank === 2 ? `text-gray-400` : `text-yellow-600`,
+																`
+																	mr-3 flex size-8 items-center justify-center rounded-full
+																	border-2 border-black
+																`,
+																displayRank === 1 ? 'bg-yellow-400' : displayRank === 2 ? 'bg-gray-300' : 'bg-amber-600',
 															)}
-														/>
+														>
+															<Crown className="size-5 text-white" />
+														</div>
 													) : (
-														<span className="mr-4 text-2xl font-bold">{displayRank}</span>
+														<span
+															className={`
+																mr-3 flex size-8 items-center justify-center rounded-full
+																border-2 border-black bg-gray-100 text-lg font-bold
+															`}
+														>
+															{displayRank}
+														</span>
 													)}
 												</span>
 												{player.name}
 												{animationPhase === 'done' && getRankChangeIndicator(player)}
 											</span>
-											<span>{player.score}</span>
+											<span
+												className={`
+													rounded-lg border-2 border-black bg-black px-3 py-1 font-mono
+													text-white
+												`}
+											>
+												{player.score}
+											</span>
 										</motion.li>
 									);
 								})}
@@ -179,10 +206,9 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				<Button
 					data-host-next-button
 					onClick={onNext}
+					variant="primary"
 					size="lg"
-					className={`
-						rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white
-					`}
+					className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
 				>
 					{isLastQuestion ? 'Final Results' : 'Next Question'}
 				</Button>
