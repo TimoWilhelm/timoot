@@ -8,7 +8,6 @@ export const buttonVariants = cva(
 		focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2
 		focus-visible:outline-hidden
 		disabled:pointer-events-none disabled:opacity-50
-		[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0
 	`,
 	{
 		variants: {

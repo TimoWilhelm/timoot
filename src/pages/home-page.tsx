@@ -78,7 +78,7 @@ function getStatusMessage(status: { stage: string; detail?: string } | undefined
 const BRUTAL_CARD_BASE =
 	'relative overflow-hidden rounded-xl border-2 border-black bg-white shadow-brutal-sm transition-all duration-200 hover:-translate-y-px hover:shadow-brutal active:translate-y-0 active:shadow-none';
 const BRUTAL_INPUT =
-	'rounded-lg border-2 border-black bg-white px-4 py-2 font-medium shadow-brutal-sm focus:outline-hidden focus:ring-2 focus:ring-black focus:ring-offset-2';
+	'rounded-lg border-2 border-black bg-white px-4 py-2 font-medium shadow-brutal-inset focus:outline-hidden focus:ring-2 focus:ring-black focus:ring-offset-2';
 
 export function HomePage() {
 	const navigate = useViewTransitionNavigate();
@@ -358,12 +358,12 @@ export function HomePage() {
 					</motion.h1>
 
 					<motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="relative z-20">
-						<button
+						<Button
 							onClick={() => navigate('/play')}
+							variant="primary"
 							className="
-								group relative inline-flex cursor-pointer items-center gap-4 rounded-xl
-								border-4 border-black bg-quiz-orange px-12 py-6 text-2xl font-black
-								text-white uppercase shadow-brutal transition-all
+								group relative inline-flex items-center gap-4 rounded-xl px-12 py-10
+								text-4xl uppercase shadow-brutal
 								hover:-translate-y-0.5 hover:shadow-brutal-lg
 								active:translate-y-0 active:shadow-brutal-sm
 							"
@@ -376,7 +376,7 @@ export function HomePage() {
 								strokeWidth={2.5}
 							/>
 							<span>Join Game</span>
-						</button>
+						</Button>
 					</motion.div>
 				</header>
 
@@ -426,7 +426,8 @@ export function HomePage() {
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: index * 0.05 }}
 									>
-										<div
+										<button
+											type="button"
 											onClick={() => {
 												setSelectedQuiz(quiz);
 												setIsStartDialogOpen(true);
@@ -434,7 +435,7 @@ export function HomePage() {
 											className={cn(
 												BRUTAL_CARD_BASE,
 												`
-													group h-full cursor-pointer bg-white p-6
+													group size-full cursor-pointer bg-white p-6 text-left
 													hover:bg-yellow-50
 												`,
 												startingQuizId === quiz.id && 'bg-yellow-100 ring-2 ring-black ring-offset-2',
@@ -473,7 +474,7 @@ export function HomePage() {
 													<Loader2 className="size-8 animate-spin text-black" />
 												</div>
 											)}
-										</div>
+										</button>
 									</motion.div>
 								))}
 							</div>
@@ -514,12 +515,13 @@ export function HomePage() {
 							>
 								{/* Create New Card */}
 								<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="order-first">
-									<div
+									<button
+										type="button"
 										onClick={() => navigate('/edit')}
 										className={cn(
 											BRUTAL_CARD_BASE,
 											`
-												group flex h-full cursor-pointer flex-col items-center
+												group flex size-full cursor-pointer flex-col items-center
 												justify-center gap-4 bg-gray-50 p-6 text-center
 												hover:bg-blue-50
 											`,
@@ -535,18 +537,19 @@ export function HomePage() {
 											<Plus className="size-8 text-white" strokeWidth={4} />
 										</div>
 										<h3 className="font-display text-2xl font-bold">Create New</h3>
-									</div>
+									</button>
 								</motion.div>
 
 								{/* AI Generate Trigger */}
 								<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
 									<Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
 										<DialogTrigger asChild>
-											<div
+											<button
+												type="button"
 												className={cn(
 													BRUTAL_CARD_BASE,
 													`
-														group flex h-full cursor-pointer flex-col items-center
+														group flex size-full cursor-pointer flex-col items-center
 														justify-center gap-4 bg-gray-50 p-6 text-center
 														hover:bg-purple-50
 													`,
@@ -562,7 +565,7 @@ export function HomePage() {
 													<Wand2 className="size-8 text-white" strokeWidth={2.5} />
 												</div>
 												<h3 className="font-display text-2xl font-bold">Magic Quiz</h3>
-											</div>
+											</button>
 										</DialogTrigger>
 										<DialogContent
 											className="
@@ -673,14 +676,18 @@ export function HomePage() {
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: index * 0.05 }}
 									>
-										<div
+										<button
+											type="button"
 											onClick={() => {
 												setSelectedQuiz(quiz);
 												setIsStartDialogOpen(true);
 											}}
 											className={cn(
 												BRUTAL_CARD_BASE,
-												'group flex h-full cursor-pointer flex-col justify-between p-6',
+												`
+													group flex size-full cursor-pointer flex-col justify-between p-6
+													text-left
+												`,
 												startingQuizId === quiz.id && 'bg-yellow-50',
 											)}
 										>
@@ -735,7 +742,7 @@ export function HomePage() {
 												<HelpCircle className="size-4" />
 												{quiz.questions.length} Questions
 											</div>
-										</div>
+										</button>
 									</motion.div>
 								))}
 							</div>
@@ -837,25 +844,10 @@ export function HomePage() {
 						<TurnstileWidget className="mb-4 flex justify-center" />
 						<div className="flex gap-3">
 							<Button
-								variant="secondary"
-								onClick={() => setIsStartDialogOpen(false)}
-								disabled={isGameStarting}
-								className="
-									flex-1 border-2 border-black font-bold
-									hover:bg-gray-100
-								"
-							>
-								Cancel
-							</Button>
-							<Button
 								onClick={() => selectedQuiz && handleStartGame(selectedQuiz.id)}
 								disabled={isGameStarting || !turnstileToken}
-								className="
-									flex-1 border-2 border-black bg-quiz-orange font-bold text-white
-									shadow-brutal-sm
-									hover:-translate-y-px hover:shadow-brutal
-									active:translate-y-0 active:shadow-none
-								"
+								variant="primary"
+								className="w-full rounded-xl py-6 text-lg"
 							>
 								{isGameStarting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Gamepad2 className="mr-2 size-4" />}
 								Let's Play

@@ -67,7 +67,7 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 								placeholder="Your cool name"
 								className={`
 									h-16 border-2 border-white/30 bg-slate-700 text-center text-2xl
-									font-bold text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+									font-bold text-white shadow-[inset_3px_3px_0px_0px_rgba(0,0,0,0.3)]
 									placeholder:text-slate-400
 									focus:border-quiz-orange focus:ring-quiz-orange
 								`}
