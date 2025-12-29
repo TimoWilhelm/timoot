@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
+import { cn } from '@/lib/utilities';
 
 interface HostLeaderboardProperties {
 	onNext: () => void;
@@ -74,16 +75,16 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 		if (diff > 0) {
 			// Moved up
 			return (
-				<motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="ml-2 flex items-center text-green-500">
-					<ChevronUp className="h-5 w-5" />
+				<motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`ml-2 flex items-center text-green-500`}>
+					<ChevronUp className="size-5" />
 					<span className="text-sm font-medium">{diff}</span>
 				</motion.span>
 			);
 		} else if (diff < 0) {
 			// Moved down
 			return (
-				<motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="ml-2 flex items-center text-red-500">
-					<ChevronDown className="h-5 w-5" />
+				<motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`ml-2 flex items-center text-red-500`}>
+					<ChevronDown className="size-5" />
 					<span className="text-sm font-medium">{Math.abs(diff)}</span>
 				</motion.span>
 			);
@@ -93,13 +94,27 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 	};
 
 	return (
-		<div className="flex flex-grow flex-col items-center justify-center space-y-8 p-4 sm:p-8">
+		<div
+			className={`
+				flex grow flex-col items-center justify-center space-y-8 p-4
+				sm:p-8
+			`}
+		>
 			<motion.h1
 				initial={{ opacity: 0, y: -30 }}
 				animate={{ opacity: 1, y: 0 }}
-				className="flex items-center gap-4 text-5xl font-bold sm:text-6xl"
+				className={`
+					flex items-center gap-4 text-5xl font-bold
+					sm:text-6xl
+				`}
 			>
-				<Trophy className="h-12 w-12 text-quiz-gold sm:h-16 sm:w-16" /> Leaderboard
+				<Trophy
+					className={`
+						size-12 text-quiz-gold
+						sm:size-16
+					`}
+				/>{' '}
+				Leaderboard
 			</motion.h1>
 			<Card className="w-full max-w-2xl overflow-hidden rounded-2xl shadow-lg">
 				<CardContent className="p-0">
@@ -117,7 +132,10 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 										<motion.li
 											key={player.id}
 											layout
-											className="flex items-center justify-between bg-card p-4 text-xl font-bold sm:text-2xl"
+											className={`
+												flex items-center justify-between bg-card p-4 text-xl font-bold
+												sm:text-2xl
+											`}
 											initial={{ opacity: 0, x: -100 }}
 											animate={{
 												opacity: 1,
@@ -136,9 +154,10 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 												<span className="w-10 text-center">
 													{displayRank <= 3 ? (
 														<Crown
-															className={`mr-4 h-8 w-8 ${
-																displayRank === 1 ? 'text-yellow-400' : displayRank === 2 ? 'text-gray-400' : 'text-yellow-600'
-															}`}
+															className={cn(
+																'mr-4 size-8',
+																displayRank === 1 ? 'text-yellow-400' : displayRank === 2 ? `text-gray-400` : `text-yellow-600`,
+															)}
 														/>
 													) : (
 														<span className="mr-4 text-2xl font-bold">{displayRank}</span>
@@ -161,7 +180,9 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 					data-host-next-button
 					onClick={onNext}
 					size="lg"
-					className="rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white"
+					className={`
+						rounded-2xl bg-quiz-orange px-12 py-8 text-2xl font-bold text-white
+					`}
 				>
 					{isLastQuestion ? 'Final Results' : 'Next Question'}
 				</Button>

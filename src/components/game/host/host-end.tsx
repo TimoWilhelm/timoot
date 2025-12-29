@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utilities';
 import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
 interface PodiumEntry {
@@ -49,7 +50,12 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 
 	// Pre-allocate the space but keep content invisible until revealed
 	return (
-		<div className="flex w-24 flex-col items-center text-center sm:w-36">
+		<div
+			className={`
+				flex w-24 flex-col items-center text-center
+				sm:w-36
+			`}
+		>
 			{entry ? (
 				<motion.div
 					className="flex w-full flex-col items-center"
@@ -64,11 +70,19 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 							return (
 								<motion.p
 									key={player.name}
-									className={`font-bold leading-tight ${
+									className={cn(
+										'leading-tight font-bold',
 										isFirstPlace
-											? 'text-2xl text-quiz-orange drop-shadow-[0_0_10px_rgba(244,129,32,0.6)] sm:text-4xl'
-											: 'text-lg sm:text-2xl'
-									}`}
+											? `
+												text-2xl text-quiz-orange
+												drop-shadow-[0_0_10px_rgba(244,129,32,0.6)]
+												sm:text-4xl
+											`
+											: `
+												text-lg
+												sm:text-2xl
+											`,
+									)}
 									initial={isFirstPlace ? { opacity: 0, scale: 0.6, y: 20 } : { opacity: 0, x: -20 }}
 									animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
 									transition={{ delay: delay + 0.3 + index * 0.15, type: 'spring', stiffness: isFirstPlace ? 140 : 80, damping: 12 }}
@@ -78,12 +92,29 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 							);
 						})}
 					</div>
-					<motion.p className="text-sm sm:text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: delay + 0.3 }}>
+					<motion.p
+						className={`
+							text-sm
+							sm:text-lg
+						`}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: delay + 0.3 }}
+					>
 						{entry.players[0].score} pts
 					</motion.p>
 					{/* Podium block */}
 					<motion.div
-						className={`${height} mt-2 w-full ${color} flex items-center justify-center rounded-t-lg text-3xl font-bold text-white shadow-lg sm:text-4xl`}
+						className={cn(
+							height,
+							'mt-2 w-full',
+							color,
+							`
+								flex items-center justify-center rounded-t-lg text-3xl font-bold
+								text-white shadow-lg
+								sm:text-4xl
+							`,
+						)}
 						initial={{ scaleY: 0 }}
 						animate={{ scaleY: 1 }}
 						transition={{ type: 'spring', stiffness: 100, damping: 15, delay: delay - 0.1 }}
@@ -100,7 +131,7 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 				</motion.div>
 			) : (
 				// Empty placeholder to maintain layout
-				<div className={`${height} w-full opacity-0`} />
+				<div className={cn(height, 'w-full opacity-0')} />
 			)}
 		</div>
 	);
@@ -190,7 +221,12 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 	}, [revealed, firstPlace]);
 
 	return (
-		<div className="flex flex-grow flex-col items-center justify-center gap-4 whitespace-nowrap p-4 sm:gap-6 sm:p-8">
+		<div
+			className={`
+				flex grow flex-col items-center justify-center gap-4 p-4 whitespace-nowrap
+				sm:gap-6 sm:p-8
+			`}
+		>
 			<AnimatePresence mode="wait">
 				{revealed ? (
 					<motion.div
@@ -198,12 +234,19 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 						initial={{ opacity: 0, y: 10 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, ease: 'easeOut' }}
-						className="flex flex-col items-center gap-4 sm:gap-6"
+						className={`
+							flex flex-col items-center gap-4
+							sm:gap-6
+						`}
 					>
 						<motion.h1
 							initial={{ opacity: 0, scale: 0.5 }}
 							animate={{ opacity: 1, scale: 1 }}
-							className="text-3xl font-bold sm:text-5xl md:text-7xl"
+							className={`
+								text-3xl font-bold
+								sm:text-5xl
+								md:text-7xl
+							`}
 						>
 							<motion.span
 								className="inline-block"
@@ -212,7 +255,14 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							>
 								🏆
 							</motion.span>
-							<span className="mx-2 sm:mx-4">Top Scorers!</span>
+							<span
+								className={`
+									mx-2
+									sm:mx-4
+								`}
+							>
+								Top Scorers!
+							</span>
 							<motion.span
 								className="inline-block"
 								animate={{ rotate: [-12, 12] }}
@@ -223,7 +273,12 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 						</motion.h1>
 
 						{/* Podium container with fixed layout: 2nd | 1st | 3rd */}
-						<div className="flex items-end justify-center gap-2 sm:gap-4">
+						<div
+							className={`
+								flex items-end justify-center gap-2
+								sm:gap-4
+							`}
+						>
 							<PodiumPlace entry={secondPlace} position={2} />
 							<PodiumPlace entry={firstPlace} position={1} />
 							<PodiumPlace entry={thirdPlace} position={3} />
@@ -233,7 +288,10 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							<Button
 								onClick={() => (globalThis.location.href = '/')}
 								size="lg"
-								className="rounded-2xl bg-quiz-orange px-8 py-6 text-xl font-bold text-white sm:px-12 sm:py-8 sm:text-2xl"
+								className={`
+									rounded-2xl bg-quiz-orange px-8 py-6 text-xl font-bold text-white
+									sm:px-12 sm:py-8 sm:text-2xl
+								`}
 							>
 								Play Again
 							</Button>
@@ -252,20 +310,38 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							initial={false}
 							animate={{ opacity: [0.6, 1, 0.6] }}
 							transition={{ duration: 1.2, repeat: Infinity }}
-							className="text-center text-3xl font-bold sm:text-5xl md:text-6xl"
+							className={`
+								text-center text-3xl font-bold
+								sm:text-5xl
+								md:text-6xl
+							`}
 						>
-							<span className="mx-2 sm:mx-4">And the winners are...</span>
+							<span
+								className={`
+									mx-2
+									sm:mx-4
+								`}
+							>
+								And the winners are...
+							</span>
 						</motion.h1>
 						<motion.div
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.2 }}
-							className="flex items-center gap-3 rounded-full bg-quiz-orange/10 px-4 py-2 text-sm font-medium text-quiz-orange sm:text-base"
+							className={`
+								flex items-center gap-3 rounded-full bg-quiz-orange/10 px-4 py-2 text-sm
+								font-medium text-quiz-orange
+								sm:text-base
+							`}
 						>
 							<motion.span
 								animate={{ rotate: [-10, 10] }}
 								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
-								className="inline-block text-lg sm:text-xl"
+								className={`
+									inline-block text-lg
+									sm:text-xl
+								`}
 							>
 								🏆
 							</motion.span>

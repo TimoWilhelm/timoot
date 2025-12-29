@@ -5,74 +5,74 @@
 	"compatibility_date": "2025-11-17",
 	"compatibility_flags": ["nodejs_als"],
 	"version_metadata": {
-		"binding": "CF_VERSION_METADATA"
+		"binding": "CF_VERSION_METADATA",
 	},
 	"durable_objects": {
 		"bindings": [
 			{
 				"name": "GAME_ROOM",
-				"class_name": "GameRoomDurableObject"
+				"class_name": "GameRoomDurableObject",
 			},
 			{
 				"name": "USER_STORE",
-				"class_name": "UserStoreDurableObject"
-			}
-		]
+				"class_name": "UserStoreDurableObject",
+			},
+		],
 	},
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./dist",
 		"not_found_handling": "single-page-application",
-		"run_worker_first": ["/api/*", "!/api/docs/*"]
+		"run_worker_first": ["/api/*", "!/api/docs/*"],
 	},
 	"observability": {
 		"logs": {
-			"enabled": true
+			"enabled": true,
 		},
 		"traces": {
-			"enabled": true
-		}
+			"enabled": true,
+		},
 	},
 	"ai": {
 		"binding": "AI",
-		"remote": true
+		"remote": true,
 	},
 	"kv_namespaces": [
 		{
-			"binding": "KV_IMAGES"
+			"binding": "KV_IMAGES",
 		},
 		{
-			"binding": "KV_SYNC"
-		}
+			"binding": "KV_SYNC",
+		},
 	],
 	"migrations": [
 		{
 			"tag": "v1",
-			"new_sqlite_classes": ["QuizStoreDurableObject", "GameRoomDurableObject"]
+			"new_sqlite_classes": ["QuizStoreDurableObject", "GameRoomDurableObject"],
 		},
 		{
 			"tag": "v2",
 			"renamed_classes": [
 				{
 					"from": "QuizStoreDurableObject",
-					"to": "UserStoreDurableObject"
-				}
-			]
-		}
+					"to": "UserStoreDurableObject",
+				},
+			],
+		},
 	],
 	"vars": {
-		"GET_READY_COUNTDOWN_MS": 6000
+		"GET_READY_COUNTDOWN_MS": 6000,
 	},
 	"ratelimits": [
 		{
 			"name": "GAME_RATE_LIMITER",
 			"namespace_id": "1001",
-			"simple": { "limit": 10, "period": 60 }
+			"simple": { "limit": 10, "period": 60 },
 		},
 		{
 			"name": "AI_RATE_LIMITER",
 			"namespace_id": "1002",
-			"simple": { "limit": 5, "period": 60 }
-		}
-	]
+			"simple": { "limit": 5, "period": 60 },
+		},
+	],
 }

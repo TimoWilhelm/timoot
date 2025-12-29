@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import type { GamePhase, QuestionModifier } from '@shared/types';
+import { cn } from '@/lib/utilities';
 
 interface LeaderboardEntry {
 	id: string;
@@ -25,7 +26,7 @@ interface PlayerWaitingScreenProperties {
 function PlayerDoublePointsAnimation() {
 	return (
 		<motion.div
-			className="flex h-full w-full select-none flex-col items-center justify-center"
+			className={`flex size-full flex-col items-center justify-center select-none`}
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
@@ -64,14 +65,14 @@ function PlayerDoublePointsAnimation() {
 				}}
 			>
 				<motion.div
-					className="text-8xl font-black leading-none text-white drop-shadow-xl"
+					className="text-8xl leading-none font-black text-white drop-shadow-xl"
 					animate={{ scale: [1, 1.1, 1] }}
 					transition={{ duration: 0.5, repeat: Infinity }}
 				>
 					2×
 				</motion.div>
 				<motion.div
-					className="mt-2 text-xl font-bold uppercase tracking-wider text-white/90"
+					className="mt-2 text-xl font-bold tracking-wider text-white/90 uppercase"
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.5 }}
@@ -111,7 +112,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.5 }}
-				className={`text-4xl font-bold ${config.color}`}
+				className={cn('text-4xl font-bold', config.color)}
 			>
 				{config.label}
 			</motion.h3>
@@ -206,7 +207,7 @@ export function PlayerWaitingScreen({
 				// Fallback for unknown modifiers
 				return (
 					<div className="flex flex-col items-center text-center">
-						<Loader2 className="mb-4 h-12 w-12 animate-spin" />
+						<Loader2 className="mb-4 size-12 animate-spin" />
 						<h2 className="text-4xl font-bold">Special Round!</h2>
 					</div>
 				);
@@ -215,9 +216,12 @@ export function PlayerWaitingScreen({
 				if (answerResult) {
 					return (
 						<div
-							className={`flex flex-col items-center justify-center text-center ${answerResult.isCorrect ? 'text-green-300' : 'text-red-300'}`}
+							className={cn(
+								'flex flex-col items-center justify-center text-center',
+								answerResult.isCorrect ? 'text-green-300' : 'text-red-300',
+							)}
 						>
-							{answerResult.isCorrect ? <CheckCircle className="h-24 w-24" /> : <XCircle className="h-24 w-24" />}
+							{answerResult.isCorrect ? <CheckCircle className="size-24" /> : <XCircle className={`size-24`} />}
 							<h2 className="mt-4 text-5xl font-bold">{answerResult.isCorrect ? 'Correct!' : 'Incorrect'}</h2>
 							<p className="text-3xl">+ {answerResult.score} points</p>
 						</div>
@@ -247,7 +251,10 @@ export function PlayerWaitingScreen({
 								<li key={player.id} className="mx-auto flex w-64 justify-between">
 									<span>
 										<Trophy
-											className={`mr-2 inline h-5 w-5 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-400' : 'text-yellow-600'}`}
+											className={cn(
+												'mr-2 inline size-5',
+												index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-400' : `text-yellow-600`,
+											)}
 										/>
 										{player.name}
 									</span>
@@ -261,7 +268,7 @@ export function PlayerWaitingScreen({
 			case 'END_INTRO': {
 				return (
 					<div className="text-center">
-						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
+						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex flex-col items-center gap-4`}>
 							<motion.span
 								animate={{ scale: [1, 1.1, 1] }}
 								transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -292,16 +299,20 @@ export function PlayerWaitingScreen({
 							</motion.div>
 						) : undefined}
 
-						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-4 text-2xl">
+						<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className={`mt-4 text-2xl`}>
 							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
 						</motion.p>
 
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
 							<Link
 								to="/"
-								className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-600"
+								className={`
+									mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2
+									text-sm text-slate-300 transition-colors
+									hover:bg-slate-600
+								`}
 							>
-								<Home className="h-4 w-4" />
+								<Home className="size-4" />
 								Back to Home
 							</Link>
 						</motion.div>
@@ -311,7 +322,7 @@ export function PlayerWaitingScreen({
 			default: {
 				return (
 					<div className="flex flex-col items-center text-center">
-						<Loader2 className="mb-4 h-12 w-12 animate-spin" />
+						<Loader2 className="mb-4 size-12 animate-spin" />
 						<h2 className="text-4xl font-bold">Waiting...</h2>
 					</div>
 				);
@@ -325,7 +336,7 @@ export function PlayerWaitingScreen({
 				initial={{ opacity: 0, scale: 0.8 }}
 				animate={{ opacity: 1, scale: 1 }}
 				exit={{ opacity: 0, scale: 0.8 }}
-				className="flex h-full w-full items-center justify-center"
+				className="flex size-full items-center justify-center"
 			>
 				{renderContent()}
 			</motion.div>

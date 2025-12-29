@@ -252,8 +252,13 @@ export function HostPage() {
 			: 'Unable to connect as host. The game may have ended or your session is no longer valid.';
 
 		return (
-			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-red-100 p-4 text-red-800">
-				<ShieldAlert className="mb-4 h-16 w-16" />
+			<div
+				className={`
+					flex min-h-screen w-full flex-col items-center justify-center bg-red-100
+					p-4 text-red-800
+				`}
+			>
+				<ShieldAlert className="mb-4 size-16" />
 				<h1 className="mb-2 text-3xl font-bold">{errorTitle}</h1>
 				<p className="mb-6 max-w-md text-center">{errorMessage}</p>
 				<Button asChild>
@@ -265,8 +270,12 @@ export function HostPage() {
 
 	if (isConnecting && !isConnected) {
 		return (
-			<div className="flex min-h-screen w-full items-center justify-center bg-slate-100">
-				<Loader2 className="h-16 w-16 animate-spin text-quiz-orange" />
+			<div
+				className={`
+					flex min-h-screen w-full items-center justify-center bg-slate-100
+				`}
+			>
+				<Loader2 className="size-16 animate-spin text-quiz-orange" />
 			</div>
 		);
 	}
@@ -347,9 +356,14 @@ export function HostPage() {
 	};
 
 	return (
-		<div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-100 text-slate-900">
+		<div
+			className={`
+				flex min-h-screen w-full flex-col overflow-hidden bg-slate-100
+				text-slate-900
+			`}
+		>
 			{/* Sound toggle button - fixed position */}
-			<div className="fixed left-4 top-4 z-50">
+			<div className="fixed top-4 left-4 z-50">
 				<SoundToggle onToggle={handleAudioInit} />
 			</div>
 
@@ -360,7 +374,7 @@ export function HostPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="flex flex-grow flex-col"
+					className="flex grow flex-col"
 				>
 					{renderContent()}
 				</motion.main>
@@ -379,7 +393,13 @@ export function HostPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
+						<AlertDialogAction
+							onClick={() => blocker.proceed?.()}
+							className={`
+								bg-red-500
+								hover:bg-red-600
+							`}
+						>
 							Leave Game
 						</AlertDialogAction>
 					</AlertDialogFooter>

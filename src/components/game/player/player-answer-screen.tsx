@@ -33,7 +33,12 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 	const canAnswer = submittedAnswer === undefined;
 
 	return (
-		<div className="relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl overflow-hidden">
+		<div
+			className={`
+				relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl
+				overflow-hidden
+			`}
+		>
 			{/* Answer buttons */}
 			{optionIndices.map((originalIndex, displayIndex) => {
 				const isSelected = submittedAnswer === originalIndex;
@@ -106,7 +111,10 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 											delay: displayIndex * 0.03,
 										}
 						}
-						className="absolute flex cursor-pointer items-center justify-center overflow-hidden rounded-2xl"
+						className={`
+							absolute flex cursor-pointer items-center justify-center overflow-hidden
+							rounded-2xl
+						`}
 						style={{
 							top: pos.top,
 							left: pos.left,
@@ -118,7 +126,10 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 					>
 						{/* Inner glow */}
 						<motion.div
-							className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-transparent to-white/10"
+							className={`
+								absolute inset-0 rounded-2xl bg-linear-to-t from-transparent
+								via-transparent to-white/10
+							`}
 							animate={isSelected && showPulse ? { opacity: [0.1, 0.3, 0.1] } : {}}
 							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
 						/>
@@ -129,7 +140,10 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 								initial={{ opacity: 0, scale: 0.8 }}
 								animate={{ opacity: 1, scale: 1 }}
 								transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
-								className="absolute inset-0 rounded-2xl ring-4 ring-white/50 ring-offset-4 ring-offset-transparent"
+								className={`
+									absolute inset-0 rounded-2xl ring-4 ring-white/50 ring-offset-4
+									ring-offset-transparent
+								`}
 							/>
 						)}
 
@@ -154,7 +168,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 						{/* Shape icon */}
 						<motion.svg
 							viewBox="0 0 24 24"
-							className="h-1/2 w-1/2 fill-current text-white drop-shadow-lg"
+							className="size-1/2 fill-current text-white drop-shadow-lg"
 							animate={
 								isSelected
 									? {
@@ -179,7 +193,10 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 						{/* Shimmer effect on hover */}
 						{canAnswer && (
 							<motion.div
-								className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+								className={`
+									absolute inset-0 -skew-x-12 bg-linear-to-r from-transparent
+									via-white/20 to-transparent
+								`}
 								initial={{ x: '-200%' }}
 								whileHover={{ x: '200%' }}
 								transition={{ duration: 0.6 }}
@@ -192,7 +209,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 								{Array.from({ length: 6 }).map((_, index) => (
 									<motion.div
 										key={index}
-										className="absolute h-2 w-2 rounded-full bg-white"
+										className="absolute size-2 rounded-full bg-white"
 										initial={{
 											x: 0,
 											y: 0,

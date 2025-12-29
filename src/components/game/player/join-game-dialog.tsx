@@ -268,13 +268,22 @@ export function JoinGameDialog() {
 	};
 
 	return (
-		<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-4 text-white">
+		<div
+			className={`
+				flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
+				p-4 text-white
+			`}
+		>
 			<div className="w-full max-w-md animate-fade-in space-y-8">
 				{/* Header */}
 				<div className="space-y-3 text-center">
 					<div className="flex justify-center">
-						<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600/20">
-							<Gamepad2 className="h-8 w-8 text-indigo-400" />
+						<div
+							className={`
+								flex size-16 items-center justify-center rounded-2xl bg-indigo-600/20
+							`}
+						>
+							<Gamepad2 className="size-8 text-indigo-400" />
 						</div>
 					</div>
 					<h1 className="text-3xl font-bold">Join Game</h1>
@@ -282,7 +291,11 @@ export function JoinGameDialog() {
 				</div>
 
 				{/* Game Code Input */}
-				<div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-900/50 p-6">
+				<div
+					className={`
+						space-y-4 rounded-2xl border border-slate-700 bg-slate-900/50 p-6
+					`}
+				>
 					<Popover open={showSuggestions && suggestions.length > 0 && !isComplete && currentPart.length > 0}>
 						<PopoverAnchor asChild>
 							<div className="relative">
@@ -304,7 +317,10 @@ export function JoinGameDialog() {
 									className={cn(
 										'h-14 w-full rounded-xl px-4 text-center font-mono text-xl',
 										'border-2 border-slate-600 bg-slate-700/50',
-										'text-white placeholder:text-slate-500',
+										`
+											text-white
+											placeholder:text-slate-500
+										`,
 										'focus:border-indigo-500 focus:outline-none',
 										'transition-all duration-200',
 										isComplete && 'border-green-500 bg-green-500/10',
@@ -313,8 +329,8 @@ export function JoinGameDialog() {
 									)}
 								/>
 								{isComplete && (
-									<div className="absolute right-4 top-1/2 -translate-y-1/2">
-										<Check className="h-5 w-5 text-green-400" />
+									<div className="absolute top-1/2 right-4 -translate-y-1/2">
+										<Check className="size-5 text-green-400" />
 									</div>
 								)}
 								{/* Invalid input tooltip - positioned above */}
@@ -324,16 +340,18 @@ export function JoinGameDialog() {
 										'border border-red-700 bg-red-900/90 text-sm text-red-200',
 										'flex items-center gap-2 whitespace-nowrap',
 										'transition-all duration-200',
-										showInvalidTooltip ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-2 opacity-0',
+										showInvalidTooltip ? 'translate-y-0 opacity-100' : `pointer-events-none translate-y-2 opacity-0`,
 									)}
 								>
-									<AlertCircle className="h-4 w-4" />
+									<AlertCircle className="size-4" />
 									{errorMessage}
 								</div>
 							</div>
 						</PopoverAnchor>
 						<PopoverContent
-							className="w-[--radix-popover-trigger-width] border-slate-700 bg-slate-800 p-0"
+							className={`
+								w-(--radix-popover-trigger-width) border-slate-700 bg-slate-800 p-0
+							`}
 							align="start"
 							onOpenAutoFocus={(event) => event.preventDefault()}
 						>
@@ -344,7 +362,10 @@ export function JoinGameDialog() {
 										key={word}
 										onClick={() => handleSelectSuggestion(word)}
 										className={cn(
-											'mx-1 cursor-pointer rounded-sm px-2 py-1.5 font-mono text-sm text-white',
+											`
+												mx-1 cursor-pointer rounded-xs px-2 py-1.5 font-mono text-sm
+												text-white
+											`,
 											index === selectedIndex ? 'bg-slate-700' : 'hover:bg-slate-700/50',
 										)}
 									>
@@ -359,7 +380,7 @@ export function JoinGameDialog() {
 					<div className="flex justify-center gap-2 text-xs">
 						<span
 							className={cn(
-								'rounded px-2 py-1',
+								'rounded-sm px-2 py-1',
 								partValidation.adjective === true
 									? 'bg-green-500/20 text-green-400'
 									: partValidation.adjective === false
@@ -372,7 +393,7 @@ export function JoinGameDialog() {
 						<span className="text-slate-600">-</span>
 						<span
 							className={cn(
-								'rounded px-2 py-1',
+								'rounded-sm px-2 py-1',
 								partValidation.color === true
 									? 'bg-green-500/20 text-green-400'
 									: partValidation.color === false
@@ -385,7 +406,7 @@ export function JoinGameDialog() {
 						<span className="text-slate-600">-</span>
 						<span
 							className={cn(
-								'rounded px-2 py-1',
+								'rounded-sm px-2 py-1',
 								partValidation.animal === true
 									? 'bg-green-500/20 text-green-400'
 									: partValidation.animal === false
@@ -406,14 +427,24 @@ export function JoinGameDialog() {
 						className={cn(
 							'h-14 w-full rounded-xl text-lg font-semibold transition-all',
 							isComplete && !isValidating && !gameNotFound
-								? 'bg-indigo-600 text-white hover:bg-indigo-700'
+								? `
+									bg-indigo-600 text-white
+									hover:bg-indigo-700
+								`
 								: 'cursor-not-allowed bg-slate-700 text-slate-500',
 						)}
 					>
 						Join Game
-						<ArrowRight className="ml-2 h-5 w-5" />
+						<ArrowRight className="ml-2 size-5" />
 					</Button>
-					<Button variant="ghost" onClick={handleGoHome} className="w-full text-slate-400 hover:bg-slate-700/50 hover:text-white">
+					<Button
+						variant="ghost"
+						onClick={handleGoHome}
+						className={`
+							w-full text-slate-400
+							hover:bg-slate-700/50 hover:text-white
+						`}
+					>
 						Back to Home
 					</Button>
 				</div>

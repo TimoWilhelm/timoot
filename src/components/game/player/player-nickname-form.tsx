@@ -36,18 +36,31 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 	};
 
 	return (
-		<div className="flex min-h-dvh w-full items-center justify-center overflow-auto bg-slate-800 p-4">
-			<Card className="w-full max-w-md animate-scale-in rounded-2xl border-slate-600 bg-slate-700 shadow-2xl">
+		<div
+			className={`
+				flex min-h-dvh w-full items-center justify-center overflow-auto bg-slate-800
+				p-4
+			`}
+		>
+			<Card
+				className={`
+					w-full max-w-md animate-scale-in rounded-2xl border-slate-600 bg-slate-700
+					shadow-2xl
+				`}
+			>
 				<CardHeader className="text-center">
 					<CardTitle className="font-display text-4xl text-white">Enter a Nickname</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form ref={formReference} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+					<form ref={formReference} onSubmit={handleSubmit(onSubmit)} className={`space-y-6`}>
 						<div>
 							<Input
 								{...register('nickname')}
 								placeholder="Your cool name"
-								className="h-16 border-slate-500 bg-slate-600 text-center text-2xl text-white placeholder:text-slate-400"
+								className={`
+									h-16 border-slate-500 bg-slate-600 text-center text-2xl text-white
+									placeholder:text-slate-400
+								`}
 								disabled={isLoading}
 								maxLength={LIMITS.NICKNAME_MAX}
 								autoComplete="off"
@@ -56,7 +69,10 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 						</div>
 						<Button
 							type="submit"
-							className="w-full rounded-xl bg-quiz-orange py-6 text-xl hover:bg-quiz-orange/90"
+							className={`
+								w-full rounded-xl bg-quiz-orange py-6 text-xl
+								hover:bg-quiz-orange/90
+							`}
 							size="lg"
 							disabled={isLoading || !isValid || !nickname?.trim()}
 						>

@@ -8,6 +8,7 @@
 - Use TypeScript for all code
 - Use early returns when possible
 - Follow existing code patterns in the codebase
+- Always use the `cn` utility from `@/lib/utilities` when merging or applying conditional classes, especially when classes are passed as props
 </code_style>
 
 <react_best_practices>

@@ -296,24 +296,64 @@ export function HomePage() {
 	};
 
 	return (
-		<div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-slate-50 text-slate-900">
+		<div
+			className={`
+				relative flex min-h-screen w-full flex-col overflow-x-hidden bg-slate-50
+				text-slate-900
+			`}
+		>
 			{/* Background gradient */}
-			<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-orange-100/50 via-amber-50/30 to-slate-50 opacity-50" />
+			<div
+				className={`
+					pointer-events-none absolute inset-0
+					bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))]
+					from-orange-100/50 via-amber-50/30 to-slate-50 opacity-50
+				`}
+			/>
 			{/* Main content */}
-			<main className="relative z-10 flex-1 px-4 py-8 md:py-12">
+			<main
+				className={`
+					relative z-10 flex-1 px-4 py-8
+					md:py-12
+				`}
+			>
 				<div className="mx-auto max-w-6xl animate-fade-in space-y-12">
 					{/* Hero Section */}
 					<header className="space-y-6 text-center">
 						<div className="flex justify-center">
-							<div className="flex h-20 w-20 animate-float items-center justify-center rounded-3xl bg-gradient-to-br from-quiz-orange to-quiz-gold shadow-xl shadow-quiz-orange/20 md:h-28 md:w-28">
-								<Sparkles className="h-10 w-10 text-white md:h-14 md:w-14" />
+							<div
+								className={`
+									flex size-20 animate-float items-center justify-center rounded-3xl
+									bg-linear-to-br from-quiz-orange to-quiz-gold shadow-xl
+									shadow-quiz-orange/20
+									md:size-28
+								`}
+							>
+								<Sparkles
+									className={`
+										size-10 text-white
+										md:size-14
+									`}
+								/>
 							</div>
 						</div>
 						<div className="space-y-3">
-							<h1 className="text-balance font-display text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl">
+							<h1
+								className={`
+									font-display text-4xl leading-tight font-bold text-balance
+									sm:text-5xl
+									md:text-6xl
+									lg:text-7xl
+								`}
+							>
 								Welcome to <span className="text-gradient">Timoot</span>
 							</h1>
-							<p className="mx-auto max-w-2xl text-pretty text-lg text-muted-foreground md:text-xl">
+							<p
+								className={`
+									mx-auto max-w-2xl text-lg text-pretty text-muted-foreground
+									md:text-xl
+								`}
+							>
 								Select a quiz to begin the fun, or create your own!
 							</p>
 						</div>
@@ -322,9 +362,23 @@ export function HomePage() {
 							<Button
 								size="lg"
 								onClick={() => navigate('/play')}
-								className="group relative h-16 overflow-hidden rounded-2xl bg-gradient-to-r from-quiz-orange to-quiz-gold px-12 text-xl font-bold text-white shadow-2xl shadow-quiz-orange/30 transition-all duration-300 hover:-translate-y-1.5 hover:scale-105 hover:shadow-[0_20px_50px_-12px] hover:shadow-quiz-orange/50 active:scale-95 sm:h-20 sm:px-16 sm:text-2xl"
+								className={`
+									group relative h-16 overflow-hidden rounded-2xl bg-linear-to-r
+									from-quiz-orange to-quiz-gold px-12 text-xl font-bold text-white
+									shadow-2xl shadow-quiz-orange/30 transition-all duration-300
+									hover:-translate-y-1.5 hover:scale-105 hover:shadow-[0_20px_50px_-12px]
+									hover:shadow-quiz-orange/50
+									active:scale-95
+									sm:h-20 sm:px-16 sm:text-2xl
+								`}
 							>
-								<span className="absolute inset-0 bg-gradient-to-r from-quiz-gold to-quiz-orange opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+								<span
+									className={`
+										absolute inset-0 bg-linear-to-r from-quiz-gold to-quiz-orange
+										opacity-0 transition-opacity duration-300
+										group-hover:opacity-100
+									`}
+								/>
 								<span className="relative flex items-center gap-3">
 									<span className="wiggle-on-hover">
 										<Gamepad2 style={{ width: 40, height: 40 }} />
@@ -336,22 +390,32 @@ export function HomePage() {
 					</header>
 					{isLoading ? (
 						<div className="flex items-center justify-center py-20">
-							<Loader2 className="h-16 w-16 animate-spin text-quiz-orange" />
+							<Loader2 className="size-16 animate-spin text-quiz-orange" />
 						</div>
 					) : (
 						<div className="space-y-12">
 							{/* Featured Quizzes Section */}
 							<section>
 								<div className="mb-6 flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-quiz-orange/10">
-										<Zap className="h-5 w-5 text-quiz-orange" />
+									<div
+										className={`
+											flex size-10 items-center justify-center rounded-xl bg-quiz-orange/10
+										`}
+									>
+										<Zap className="size-5 text-quiz-orange" />
 									</div>
 									<div>
 										<h2 className="text-2xl font-bold">Featured Quizzes</h2>
 										<p className="text-sm text-muted-foreground">Curated quizzes ready to play</p>
 									</div>
 								</div>
-								<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+								<div
+									className={`
+										grid grid-cols-1 gap-6
+										sm:grid-cols-2
+										lg:grid-cols-3
+									`}
+								>
 									{predefinedQuizzes.map((quiz, index) => (
 										<motion.div
 											key={quiz.id}
@@ -362,24 +426,42 @@ export function HomePage() {
 											<Card
 												onClick={() => setSelectedQuiz(quiz)}
 												className={cn(
-													'group h-full cursor-pointer rounded-2xl border-2 transition-all duration-300',
+													`
+														group h-full cursor-pointer rounded-2xl border-2 transition-all
+														duration-300
+													`,
 													'hover:-translate-y-1 hover:shadow-xl hover:shadow-quiz-orange/10',
 													startingQuizId === quiz.id
-														? 'border-quiz-orange bg-gradient-to-br from-quiz-orange/5 to-quiz-gold/5 shadow-lg shadow-quiz-orange/10'
-														: 'border-transparent hover:border-quiz-orange/30',
+														? `
+															border-quiz-orange bg-linear-to-br from-quiz-orange/5
+															to-quiz-gold/5 shadow-lg shadow-quiz-orange/10
+														`
+														: `
+															border-transparent
+															hover:border-quiz-orange/30
+														`,
 												)}
 											>
 												<CardHeader className="pb-3">
 													<div className="flex items-start justify-between">
-														<CardTitle className="flex items-center gap-2 text-xl transition-colors group-hover:text-quiz-orange">
+														<CardTitle
+															className={`
+																flex items-center gap-2 text-xl transition-colors
+																group-hover:text-quiz-orange
+															`}
+														>
 															{quiz.title}
-															{startingQuizId === quiz.id && <Loader2 className="h-4 w-4 animate-spin" />}
+															{startingQuizId === quiz.id && <Loader2 className={`size-4 animate-spin`} />}
 														</CardTitle>
 													</div>
 												</CardHeader>
 												<CardContent className="pt-0">
-													<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-														<HelpCircle className="h-4 w-4" />
+													<div
+														className={`
+															flex items-center gap-1.5 text-sm text-muted-foreground
+														`}
+													>
+														<HelpCircle className="size-4" />
 														<span>{quiz.questions.length} questions</span>
 													</div>
 												</CardContent>
@@ -391,15 +473,25 @@ export function HomePage() {
 							{/* Your Quizzes Section */}
 							<section>
 								<div className="mb-6 flex items-center gap-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-										<BookOpen className="h-5 w-5 text-blue-500" />
+									<div
+										className={`
+											flex size-10 items-center justify-center rounded-xl bg-blue-500/10
+										`}
+									>
+										<BookOpen className="size-5 text-blue-500" />
 									</div>
 									<div>
 										<h2 className="text-2xl font-bold">Your Quizzes</h2>
 										<p className="text-sm text-muted-foreground">Custom quizzes you've created</p>
 									</div>
 								</div>
-								<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+								<div
+									className={`
+										grid grid-cols-1 gap-6
+										sm:grid-cols-2
+										lg:grid-cols-3
+									`}
+								>
 									{customQuizzes.map((quiz, index) => (
 										<motion.div
 											key={quiz.id}
@@ -410,51 +502,77 @@ export function HomePage() {
 											<Card
 												onClick={() => setSelectedQuiz(quiz)}
 												className={cn(
-													'group flex h-full cursor-pointer flex-col rounded-2xl border-2 transition-all duration-300',
+													`
+														group flex h-full cursor-pointer flex-col rounded-2xl border-2
+														transition-all duration-300
+													`,
 													'hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10',
 													startingQuizId === quiz.id
-														? 'border-quiz-orange bg-gradient-to-br from-quiz-orange/5 to-quiz-gold/5 shadow-lg shadow-quiz-orange/10'
-														: 'border-transparent hover:border-blue-500/30',
+														? `
+															border-quiz-orange bg-linear-to-br from-quiz-orange/5
+															to-quiz-gold/5 shadow-lg shadow-quiz-orange/10
+														`
+														: `
+															border-transparent
+															hover:border-blue-500/30
+														`,
 												)}
 											>
 												<CardHeader className="pb-3">
 													<div className="flex items-start justify-between">
-														<CardTitle className="line-clamp-2 text-xl transition-colors group-hover:text-quiz-orange">
+														<CardTitle
+															className={`
+																line-clamp-2 text-xl transition-colors
+																group-hover:text-quiz-orange
+															`}
+														>
 															{quiz.title}
 														</CardTitle>
 													</div>
 												</CardHeader>
 												<CardContent className="flex flex-1 flex-col justify-between pt-0">
-													<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-														<HelpCircle className="h-4 w-4" />
+													<div
+														className={`
+															flex items-center gap-1.5 text-sm text-muted-foreground
+														`}
+													>
+														<HelpCircle className="size-4" />
 														<span>{quiz.questions.length} questions</span>
 													</div>
 													<div className="mt-2 flex items-center justify-end gap-1">
 														{startingQuizId === quiz.id ? (
-															<Loader2 className="h-4 w-4 animate-spin text-quiz-orange" />
+															<Loader2 className="size-4 animate-spin text-quiz-orange" />
 														) : (
-															<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover-always:opacity-100">
+															<div
+																className={`
+																	flex items-center gap-1 opacity-0 transition-opacity
+																	group-hover-always:opacity-100
+																`}
+															>
 																<Button
 																	variant="ghost"
 																	size="icon"
-																	className="h-7 w-7"
+																	className="size-7"
 																	onClick={(event) => {
 																		event.stopPropagation();
 																		navigate(`/edit/${quiz.id}`);
 																	}}
 																>
-																	<Pencil className="h-3.5 w-3.5" />
+																	<Pencil className="size-3.5" />
 																</Button>
 																<Button
 																	variant="ghost"
 																	size="icon"
-																	className="h-7 w-7 text-red-500 hover:text-red-700"
+																	className={`
+																		size-7 text-red-500
+																		hover:text-red-700
+																	`}
 																	onClick={(event) => {
 																		event.stopPropagation();
 																		setQuizToDelete(quiz.id);
 																	}}
 																>
-																	<Trash2 className="h-3.5 w-3.5" />
+																	<Trash2 className="size-3.5" />
 																</Button>
 															</div>
 														)}
@@ -471,15 +589,35 @@ export function HomePage() {
 									>
 										<Card
 											onClick={() => navigate('/edit')}
-											className="group h-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400 hover:shadow-xl"
+											className={`
+												group h-full cursor-pointer rounded-2xl border-2 border-dashed
+												border-slate-300 transition-all duration-300
+												hover:-translate-y-1 hover:border-blue-400 hover:shadow-xl
+											`}
 										>
 											<CardHeader className="pb-3">
 												<div className="flex items-start justify-between">
-													<CardTitle className="text-xl text-slate-500 transition-colors group-hover:text-blue-600">
+													<CardTitle
+														className={`
+															text-xl text-slate-500 transition-colors
+															group-hover:text-blue-600
+														`}
+													>
 														Create New Quiz
 													</CardTitle>
-													<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 transition-colors group-hover:bg-blue-100">
-														<PlusCircle className="h-5 w-5 text-slate-400 transition-colors group-hover:text-blue-500" />
+													<div
+														className={`
+															flex size-10 shrink-0 items-center justify-center rounded-xl
+															bg-slate-100 transition-colors
+															group-hover:bg-blue-100
+														`}
+													>
+														<PlusCircle
+															className={`
+																size-5 text-slate-400 transition-colors
+																group-hover:text-blue-500
+															`}
+														/>
 													</div>
 												</div>
 											</CardHeader>
@@ -508,19 +646,29 @@ export function HomePage() {
 											}}
 										>
 											{/* Ambient glow */}
-											<div className="pointer-events-none absolute -inset-2 rounded-3xl bg-quiz-orange/15 blur-xl" />
+											<div
+												className={`
+													pointer-events-none absolute -inset-2 rounded-3xl bg-quiz-orange/15
+													blur-xl
+												`}
+											/>
 											<Card className="relative h-full rounded-[14px] border-0 bg-white">
 												<CardHeader className="pb-3">
 													<div className="flex items-start justify-between">
 														<CardTitle className="line-clamp-2 text-xl text-quiz-orange">{generatingPrompt}</CardTitle>
-														<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-quiz-orange/10">
-															<Sparkles className="h-5 w-5 animate-pulse text-quiz-orange" />
+														<div
+															className={`
+																flex size-10 shrink-0 items-center justify-center rounded-xl
+																bg-quiz-orange/10
+															`}
+														>
+															<Sparkles className="size-5 animate-pulse text-quiz-orange" />
 														</div>
 													</div>
 												</CardHeader>
 												<CardContent className="pt-0">
-													<div className="flex items-center gap-2 text-sm text-muted-foreground">
-														<Loader2 className="h-4 w-4 shrink-0 animate-spin text-quiz-orange" />
+													<div className={`flex items-center gap-2 text-sm text-muted-foreground`}>
+														<Loader2 className={`size-4 shrink-0 animate-spin text-quiz-orange`} />
 														<span className="truncate">{getStatusMessage(generationStatus)}</span>
 													</div>
 												</CardContent>
@@ -534,12 +682,26 @@ export function HomePage() {
 										>
 											<Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
 												<DialogTrigger asChild>
-													<Card className="group h-full cursor-pointer rounded-2xl border-2 border-dashed border-quiz-orange/40 bg-gradient-to-br from-quiz-orange/5 to-quiz-gold/5 transition-all duration-300 hover:-translate-y-1 hover:border-quiz-orange hover:shadow-xl hover:shadow-quiz-orange/10">
+													<Card
+														className={`
+															group h-full cursor-pointer rounded-2xl border-2 border-dashed
+															border-quiz-orange/40 bg-linear-to-br from-quiz-orange/5
+															to-quiz-gold/5 transition-all duration-300
+															hover:-translate-y-1 hover:border-quiz-orange hover:shadow-xl
+															hover:shadow-quiz-orange/10
+														`}
+													>
 														<CardHeader className="pb-3">
 															<div className="flex items-start justify-between">
 																<CardTitle className="text-xl text-quiz-orange">Generate with AI</CardTitle>
-																<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-quiz-orange/10 transition-colors group-hover:bg-quiz-orange/20">
-																	<Wand2 className="h-5 w-5 text-quiz-orange" />
+																<div
+																	className={`
+																		flex size-10 shrink-0 items-center justify-center rounded-xl
+																		bg-quiz-orange/10 transition-colors
+																		group-hover:bg-quiz-orange/20
+																	`}
+																>
+																	<Wand2 className="size-5 text-quiz-orange" />
 																</div>
 															</div>
 														</CardHeader>
@@ -551,7 +713,7 @@ export function HomePage() {
 												<DialogContent className="sm:max-w-[425px]">
 													<DialogHeader>
 														<DialogTitle className="flex items-center gap-2">
-															<Wand2 className="h-5 w-5 text-quiz-orange" />
+															<Wand2 className="size-5 text-quiz-orange" />
 															Generate Quiz with AI
 														</DialogTitle>
 														<DialogDescription>
@@ -580,9 +742,12 @@ export function HomePage() {
 														<Button
 															onClick={handleGenerateAiQuiz}
 															disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN || !turnstileToken}
-															className="bg-quiz-orange hover:bg-quiz-orange/90"
+															className={`
+																bg-quiz-orange
+																hover:bg-quiz-orange/90
+															`}
 														>
-															<Wand2 className="mr-2 h-4 w-4" />
+															<Wand2 className="mr-2 size-4" />
 															Generate Quiz
 														</Button>
 													</DialogFooter>
@@ -598,22 +763,35 @@ export function HomePage() {
 			</main>
 
 			{/* Footer */}
-			<footer className="relative z-10 border-t border-slate-200/50 py-6 text-center text-muted-foreground/80">
+			<footer
+				className={`
+					relative z-10 border-t border-slate-200/50 py-6 text-center
+					text-muted-foreground/80
+				`}
+			>
 				<div className="mt-2 flex items-center justify-center gap-4">
 					<a
 						href="https://github.com/TimoWilhelm/timoot"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+						className={`
+							inline-flex items-center gap-1.5 text-xs text-muted-foreground/60
+							transition-colors
+							hover:text-quiz-orange
+						`}
 					>
-						<img src="/icons/github-mark.svg" alt="GitHub" className="h-3 w-3 opacity-60" />
+						<img src="/icons/github-mark.svg" alt="GitHub" className={`size-3 opacity-60`} />
 						Open Source
 					</a>
 					<button
 						onClick={() => setIsMusicCreditsOpen(true)}
-						className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+						className={`
+							inline-flex items-center gap-1.5 text-xs text-muted-foreground/60
+							transition-colors
+							hover:text-quiz-orange
+						`}
 					>
-						<Music className="h-3 w-3" />
+						<Music className="size-3" />
 						Music Credits
 					</button>
 					<button
@@ -622,9 +800,13 @@ export function HomePage() {
 							setSyncCodeInput('');
 							setIsSyncDialogOpen(true);
 						}}
-						className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-quiz-orange"
+						className={`
+							inline-flex items-center gap-1.5 text-xs text-muted-foreground/60
+							transition-colors
+							hover:text-quiz-orange
+						`}
 					>
-						<RefreshCw className="h-3 w-3" />
+						<RefreshCw className="size-3" />
 						Sync Devices
 					</button>
 				</div>
@@ -635,7 +817,7 @@ export function HomePage() {
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2 text-2xl">
-							<Sparkles className="h-6 w-6 text-quiz-orange" />
+							<Sparkles className="size-6 text-quiz-orange" />
 							{selectedQuiz?.title}
 						</DialogTitle>
 						<DialogDescription>Ready to start the game?</DialogDescription>
@@ -643,7 +825,7 @@ export function HomePage() {
 					<div className="grid gap-4 py-4">
 						<div className="space-y-3 rounded-xl bg-slate-50 p-4">
 							<div className="flex items-center gap-2 text-sm">
-								<HelpCircle className="h-4 w-4 text-muted-foreground" />
+								<HelpCircle className="size-4 text-muted-foreground" />
 								<span className="text-muted-foreground">Questions:</span>
 								<span className="font-medium">{selectedQuiz?.questions.length}</span>
 							</div>
@@ -661,16 +843,19 @@ export function HomePage() {
 								}
 							}}
 							disabled={isGameStarting || !turnstileToken}
-							className="min-w-[130px] bg-quiz-orange hover:bg-quiz-orange/90"
+							className={`
+								min-w-[130px] bg-quiz-orange
+								hover:bg-quiz-orange/90
+							`}
 						>
 							{isGameStarting ? (
 								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									<Loader2 className="mr-2 size-4 animate-spin" />
 									Starting...
 								</>
 							) : (
 								<>
-									<Gamepad2 className="mr-2 h-4 w-4" />
+									<Gamepad2 className="mr-2 size-4" />
 									Start Game
 								</>
 							)}
@@ -688,7 +873,13 @@ export function HomePage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={handleDeleteQuiz} className="bg-red-500 hover:bg-red-600">
+						<AlertDialogAction
+							onClick={handleDeleteQuiz}
+							className={`
+								bg-red-500
+								hover:bg-red-600
+							`}
+						>
 							Delete
 						</AlertDialogAction>
 					</AlertDialogFooter>
@@ -700,7 +891,7 @@ export function HomePage() {
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							<RefreshCw className="h-5 w-5 text-quiz-orange" />
+							<RefreshCw className="size-5 text-quiz-orange" />
 							Sync Devices
 						</DialogTitle>
 						<DialogDescription>Access your quizzes and images on another device</DialogDescription>
@@ -712,9 +903,16 @@ export function HomePage() {
 							{syncCode ? (
 								<div className="space-y-2">
 									<div className="flex items-center justify-center gap-2">
-										<code className="rounded-lg bg-slate-100 px-4 py-3 font-mono text-2xl font-bold tracking-widest">{syncCode}</code>
-										<Button variant="outline" size="icon" className="h-7 w-7" onClick={copyCodeToClipboard}>
-											{codeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+										<code
+											className={`
+												rounded-lg bg-slate-100 px-4 py-3 font-mono text-2xl font-bold
+												tracking-widest
+											`}
+										>
+											{syncCode}
+										</code>
+										<Button variant="outline" size="icon" className="size-7" onClick={copyCodeToClipboard}>
+											{codeCopied ? <Check className="size-4 text-green-500" /> : <Copy className={`size-4`} />}
 										</Button>
 									</div>
 									<p className="text-center text-xs text-muted-foreground">
@@ -724,8 +922,8 @@ export function HomePage() {
 							) : (
 								<>
 									<TurnstileWidget className="flex justify-center" />
-									<Button onClick={handleGenerateSyncCode} disabled={isGeneratingSyncCode || !turnstileToken} className="w-full">
-										{isGeneratingSyncCode ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+									<Button onClick={handleGenerateSyncCode} disabled={isGeneratingSyncCode || !turnstileToken} className={`w-full`}>
+										{isGeneratingSyncCode ? <Loader2 className="mr-2 size-4 animate-spin" /> : <RefreshCw className={`mr-2 size-4`} />}
 										Generate Sync Code
 									</Button>
 								</>
@@ -746,7 +944,11 @@ export function HomePage() {
 							<h4 className="font-medium">Sync to this device</h4>
 							{showSyncWarning ? (
 								<div className="space-y-3">
-									<div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+									<div
+										className={`
+											rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm
+										`}
+									>
 										<p className="font-medium text-amber-800">
 											Warning: You have {customQuizzes.length} custom quiz{customQuizzes.length === 1 ? '' : 'es'} on this device.
 										</p>
@@ -755,15 +957,18 @@ export function HomePage() {
 										</p>
 									</div>
 									<div className="flex gap-2">
-										<Button variant="outline" onClick={() => setShowSyncWarning(false)} className="flex-1">
+										<Button variant="outline" onClick={() => setShowSyncWarning(false)} className={`flex-1`}>
 											Cancel
 										</Button>
 										<Button
 											onClick={() => handleRedeemSyncCode(true)}
 											disabled={isRedeemingSyncCode}
-											className="flex-1 bg-amber-500 hover:bg-amber-600"
+											className={`
+												flex-1 bg-amber-500
+												hover:bg-amber-600
+											`}
 										>
-											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync Anyway'}
+											{isRedeemingSyncCode ? <Loader2 className="size-4 animate-spin" /> : 'Sync Anyway'}
 										</Button>
 									</div>
 								</div>
@@ -781,10 +986,13 @@ export function HomePage() {
 										<Button
 											onClick={() => handleRedeemSyncCode()}
 											disabled={isRedeemingSyncCode || syncCodeInput.length !== 6}
-											className="bg-quiz-orange hover:bg-quiz-orange/90"
+											className={`
+												bg-quiz-orange
+												hover:bg-quiz-orange/90
+											`}
 										>
-											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync'}
-											{isRedeemingSyncCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sync'}
+											{isRedeemingSyncCode ? <Loader2 className="size-4 animate-spin" /> : 'Sync'}
+											{isRedeemingSyncCode ? <Loader2 className="size-4 animate-spin" /> : 'Sync'}
 										</Button>
 									</div>
 									<p className="text-xs text-muted-foreground">
@@ -802,7 +1010,7 @@ export function HomePage() {
 				<DialogContent className="sm:max-w-[500px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							<Music className="h-5 w-5 text-quiz-orange" />
+							<Music className="size-5 text-quiz-orange" />
 							Music Credits
 						</DialogTitle>
 						<DialogDescription>Attribution for music used in this application</DialogDescription>
@@ -812,13 +1020,29 @@ export function HomePage() {
 							<div key={credit.title} className="rounded-lg bg-slate-50 p-3">
 								<p className="font-medium text-slate-900">
 									"{credit.title}"{' '}
-									<a href={credit.artistUrl} target="_blank" rel="noopener noreferrer" className="text-quiz-orange hover:underline">
+									<a
+										href={credit.artistUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className={`
+											text-quiz-orange
+											hover:underline
+										`}
+									>
 										{credit.artist} ({new URL(credit.artistUrl).hostname})
 									</a>
 								</p>
 								<p className="text-sm text-muted-foreground">
 									Licensed under{' '}
-									<a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+									<a
+										href={credit.licenseUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className={`
+											text-blue-500
+											hover:underline
+										`}
+									>
 										{credit.license}
 									</a>
 								</p>

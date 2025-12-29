@@ -20,12 +20,12 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 
 	const getIcon = () => {
 		if (isBlocked) {
-			return <VolumeOff className="h-5 w-5 text-red-500" />;
+			return <VolumeOff className="size-5 text-red-500" />;
 		}
 		if (isMuted) {
-			return <VolumeX className="h-5 w-5 text-slate-500" />;
+			return <VolumeX className="size-5 text-slate-500" />;
 		}
-		return <Volume2 className="h-5 w-5 text-quiz-orange" />;
+		return <Volume2 className="size-5 text-quiz-orange" />;
 	};
 
 	const getAriaLabel = () => {
@@ -40,7 +40,10 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 			size="icon"
 			onClick={handleClick}
 			className={cn(
-				'h-10 w-10 rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:scale-105',
+				`
+					size-10 rounded-full bg-white/90 shadow-md backdrop-blur-xs transition-all
+					hover:scale-105
+				`,
 				isBlocked && 'animate-pulse ring-2 ring-red-400',
 				className,
 			)}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { shapeColors, shapePaths } from '@/components/game/shared';
+import { cn } from '@/lib/utilities';
 
 interface CountdownTimerProperties {
 	timeLeft: number;
@@ -68,7 +69,12 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 			</AnimatePresence>
 
 			{/* Background circle container */}
-			<div className="relative flex items-center justify-center rounded-full bg-white shadow-lg" style={{ width: size, height: size }}>
+			<div
+				className={`
+					relative flex items-center justify-center rounded-full bg-white shadow-lg
+				`}
+				style={{ width: size, height: size }}
+			>
 				{/* SVG Progress Ring */}
 				<svg className="absolute inset-0 -rotate-90" width={size} height={size}>
 					{/* Background track */}
@@ -97,7 +103,13 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 						animate={{ scale: 1, opacity: 1, y: 0 }}
 						exit={{ scale: 0.8, opacity: 0, y: 10 }}
 						transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-						className={`text-4xl font-bold tabular-nums sm:text-5xl ${colors.text} transition-colors duration-300`}
+						className={cn(
+							colors.text,
+							`
+								text-4xl font-bold tabular-nums transition-colors duration-300
+								sm:text-5xl
+							`,
+						)}
 					>
 						{timeLeft}
 					</motion.span>
@@ -134,12 +146,27 @@ function DoublePointsBadge() {
 			initial={{ scale: 0, x: 20 }}
 			animate={{ scale: 1, x: 0 }}
 			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-			className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-quiz-orange to-amber-500 px-4 py-2 text-white shadow-lg"
+			className={`
+				flex items-center gap-2 rounded-xl bg-linear-to-r from-quiz-orange
+				to-amber-500 px-4 py-2 text-white shadow-lg
+			`}
 		>
 			<motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
-				<Zap className="h-7 w-7 fill-current sm:h-8 sm:w-8" />
+				<Zap
+					className={`
+						size-7 fill-current
+						sm:size-8
+					`}
+				/>
 			</motion.div>
-			<span className="text-xl font-bold sm:text-2xl">2× Points</span>
+			<span
+				className={`
+					text-xl font-bold
+					sm:text-2xl
+				`}
+			>
+				2× Points
+			</span>
 		</motion.div>
 	);
 }
@@ -221,10 +248,20 @@ export function HostQuestion({
 	}, [startTime, timeLimitSec, timeLimitMs]);
 
 	return (
-		<div className="flex h-full max-h-screen flex-grow flex-col overflow-hidden p-4 sm:p-8">
+		<div
+			className={`
+				flex h-full max-h-screen grow flex-col overflow-hidden p-4
+				sm:p-8
+			`}
+		>
 			<div className="mb-4 flex items-center justify-between">
 				<div className="flex flex-col">
-					<span className="text-xl font-bold sm:text-2xl">
+					<span
+						className={`
+							text-xl font-bold
+							sm:text-2xl
+						`}
+					>
 						Question {questionIndex + 1}/{totalQuestions}
 					</span>
 					<span className="text-sm text-muted-foreground">
@@ -238,32 +275,73 @@ export function HostQuestion({
 					</div>
 				</div>
 			</div>
-			<div className="center relative mb-4 min-h-0 flex-grow overflow-hidden rounded-2xl shadow-lg sm:mb-8">
+			<div
+				className={`
+					relative mb-4 center-col min-h-0 grow overflow-hidden rounded-2xl shadow-lg
+					sm:mb-8
+				`}
+			>
 				{/* Fallback white background layer (always present) */}
 				<div className="absolute inset-0 bg-white" />
 				{/* Background image layer (layered on top, hidden if error) */}
 				{backgroundImage && !imageError && (
-					<img src={backgroundImage} alt="" className="absolute inset-0 h-full w-full object-cover" onError={() => setImageError(true)} />
+					<img src={backgroundImage} alt="" className={`absolute inset-0 size-full object-cover`} onError={() => setImageError(true)} />
 				)}
 				{/* Content layer */}
-				<div className="relative z-10 flex h-full w-full items-center justify-center p-4 sm:p-8">
+				<div
+					className={`
+						relative z-10 flex size-full items-center justify-center p-4
+						sm:p-8
+					`}
+				>
 					<div
-						className={`rounded-xl px-6 py-4 sm:px-10 sm:py-6 ${backgroundImage && !imageError ? 'bg-white/85 shadow-xl backdrop-blur-lg' : ''}`}
+						className={cn(
+							`
+								rounded-xl px-6 py-4
+								sm:px-10 sm:py-6
+							`,
+							backgroundImage && !imageError && `bg-white/85 shadow-xl backdrop-blur-lg`,
+						)}
 					>
-						<h2 className="text-center text-3xl font-bold text-gray-900 sm:text-5xl">{questionText}</h2>
+						<h2
+							className={`
+								text-center text-3xl font-bold text-gray-900
+								sm:text-5xl
+							`}
+						>
+							{questionText}
+						</h2>
 					</div>
 				</div>
 			</div>
-			<div className="grid grid-cols-1 gap-2 sm:gap-4 md:grid-cols-2">
+			<div
+				className={`
+					grid grid-cols-1 gap-2
+					sm:gap-4
+					md:grid-cols-2
+				`}
+			>
 				{options.map((option, index) => (
 					<motion.div
 						key={index}
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: index * 0.1 }}
-						className={`flex items-center rounded-2xl p-4 text-xl font-bold text-white shadow-md sm:p-6 sm:text-3xl ${shapeColors[index]}`}
+						className={cn(
+							`
+								flex items-center rounded-2xl p-4 text-xl font-bold text-white shadow-md
+								sm:p-6 sm:text-3xl
+							`,
+							shapeColors[index],
+						)}
 					>
-						<svg viewBox="0 0 24 24" className="mr-4 h-8 w-8 fill-current sm:h-12 sm:w-12">
+						<svg
+							viewBox="0 0 24 24"
+							className={`
+								mr-4 size-8 fill-current
+								sm:size-12
+							`}
+						>
 							<path d={shapePaths[index]} />
 						</svg>
 						{option}

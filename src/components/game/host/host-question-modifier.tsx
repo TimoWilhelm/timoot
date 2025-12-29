@@ -18,7 +18,10 @@ const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, index) => ({
 function DoublePointsAnimation() {
 	return (
 		<motion.div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-quiz-orange/90 to-amber-600/90"
+			className={`
+				fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br
+				from-quiz-orange/90 to-amber-600/90
+			`}
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
@@ -63,7 +66,7 @@ function DoublePointsAnimation() {
 						repeat: 2,
 					}}
 				>
-					<Zap className="h-12 w-12 fill-yellow-300 text-yellow-300" />
+					<Zap className="size-12 fill-yellow-300 text-yellow-300" />
 				</motion.div>
 			))}
 
@@ -80,7 +83,7 @@ function DoublePointsAnimation() {
 				}}
 			>
 				<motion.div
-					className="text-[12rem] font-black leading-none text-white drop-shadow-2xl"
+					className="text-[12rem] leading-none font-black text-white drop-shadow-2xl"
 					animate={{
 						scale: [1, 1.1, 1],
 						textShadow: ['0 0 20px rgba(255,255,255,0.5)', '0 0 60px rgba(255,255,255,0.8)', '0 0 20px rgba(255,255,255,0.5)'],
@@ -90,7 +93,7 @@ function DoublePointsAnimation() {
 					2×
 				</motion.div>
 				<motion.div
-					className="text-4xl font-bold uppercase tracking-widest text-white/90"
+					className="text-4xl font-bold tracking-widest text-white/90 uppercase"
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.6 }}
@@ -103,7 +106,7 @@ function DoublePointsAnimation() {
 			{SPARKLE_POSITIONS.map((pos, index) => (
 				<motion.div
 					key={`sparkle-${index}`}
-					className="absolute h-2 w-2 rounded-full bg-yellow-200"
+					className="absolute size-2 rounded-full bg-yellow-200"
 					style={{
 						left: pos.left,
 						top: pos.top,

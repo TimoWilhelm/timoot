@@ -9,7 +9,11 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="flex min-h-screen items-center justify-center bg-slate-800 p-4 text-white">
+			<div
+				className={`
+					flex min-h-screen items-center justify-center bg-slate-800 p-4 text-white
+				`}
+			>
 				<Story />
 			</div>
 		),

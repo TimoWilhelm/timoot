@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
+import { cn } from '@/lib/utilities';
 import {
 	useCreateQuiz,
 	useDeleteImage,
@@ -59,7 +60,12 @@ type QuizFormData = {
 function TitleCharCount({ control }: { control: Control<QuizFormInput> }) {
 	const value = useWatch({ control, name: 'title' });
 	return (
-		<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+		<span
+			className={`
+				pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs
+				text-muted-foreground
+			`}
+		>
 			{value?.length || 0}/{LIMITS.QUIZ_TITLE_MAX}
 		</span>
 	);
@@ -68,7 +74,12 @@ function TitleCharCount({ control }: { control: Control<QuizFormInput> }) {
 function QuestionCharCount({ control, qIndex }: { control: Control<QuizFormInput>; qIndex: number }) {
 	const value = useWatch({ control, name: `questions.${qIndex}.text` });
 	return (
-		<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+		<span
+			className={`
+				pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs
+				text-muted-foreground
+			`}
+		>
 			{value?.length || 0}/{LIMITS.QUESTION_TEXT_MAX}
 		</span>
 	);
@@ -77,7 +88,12 @@ function QuestionCharCount({ control, qIndex }: { control: Control<QuizFormInput
 function OptionCharCount({ control, qIndex, oIndex }: { control: Control<QuizFormInput>; qIndex: number; oIndex: number }) {
 	const value = useWatch({ control, name: `questions.${qIndex}.options.${oIndex}` });
 	return (
-		<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+		<span
+			className={`
+				pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs
+				text-muted-foreground
+			`}
+		>
 			{value?.length || 0}/{LIMITS.OPTION_TEXT_MAX}
 		</span>
 	);
@@ -348,15 +364,28 @@ export function QuizEditorPage() {
 	};
 	return (
 		<div className="min-h-screen bg-slate-50">
-			<div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-				<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className="space-y-8">
+			<div
+				className={`
+					mx-auto max-w-4xl px-4 py-12
+					sm:px-6
+					lg:px-8
+				`}
+			>
+				<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
 					<div className="flex items-center gap-4">
 						<Link to="/">
 							<Button type="button" variant="outline" size="icon">
-								<ArrowLeft className="h-5 w-5" />
+								<ArrowLeft className="size-5" />
 							</Button>
 						</Link>
-						<h1 className="font-display text-2xl font-bold sm:text-4xl">{quizId ? 'Edit Quiz' : 'Create a New Quiz'}</h1>
+						<h1
+							className={`
+								font-display text-2xl font-bold
+								sm:text-4xl
+							`}
+						>
+							{quizId ? 'Edit Quiz' : 'Create a New Quiz'}
+						</h1>
 					</div>
 					<Card className="rounded-2xl shadow-lg">
 						<CardHeader>
@@ -379,7 +408,7 @@ export function QuizEditorPage() {
 					</Card>
 					{fields.map((field, qIndex) => (
 						<Card key={field.id} className="rounded-2xl shadow-lg">
-							<CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+							<CardHeader className={`flex flex-row flex-wrap items-center justify-between gap-2`}>
 								<CardTitle>Question {qIndex + 1}</CardTitle>
 								<div className="flex items-center gap-2">
 									<Controller
@@ -390,15 +419,25 @@ export function QuizEditorPage() {
 												<PopoverTrigger asChild>
 													<button
 														type="button"
-														className={`relative flex h-8 w-20 items-center justify-center overflow-hidden rounded-full text-sm font-semibold transition-all ${
-															bgField.value ? 'shadow-md' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-														}`}
+														className={cn(
+															`
+																relative flex h-8 w-20 items-center justify-center
+																overflow-hidden rounded-full text-sm font-semibold
+																transition-all
+															`,
+															bgField.value
+																? 'shadow-md'
+																: `
+																	bg-muted text-muted-foreground
+																	hover:bg-muted/80
+																`,
+														)}
 													>
 														{bgField.value ? (
-															<img src={bgField.value} alt="" className="absolute inset-0 h-full w-full object-cover" />
+															<img src={bgField.value} alt="" className={`absolute inset-0 size-full object-cover`} />
 														) : (
 															<span className="flex items-center gap-1.5">
-																<ImageIcon className="h-4 w-4" />
+																<ImageIcon className="size-4" />
 																Image
 															</span>
 														)}
@@ -416,12 +455,20 @@ export function QuizEditorPage() {
 																		bgField.onChange('');
 																		setOpenImagePopover(undefined);
 																	}}
-																	className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted transition-all ${
-																		bgField.value ? 'hover:ring-2 hover:ring-muted-foreground/30' : 'ring-2 ring-quiz-orange ring-offset-2'
-																	}`}
+																	className={cn(
+																		`
+																			relative flex aspect-video items-center justify-center
+																			overflow-hidden rounded-lg bg-muted transition-all
+																		`,
+																		bgField.value ? 'hover:ring-2 hover:ring-muted-foreground/30' : `ring-2 ring-quiz-orange ring-offset-2`,
+																	)}
 																>
-																	<div className="flex flex-col items-center gap-1 text-muted-foreground">
-																		<ImageOff className="h-6 w-6" />
+																	<div
+																		className={`
+																			flex flex-col items-center gap-1 text-muted-foreground
+																		`}
+																	>
+																		<ImageOff className="size-6" />
 																		<span className="text-xs">No Image</span>
 																	</div>
 																</button>
@@ -433,13 +480,17 @@ export function QuizEditorPage() {
 																			bgField.onChange(img.path);
 																			setOpenImagePopover(undefined);
 																		}}
-																		className={`relative aspect-video overflow-hidden rounded-lg transition-all ${
+																		className={cn(
+																			`
+																				relative aspect-video overflow-hidden rounded-lg
+																				transition-all
+																			`,
 																			bgField.value === img.path
 																				? 'ring-2 ring-quiz-orange ring-offset-2'
-																				: 'hover:ring-2 hover:ring-muted-foreground/30'
-																		}`}
+																				: 'hover:ring-2 hover:ring-muted-foreground/30',
+																		)}
 																	>
-																		<img src={img.path} alt={img.name} className="h-full w-full object-cover" />
+																		<img src={img.path} alt={img.name} className={`size-full object-cover`} />
 																	</button>
 																))}
 															</div>
@@ -458,14 +509,18 @@ export function QuizEditorPage() {
 																					bgField.onChange(img.path);
 																					setOpenImagePopover(undefined);
 																				}}
-																				className={`relative aspect-video w-full overflow-hidden rounded-lg transition-all ${
+																				className={cn(
+																					`
+																						relative aspect-video w-full overflow-hidden rounded-lg
+																						transition-all
+																					`,
 																					bgField.value === img.path
 																						? 'ring-2 ring-quiz-orange ring-offset-2'
-																						: 'hover:ring-2 hover:ring-muted-foreground/30'
-																				}`}
+																						: 'hover:ring-2 hover:ring-muted-foreground/30',
+																				)}
 																				title={img.prompt}
 																			>
-																				<img src={img.path} alt={img.name} className="h-full w-full object-cover" />
+																				<img src={img.path} alt={img.name} className={`size-full object-cover`} />
 																			</button>
 																			<button
 																				type="button"
@@ -473,10 +528,15 @@ export function QuizEditorPage() {
 																					event.stopPropagation();
 																					setImageToDelete(img.id);
 																				}}
-																				className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover-never:bg-red-500 group-hover-always:opacity-100"
+																				className={`
+																					absolute top-1 right-1 rounded-full bg-black/60 p-1
+																					text-white opacity-0 transition-opacity
+																					hover-never:bg-red-500
+																					group-hover-always:opacity-100
+																				`}
 																				title="Delete image"
 																			>
-																				<X className="h-3 w-3" />
+																				<X className="size-3" />
 																			</button>
 																		</div>
 																	))}
@@ -490,7 +550,7 @@ export function QuizEditorPage() {
 																		onClick={loadMoreImages}
 																		disabled={isLoadingMoreImages}
 																	>
-																		{isLoadingMoreImages ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : undefined}
+																		{isLoadingMoreImages ? <Loader2 className={`mr-2 size-4 animate-spin`} /> : undefined}
 																		Load More
 																	</Button>
 																)}
@@ -501,12 +561,16 @@ export function QuizEditorPage() {
 														<div className="space-y-2">
 															<div className="flex items-center justify-between">
 																<h4 className="flex items-center gap-1.5 text-sm font-semibold">
-																	<Sparkles className="h-4 w-4 text-quiz-orange" />
+																	<Sparkles className="size-4 text-quiz-orange" />
 																	Generate with AI
 																</h4>
-																<span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+																<span
+																	className={`
+																		flex items-center gap-1 text-[10px] text-muted-foreground
+																	`}
+																>
 																	Powered by
-																	<img src="/icons/blackforestlabs.svg" alt="Black Forest Labs" className="h-3 w-3" />
+																	<img src="/icons/blackforestlabs.svg" alt="Black Forest Labs" className={`size-3`} />
 																	FLUX.2 [dev]
 																</span>
 															</div>
@@ -526,7 +590,12 @@ export function QuizEditorPage() {
 																			}
 																		}}
 																	/>
-																	<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+																	<span
+																		className={`
+																			pointer-events-none absolute top-1/2 right-2 -translate-y-1/2
+																			text-xs text-muted-foreground
+																		`}
+																	>
 																		{imagePrompt.length}/{LIMITS.AI_IMAGE_PROMPT_MAX}
 																	</span>
 																</div>
@@ -535,9 +604,12 @@ export function QuizEditorPage() {
 																	size="sm"
 																	onClick={() => generateImage(bgField.onChange)}
 																	disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
-																	className="shrink-0 bg-quiz-orange hover:bg-quiz-orange/90"
+																	className={`
+																		shrink-0 bg-quiz-orange
+																		hover:bg-quiz-orange/90
+																	`}
 																>
-																	{isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+																	{isGeneratingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className={`size-4`} />}
 																</Button>
 															</div>
 														</div>
@@ -553,13 +625,22 @@ export function QuizEditorPage() {
 											<button
 												type="button"
 												onClick={() => field.onChange(!field.value)}
-												className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
+												className={cn(
+													`
+														flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm
+														font-semibold transition-all
+													`,
 													field.value
-														? 'bg-gradient-to-r from-quiz-orange to-amber-500 text-white shadow-md'
-														: 'bg-muted text-muted-foreground hover:bg-muted/80'
-												}`}
+														? `
+															bg-linear-to-r from-quiz-orange to-amber-500 text-white shadow-md
+														`
+														: `
+															bg-muted text-muted-foreground
+															hover:bg-muted/80
+														`,
+												)}
 											>
-												<Zap className={`h-4 w-4 ${field.value ? 'fill-current' : ''}`} />
+												<Zap className={cn('size-4', field.value && 'fill-current')} />
 												2× Points
 											</button>
 										)}
@@ -573,7 +654,7 @@ export function QuizEditorPage() {
 											disabled={qIndex === 0}
 											className="text-muted-foreground"
 										>
-											<ChevronUp className="h-5 w-5" />
+											<ChevronUp className="size-5" />
 										</Button>
 										<Button
 											type="button"
@@ -583,11 +664,19 @@ export function QuizEditorPage() {
 											disabled={qIndex === fields.length - 1}
 											className="text-muted-foreground"
 										>
-											<ChevronDown className="h-5 w-5" />
+											<ChevronDown className="size-5" />
 										</Button>
 										<AlertDialog>
 											<AlertDialogTrigger asChild>
-												<Button type="button" variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													className={`
+														text-red-500
+														hover:text-red-700
+													`}
+												>
 													<Trash2 />
 												</Button>
 											</AlertDialogTrigger>
@@ -600,7 +689,13 @@ export function QuizEditorPage() {
 												</AlertDialogHeader>
 												<AlertDialogFooter>
 													<AlertDialogCancel>Cancel</AlertDialogCancel>
-													<AlertDialogAction onClick={() => remove(qIndex)} className="bg-red-500 hover:bg-red-600">
+													<AlertDialogAction
+														onClick={() => remove(qIndex)}
+														className={`
+															bg-red-500
+															hover:bg-red-600
+														`}
+													>
 														Delete
 													</AlertDialogAction>
 												</AlertDialogFooter>
@@ -631,33 +726,33 @@ export function QuizEditorPage() {
 										control={control}
 										name={`questions.${qIndex}.correctAnswerIndex`}
 										render={({ field: { onChange, value } }) => (
-											<RadioGroup onValueChange={onChange} value={String(value)} className="mt-2 space-y-2">
+											<RadioGroup onValueChange={onChange} value={String(value)} className={`mt-2 space-y-2`}>
 												{getValues(`questions.${qIndex}.options`).map((_, oIndex) => (
-													<div key={`${field.id}-option-${oIndex}`} className="flex items-center gap-2">
+													<div key={`${field.id}-option-${oIndex}`} className={`flex items-center gap-2`}>
 														<div className="flex flex-col">
 															<Button
 																type="button"
 																variant="ghost"
 																size="icon"
-																className="h-5 w-5 text-muted-foreground"
+																className="size-5 text-muted-foreground"
 																onClick={() => moveOption(qIndex, oIndex, 'up')}
 																disabled={oIndex === 0}
 															>
-																<ChevronUp className="h-3 w-3" />
+																<ChevronUp className="size-3" />
 															</Button>
 															<Button
 																type="button"
 																variant="ghost"
 																size="icon"
-																className="h-5 w-5 text-muted-foreground"
+																className="size-5 text-muted-foreground"
 																onClick={() => moveOption(qIndex, oIndex, 'down')}
 																disabled={oIndex === getValues(`questions.${qIndex}.options`).length - 1}
 															>
-																<ChevronDown className="h-3 w-3" />
+																<ChevronDown className="size-3" />
 															</Button>
 														</div>
 														<RadioGroupItem value={String(oIndex)} id={`q${qIndex}o${oIndex}`} />
-														<div className="relative flex-grow">
+														<div className="relative grow">
 															<Input
 																{...register(`questions.${qIndex}.options.${oIndex}`)}
 																placeholder={`Option ${oIndex + 1}`}
@@ -672,9 +767,12 @@ export function QuizEditorPage() {
 																variant="ghost"
 																size="icon"
 																onClick={() => removeOption(qIndex, oIndex)}
-																className="text-muted-foreground hover:text-destructive"
+																className={`
+																	text-muted-foreground
+																	hover:text-destructive
+																`}
 															>
-																<Trash2 className="h-4 w-4" />
+																<Trash2 className="size-4" />
 															</Button>
 														)}
 													</div>
@@ -682,14 +780,14 @@ export function QuizEditorPage() {
 											</RadioGroup>
 										)}
 									/>
-									{errors.questions?.[qIndex]?.options && <p className="mt-1 text-sm text-red-500">Each option must have text.</p>}
+									{errors.questions?.[qIndex]?.options && <p className={`mt-1 text-sm text-red-500`}>Each option must have text.</p>}
 									{errors.questions?.[qIndex]?.correctAnswerIndex && (
 										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
 									)}
 								</div>
 								{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (
 									<Button type="button" variant="outline" onClick={() => addOption(qIndex)}>
-										<PlusCircle className="mr-2 h-4 w-4" /> Add Option
+										<PlusCircle className="mr-2 size-4" /> Add Option
 									</Button>
 								)}
 							</CardContent>
@@ -697,8 +795,8 @@ export function QuizEditorPage() {
 					))}
 					<div className="flex flex-col gap-3">
 						<div className="flex gap-3">
-							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className="flex-1">
-								<PlusCircle className="mr-2 h-5 w-5" /> Add Question
+							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className={`flex-1`}>
+								<PlusCircle className="mr-2 size-5" /> Add Question
 							</Button>
 							<Button
 								type="button"
@@ -706,9 +804,12 @@ export function QuizEditorPage() {
 								disabled={isGeneratingQuestion || !turnstileToken}
 								variant="outline"
 								size="lg"
-								className="flex-1 border-quiz-orange/50 text-quiz-orange hover:bg-quiz-orange/10 hover:text-quiz-orange"
+								className={`
+									flex-1 border-quiz-orange/50 text-quiz-orange
+									hover:bg-quiz-orange/10 hover:text-quiz-orange
+								`}
 							>
-								{isGeneratingQuestion ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className={`mr-2 size-5`} />}
 								Generate with AI
 							</Button>
 						</div>
@@ -717,8 +818,16 @@ export function QuizEditorPage() {
 						</div>
 					</div>
 					<div className="flex items-center justify-end gap-4">
-						<Button type="submit" disabled={isSubmitting} size="lg" className="bg-quiz-orange hover:bg-quiz-orange/90">
-							{isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+						<Button
+							type="submit"
+							disabled={isSubmitting}
+							size="lg"
+							className={`
+								bg-quiz-orange
+								hover:bg-quiz-orange/90
+							`}
+						>
+							{isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Save className={`mr-2 size-5`} />}
 							Save Quiz
 						</Button>
 					</div>
@@ -737,7 +846,13 @@ export function QuizEditorPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay on Page</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
+						<AlertDialogAction
+							onClick={() => blocker.proceed?.()}
+							className={`
+								bg-red-500
+								hover:bg-red-600
+							`}
+						>
 							Leave Page
 						</AlertDialogAction>
 					</AlertDialogFooter>
@@ -753,7 +868,13 @@ export function QuizEditorPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={() => imageToDelete && deleteImage(imageToDelete)} className="bg-red-500 hover:bg-red-600">
+						<AlertDialogAction
+							onClick={() => imageToDelete && deleteImage(imageToDelete)}
+							className={`
+								bg-red-500
+								hover:bg-red-600
+							`}
+						>
 							Delete
 						</AlertDialogAction>
 					</AlertDialogFooter>

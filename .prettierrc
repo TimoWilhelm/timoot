@@ -10,13 +10,6 @@
 			"options": {
 				"useTabs": false
 			}
-		},
-		{
-			"files": "*.jsonc",
-			"options": {
-				"trailingComma": "none"
-			}
 		}
-	],
-	"plugins": ["prettier-plugin-tailwindcss"]
+	]
 }

@@ -16,7 +16,10 @@ export function EmojiPicker({ onEmojiSelect, disabled }: EmojiPickerProperties) 
 					whileHover={{ scale: 1.1 }}
 					onClick={() => onEmojiSelect(emoji)}
 					disabled={disabled}
-					className="text-4xl transition-opacity disabled:opacity-50"
+					className={`
+						cursor-pointer text-4xl transition-opacity
+						disabled:opacity-50
+					`}
 					aria-label={`Send ${emoji} reaction`}
 				>
 					{emoji}

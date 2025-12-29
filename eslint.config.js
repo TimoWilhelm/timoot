@@ -12,6 +12,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import unusedImports from 'eslint-plugin-unused-imports';
 import unicorn from 'eslint-plugin-unicorn';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 
 const compat = new FlatCompat({
 	baseDirectory: import.meta.dirname,
@@ -91,4 +92,27 @@ export default defineConfig(
 	storybook.configs['flat/recommended'],
 
 	eslintConfigPrettier,
+
+	{
+		files: ['**/*.{ts,tsx}'],
+		plugins: {
+			'better-tailwindcss': eslintPluginBetterTailwindcss,
+		},
+		rules: {
+			...eslintPluginBetterTailwindcss.configs['recommended-warn'].rules,
+			...eslintPluginBetterTailwindcss.configs['recommended-error'].rules,
+			'better-tailwindcss/enforce-consistent-line-wrapping': [
+				'error',
+				{
+					indent: 'tab',
+					strictness: 'loose',
+				},
+			],
+		},
+		settings: {
+			'better-tailwindcss': {
+				entryPoint: 'src/index.css',
+			},
+		},
+	},
 );

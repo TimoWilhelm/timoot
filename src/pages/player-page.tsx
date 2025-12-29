@@ -239,8 +239,12 @@ export function PlayerPage() {
 
 	if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
 		return (
-			<div className="flex min-h-screen w-full items-center justify-center bg-slate-800">
-				<Loader2 className="h-16 w-16 animate-spin text-white" />
+			<div
+				className={`
+					flex min-h-screen w-full items-center justify-center bg-slate-800
+				`}
+			>
+				<Loader2 className="size-16 animate-spin text-white" />
 			</div>
 		);
 	}
@@ -256,7 +260,12 @@ export function PlayerPage() {
 
 	if (view === 'GAME_IN_PROGRESS') {
 		return (
-			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+			<div
+				className={`
+					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
+					p-8 text-white
+				`}
+			>
 				<div className="mb-6 text-6xl">🎮</div>
 				<h1 className="mb-4 text-center text-3xl font-bold">Game Already In Progress</h1>
 				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
@@ -264,7 +273,10 @@ export function PlayerPage() {
 				</p>
 				<button
 					onClick={() => navigate('/')}
-					className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
+					className={`
+						rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
+						hover:bg-indigo-700
+					`}
 				>
 					Back to Home
 				</button>
@@ -274,7 +286,12 @@ export function PlayerPage() {
 
 	if (view === 'ROOM_NOT_FOUND') {
 		return (
-			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+			<div
+				className={`
+					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
+					p-8 text-white
+				`}
+			>
 				<div className="mb-6 text-6xl">🔍</div>
 				<h1 className="mb-4 text-center text-3xl font-bold">Game Not Found</h1>
 				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
@@ -282,7 +299,10 @@ export function PlayerPage() {
 				</p>
 				<button
 					onClick={() => navigate('/')}
-					className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
+					className={`
+						rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
+						hover:bg-indigo-700
+					`}
 				>
 					Back to Home
 				</button>
@@ -292,7 +312,12 @@ export function PlayerPage() {
 
 	if (view === 'SESSION_EXPIRED') {
 		return (
-			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+			<div
+				className={`
+					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
+					p-8 text-white
+				`}
+			>
 				<div className="mb-6 text-6xl">🔑</div>
 				<h1 className="mb-4 text-center text-3xl font-bold">Session Expired</h1>
 				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
@@ -302,13 +327,19 @@ export function PlayerPage() {
 				<div className="flex gap-4">
 					<button
 						onClick={() => setView('NICKNAME')}
-						className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
+						className={`
+							rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
+							hover:bg-indigo-700
+						`}
 					>
 						Rejoin Game
 					</button>
 					<button
 						onClick={() => navigate('/')}
-						className="rounded-lg bg-slate-600 px-6 py-3 font-semibold transition-colors hover:bg-slate-700"
+						className={`
+							rounded-lg bg-slate-600 px-6 py-3 font-semibold transition-colors
+							hover:bg-slate-700
+						`}
 					>
 						Back to Home
 					</button>
@@ -319,7 +350,12 @@ export function PlayerPage() {
 
 	if (view === 'GAME_FULL') {
 		return (
-			<div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-800 p-8 text-white">
+			<div
+				className={`
+					flex min-h-screen w-full flex-col items-center justify-center bg-slate-800
+					p-8 text-white
+				`}
+			>
 				<div className="mb-6 text-6xl">👥</div>
 				<h1 className="mb-4 text-center text-3xl font-bold">Game is Full</h1>
 				<p className="mb-8 max-w-md text-center text-lg text-slate-300">
@@ -327,7 +363,10 @@ export function PlayerPage() {
 				</p>
 				<button
 					onClick={() => navigate('/')}
-					className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors hover:bg-indigo-700"
+					className={`
+						rounded-lg bg-indigo-600 px-6 py-3 font-semibold transition-colors
+						hover:bg-indigo-700
+					`}
 				>
 					Back to Home
 				</button>
@@ -368,7 +407,7 @@ export function PlayerPage() {
 					Score: <AnimatedNumber value={myScore ?? 0} instant={!hasInitialScoreSync} />
 				</span>
 			</header>
-			<main className="flex flex-grow items-center justify-center">
+			<main className="flex grow items-center justify-center">
 				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
 			</main>
 
@@ -397,7 +436,13 @@ export function PlayerPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} className="bg-red-500 hover:bg-red-600">
+						<AlertDialogAction
+							onClick={() => blocker.proceed?.()}
+							className={`
+								bg-red-500
+								hover:bg-red-600
+							`}
+						>
 							Leave Game
 						</AlertDialogAction>
 					</AlertDialogFooter>
