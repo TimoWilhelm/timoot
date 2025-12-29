@@ -3,7 +3,7 @@
 	"globalPassThroughEnv": ["SENTRY_AUTH_TOKEN"],
 	"tasks": {
 		"build:worker-types": {
-			"outputs": [],
+			"outputs": ["dist/worker/**"],
 			"inputs": ["worker/**/*.ts", "shared/**/*.ts", "tsconfig.worker.json", "tsconfig.json"]
 		},
 		"build:vite": {
