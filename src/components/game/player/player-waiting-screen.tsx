@@ -1,4 +1,4 @@
-import { CheckCircle, Home, Loader2, Trophy, XCircle } from 'lucide-react';
+import { CheckCircle, Gamepad2, Home, Loader2, Star, Trophy, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
@@ -87,9 +87,9 @@ function PlayerDoublePointsAnimation() {
 // Podium rank display component
 function PodiumRankDisplay({ rank }: { rank: number }) {
 	const config = {
-		1: { color: 'text-yellow-400', label: '1st Place!', emoji: '🥇' },
-		2: { color: 'text-gray-300', label: '2nd Place!', emoji: '🥈' },
-		3: { color: 'text-amber-600', label: '3rd Place!', emoji: '🥉' },
+		1: { bgColor: 'bg-yellow-400', textColor: 'text-black', label: '1st Place!', rankText: '1st' },
+		2: { bgColor: 'bg-gray-300', textColor: 'text-black', label: '2nd Place!', rankText: '2nd' },
+		3: { bgColor: 'bg-amber-600', textColor: 'text-white', label: '3rd Place!', rankText: '3rd' },
 	}[rank];
 
 	if (!config) return;
@@ -101,18 +101,26 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 			transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
 			className="flex flex-col items-center"
 		>
-			<motion.span
+			<motion.div
 				animate={{ scale: [1, 1.1, 1] }}
 				transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-				className="mb-4 text-8xl"
+				className={cn(
+					`
+						mb-4 flex size-24 items-center justify-center rounded-xl border-4
+						border-white/30 text-4xl font-black
+						shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]
+					`,
+					config.bgColor,
+					config.textColor,
+				)}
 			>
-				{config.emoji}
-			</motion.span>
+				{config.rankText}
+			</motion.div>
 			<motion.h3
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.5 }}
-				className={cn('text-4xl font-bold', config.color)}
+				className="font-display text-4xl font-black text-white uppercase"
 			>
 				{config.label}
 			</motion.h3>
@@ -189,11 +197,15 @@ export function PlayerWaitingScreen({
 						<motion.div
 							animate={{ scale: [1, 1.1, 1] }}
 							transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-							className="mb-4 text-6xl"
+							className={`
+								mb-4 flex size-20 items-center justify-center rounded-xl border-4
+								border-white/20 bg-quiz-orange
+								shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+							`}
 						>
-							🎮
+							<Gamepad2 className="size-10 text-white" strokeWidth={2.5} />
 						</motion.div>
-						<h2 className="font-display text-4xl font-bold text-white">Get Ready!</h2>
+						<h2 className="font-display text-4xl font-black text-white uppercase">Get Ready!</h2>
 						<p className="mt-2 text-lg font-medium text-slate-300">Look at the main screen</p>
 					</div>
 				);
@@ -282,13 +294,17 @@ export function PlayerWaitingScreen({
 				return (
 					<div className="text-center">
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex flex-col items-center gap-4`}>
-							<motion.span
+							<motion.div
 								animate={{ scale: [1, 1.1, 1] }}
 								transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-								className="text-6xl"
+								className={`
+									flex size-20 items-center justify-center rounded-xl border-4
+									border-white/20 bg-yellow-400
+									shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								`}
 							>
-								🏆
-							</motion.span>
+								<Trophy className="size-10 text-black" strokeWidth={2.5} />
+							</motion.div>
 							<p className="text-xl text-slate-300">Look at the main screen</p>
 						</motion.div>
 					</div>
@@ -304,10 +320,18 @@ export function PlayerWaitingScreen({
 								initial={{ opacity: 0, scale: 0.8 }}
 								animate={{ opacity: 1, scale: 1 }}
 								transition={{ delay: 0.2 }}
-								className="mb-4"
+								className="mb-4 flex flex-col items-center"
 							>
-								<span className="mb-2 block text-5xl">⭐</span>
-								<span className="font-display text-3xl font-bold text-indigo-300">#{myFinalRank}</span>
+								<div
+									className={`
+										mb-4 flex size-16 items-center justify-center rounded-xl border-4
+										border-white/20 bg-indigo-500
+										shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+									`}
+								>
+									<Star className="size-8 fill-white text-white" />
+								</div>
+								<span className="font-display text-3xl font-black text-white">#{myFinalRank}</span>
 								<p className="mt-2 text-xl font-medium text-slate-300">Thanks for playing!</p>
 							</motion.div>
 						) : undefined}

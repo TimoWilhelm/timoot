@@ -10,40 +10,25 @@ interface CountdownTimerProperties {
 }
 
 function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
-	const progress = timeLeft / totalTime;
 	const isUrgent = timeLeft <= 5;
 	const isCritical = timeLeft <= 3;
-
-	// Circle properties
-	const size = 120;
-	const strokeWidth = 8;
-	const radius = (size - strokeWidth) / 2;
-	const circumference = 2 * Math.PI * radius;
+	const progress = Math.min(timeLeft / totalTime, 1);
+	const circumference = 2 * Math.PI * 26;
 	const strokeDashoffset = circumference * (1 - progress);
 
-	// Color transitions based on time remaining
-	const getColor = () => {
-		if (timeLeft <= 3) return { stroke: '#dc2626', text: 'text-red-600', glow: 'rgba(220, 38, 38, 0.5)' };
-		if (timeLeft <= 5) return { stroke: '#f59e0b', text: 'text-amber-500', glow: 'rgba(245, 158, 11, 0.4)' };
-		if (timeLeft <= 10) return { stroke: '#eab308', text: 'text-yellow-500', glow: 'rgba(234, 179, 8, 0.3)' };
-		return { stroke: '#22c55e', text: 'text-green-500', glow: 'rgba(34, 197, 94, 0.3)' };
+	const getColors = () => {
+		if (timeLeft <= 3) return { bg: 'bg-red-500', stroke: '#b91c1c', text: 'text-white' };
+		if (timeLeft <= 5) return { bg: 'bg-orange-400', stroke: '#c2410c', text: 'text-black' };
+		if (timeLeft <= 10) return { bg: 'bg-yellow-400', stroke: '#a16207', text: 'text-black' };
+		return { bg: 'bg-emerald-400', stroke: '#047857', text: 'text-black' };
 	};
 
-	const colors = getColor();
+	const colors = getColors();
 
 	return (
 		<motion.div
 			className="relative"
-			animate={
-				isCritical
-					? {
-							scale: [1, 1.05, 1],
-							rotate: [-1, 1, -1],
-						}
-					: isUrgent
-						? { scale: [1, 1.02, 1] }
-						: {}
-			}
+			animate={isCritical ? { scale: [1, 1.05, 1], rotate: [-1, 1, -1] } : isUrgent ? { scale: [1, 1.02, 1] } : {}}
 			transition={
 				isCritical
 					? { duration: 0.3, repeat: Infinity, ease: 'easeInOut' }
@@ -52,62 +37,47 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 						: {}
 			}
 		>
-			{/* Glow effect for urgency */}
-			<AnimatePresence>
-				{isUrgent && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: [0.5, 1, 0.5] }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
-						className="absolute inset-0 rounded-full"
-						style={{
-							boxShadow: `0 0 ${isCritical ? '40px' : '25px'} ${colors.glow}`,
-						}}
-					/>
-				)}
-			</AnimatePresence>
-
-			{/* Background circle container */}
+			{/* Neo Brutalist timer circle */}
 			<div
-				className={`
-					relative flex items-center justify-center rounded-full bg-white shadow-lg
-				`}
-				style={{ width: size, height: size }}
+				className={cn(
+					`
+						relative flex size-16 items-center justify-center rounded-full
+						border-[3px] border-black transition-colors duration-300
+						sm:size-20
+					`,
+					colors.bg,
+					isCritical ? 'shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]' : 'shadow-brutal-sm',
+				)}
 			>
-				{/* SVG Progress Ring */}
-				<svg className="absolute inset-0 -rotate-90" width={size} height={size}>
-					{/* Background track */}
-					<circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} />
-					{/* Progress arc */}
+				{/* Progress ring */}
+				<svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 64 64">
+					<circle cx="32" cy="32" r="26" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="4" />
 					<motion.circle
-						cx={size / 2}
-						cy={size / 2}
-						r={radius}
+						cx="32"
+						cy="32"
+						r="26"
 						fill="none"
-						stroke={colors.stroke}
-						strokeWidth={strokeWidth}
-						strokeLinecap="round"
+						strokeWidth="4"
+						strokeLinecap="square"
 						strokeDasharray={circumference}
-						initial={{ strokeDashoffset: 0 }}
-						animate={{ strokeDashoffset }}
-						transition={{ duration: 0.25, ease: 'linear' }}
+						animate={{ strokeDashoffset, stroke: colors.stroke }}
+						transition={{ strokeDashoffset: { duration: 0.1, ease: 'linear' }, stroke: { duration: 0.3 } }}
 					/>
 				</svg>
 
 				{/* Timer number */}
-				<AnimatePresence mode="wait">
+				<AnimatePresence mode="wait" initial={false}>
 					<motion.span
 						key={timeLeft}
-						initial={{ scale: 1.4, opacity: 0, y: -10 }}
-						animate={{ scale: 1, opacity: 1, y: 0 }}
-						exit={{ scale: 0.8, opacity: 0, y: 10 }}
-						transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+						initial={{ scale: 0.8, opacity: 0 }}
+						animate={{ scale: 1, opacity: 1 }}
+						exit={{ scale: 1.1, opacity: 0 }}
+						transition={{ duration: 0.12 }}
 						className={cn(
 							colors.text,
 							`
-								text-4xl font-bold tabular-nums transition-colors duration-300
-								sm:text-5xl
+								relative z-10 font-display text-2xl font-black tabular-nums
+								sm:text-3xl
 							`,
 						)}
 					>
@@ -116,23 +86,15 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 				</AnimatePresence>
 			</div>
 
-			{/* Pulse rings for critical time */}
+			{/* Pulse ring for critical time */}
 			<AnimatePresence>
 				{isCritical && (
-					<>
-						<motion.div
-							initial={{ scale: 1, opacity: 0.6 }}
-							animate={{ scale: 1.5, opacity: 0 }}
-							transition={{ duration: 1, repeat: Infinity, ease: 'easeOut' }}
-							className="absolute inset-0 rounded-full border-2 border-red-500"
-						/>
-						<motion.div
-							initial={{ scale: 1, opacity: 0.4 }}
-							animate={{ scale: 1.8, opacity: 0 }}
-							transition={{ duration: 1, repeat: Infinity, ease: 'easeOut', delay: 0.3 }}
-							className="absolute inset-0 rounded-full border-2 border-red-400"
-						/>
-					</>
+					<motion.div
+						initial={{ scale: 1, opacity: 0.6 }}
+						animate={{ scale: 1.3, opacity: 0 }}
+						transition={{ duration: 0.6, repeat: Infinity, ease: 'easeOut' }}
+						className="absolute inset-0 rounded-full border-[3px] border-black"
+					/>
 				)}
 			</AnimatePresence>
 		</motion.div>
@@ -147,8 +109,8 @@ function DoublePointsBadge() {
 			animate={{ scale: 1, x: 0 }}
 			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
 			className={`
-				flex items-center gap-2 rounded-xl bg-linear-to-r from-quiz-orange
-				to-amber-500 px-4 py-2 text-white shadow-lg
+				flex items-center gap-2 rounded-lg border-4 border-black bg-quiz-orange px-4
+				py-2 text-white shadow-brutal-sm
 			`}
 		>
 			<motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
@@ -161,7 +123,7 @@ function DoublePointsBadge() {
 			</motion.div>
 			<span
 				className={`
-					text-xl font-bold
+					text-xl font-black uppercase
 					sm:text-2xl
 				`}
 			>
@@ -255,29 +217,33 @@ export function HostQuestion({
 			`}
 		>
 			<div className="mb-4 flex items-center justify-between">
-				<div className="flex flex-col">
+				<div
+					className={`
+						flex flex-col rounded-lg border-4 border-black bg-white px-4 py-2
+						shadow-brutal-sm
+					`}
+				>
 					<span
 						className={`
-							text-xl font-bold
+							font-display text-xl font-black text-black
 							sm:text-2xl
 						`}
 					>
 						Question {questionIndex + 1}/{totalQuestions}
 					</span>
-					<span className="text-sm text-muted-foreground">
+					<span className="text-sm font-bold text-gray-600">
 						{answeredCount}/{totalPlayers} answered
 					</span>
 				</div>
-				<div className="flex items-center gap-4 overflow-visible">
+				<div className="flex items-center gap-4">
 					{isDoublePoints && <DoublePointsBadge />}
-					<div className="relative overflow-hidden rounded-full p-6">
-						<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
-					</div>
+					<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
 				</div>
 			</div>
 			<div
 				className={`
-					relative mb-4 center-col min-h-0 grow overflow-hidden rounded-2xl shadow-lg
+					relative mb-4 center-col min-h-0 grow overflow-hidden rounded-xl border-4
+					border-black shadow-brutal
 					sm:mb-8
 				`}
 			>
@@ -297,10 +263,10 @@ export function HostQuestion({
 					<div
 						className={cn(
 							`
-								rounded-xl px-6 py-4
+								rounded-lg px-6 py-4
 								sm:px-10 sm:py-6
 							`,
-							backgroundImage && !imageError && `bg-white/85 shadow-xl backdrop-blur-lg`,
+							backgroundImage && !imageError && `border-4 border-black bg-white/95 shadow-brutal-sm backdrop-blur-sm`,
 						)}
 					>
 						<h2
@@ -329,7 +295,8 @@ export function HostQuestion({
 						transition={{ delay: index * 0.1 }}
 						className={cn(
 							`
-								flex items-center rounded-2xl p-4 text-xl font-bold text-white shadow-md
+								flex items-center rounded-xl border-4 border-black p-4 text-xl font-bold
+								text-white shadow-brutal-sm
 								sm:p-6 sm:text-3xl
 							`,
 							shapeColors[index],

@@ -18,20 +18,26 @@ const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, index) => ({
 function DoublePointsAnimation() {
 	return (
 		<motion.div
-			className={`
-				fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br
-				from-quiz-orange/90 to-amber-600/90
-			`}
+			className="
+				fixed inset-0 z-50 flex items-center justify-center bg-quiz-orange
+			"
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
 		>
+			{/* Decorative grid background */}
+			<div
+				className={`
+					absolute inset-0 bg-[radial-gradient(#00000015_1px,transparent_1px)]
+					bg-size-[24px_24px]
+				`}
+			/>
 			{/* Background pulse rings */}
 			{Array.from({ length: 3 }).map((_, index) => (
 				<motion.div
 					key={index}
-					className="absolute rounded-full border-4 border-white/30"
+					className="absolute rounded-xl border-4 border-black/20"
 					initial={{ width: 100, height: 100, opacity: 0.8 }}
 					animate={{
 						width: [100, 600],
@@ -72,7 +78,7 @@ function DoublePointsAnimation() {
 
 			{/* Main 2x text */}
 			<motion.div
-				className="relative flex flex-col items-center"
+				className="relative z-10 flex flex-col items-center"
 				initial={{ scale: 0, rotate: -180 }}
 				animate={{ scale: 1, rotate: 0 }}
 				transition={{
@@ -83,17 +89,23 @@ function DoublePointsAnimation() {
 				}}
 			>
 				<motion.div
-					className="text-[12rem] leading-none font-black text-white drop-shadow-2xl"
+					className={`
+						rounded-2xl border-8 border-black bg-white px-12 py-8
+						shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]
+					`}
 					animate={{
-						scale: [1, 1.1, 1],
-						textShadow: ['0 0 20px rgba(255,255,255,0.5)', '0 0 60px rgba(255,255,255,0.8)', '0 0 20px rgba(255,255,255,0.5)'],
+						scale: [1, 1.05, 1],
 					}}
 					transition={{ duration: 0.5, repeat: Infinity }}
 				>
-					2×
+					<div className="text-[10rem] leading-none font-black text-black">2×</div>
 				</motion.div>
 				<motion.div
-					className="text-4xl font-bold tracking-widest text-white/90 uppercase"
+					className={`
+						mt-6 rounded-lg border-4 border-black bg-yellow-300 px-8 py-3 text-4xl
+						font-black tracking-wider text-black uppercase
+						shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+					`}
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.6 }}
@@ -106,15 +118,16 @@ function DoublePointsAnimation() {
 			{SPARKLE_POSITIONS.map((pos, index) => (
 				<motion.div
 					key={`sparkle-${index}`}
-					className="absolute size-2 rounded-full bg-yellow-200"
+					className="absolute size-3 rounded-sm border-2 border-black bg-white"
 					style={{
 						left: pos.left,
 						top: pos.top,
 					}}
-					initial={{ opacity: 0, scale: 0 }}
+					initial={{ opacity: 0, scale: 0, rotate: 0 }}
 					animate={{
 						opacity: [0, 1, 0],
 						scale: [0, 1.5, 0],
+						rotate: [0, 180, 360],
 					}}
 					transition={{
 						duration: 1,

@@ -93,7 +93,7 @@
 		"typecheck:worker": "tsc --noEmit -p tsconfig.worker.json",
 		"lint": "prettier --check . && eslint --cache --format=stylish .",
 		"format": "prettier --write . && eslint --cache --format=stylish --fix .",
-		"test": "vitest run --config ./test/unit/vitest.config.mts",
+		"test:unit": "vitest run --config ./test/unit/vitest.config.mts",
 		"test:integration": "vitest run --config ./test/integration/vitest.config.mts",
 		"test:storybook": "vitest run --config vitest.config.storybook.ts",
 		"test:e2e": "playwright test",

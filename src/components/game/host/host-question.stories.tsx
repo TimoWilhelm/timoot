@@ -25,18 +25,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Helper to create fresh startTime for each story render
+const createLoader = (offsetMs = 0) => [() => ({ startTime: Date.now() - offsetMs })];
+
 export const Default: Story = {
 	args: {
 		questionText: 'What is the capital of France?',
 		options: ['London', 'Paris', 'Berlin', 'Madrid'],
 		questionIndex: 0,
 		totalQuestions: 10,
-		startTime: Date.now(),
+		startTime: 0,
 		timeLimitMs: 20_000,
 		answeredCount: 0,
 		totalPlayers: 8,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(0),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 	play: async ({ canvas, step }) => {
 		await step('Verify question is displayed', async () => {
 			await expect(canvas.getByText('What is the capital of France?')).toBeInTheDocument();
@@ -61,12 +66,14 @@ export const SomeAnswered: Story = {
 		options: ['Venus', 'Mars', 'Jupiter', 'Saturn'],
 		questionIndex: 3,
 		totalQuestions: 10,
-		startTime: Date.now() - 5000,
+		startTime: 0,
 		timeLimitMs: 20_000,
 		answeredCount: 5,
 		totalPlayers: 8,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(5000),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const AllAnswered: Story = {
@@ -75,12 +82,14 @@ export const AllAnswered: Story = {
 		options: ['3', '4', '5', '22'],
 		questionIndex: 5,
 		totalQuestions: 10,
-		startTime: Date.now() - 10_000,
+		startTime: 0,
 		timeLimitMs: 20_000,
 		answeredCount: 8,
 		totalPlayers: 8,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(10_000),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const DoublePoints: Story = {
@@ -89,26 +98,14 @@ export const DoublePoints: Story = {
 		options: ['Van Gogh', 'Picasso', 'Da Vinci', 'Michelangelo'],
 		questionIndex: 7,
 		totalQuestions: 10,
-		startTime: Date.now(),
+		startTime: 0,
 		timeLimitMs: 20_000,
 		answeredCount: 2,
 		totalPlayers: 8,
 		isDoublePoints: true,
 	},
-};
-
-export const LowTime: Story = {
-	args: {
-		questionText: 'Quick! What is the largest ocean?',
-		options: ['Atlantic', 'Pacific', 'Indian', 'Arctic'],
-		questionIndex: 4,
-		totalQuestions: 10,
-		startTime: Date.now() - 17_000,
-		timeLimitMs: 20_000,
-		answeredCount: 6,
-		totalPlayers: 8,
-		isDoublePoints: false,
-	},
+	loaders: createLoader(0),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const CriticalTime: Story = {
@@ -117,12 +114,14 @@ export const CriticalTime: Story = {
 		options: ['Elephant', 'Blue Whale', 'Giraffe', 'Hippo'],
 		questionIndex: 4,
 		totalQuestions: 10,
-		startTime: Date.now() - 18_000,
+		startTime: 0,
 		timeLimitMs: 20_000,
 		answeredCount: 7,
 		totalPlayers: 8,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(18_000),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const WithBackgroundImage: Story = {
@@ -131,13 +130,15 @@ export const WithBackgroundImage: Story = {
 		options: ['Eiffel Tower', 'Big Ben', 'Statue of Liberty', 'Colosseum'],
 		questionIndex: 2,
 		totalQuestions: 10,
-		startTime: Date.now(),
+		startTime: 0,
 		timeLimitMs: 20_000,
 		answeredCount: 1,
 		totalPlayers: 8,
 		isDoublePoints: false,
 		backgroundImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&q=80',
 	},
+	loaders: createLoader(0),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const LongQuestion: Story = {
@@ -147,12 +148,14 @@ export const LongQuestion: Story = {
 		options: ['1959', '1966', '1969', '1971'],
 		questionIndex: 8,
 		totalQuestions: 10,
-		startTime: Date.now(),
+		startTime: 0,
 		timeLimitMs: 30_000,
 		answeredCount: 0,
 		totalPlayers: 12,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(0),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const TwoOptions: Story = {
@@ -161,12 +164,14 @@ export const TwoOptions: Story = {
 		options: ['True', 'False'],
 		questionIndex: 1,
 		totalQuestions: 10,
-		startTime: Date.now(),
+		startTime: 0,
 		timeLimitMs: 15_000,
 		answeredCount: 0,
 		totalPlayers: 6,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(0),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };
 
 export const ThreeOptions: Story = {
@@ -175,10 +180,12 @@ export const ThreeOptions: Story = {
 		options: ['Red', 'Blue', 'Green'],
 		questionIndex: 1,
 		totalQuestions: 10,
-		startTime: Date.now(),
+		startTime: 0,
 		timeLimitMs: 15_000,
 		answeredCount: 0,
 		totalPlayers: 6,
 		isDoublePoints: false,
 	},
+	loaders: createLoader(0),
+	render: (arguments_, { loaded }) => <HostQuestion {...arguments_} startTime={loaded.startTime as number} />,
 };

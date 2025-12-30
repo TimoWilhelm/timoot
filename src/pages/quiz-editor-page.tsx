@@ -415,9 +415,70 @@ export function QuizEditorPage() {
 					</Card>
 					{fields.map((field, qIndex) => (
 						<Card key={field.id}>
-							<CardHeader className={`flex flex-row flex-wrap items-center justify-between gap-2`}>
-								<CardTitle>Question {qIndex + 1}</CardTitle>
-								<div className="flex items-center gap-2">
+							<CardHeader className="flex flex-row flex-wrap items-center gap-2">
+								<CardTitle className="order-1">Question {qIndex + 1}</CardTitle>
+								<div
+									className={`
+										order-2 ml-auto flex items-center gap-1 border-l pl-2
+										sm:order-3 sm:ml-0
+									`}
+								>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										onClick={() => move(qIndex, qIndex - 1)}
+										disabled={qIndex === 0}
+										className="text-muted-foreground"
+									>
+										<ChevronUp className="size-5" />
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										onClick={() => move(qIndex, qIndex + 1)}
+										disabled={qIndex === fields.length - 1}
+										className="text-muted-foreground"
+									>
+										<ChevronDown className="size-5" />
+									</Button>
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className={`
+													text-red-500
+													hover:text-red-700
+												`}
+											>
+												<Trash2 />
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>Delete Question {qIndex + 1}?</AlertDialogTitle>
+												<AlertDialogDescription>
+													You have unsaved changes. Are you sure you want to delete this question? Your changes will be lost.
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<AlertDialogFooter>
+												<AlertDialogCancel>Cancel</AlertDialogCancel>
+												<AlertDialogAction onClick={() => remove(qIndex)} variant="destructive">
+													Delete
+												</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
+								</div>
+								<div
+									className={`
+										order-3 flex basis-full flex-wrap items-center gap-2
+										sm:order-2 sm:ml-auto sm:basis-auto
+									`}
+								>
 									<Controller
 										control={control}
 										name={`questions.${qIndex}.backgroundImage`}
@@ -429,14 +490,11 @@ export function QuizEditorPage() {
 													className={cn(
 														`
 															relative flex h-8 w-20 cursor-pointer items-center justify-center
-															overflow-hidden rounded-full text-sm font-semibold transition-all
+															overflow-hidden rounded-lg border-2 border-black text-sm
+															font-bold transition-all
+															hover:-translate-y-px hover:shadow-brutal-sm
 														`,
-														bgField.value
-															? 'shadow-md'
-															: `
-																bg-muted text-muted-foreground
-																hover:bg-muted/80
-															`,
+														bgField.value ? 'shadow-brutal-sm' : 'bg-gray-100 text-gray-600',
 													)}
 												>
 													{bgField.value ? (
@@ -475,11 +533,11 @@ export function QuizEditorPage() {
 																		className={cn(
 																			`
 																				relative flex aspect-video cursor-pointer items-center
-																				justify-center rounded-lg bg-muted transition-all
+																				justify-center rounded-lg border-2 border-black
+																				transition-all
+																				hover:-translate-y-px hover:shadow-brutal-sm
 																			`,
-																			bgField.value
-																				? 'hover:ring-2 hover:ring-muted-foreground/30'
-																				: 'ring-2 ring-quiz-orange ring-offset-2',
+																			bgField.value ? 'bg-gray-100 text-gray-600' : 'bg-gray-100 text-gray-600',
 																		)}
 																	>
 																		<div
@@ -499,11 +557,10 @@ export function QuizEditorPage() {
 																			className={cn(
 																				`
 																					relative aspect-video cursor-pointer overflow-hidden
-																					rounded-lg transition-all
+																					rounded-lg border-2 border-black transition-all
+																					hover:-translate-y-px hover:shadow-brutal-sm
 																				`,
-																				bgField.value === img.path
-																					? 'ring-2 ring-quiz-orange ring-offset-2'
-																					: 'hover:ring-2 hover:ring-muted-foreground/30',
+																				bgField.value === img.path ? 'shadow-brutal-sm' : 'bg-gray-100 text-gray-600',
 																			)}
 																		>
 																			<img src={img.path} alt={img.name} className="size-full object-cover" />
@@ -525,11 +582,11 @@ export function QuizEditorPage() {
 																					className={cn(
 																						`
 																							relative aspect-video w-full cursor-pointer
-																							overflow-hidden rounded-lg transition-all
+																							overflow-hidden rounded-lg border-2 border-black
+																							transition-all
+																							hover:-translate-y-px hover:shadow-brutal-sm
 																						`,
-																						bgField.value === img.path
-																							? 'ring-2 ring-quiz-orange ring-offset-2'
-																							: 'hover:ring-2 hover:ring-muted-foreground/30',
+																						bgField.value === img.path ? 'shadow-brutal-sm' : 'bg-gray-100 text-gray-600',
 																					)}
 																					title={img.prompt}
 																				>
@@ -655,75 +712,23 @@ export function QuizEditorPage() {
 												onClick={() => field.onChange(!field.value)}
 												className={cn(
 													`
-														flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5
-														text-sm font-semibold transition-all
+														flex cursor-pointer items-center gap-1.5 rounded-lg border-2
+														border-black px-3 py-1.5 text-sm font-bold transition-all
+														hover:-translate-y-px
 													`,
 													field.value
-														? `
-															bg-linear-to-r from-quiz-orange to-amber-500 text-white shadow-md
-														`
+														? 'bg-quiz-orange text-white shadow-brutal-sm'
 														: `
-															bg-muted text-muted-foreground
-															hover:bg-muted/80
+															bg-gray-100 text-gray-600
+															hover:shadow-brutal-sm
 														`,
 												)}
 											>
-												<Zap className={cn('size-4', field.value && 'fill-current')} />
-												2× Points
+												<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} />
+												<span className="whitespace-nowrap">2× Points</span>
 											</button>
 										)}
 									/>
-									<div className="ml-1 flex items-center gap-1 border-l pl-2">
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => move(qIndex, qIndex - 1)}
-											disabled={qIndex === 0}
-											className="text-muted-foreground"
-										>
-											<ChevronUp className="size-5" />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={() => move(qIndex, qIndex + 1)}
-											disabled={qIndex === fields.length - 1}
-											className="text-muted-foreground"
-										>
-											<ChevronDown className="size-5" />
-										</Button>
-										<AlertDialog>
-											<AlertDialogTrigger asChild>
-												<Button
-													type="button"
-													variant="ghost"
-													size="icon"
-													className={`
-														text-red-500
-														hover:text-red-700
-													`}
-												>
-													<Trash2 />
-												</Button>
-											</AlertDialogTrigger>
-											<AlertDialogContent>
-												<AlertDialogHeader>
-													<AlertDialogTitle>Delete Question {qIndex + 1}?</AlertDialogTitle>
-													<AlertDialogDescription>
-														You have unsaved changes. Are you sure you want to delete this question? Your changes will be lost.
-													</AlertDialogDescription>
-												</AlertDialogHeader>
-												<AlertDialogFooter>
-													<AlertDialogCancel>Cancel</AlertDialogCancel>
-													<AlertDialogAction onClick={() => remove(qIndex)} variant="destructive">
-														Delete
-													</AlertDialogAction>
-												</AlertDialogFooter>
-											</AlertDialogContent>
-										</AlertDialog>
-									</div>
 								</div>
 							</CardHeader>
 							<CardContent className="space-y-4">
@@ -807,16 +812,23 @@ export function QuizEditorPage() {
 										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
 									)}
 								</div>
-								{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (
-									<Button type="button" variant="secondary" onClick={() => addOption(qIndex)}>
-										<PlusCircle className="mr-2 size-4" /> Add Option
-									</Button>
-								)}
+								<div className="flex w-full justify-center">
+									{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (
+										<Button type="button" variant="secondary" onClick={() => addOption(qIndex)}>
+											<PlusCircle className="mr-2 size-4" /> Add Option
+										</Button>
+									)}
+								</div>
 							</CardContent>
 						</Card>
 					))}
 					<div className="flex flex-col gap-3">
-						<div className="flex gap-3">
+						<div
+							className={`
+								flex flex-col gap-3
+								sm:flex-row
+							`}
+						>
 							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className="flex-1">
 								<PlusCircle className="mr-2 size-5" /> Add Question
 							</Button>
@@ -832,7 +844,7 @@ export function QuizEditorPage() {
 								`}
 							>
 								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className="mr-2 size-5" />}
-								Generate with AI
+								<span className="whitespace-nowrap">Generate with AI</span>
 							</Button>
 						</div>
 						<div ref={turnstileReference} className="flex justify-center">

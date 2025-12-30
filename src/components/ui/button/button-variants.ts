@@ -43,8 +43,8 @@ export const buttonVariants = cva(
 			},
 			size: {
 				default: 'h-10 px-4 py-2',
-				sm: 'h-8 rounded-md px-3 text-xs',
-				lg: 'h-12 rounded-xl px-8 text-base',
+				sm: 'h-8 rounded-md px-3 py-1 text-xs',
+				lg: 'h-12 rounded-xl px-8 py-3 text-base',
 				icon: 'size-10 p-0',
 			},
 		},

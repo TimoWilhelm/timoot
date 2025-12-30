@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utilities';
 import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
@@ -38,15 +39,15 @@ function getPodiumEntries(leaderboard: LeaderboardEntry[]): Map<number, PodiumEn
 }
 
 const PODIUM_CONFIG = {
-	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400 border-4 border-black', emoji: '🥇', delay: 2 },
-	2: { height: 'h-28 sm:h-40', color: 'bg-gray-300 border-4 border-black', emoji: '🥈', delay: 1 },
-	3: { height: 'h-20 sm:h-28', color: 'bg-amber-600 border-4 border-black', emoji: '🥉', delay: 0 },
+	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400 border-4 border-black', rank: '1st', delay: 2 },
+	2: { height: 'h-28 sm:h-40', color: 'bg-gray-300 border-4 border-black', rank: '2nd', delay: 1 },
+	3: { height: 'h-20 sm:h-28', color: 'bg-amber-600 border-4 border-black', rank: '3rd', delay: 0 },
 } as const;
 
 function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; position: 1 | 2 | 3 }) {
 	// Use entry's rank for styling if exists, otherwise use the position for placeholder height
 	const config = PODIUM_CONFIG[entry?.rank as keyof typeof PODIUM_CONFIG] ?? PODIUM_CONFIG[position];
-	const { height, color, emoji, delay } = config;
+	const { height, color, rank, delay } = config;
 
 	// Pre-allocate the space but keep content invisible until revealed
 	return (
@@ -124,8 +125,9 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 							initial={{ opacity: 0, scale: 0 }}
 							animate={{ opacity: 1, scale: 1 }}
 							transition={{ delay: delay + 0.2, type: 'spring' }}
+							className="font-black text-black"
 						>
-							{emoji}
+							{rank}
 						</motion.span>
 					</motion.div>
 				</motion.div>
@@ -243,33 +245,50 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							initial={{ opacity: 0, scale: 0.5 }}
 							animate={{ opacity: 1, scale: 1 }}
 							className={`
-								text-3xl font-bold
-								sm:text-5xl
+								flex items-center gap-2 text-3xl font-black uppercase
+								sm:gap-4 sm:text-5xl
 								md:text-7xl
 							`}
 						>
-							<motion.span
-								className="inline-block"
-								animate={{ rotate: [-12, 12] }}
-								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
-							>
-								🏆
-							</motion.span>
-							<span
+							<motion.div
 								className={`
-									mx-2
-									sm:mx-4
+									flex size-12 items-center justify-center rounded-lg border-4
+									border-black bg-yellow-400 shadow-brutal-sm
+									sm:size-16 sm:rounded-xl
+									md:size-20
 								`}
-							>
-								Top Scorers!
-							</span>
-							<motion.span
-								className="inline-block"
-								animate={{ rotate: [-12, 12] }}
+								animate={{ rotate: [-8, 8] }}
 								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
 							>
-								🏆
-							</motion.span>
+								<Trophy
+									className={`
+										size-6 text-black
+										sm:size-8
+										md:size-10
+									`}
+									strokeWidth={2.5}
+								/>
+							</motion.div>
+							<span>Top Scorers!</span>
+							<motion.div
+								className={`
+									flex size-12 items-center justify-center rounded-lg border-4
+									border-black bg-yellow-400 shadow-brutal-sm
+									sm:size-16 sm:rounded-xl
+									md:size-20
+								`}
+								animate={{ rotate: [-8, 8] }}
+								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
+							>
+								<Trophy
+									className={`
+										size-6 text-black
+										sm:size-8
+										md:size-10
+									`}
+									strokeWidth={2.5}
+								/>
+							</motion.div>
 						</motion.h1>
 
 						{/* Podium container with fixed layout: 2nd | 1st | 3rd */}
@@ -331,21 +350,23 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.2 }}
 							className={`
-								flex items-center gap-3 rounded-full bg-quiz-orange/10 px-4 py-2 text-sm
-								font-medium text-quiz-orange
+								flex items-center gap-3 rounded-lg border-2 border-black bg-yellow-300
+								px-4 py-2 text-sm font-bold text-black shadow-brutal-sm
 								sm:text-base
 							`}
 						>
-							<motion.span
+							<motion.div
 								animate={{ rotate: [-10, 10] }}
 								transition={{ repeat: Infinity, repeatType: 'mirror', duration: 0.5, ease: 'easeInOut' }}
-								className={`
-									inline-block text-lg
-									sm:text-xl
-								`}
 							>
-								🏆
-							</motion.span>
+								<Trophy
+									className={`
+										size-5 text-black
+										sm:size-6
+									`}
+									strokeWidth={2.5}
+								/>
+							</motion.div>
 							<span>Crunching final scores...</span>
 						</motion.div>
 					</motion.div>

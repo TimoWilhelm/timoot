@@ -280,13 +280,15 @@ export function JoinGameDialog() {
 					<div className="flex justify-center">
 						<div
 							className={`
-								flex size-16 items-center justify-center rounded-2xl bg-indigo-600/20
+								flex size-16 items-center justify-center rounded-xl border-4
+								border-white/20 bg-quiz-orange
+								shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
 							`}
 						>
-							<Gamepad2 className="size-8 text-indigo-400" />
+							<Gamepad2 className="size-8 text-white" />
 						</div>
 					</div>
-					<h1 className="text-3xl font-bold">Join Game</h1>
+					<h1 className="font-display text-3xl font-black uppercase">Join Game</h1>
 					<p className="text-sm text-slate-400">Enter the game code shown on the host's screen</p>
 				</div>
 
