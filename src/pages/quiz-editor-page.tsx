@@ -493,8 +493,8 @@ export function QuizEditorPage() {
 															overflow-hidden rounded-lg border-2 border-black text-sm
 															font-bold transition-all
 															hover:-translate-y-px hover:shadow-brutal-sm
+															active:translate-y-0 active:shadow-none
 														`,
-														bgField.value ? 'shadow-brutal-sm' : 'bg-gray-100 text-gray-600',
 													)}
 												>
 													{bgField.value ? (
@@ -533,11 +533,16 @@ export function QuizEditorPage() {
 																		className={cn(
 																			`
 																				relative flex aspect-video cursor-pointer items-center
-																				justify-center rounded-lg border-2 border-black
-																				transition-all
+																				justify-center rounded-lg border-2 border-black bg-gray-100
+																				text-gray-600 transition-all
 																				hover:-translate-y-px hover:shadow-brutal-sm
 																			`,
-																			bgField.value ? 'bg-gray-100 text-gray-600' : 'bg-gray-100 text-gray-600',
+																			bgField.value
+																				? undefined
+																				: `
+																					ring-3 ring-quiz-orange ring-offset-2
+																					ring-offset-background
+																				`,
 																		)}
 																	>
 																		<div
@@ -560,7 +565,12 @@ export function QuizEditorPage() {
 																					rounded-lg border-2 border-black transition-all
 																					hover:-translate-y-px hover:shadow-brutal-sm
 																				`,
-																				bgField.value === img.path ? 'shadow-brutal-sm' : 'bg-gray-100 text-gray-600',
+																				bgField.value === img.path
+																					? `
+																						ring-3 ring-quiz-orange ring-offset-2
+																						ring-offset-background
+																					`
+																					: 'bg-gray-100 text-gray-600',
 																			)}
 																		>
 																			<img src={img.path} alt={img.name} className="size-full object-cover" />
@@ -586,7 +596,12 @@ export function QuizEditorPage() {
 																							transition-all
 																							hover:-translate-y-px hover:shadow-brutal-sm
 																						`,
-																						bgField.value === img.path ? 'shadow-brutal-sm' : 'bg-gray-100 text-gray-600',
+																						bgField.value === img.path
+																							? `
+																								ring-3 ring-quiz-orange ring-offset-2
+																								ring-offset-background
+																							`
+																							: 'bg-gray-100 text-gray-600',
 																					)}
 																					title={img.prompt}
 																				>
@@ -713,15 +728,11 @@ export function QuizEditorPage() {
 												className={cn(
 													`
 														flex cursor-pointer items-center gap-1.5 rounded-lg border-2
-														border-black px-3 py-1.5 text-sm font-bold transition-all
-														hover:-translate-y-px
+														border-black px-2 py-1 text-sm font-bold transition-all
+														hover:-translate-y-px hover:shadow-brutal-sm
+														active:translate-y-0 active:shadow-none
 													`,
-													field.value
-														? 'bg-quiz-orange text-white shadow-brutal-sm'
-														: `
-															bg-gray-100 text-gray-600
-															hover:shadow-brutal-sm
-														`,
+													field.value && 'bg-quiz-orange text-white',
 												)}
 											>
 												<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} />

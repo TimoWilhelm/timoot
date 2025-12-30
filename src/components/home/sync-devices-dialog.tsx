@@ -43,7 +43,7 @@ export function SyncDevicesDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
-				<div className="bg-blue-400 p-6 text-white">
+				<div className="bg-blue-400 p-6">
 					<DialogHeader>
 						<DialogTitle
 							className="
@@ -131,11 +131,7 @@ export function SyncDevicesDialog({
 									className={cn(BRUTAL_INPUT, 'flex-1 text-center font-mono tracking-widest uppercase')}
 									maxLength={6}
 								/>
-								<Button
-									onClick={() => onRedeemSyncCode(false)}
-									disabled={isRedeemingSyncCode || syncCodeInput.length !== 6}
-									className="border-2 border-black bg-black text-white shadow-brutal"
-								>
+								<Button onClick={() => onRedeemSyncCode(false)} disabled={isRedeemingSyncCode || syncCodeInput.length !== 6}>
 									<Check className="size-5" />
 								</Button>
 							</div>

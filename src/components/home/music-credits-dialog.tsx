@@ -11,7 +11,7 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[500px]">
-				<div className="bg-quiz-orange p-6 text-white">
+				<div className="bg-quiz-orange p-6">
 					<DialogHeader>
 						<DialogTitle
 							className="
