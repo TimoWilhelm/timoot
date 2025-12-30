@@ -93,10 +93,10 @@
 # Testing & Quality
 
 <testing>
-- Unit tests: Vitest (`bun test`)
-- Integration tests: Vitest (`bun test:integration`)
-- Component tests: Storybook (`bun test:storybook`)
-- E2E tests: Playwright (`bun test:e2e`)
+- Unit tests: Vitest (`bun run test:unit`)
+- Integration tests: Vitest (`bun run test:integration`)
+- Component tests: Storybook (`bun run test:storybook`)
+- E2E tests: Playwright (`bun run test:e2e`)
 </testing>
 
 <code_quality>
