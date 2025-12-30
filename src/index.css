@@ -49,14 +49,14 @@
 	--color-quiz-slate: #404041;
 	--color-quiz-coral: #ff6b4a;
 
-	--shadow-brutal: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-	--shadow-brutal-lg: 8px 8px 0px 0px rgba(0, 0, 0, 1);
-	--shadow-brutal-sm: 2px 2px 0px 0px rgba(0, 0, 0, 1);
-	--shadow-brutal-inset: inset 3px 3px 0px 0px rgba(0, 0, 0, 0.25);
-	--shadow-brutal-inset-sm: inset 2px 2px 0px 0px rgba(0, 0, 0, 0.2);
-	--shadow-brutal-orange: 4px 4px 0px 0px var(--color-quiz-orange);
-	--shadow-brutal-orange-sm: 2px 2px 0px 0px var(--color-quiz-orange);
-	--shadow-brutal-green: 4px 4px 0px 0px #16a34a;
+	--shadow-brutal: 0 4px 0 0 rgba(0, 0, 0, 1);
+	--shadow-brutal-lg: 0 8px 0 0 rgba(0, 0, 0, 1);
+	--shadow-brutal-sm: 0 2px 0 0 rgba(0, 0, 0, 1);
+	--shadow-brutal-inset: inset 0 3px 0 0 rgba(0, 0, 0, 0.25);
+	--shadow-brutal-inset-sm: inset 0 2px 0 0 rgba(0, 0, 0, 0.2);
+	--shadow-brutal-orange: 0 4px 0 0 var(--color-quiz-orange);
+	--shadow-brutal-orange-sm: 0 2px 0 0 var(--color-quiz-orange);
+	--shadow-brutal-green: 0 4px 0 0 #16a34a;
 
 	--animate-fade-in: fade-in 0.6s ease-out;
 	--animate-scale-in: scale-in 0.2s ease-out;

@@ -306,7 +306,7 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }}>
 							<Button
 								onClick={() => (globalThis.location.href = '/')}
-								variant="primary"
+								variant="accent"
 								size="lg"
 								className={`
 									rounded-xl border-4 px-8 py-6 text-xl font-black uppercase

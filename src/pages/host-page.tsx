@@ -306,7 +306,7 @@ export function HostPage() {
 				<div
 					className={`
 						relative flex size-24 items-center justify-center rounded-full border-4
-						border-black bg-yellow-300 shadow-brutal-lg
+						border-black bg-yellow-300 shadow-brutal-sm
 					`}
 				>
 					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />
@@ -437,7 +437,7 @@ export function HostPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="destructive">
+						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="danger">
 							Leave Game
 						</AlertDialogAction>
 					</AlertDialogFooter>

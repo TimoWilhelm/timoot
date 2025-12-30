@@ -381,7 +381,7 @@ export function QuizEditorPage() {
 				<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
 					<div className="flex items-center gap-4">
 						<Link to="/" viewTransition>
-							<Button type="button" variant="secondary" size="icon" className="size-12">
+							<Button type="button" variant="subtle" size="icon" className="size-12">
 								<ArrowLeft className="size-5" />
 							</Button>
 						</Link>
@@ -466,7 +466,7 @@ export function QuizEditorPage() {
 											</AlertDialogHeader>
 											<AlertDialogFooter>
 												<AlertDialogCancel>Cancel</AlertDialogCancel>
-												<AlertDialogAction onClick={() => remove(qIndex)} variant="destructive">
+												<AlertDialogAction onClick={() => remove(qIndex)} variant="danger">
 													Delete
 												</AlertDialogAction>
 											</AlertDialogFooter>
@@ -629,7 +629,7 @@ export function QuizEditorPage() {
 																	{aiImagesCursor && (
 																		<Button
 																			type="button"
-																			variant="secondary"
+																			variant="subtle"
 																			size="sm"
 																			className="w-full"
 																			onClick={loadMoreImages}
@@ -685,7 +685,7 @@ export function QuizEditorPage() {
 																	</div>
 																	<Button
 																		type="button"
-																		variant="primary"
+																		variant="accent"
 																		size="icon"
 																		onClick={() => generateImage(bgField.onChange)}
 																		disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
@@ -702,7 +702,7 @@ export function QuizEditorPage() {
 														<DialogFooter className="shrink-0 border-t px-4 py-3">
 															<Button
 																type="button"
-																variant="primary"
+																variant="accent"
 																onClick={() => setOpenImagePopover(undefined)}
 																disabled={isGeneratingImage}
 																className={`
@@ -825,7 +825,7 @@ export function QuizEditorPage() {
 								</div>
 								<div className="flex w-full justify-center">
 									{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (
-										<Button type="button" variant="secondary" onClick={() => addOption(qIndex)}>
+										<Button type="button" variant="subtle" onClick={() => addOption(qIndex)}>
 											<PlusCircle className="mr-2 size-4" /> Add Option
 										</Button>
 									)}
@@ -840,14 +840,14 @@ export function QuizEditorPage() {
 								sm:flex-row
 							`}
 						>
-							<Button type="button" onClick={addQuestion} variant="secondary" size="lg" className="flex-1">
+							<Button type="button" onClick={addQuestion} variant="subtle" size="lg" className="flex-1">
 								<PlusCircle className="mr-2 size-5" /> Add Question
 							</Button>
 							<Button
 								type="button"
 								onClick={generateQuestion}
 								disabled={isGeneratingQuestion || !turnstileToken}
-								variant="secondary"
+								variant="subtle"
 								size="lg"
 								className={`
 									flex-1 border-2 border-quiz-orange bg-quiz-orange/5 text-quiz-orange
@@ -863,7 +863,7 @@ export function QuizEditorPage() {
 						</div>
 					</div>
 					<div className="flex items-center justify-end gap-4">
-						<Button type="submit" variant="primary" disabled={isSubmitting} size="lg">
+						<Button type="submit" variant="accent" disabled={isSubmitting} size="lg">
 							{isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Save className="mr-2 size-5" />}
 							Save Quiz
 						</Button>
@@ -883,7 +883,7 @@ export function QuizEditorPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay on Page</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="destructive">
+						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="danger">
 							Leave Page
 						</AlertDialogAction>
 					</AlertDialogFooter>
@@ -899,7 +899,7 @@ export function QuizEditorPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={() => imageToDelete && deleteImage(imageToDelete)} variant="destructive">
+						<AlertDialogAction onClick={() => imageToDelete && deleteImage(imageToDelete)} variant="danger">
 							Delete
 						</AlertDialogAction>
 					</AlertDialogFooter>

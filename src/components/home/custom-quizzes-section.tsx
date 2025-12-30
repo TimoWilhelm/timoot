@@ -191,7 +191,7 @@ export function CustomQuizzesSection({
 								<Button
 									onClick={onGenerateAiQuiz}
 									disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN || !turnstileToken}
-									variant="primary"
+									variant="accent"
 									className="w-full rounded-xl py-6 text-lg"
 								>
 									{aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN ? (

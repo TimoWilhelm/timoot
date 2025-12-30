@@ -27,7 +27,7 @@ export function DeleteQuizDialog({ open, onOpenChange, onConfirm }: DeleteQuizDi
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel className="border-2 border-black font-bold">Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={onConfirm} variant="destructive">
+					<AlertDialogAction onClick={onConfirm} variant="danger">
 						Yes, Delete it
 					</AlertDialogAction>
 				</AlertDialogFooter>

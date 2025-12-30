@@ -104,7 +104,7 @@ function DoublePointsAnimation() {
 					className={`
 						mt-6 rounded-lg border-4 border-black bg-yellow-300 px-8 py-3 text-4xl
 						font-black tracking-wider text-black uppercase
-						shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+						shadow-[0px_6px_0px_0px_rgba(0,0,0,1)]
 					`}
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}

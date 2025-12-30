@@ -206,7 +206,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				<Button
 					data-host-next-button
 					onClick={onNext}
-					variant="primary"
+					variant="accent"
 					size="lg"
 					className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
 				>

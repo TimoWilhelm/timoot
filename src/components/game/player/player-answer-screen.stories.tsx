@@ -1,10 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { expect, fn } from 'storybook/test';
 import { PlayerAnswerScreen } from './player-answer-screen';
 
+function PlayerAnswerScreenWrapper({
+	onAnswer,
+	submittedAnswer: initialAnswer,
+	...properties
+}: React.ComponentProps<typeof PlayerAnswerScreen>) {
+	const [submittedAnswer, setSubmittedAnswer] = useState(initialAnswer);
+	return (
+		<PlayerAnswerScreen
+			{...properties}
+			submittedAnswer={submittedAnswer}
+			onAnswer={(index) => {
+				setSubmittedAnswer(index);
+				onAnswer(index);
+			}}
+		/>
+	);
+}
+
 const meta = {
 	title: 'Player/AnswerScreen',
-	component: PlayerAnswerScreen,
+	component: PlayerAnswerScreenWrapper,
 	parameters: {
 		layout: 'fullscreen',
 	},

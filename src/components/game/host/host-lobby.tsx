@@ -153,7 +153,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 				>
 					<Button
 						onClick={onStart}
-						variant="primary"
+						variant="accent"
 						size="lg"
 						className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
 						disabled={players.length === 0}

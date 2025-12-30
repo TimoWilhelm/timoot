@@ -376,7 +376,7 @@ export function PlayerPage() {
 								py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
 								transition-all
 								hover:-translate-y-0.5
-								hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.1)]
+								hover:shadow-[0px_6px_0px_0px_rgba(255,255,255,0.1)]
 							`}
 						>
 							Rejoin Game
@@ -515,7 +515,7 @@ export function PlayerPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay in Game</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="destructive">
+						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="danger">
 							Leave Game
 						</AlertDialogAction>
 					</AlertDialogFooter>

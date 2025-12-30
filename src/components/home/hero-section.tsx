@@ -52,7 +52,7 @@ export function HeroSection() {
 			<motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="relative z-20">
 				<Button
 					onClick={() => navigate('/play')}
-					variant="primary"
+					variant="accent"
 					className="
 						group relative inline-flex items-center gap-2 rounded-lg px-6 py-5
 						font-display text-xl font-bold tracking-wide uppercase shadow-brutal

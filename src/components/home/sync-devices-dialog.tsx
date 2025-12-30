@@ -69,13 +69,7 @@ export function SyncDevicesDialog({
 								>
 									{syncCode}
 								</div>
-								<Button
-									onClick={onCopyCode}
-									size="icon"
-									className="
-										size-14 shrink-0 rounded-xl border-2 border-black shadow-brutal
-									"
-								>
+								<Button onClick={onCopyCode} size="icon" className="size-14 shrink-0 rounded-xl">
 									{codeCopied ? <Check className="size-6" /> : <Copy className="size-6" />}
 								</Button>
 							</div>
@@ -114,7 +108,7 @@ export function SyncDevicesDialog({
 								<p className="mb-2 text-sm font-bold text-yellow-800">Warning: Existing Data</p>
 								<p className="mb-4 text-xs">Syncing will replace your current quizzes. Are you sure?</p>
 								<div className="flex gap-2">
-									<Button size="sm" variant="secondary" onClick={onCancelWarning} className="border-black bg-white">
+									<Button size="sm" variant="subtle" onClick={onCancelWarning} className="border-black bg-white">
 										Cancel
 									</Button>
 									<Button size="sm" onClick={() => onRedeemSyncCode(true)} className="border-black bg-yellow-400 text-black">

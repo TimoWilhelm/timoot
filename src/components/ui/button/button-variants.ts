@@ -17,17 +17,17 @@ export const buttonVariants = cva(
 					hover:-translate-y-px hover:shadow-brutal
 					active:translate-y-0 active:shadow-none
 				`,
-				destructive: `
-					bg-red-500 text-primary shadow-brutal-sm
-					hover:-translate-y-px hover:bg-red-600 hover:shadow-brutal
-					active:translate-y-0 active:shadow-none
-				`,
-				primary: `
+				accent: `
 					bg-quiz-orange text-primary shadow-brutal-sm
 					hover:-translate-y-px hover:bg-quiz-orange/90 hover:shadow-brutal
 					active:translate-y-0 active:shadow-none
 				`,
-				secondary: `
+				danger: `
+					bg-red-500 text-primary shadow-brutal-sm
+					hover:-translate-y-px hover:bg-red-600 hover:shadow-brutal
+					active:translate-y-0 active:shadow-none
+				`,
+				subtle: `
 					bg-primary-foreground text-primary
 					hover:-translate-y-px hover:bg-gray-50 hover:shadow-brutal-sm
 					active:translate-y-0 active:shadow-none

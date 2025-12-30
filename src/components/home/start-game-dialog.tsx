@@ -53,7 +53,7 @@ export function StartGameDialog({
 						<Button
 							onClick={onStartGame}
 							disabled={isGameStarting || !turnstileToken}
-							variant="primary"
+							variant="accent"
 							className="w-full rounded-xl py-6 text-lg"
 						>
 							{isGameStarting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Gamepad2 className="mr-2 size-4" />}

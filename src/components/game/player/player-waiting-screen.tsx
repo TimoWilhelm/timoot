@@ -108,7 +108,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 					`
 						mb-4 flex size-24 items-center justify-center rounded-xl border-4
 						border-white/30 text-4xl font-black
-						shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)]
+						shadow-[0px_6px_0px_0px_rgba(255,255,255,0.2)]
 					`,
 					config.bgColor,
 					config.textColor,

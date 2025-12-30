@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { shapeGradients, shapePaths } from '@/components/game/shared';
+import { cn } from '@/lib/utilities';
 
 interface PlayerAnswerScreenProperties {
 	onAnswer: (index: number) => void;
@@ -84,8 +85,8 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 						whileHover={
 							canAnswer
 								? {
-										scale: 1.03,
-										boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
+										scale: 1.02,
+										y: -2,
 									}
 								: {}
 						}
@@ -111,64 +112,59 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 											delay: displayIndex * 0.03,
 										}
 						}
-						className={`
-							absolute flex cursor-pointer items-center justify-center overflow-hidden
-							rounded-2xl
-						`}
+						className={cn(
+							`
+								group absolute flex items-center justify-center rounded-xl border-4
+								border-black
+							`,
+							canAnswer ? 'cursor-pointer overflow-hidden' : 'cursor-not-allowed overflow-hidden',
+							isSelected && 'overflow-visible',
+							`
+								focus-visible:ring-4 focus-visible:ring-white/70
+								focus-visible:ring-offset-2 focus-visible:ring-offset-black/20
+								focus-visible:outline-none
+							`,
+						)}
 						style={{
 							top: pos.top,
 							left: pos.left,
 							width: 'calc(50% - 12px)',
 							height: 'calc(50% - 12px)',
 							background: shapeGradients[originalIndex],
-							boxShadow: '0 10px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+							boxShadow: '0px 4px 0px 0px rgba(0,0,0,1)',
 						}}
 					>
 						{/* Inner glow */}
 						<motion.div
 							className={`
-								absolute inset-0 rounded-2xl bg-linear-to-t from-transparent
+								absolute inset-0 rounded-xl bg-linear-to-t from-transparent
 								via-transparent to-white/10
 							`}
 							animate={isSelected && showPulse ? { opacity: [0.1, 0.3, 0.1] } : {}}
 							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
 						/>
 
-						{/* Selection ring effect */}
+						{/* Selection ring effect - fades out after initial pop */}
 						{isSelected && (
 							<motion.div
 								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+								animate={{ opacity: [0, 1, 0], scale: [0.8, 1, 1.05] }}
+								transition={{ duration: 1, ease: 'easeOut', times: [0, 0.4, 1] }}
 								className={`
-									absolute inset-0 rounded-2xl ring-4 ring-white/50 ring-offset-4
+									absolute inset-0 rounded-xl ring-4 ring-white/50 ring-offset-4
 									ring-offset-transparent
 								`}
 							/>
 						)}
 
-						{/* Pulsing rings for selected button */}
-						{isSelected && showPulse && (
-							<>
-								<motion.div
-									initial={{ opacity: 0.6, scale: 1 }}
-									animate={{ opacity: 0, scale: 1.3 }}
-									transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
-									className="absolute inset-0 rounded-2xl border-2 border-white/40"
-								/>
-								<motion.div
-									initial={{ opacity: 0.4, scale: 1 }}
-									animate={{ opacity: 0, scale: 1.5 }}
-									transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut', delay: 0.5 }}
-									className="absolute inset-0 rounded-2xl border-2 border-white/30"
-								/>
-							</>
-						)}
-
 						{/* Shape icon */}
 						<motion.svg
 							viewBox="0 0 24 24"
-							className="size-1/2 fill-current text-white drop-shadow-lg"
+							className={`
+								size-1/2 fill-current stroke-black/35 stroke-[1.5] text-white
+								drop-shadow-lg
+								[paint-order:stroke]
+							`}
 							animate={
 								isSelected
 									? {
@@ -190,16 +186,15 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 							<path d={shapePaths[originalIndex]} />
 						</motion.svg>
 
-						{/* Shimmer effect on hover */}
+						{/* Shimmer effect on hover - uses CSS for parent hover detection */}
 						{canAnswer && (
-							<motion.div
+							<div
 								className={`
-									absolute inset-0 -skew-x-12 bg-linear-to-r from-transparent
-									via-white/20 to-transparent
+									pointer-events-none absolute inset-0 -translate-x-full -skew-x-12
+									bg-linear-to-r from-transparent via-white/25 to-transparent
+									transition-transform duration-500 ease-out
+									group-hover:translate-x-full
 								`}
-								initial={{ x: '-200%' }}
-								whileHover={{ x: '200%' }}
-								transition={{ duration: 0.6 }}
 							/>
 						)}
 
