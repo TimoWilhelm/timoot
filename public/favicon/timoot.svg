@@ -1,13 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Background with Quiz Orange -->
-  <rect width="100" height="100" fill="#f48120"/>
-  
-  <!-- Thick Brutalist Border -->
-  <rect x="2.5" y="2.5" width="95" height="95" fill="none" stroke="black" stroke-width="5"/>
-  
-  <!-- Sparkle Shadow (Hard Offset) -->
-  <path d="M50 20 L53 42 L75 38 L57 50 L75 62 L53 58 L50 80 L47 58 L25 62 L43 50 L25 38 L47 42 Z" fill="black" transform="translate(4, 4)"/>
-  
-  <!-- Main Sparkle: White with Black Border -->
-  <path d="M50 20 L53 42 L75 38 L57 50 L75 62 L53 58 L50 80 L47 58 L25 62 L43 50 L25 38 L47 42 Z" fill="white" stroke="black" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+  fill="#f48120" stroke="#f48120" stroke-width="2" stroke-linecap="round"
+  stroke-linejoin="round" class="lucide lucide-zap size-6 text-white" aria-hidden="true">
+  <path
+    d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
 </svg>
