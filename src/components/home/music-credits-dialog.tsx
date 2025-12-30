@@ -10,7 +10,7 @@ interface MusicCreditsDialogProperties {
 export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogProperties) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[500px]">
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[500px]">
 				<div className="bg-quiz-orange p-6 text-white">
 					<DialogHeader>
 						<DialogTitle

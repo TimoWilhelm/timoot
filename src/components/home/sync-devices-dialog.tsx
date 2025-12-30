@@ -42,7 +42,7 @@ export function SyncDevicesDialog({
 }: SyncDevicesDialogProperties) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
 				<div className="bg-blue-400 p-6 text-white">
 					<DialogHeader>
 						<DialogTitle
