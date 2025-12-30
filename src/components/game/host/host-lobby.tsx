@@ -69,15 +69,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 									{gameId}
 								</p>
 							</div>
-							<button
-								onClick={copyToClipboard}
-								className={`
-									mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-lg
-									border-2 border-black px-4 py-2 font-bold transition-all
-									hover:-translate-y-px hover:shadow-brutal-sm
-									active:translate-y-0 active:shadow-none
-								`}
-							>
+							<Button type="button" variant="subtle" onClick={copyToClipboard} className="mt-4 w-full">
 								{copied ? (
 									<>
 										<Check className="size-4 text-green-600" />
@@ -89,7 +81,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 										<span>Copy link</span>
 									</>
 								)}
-							</button>
+							</Button>
 						</Card>
 					</motion.div>
 

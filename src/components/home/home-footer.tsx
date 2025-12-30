@@ -1,4 +1,5 @@
 import { Music, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface HomeFooterProperties {
 	onMusicCreditsClick: () => void;
@@ -14,49 +15,43 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 					sm:flex-row sm:gap-6
 				"
 			>
-				<a
-					href="https://github.com/TimoWilhelm/timoot"
-					target="_blank"
-					rel="noopener noreferrer"
+				<Button
+					asChild
 					className="
-						inline-flex items-center gap-2 rounded-lg border-2 border-black
-						bg-gray-100 px-4 py-2 text-sm font-bold uppercase shadow-brutal-sm
-						transition-all
-						hover:-translate-y-px hover:bg-yellow-300 hover:shadow-brutal
-						active:translate-y-0 active:shadow-none
+						bg-gray-100 text-sm uppercase shadow-brutal-sm transition-colors
+						duration-75
+						hover:bg-yellow-300
 					"
 				>
-					<img src="/icons/github-mark.svg" alt="GitHub" className="size-4" />
-					Open Source
-				</a>
-				<button
+					<a href="https://github.com/TimoWilhelm/timoot" target="_blank" rel="noopener noreferrer">
+						<img src="/icons/github-mark.svg" alt="GitHub" className="size-4" />
+						Open Source
+					</a>
+				</Button>
+				<Button
+					type="button"
 					onClick={onMusicCreditsClick}
 					className="
-						inline-flex cursor-pointer items-center gap-2 rounded-lg border-2
-						border-black bg-gray-100 px-4 py-2 text-sm font-bold uppercase
-						shadow-brutal-sm transition-all
-						hover:-translate-y-px hover:bg-quiz-orange hover:text-white
-						hover:shadow-brutal
-						active:translate-y-0 active:shadow-none
+						bg-gray-100 text-sm uppercase shadow-brutal-sm transition-colors
+						duration-75
+						hover:bg-quiz-orange
 					"
 				>
 					<Music className="size-4" />
 					Music Credits
-				</button>
-				<button
+				</Button>
+				<Button
+					type="button"
 					onClick={onSyncDevicesClick}
 					className="
-						inline-flex cursor-pointer items-center gap-2 rounded-lg border-2
-						border-black bg-gray-100 px-4 py-2 text-sm font-bold uppercase
-						shadow-brutal-sm transition-all
-						hover:-translate-y-px hover:bg-blue-400 hover:text-white
-						hover:shadow-brutal
-						active:translate-y-0 active:shadow-none
+						bg-gray-100 text-sm uppercase shadow-brutal-sm transition-colors
+						duration-75
+						hover:bg-blue-400
 					"
 				>
 					<RefreshCw className="size-4" />
 					Sync Devices
-				</button>
+				</Button>
 			</div>
 		</footer>
 	);

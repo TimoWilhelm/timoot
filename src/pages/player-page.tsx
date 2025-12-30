@@ -26,6 +26,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
 
@@ -293,18 +294,15 @@ export function PlayerPage() {
 					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
 						Sorry, this game has already started. You can wait for the next round or join a different game.
 					</p>
-					<button
+					<Button
+						variant="accent"
 						onClick={() => navigate('/')}
-						className={`
-							cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
-							py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-							transition-all
-							hover:-translate-y-px
-							hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
-						`}
+						className="
+							border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+						"
 					>
 						Back to Home
-					</button>
+					</Button>
 				</div>
 			</div>
 		);
@@ -330,18 +328,15 @@ export function PlayerPage() {
 					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
 						We couldn't find a game with that code. It may have ended or the link might be incorrect.
 					</p>
-					<button
+					<Button
+						variant="accent"
 						onClick={() => navigate('/')}
-						className={`
-							cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
-							py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-							transition-all
-							hover:-translate-y-px
-							hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
-						`}
+						className="
+							border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+						"
 					>
 						Back to Home
-					</button>
+					</Button>
 				</div>
 			</div>
 		);
@@ -369,30 +364,26 @@ export function PlayerPage() {
 						rejoin the game with a new nickname.
 					</p>
 					<div className="flex gap-4">
-						<button
+						<Button
+							variant="accent"
 							onClick={() => setView('NICKNAME')}
-							className={`
-								cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
-								py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-								transition-all
-								hover:-translate-y-0.5
-								hover:shadow-[0px_6px_0px_0px_rgba(255,255,255,0.1)]
-							`}
+							className="
+								border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+							"
 						>
 							Rejoin Game
-						</button>
-						<button
+						</Button>
+						<Button
+							variant="subtle"
 							onClick={() => navigate('/')}
-							className={`
-								cursor-pointer rounded-lg border-2 border-white/20 bg-slate-700 px-6
-								py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-								transition-all
-								hover:-translate-y-px hover:bg-slate-600
-								hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
-							`}
+							className="
+								border-2 border-white/20 bg-slate-700 text-white
+								shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								hover:bg-slate-600
+							"
 						>
 							Back to Home
-						</button>
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -419,18 +410,15 @@ export function PlayerPage() {
 					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
 						Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
 					</p>
-					<button
+					<Button
+						variant="accent"
 						onClick={() => navigate('/')}
-						className={`
-							cursor-pointer rounded-lg border-2 border-white/20 bg-quiz-orange px-6
-							py-3 font-bold shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-							transition-all
-							hover:-translate-y-px
-							hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
-						`}
+						className="
+							border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+						"
 					>
 						Back to Home
-					</button>
+					</Button>
 				</div>
 			</div>
 		);

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { Loader2, Zap } from 'lucide-react';
-import { BRUTAL_CARD_BASE } from './styles';
+import { HelpCircle, Loader2, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Quiz } from '@shared/types';
 import { cn } from '@/lib/utilities';
 
@@ -42,19 +42,22 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 			>
 				{quizzes.map((quiz, index) => (
 					<motion.div key={quiz.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-						<button
+						<Button
 							type="button"
+							variant="ghost"
 							onClick={() => onSelectQuiz(quiz)}
 							className={cn(
-								BRUTAL_CARD_BASE,
 								`
-									group size-full cursor-pointer bg-white p-6 text-left
-									hover:bg-yellow-50
+									group relative size-full flex-col items-start overflow-hidden
+									rounded-xl border-2 border-black bg-white p-6 text-left
+									shadow-brutal-sm transition-all duration-200
+									hover:-translate-y-px hover:bg-yellow-50 hover:shadow-brutal
+									active:translate-y-0 active:shadow-none
 								`,
 								startingQuizId === quiz.id && 'bg-yellow-100 ring-2 ring-black ring-offset-2',
 							)}
 						>
-							<div className="mb-4 flex items-start justify-between">
+							<div className="mb-4 flex w-full items-start justify-between">
 								<div
 									className="
 										rounded-lg border-2 border-black bg-blue-400 p-3 shadow-brutal-sm
@@ -64,19 +67,12 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 								>
 									<Zap className="size-6 text-white" fill="currentColor" />
 								</div>
-								<span
-									className="
-										rounded-full border-2 border-black px-3 py-1 text-xs font-bold
-										uppercase
-									"
-								>
-									{quiz.questions.length} Qs
-								</span>
 							</div>
 							<h3 className="mb-2 font-display text-2xl leading-tight font-bold">{quiz.title}</h3>
-							<p className="line-clamp-2 text-sm font-medium text-gray-600">
-								Ready to challenge your friends? Click to start this quiz instantly.
-							</p>
+							<div className="flex items-center gap-2 text-sm font-bold text-gray-500">
+								<HelpCircle className="size-4" />
+								{quiz.questions.length} Questions
+							</div>
 							{startingQuizId === quiz.id && (
 								<div
 									className="
@@ -87,7 +83,7 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 									<Loader2 className="size-8 animate-spin text-black" />
 								</div>
 							)}
-						</button>
+						</Button>
 					</motion.div>
 				))}
 			</div>

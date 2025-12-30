@@ -296,7 +296,6 @@ export function HomePage() {
 
 						<CustomQuizzesSection
 							quizzes={customQuizzes}
-							startingQuizId={startingQuizId}
 							isGenerating={isGenerating}
 							generatingPrompt={generatingPrompt}
 							generationStatus={generationStatus}

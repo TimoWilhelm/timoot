@@ -484,18 +484,11 @@ export function QuizEditorPage() {
 										name={`questions.${qIndex}.backgroundImage`}
 										render={({ field: bgField }) => (
 											<>
-												<button
+												<Button
 													type="button"
+													variant="subtle"
 													onClick={() => setOpenImagePopover(qIndex)}
-													className={cn(
-														`
-															relative flex h-8 w-20 cursor-pointer items-center justify-center
-															overflow-hidden rounded-lg border-2 border-black text-sm
-															font-bold transition-all
-															hover:-translate-y-px hover:shadow-brutal-sm
-															active:translate-y-0 active:shadow-none
-														`,
-													)}
+													className="relative h-8 w-20 overflow-hidden p-0"
 												>
 													{bgField.value ? (
 														<img src={bgField.value} alt="" className={`absolute inset-0 size-full object-cover`} />
@@ -505,7 +498,7 @@ export function QuizEditorPage() {
 															Image
 														</span>
 													)}
-												</button>
+												</Button>
 												<Dialog
 													open={openImagePopover === qIndex}
 													onOpenChange={(open) => {
@@ -527,19 +520,14 @@ export function QuizEditorPage() {
 															<div className="space-y-2">
 																<h4 className="text-sm font-medium text-muted-foreground">Default</h4>
 																<div className="grid grid-cols-3 gap-2">
-																	<button
+																	<Button
 																		type="button"
+																		variant="subtle"
 																		onClick={() => bgField.onChange('')}
 																		className={cn(
-																			`
-																				relative flex aspect-video cursor-pointer items-center
-																				justify-center rounded-lg border-2 border-black bg-gray-100
-																				text-gray-600 transition-all
-																				hover:-translate-y-px hover:shadow-brutal-sm
-																			`,
-																			bgField.value
-																				? undefined
-																				: `
+																			`aspect-video h-auto bg-gray-100 text-gray-600`,
+																			!bgField.value &&
+																				`
 																					ring-3 ring-quiz-orange ring-offset-2
 																					ring-offset-background
 																				`,
@@ -553,18 +541,15 @@ export function QuizEditorPage() {
 																			<ImageOff className="size-5" />
 																			<span className="text-[10px]">None</span>
 																		</div>
-																	</button>
+																	</Button>
 																	{DEFAULT_BACKGROUND_IMAGES.map((img) => (
-																		<button
+																		<Button
 																			key={img.id}
 																			type="button"
+																			variant="subtle"
 																			onClick={() => bgField.onChange(img.path)}
 																			className={cn(
-																				`
-																					relative aspect-video cursor-pointer overflow-hidden
-																					rounded-lg border-2 border-black transition-all
-																					hover:-translate-y-px hover:shadow-brutal-sm
-																				`,
+																				`aspect-video h-auto overflow-hidden p-0`,
 																				bgField.value === img.path
 																					? `
 																						ring-3 ring-quiz-orange ring-offset-2
@@ -574,7 +559,7 @@ export function QuizEditorPage() {
 																			)}
 																		>
 																			<img src={img.path} alt={img.name} className="size-full object-cover" />
-																		</button>
+																		</Button>
 																	))}
 																</div>
 															</div>
@@ -586,16 +571,12 @@ export function QuizEditorPage() {
 																	<div className="grid grid-cols-3 gap-2">
 																		{aiImages.map((img) => (
 																			<div key={img.id} className="group relative">
-																				<button
+																				<Button
 																					type="button"
+																					variant="subtle"
 																					onClick={() => bgField.onChange(img.path)}
 																					className={cn(
-																						`
-																							relative aspect-video w-full cursor-pointer
-																							overflow-hidden rounded-lg border-2 border-black
-																							transition-all
-																							hover:-translate-y-px hover:shadow-brutal-sm
-																						`,
+																						`aspect-video h-auto w-full overflow-hidden p-0`,
 																						bgField.value === img.path
 																							? `
 																								ring-3 ring-quiz-orange ring-offset-2
@@ -606,15 +587,17 @@ export function QuizEditorPage() {
 																					title={img.prompt}
 																				>
 																					<img src={img.path} alt={img.name} className="size-full object-cover" />
-																				</button>
-																				<button
+																				</Button>
+																				<Button
 																					type="button"
+																					variant="ghost"
+																					size="icon"
 																					onClick={(event) => {
 																						event.stopPropagation();
 																						setImageToDelete(img.id);
 																					}}
 																					className={`
-																						absolute top-1 right-1 cursor-pointer rounded-full
+																						absolute top-1 right-1 size-6 rounded-full border-0
 																						bg-black/60 p-1 text-white opacity-0 transition-opacity
 																						hover:bg-red-500
 																						group-hover-always:opacity-100
@@ -622,7 +605,7 @@ export function QuizEditorPage() {
 																					title="Delete image"
 																				>
 																					<X className="size-3" />
-																				</button>
+																				</Button>
 																			</div>
 																		))}
 																	</div>
@@ -722,22 +705,16 @@ export function QuizEditorPage() {
 										control={control}
 										name={`questions.${qIndex}.isDoublePoints`}
 										render={({ field }) => (
-											<button
+											<Button
 												type="button"
+												variant="subtle"
+												size="sm"
 												onClick={() => field.onChange(!field.value)}
-												className={cn(
-													`
-														flex cursor-pointer items-center gap-1.5 rounded-lg border-2
-														border-black px-2 py-1 text-sm font-bold transition-all
-														hover:-translate-y-px hover:shadow-brutal-sm
-														active:translate-y-0 active:shadow-none
-													`,
-													field.value && 'bg-quiz-orange text-white',
-												)}
+												className={cn(field.value && 'bg-quiz-orange text-white')}
 											>
 												<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} />
 												<span className="whitespace-nowrap">2× Points</span>
-											</button>
+											</Button>
 										)}
 									/>
 								</div>
