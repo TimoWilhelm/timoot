@@ -53,11 +53,11 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 
 			<Card
 				className={`
-					relative w-full max-w-md animate-scale-in border-4 border-white/20 bg-black
-					shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]
+					relative w-full max-w-md animate-scale-in border-4 border-slate bg-black
+					shadow-brutal-slate
 				`}
 			>
-				<CardHeader className="border-b-2 border-white/10 text-center">
+				<CardHeader className="border-b-2 border-slate text-center">
 					<CardTitle className="font-display text-4xl text-white">Enter a Nickname</CardTitle>
 				</CardHeader>
 				<CardContent className="pt-6">
@@ -67,10 +67,9 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 								{...register('nickname')}
 								placeholder="Your cool name"
 								className={`
-									h-16 border-2 border-white/30 bg-black text-center text-2xl font-bold
-									text-white shadow-[inset_3px_3px_0px_0px_rgba(0,0,0,0.3)]
+									h-16 border-white bg-black text-center text-2xl font-bold text-white
 									placeholder:text-muted-foreground
-									focus:border-orange focus:ring-orange
+									focus:border-orange focus:ring-offset-0
 								`}
 								disabled={isLoading}
 								maxLength={LIMITS.NICKNAME_MAX}
@@ -81,12 +80,10 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 						<Button
 							type="submit"
 							className={`
-								w-full border-4 border-white/20 bg-orange py-6 text-xl font-black
-								uppercase shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all
-								hover:-translate-y-px hover:bg-orange
-								hover:shadow-[9px_9px_0px_0px_rgba(255,255,255,0.1)]
-								active:translate-y-0
-								active:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								w-full border-4 border-orange-dark bg-orange py-6 text-xl font-black
+								uppercase shadow-brutal-slate transition-colors
+								hover:-translate-y-px hover:bg-orange hover:shadow-brutal-lg-slate
+								active:translate-y-px active:shadow-none
 							`}
 							size="lg"
 							disabled={isLoading || !isValid || !nickname?.trim()}

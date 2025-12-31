@@ -36,7 +36,7 @@ function PlayerDoublePointsAnimation() {
 			{Array.from({ length: 3 }).map((_, index) => (
 				<motion.div
 					key={index}
-					className="absolute rounded-full border-2 border-white/30"
+					className="absolute rounded-full border-2 border-slate"
 					initial={{ width: 50, height: 50, opacity: 0.8 }}
 					animate={{
 						width: [50, 300],
@@ -107,8 +107,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 				className={cn(
 					`
 						mb-4 flex size-24 items-center justify-center rounded-xl border-4
-						border-white/30 text-4xl font-black
-						shadow-[0px_6px_0px_0px_rgba(255,255,255,0.2)]
+						border-slate text-4xl font-black shadow-brutal-slate
 					`,
 					config.bgColor,
 					config.textColor,
@@ -204,7 +203,7 @@ export function PlayerWaitingScreen({
 							transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
 							className={`
 								mb-4 flex size-20 items-center justify-center rounded-xl border-4
-								border-white/20 bg-orange shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								border-orange-dark bg-orange shadow-brutal-slate
 							`}
 						>
 							<Gamepad2 className="size-10 text-white" strokeWidth={2.5} />
@@ -272,7 +271,7 @@ export function PlayerWaitingScreen({
 									key={player.id}
 									className={`
 										mx-auto flex w-64 items-center justify-between rounded-lg border-2
-										border-white/20 bg-slate/50 px-4 py-2
+										border-slate bg-slate/50 px-4 py-2
 									`}
 								>
 									<span className="flex items-center font-bold text-white">
@@ -300,8 +299,7 @@ export function PlayerWaitingScreen({
 								transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
 								className={`
 									flex size-20 items-center justify-center rounded-xl border-4
-									border-white/20 bg-yellow
-									shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+									border-yellow-dark bg-yellow shadow-brutal-slate
 								`}
 							>
 								<Trophy className="size-10 text-black" strokeWidth={2.5} />
@@ -326,8 +324,7 @@ export function PlayerWaitingScreen({
 								<div
 									className={`
 										mb-4 flex size-16 items-center justify-center rounded-xl border-4
-										border-white/20 bg-purple
-										shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+										border-purple-dark bg-purple shadow-brutal-slate
 									`}
 								>
 									<Star className="size-8 fill-white text-white" />
@@ -351,10 +348,11 @@ export function PlayerWaitingScreen({
 								to="/"
 								viewTransition
 								className={`
-									mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-white/20
-									bg-slate px-4 py-2 font-bold text-white transition-all
-									hover:-translate-y-px hover:bg-slate/80
-									hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
+									mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-slate
+									bg-slate/50 px-4 py-2 font-bold text-white shadow-brutal-slate
+									transition-all
+									hover:-translate-y-px hover:bg-slate/80 hover:shadow-brutal-slate
+									active:translate-y-px active:shadow-none
 								`}
 							>
 								<Home className="size-4" />

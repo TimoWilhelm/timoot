@@ -294,13 +294,7 @@ export function PlayerPage() {
 					>
 						Sorry, this game has already started. You can wait for the next round or join a different game.
 					</p>
-					<Button
-						variant="accent"
-						onClick={() => navigate('/')}
-						className="
-							border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-						"
-					>
+					<Button variant="accent" onClick={() => navigate('/')} className="border-2 border-slate shadow-brutal-slate">
 						Back to Home
 					</Button>
 				</div>
@@ -333,13 +327,7 @@ export function PlayerPage() {
 					>
 						We couldn't find a game with that code. It may have ended or the link might be incorrect.
 					</p>
-					<Button
-						variant="accent"
-						onClick={() => navigate('/')}
-						className="
-							border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-						"
-					>
+					<Button variant="accent" onClick={() => navigate('/')} className="border-2 border-slate shadow-brutal-slate">
 						Back to Home
 					</Button>
 				</div>
@@ -374,21 +362,14 @@ export function PlayerPage() {
 						rejoin the game with a new nickname.
 					</p>
 					<div className="flex gap-4">
-						<Button
-							variant="accent"
-							onClick={() => setView('NICKNAME')}
-							className="
-								border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-							"
-						>
+						<Button variant="accent" onClick={() => setView('NICKNAME')} className="border-2 border-slate shadow-brutal-slate">
 							Rejoin Game
 						</Button>
 						<Button
 							variant="subtle"
 							onClick={() => navigate('/')}
 							className="
-								border-2 border-white/20 bg-slate text-white
-								shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								border-2 border-slate bg-slate/50 text-white shadow-brutal-slate
 								hover:bg-slate/80
 							"
 						>
@@ -425,13 +406,7 @@ export function PlayerPage() {
 					>
 						Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
 					</p>
-					<Button
-						variant="accent"
-						onClick={() => navigate('/')}
-						className="
-							border-2 border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-						"
-					>
+					<Button variant="accent" onClick={() => navigate('/')} className="border-2 border-slate shadow-brutal-slate">
 						Back to Home
 					</Button>
 				</div>
@@ -482,7 +457,7 @@ export function PlayerPage() {
 			<header
 				className={`
 					relative z-10 flex items-center justify-between rounded-lg border-2
-					border-white/10 bg-slate/50 px-4 py-2 text-xl font-bold
+					border-slate bg-slate/50 px-4 py-2 text-xl font-bold
 				`}
 			>
 				<span className="font-display">{currentNickname}</span>

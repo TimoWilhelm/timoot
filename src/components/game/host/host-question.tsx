@@ -42,11 +42,10 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 				className={cn(
 					`
 						relative flex size-16 items-center justify-center rounded-full
-						border-[3px] border-black transition-colors duration-300
+						border-[3px] border-black shadow-brutal-sm transition-colors duration-300
 						sm:size-20
 					`,
 					colors.bg,
-					isCritical ? 'shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]' : 'shadow-brutal-sm',
 				)}
 			>
 				{/* Progress ring */}

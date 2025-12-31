@@ -89,8 +89,7 @@ function DoublePointsAnimation() {
 			>
 				<motion.div
 					className={`
-						rounded-2xl border-8 border-black bg-white px-12 py-8
-						shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]
+						rounded-2xl border-8 border-black bg-white px-12 py-8 shadow-brutal-xl
 					`}
 					animate={{
 						scale: [1, 1.05, 1],
@@ -102,8 +101,7 @@ function DoublePointsAnimation() {
 				<motion.div
 					className={`
 						mt-6 rounded-lg border-4 border-black bg-yellow px-8 py-3 text-4xl
-						font-black tracking-wider text-black uppercase
-						shadow-[0px_6px_0px_0px_rgba(0,0,0,1)]
+						font-black tracking-wider text-black uppercase shadow-brutal
 					`}
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}

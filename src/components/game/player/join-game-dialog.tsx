@@ -281,7 +281,7 @@ export function JoinGameDialog() {
 						<div
 							className={`
 								flex size-16 items-center justify-center rounded-xl border-4
-								border-white/20 bg-orange shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								border-orange-dark bg-orange shadow-brutal-slate
 							`}
 						>
 							<Gamepad2 className="size-8 text-white" />
@@ -294,7 +294,7 @@ export function JoinGameDialog() {
 				{/* Game Code Input */}
 				<div
 					className={`
-						space-y-4 rounded-2xl border border-white/10 bg-slate/50 p-6
+						space-y-4 rounded-2xl border border-slate bg-slate/50 p-6
 						focus-within:outline-2 focus-within:outline-white
 					`}
 				>
@@ -318,7 +318,7 @@ export function JoinGameDialog() {
 									spellCheck={false}
 									className={cn(
 										'h-14 w-full rounded-xl px-4 text-center font-mono text-xl',
-										'border-2 border-white/20 bg-slate/50',
+										'border-2 border-slate bg-slate/50',
 										`
 											text-white
 											placeholder:text-muted-foreground/50
@@ -351,9 +351,7 @@ export function JoinGameDialog() {
 							</div>
 						</PopoverAnchor>
 						<PopoverContent
-							className={`
-								w-(--radix-popover-trigger-width) border-white/10 bg-black p-0
-							`}
+							className={`w-(--radix-popover-trigger-width) border-slate bg-black p-0`}
 							align="start"
 							onOpenAutoFocus={(event) => event.preventDefault()}
 						>
@@ -430,8 +428,8 @@ export function JoinGameDialog() {
 							'h-14 w-full rounded-xl text-lg font-semibold transition-all',
 							isComplete && !isValidating && !gameNotFound
 								? `
-									bg-orange text-white
-									hover:bg-orange/80
+									border-orange-dark bg-orange text-white shadow-brutal-slate
+									hover:shadow-brutal-lg-slate
 								`
 								: 'cursor-not-allowed bg-slate text-muted-foreground',
 						)}
