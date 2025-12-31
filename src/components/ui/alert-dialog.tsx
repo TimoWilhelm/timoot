@@ -20,8 +20,8 @@ const AlertDialogOverlay = React.forwardRef<
 		className={cn(
 			`
 				fixed inset-0 z-50 bg-black/80 backdrop-blur-xs
-				data-[state=closed]:animate-out data-[state=closed]:fade-out-0
-				data-[state=open]:animate-in data-[state=open]:fade-in-0
+				data-[state=closed]:animate-overlay-out
+				data-[state=open]:animate-overlay-in
 			`,
 			className,
 		)}
@@ -49,10 +49,8 @@ const AlertDialogContent = React.forwardRef<
 						`
 							relative z-50 grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl
 							border-4 border-black bg-white p-6 duration-200
-							data-[state=closed]:animate-out data-[state=closed]:fade-out-0
-							data-[state=closed]:zoom-out-95
-							data-[state=open]:animate-in data-[state=open]:fade-in-0
-							data-[state=open]:zoom-in-95
+							data-[state=closed]:animate-modal-out
+							data-[state=open]:animate-modal-in
 							sm:max-w-lg
 						`,
 						className,

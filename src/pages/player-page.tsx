@@ -243,23 +243,18 @@ export function PlayerPage() {
 		return (
 			<div
 				className={`
-					relative flex min-h-screen w-full items-center justify-center bg-slate-900
+					relative flex min-h-screen w-full items-center justify-center bg-black
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-30
 					`}
 				/>
-				<div
-					className={`
-						relative flex size-20 items-center justify-center rounded-full border-4
-						border-white/20 bg-slate-800
-						shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]
-					`}
-				>
-					<Loader2 className="size-10 animate-spin text-quiz-orange" />
+				<div>
+					<Loader2 className="size-10 animate-spin text-orange" />
 				</div>
 			</div>
 		);
@@ -279,19 +274,24 @@ export function PlayerPage() {
 			<div
 				className={`
 					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-slate-900 p-8 text-white
+					bg-black p-8 text-white
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-30
 					`}
 				/>
 				<div className="relative z-10 flex flex-col items-center">
 					<div className="mb-6 text-6xl">🎮</div>
 					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game Already In Progress</h1>
-					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+					<p
+						className="
+							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
+						"
+					>
 						Sorry, this game has already started. You can wait for the next round or join a different game.
 					</p>
 					<Button
@@ -313,19 +313,24 @@ export function PlayerPage() {
 			<div
 				className={`
 					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-slate-900 p-8 text-white
+					bg-black p-8 text-white
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-30
 					`}
 				/>
 				<div className="relative z-10 flex flex-col items-center">
 					<div className="mb-6 text-6xl">🔍</div>
 					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game Not Found</h1>
-					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+					<p
+						className="
+							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
+						"
+					>
 						We couldn't find a game with that code. It may have ended or the link might be incorrect.
 					</p>
 					<Button
@@ -347,19 +352,24 @@ export function PlayerPage() {
 			<div
 				className={`
 					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-slate-900 p-8 text-white
+					bg-black p-8 text-white
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-30
 					`}
 				/>
 				<div className="relative z-10 flex flex-col items-center">
 					<div className="mb-6 text-6xl">🔑</div>
 					<h1 className="mb-4 text-center font-display text-3xl font-bold">Session Expired</h1>
-					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+					<p
+						className="
+							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
+						"
+					>
 						Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please
 						rejoin the game with a new nickname.
 					</p>
@@ -377,9 +387,9 @@ export function PlayerPage() {
 							variant="subtle"
 							onClick={() => navigate('/')}
 							className="
-								border-2 border-white/20 bg-slate-700 text-white
+								border-2 border-white/20 bg-slate text-white
 								shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
-								hover:bg-slate-600
+								hover:bg-slate/80
 							"
 						>
 							Back to Home
@@ -395,19 +405,24 @@ export function PlayerPage() {
 			<div
 				className={`
 					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-slate-900 p-8 text-white
+					bg-black p-8 text-white
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-30
 					`}
 				/>
 				<div className="relative z-10 flex flex-col items-center">
 					<div className="mb-6 text-6xl">👥</div>
 					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game is Full</h1>
-					<p className="mb-8 max-w-md text-center text-lg font-medium text-slate-300">
+					<p
+						className="
+							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
+						"
+					>
 						Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
 					</p>
 					<Button
@@ -428,7 +443,7 @@ export function PlayerPage() {
 	const myScore = totalScore;
 
 	const renderGameContent = () => {
-		if (error && !isConnected) return <div className="text-red-300">{error}</div>;
+		if (error && !isConnected) return <div className="text-red">{error}</div>;
 
 		// Show answer buttons only during QUESTION phase (not GET_READY)
 		if (gameState.phase === 'QUESTION' && gameState.options.length > 0) {
@@ -452,13 +467,14 @@ export function PlayerPage() {
 	return (
 		<div
 			className="
-				relative flex min-h-screen w-full flex-col bg-slate-900 p-4 text-white
+				relative flex min-h-screen w-full flex-col bg-black p-4 text-white
 			"
 		>
 			{/* Background grid */}
 			<div
 				className={`
-					absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)]
+					absolute inset-0
+					bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
 					bg-size-[20px_20px] opacity-30
 				`}
 			/>
@@ -466,7 +482,7 @@ export function PlayerPage() {
 			<header
 				className={`
 					relative z-10 flex items-center justify-between rounded-lg border-2
-					border-white/10 bg-slate-800/50 px-4 py-2 text-xl font-bold
+					border-white/10 bg-slate/50 px-4 py-2 text-xl font-bold
 				`}
 			>
 				<span className="font-display">{currentNickname}</span>
@@ -498,7 +514,7 @@ export function PlayerPage() {
 			<AlertDialog open={blocker.state === 'blocked'}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle className="text-red-600">Leave Game?</AlertDialogTitle>
+						<AlertDialogTitle className="text-red">Leave Game?</AlertDialogTitle>
 						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

@@ -11,7 +11,7 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[500px]">
-				<div className="bg-quiz-orange p-6">
+				<div className="bg-orange p-6">
 					<DialogHeader>
 						<DialogTitle
 							className="
@@ -28,7 +28,7 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 						<div
 							key={credit.title}
 							className="
-								rounded-xl border-2 border-black bg-gray-50 p-4 shadow-brutal-sm
+								rounded-xl border-2 border-black bg-muted p-4 shadow-brutal-sm
 							"
 						>
 							<p className="mb-1 font-display text-lg font-bold">"{credit.title}"</p>
@@ -40,14 +40,14 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 										target="_blank"
 										rel="noopener noreferrer"
 										className="
-											cursor-pointer font-bold text-quiz-orange underline
+											cursor-pointer font-bold text-orange underline
 											hover:text-black
 										"
 									>
 										{credit.artist}
 									</a>
 								</p>
-								<p className="text-gray-500">
+								<p className="text-muted-foreground">
 									License:{' '}
 									<a
 										href={credit.licenseUrl}

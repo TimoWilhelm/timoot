@@ -18,9 +18,8 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 				<Button
 					asChild
 					className="
-						bg-gray-100 text-sm uppercase shadow-brutal-sm transition-colors
-						duration-75
-						hover:bg-yellow-300
+						bg-muted text-sm uppercase shadow-brutal-sm transition-colors duration-75
+						hover:bg-yellow
 					"
 				>
 					<a href="https://github.com/TimoWilhelm/timoot" target="_blank" rel="noopener noreferrer">
@@ -32,9 +31,8 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 					type="button"
 					onClick={onMusicCreditsClick}
 					className="
-						bg-gray-100 text-sm uppercase shadow-brutal-sm transition-colors
-						duration-75
-						hover:bg-quiz-orange
+						bg-muted text-sm uppercase shadow-brutal-sm transition-colors duration-75
+						hover:bg-orange
 					"
 				>
 					<Music className="size-4" />
@@ -44,9 +42,8 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 					type="button"
 					onClick={onSyncDevicesClick}
 					className="
-						bg-gray-100 text-sm uppercase shadow-brutal-sm transition-colors
-						duration-75
-						hover:bg-blue-400
+						bg-muted text-sm uppercase shadow-brutal-sm transition-colors duration-75
+						hover:bg-blue
 					"
 				>
 					<RefreshCw className="size-4" />

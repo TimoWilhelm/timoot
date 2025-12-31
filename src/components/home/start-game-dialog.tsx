@@ -25,7 +25,7 @@ export function StartGameDialog({
 	return (
 		<Dialog open={open} onOpenChange={(o) => !isGameStarting && onOpenChange(o)}>
 			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
-				<div className="bg-yellow-300 p-6">
+				<div className="bg-yellow p-6">
 					<DialogHeader>
 						<DialogTitle
 							className="
@@ -42,7 +42,13 @@ export function StartGameDialog({
 							mb-6 rounded-xl border-2 border-black bg-white p-4 shadow-brutal-sm
 						"
 					>
-						<h4 className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase">Selected Quiz</h4>
+						<h4
+							className="
+								mb-2 text-xs font-bold tracking-wider text-muted-foreground uppercase
+							"
+						>
+							Selected Quiz
+						</h4>
 						<p className="font-display text-xl font-bold">{selectedQuiz?.title}</p>
 						<div className="mt-2 flex items-center gap-2 font-mono text-sm">
 							<span className="rounded-sm bg-black px-2 py-0.5 text-white">{selectedQuiz?.questions.length} Qs</span>

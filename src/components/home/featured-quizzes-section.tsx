@@ -51,16 +51,16 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 									group relative size-full flex-col items-start overflow-hidden
 									rounded-xl border-2 border-black bg-white p-6 text-left
 									shadow-brutal-sm transition-all duration-200
-									hover:-translate-y-px hover:bg-yellow-50 hover:shadow-brutal
+									hover:-translate-y-px hover:bg-yellow/10 hover:shadow-brutal
 									active:translate-y-0 active:shadow-none
 								`,
-								startingQuizId === quiz.id && 'bg-yellow-100 ring-2 ring-black ring-offset-2',
+								startingQuizId === quiz.id && 'bg-yellow/20 ring-2 ring-black ring-offset-2',
 							)}
 						>
 							<div className="mb-4 flex w-full items-start justify-between">
 								<div
 									className="
-										rounded-lg border-2 border-black bg-blue-400 p-3 shadow-brutal-sm
+										rounded-lg border-2 border-black bg-blue p-3 shadow-brutal-sm
 										transition-transform
 										group-hover:rotate-6
 									"
@@ -69,7 +69,11 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 								</div>
 							</div>
 							<h3 className="mb-2 font-display text-2xl leading-tight font-bold">{quiz.title}</h3>
-							<div className="flex items-center gap-2 text-sm font-bold text-gray-500">
+							<div
+								className="
+									flex items-center gap-2 text-sm font-bold text-muted-foreground
+								"
+							>
 								<HelpCircle className="size-4" />
 								{quiz.questions.length} Questions
 							</div>

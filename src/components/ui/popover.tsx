@@ -24,10 +24,8 @@ const PopoverContent = React.forwardRef<
 					data-[side=left]:[--tw-enter-translate-x:0.5rem]
 					data-[side=right]:[--tw-enter-translate-x:-0.5rem]
 					data-[side=top]:[--tw-enter-translate-y:0.5rem]
-					data-[state=closed]:animate-out data-[state=closed]:fade-out-0
-					data-[state=closed]:zoom-out-95
-					data-[state=open]:animate-in data-[state=open]:fade-in-0
-					data-[state=open]:zoom-in-95
+					data-[state=closed]:animate-popover-out
+					data-[state=open]:animate-popover-in
 				`,
 				className,
 			)}

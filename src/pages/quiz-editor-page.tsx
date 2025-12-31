@@ -363,11 +363,12 @@ export function QuizEditorPage() {
 		});
 	};
 	return (
-		<div className="relative min-h-screen bg-gray-50">
+		<div className="relative min-h-screen bg-muted/50">
 			{/* Decorative grid background */}
 			<div
 				className={`
-					absolute inset-0 bg-[radial-gradient(#00000008_1px,transparent_1px)]
+					absolute inset-0
+					bg-[radial-gradient(var(--color-grid-light)_1px,transparent_1px)]
 					bg-size-[20px_20px]
 				`}
 			/>
@@ -410,7 +411,7 @@ export function QuizEditorPage() {
 								/>
 								<TitleCharCount control={control} />
 							</div>
-							{errors.title && <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>}
+							{errors.title && <p className="mt-1 text-sm text-red">{errors.title.message}</p>}
 						</CardContent>
 					</Card>
 					{fields.map((field, qIndex) => (
@@ -450,8 +451,8 @@ export function QuizEditorPage() {
 												variant="ghost"
 												size="icon"
 												className={`
-													text-red-500
-													hover:text-red-700
+													text-red
+													hover:text-red
 												`}
 											>
 												<Trash2 />
@@ -525,12 +526,8 @@ export function QuizEditorPage() {
 																		variant="subtle"
 																		onClick={() => bgField.onChange('')}
 																		className={cn(
-																			`aspect-video h-auto bg-gray-100 text-gray-600`,
-																			!bgField.value &&
-																				`
-																					ring-3 ring-quiz-orange ring-offset-2
-																					ring-offset-background
-																				`,
+																			`aspect-video h-auto bg-muted text-muted-foreground`,
+																			!bgField.value && `ring-3 ring-orange ring-offset-2 ring-offset-background`,
 																		)}
 																	>
 																		<div
@@ -551,11 +548,8 @@ export function QuizEditorPage() {
 																			className={cn(
 																				`aspect-video h-auto overflow-hidden p-0`,
 																				bgField.value === img.path
-																					? `
-																						ring-3 ring-quiz-orange ring-offset-2
-																						ring-offset-background
-																					`
-																					: 'bg-gray-100 text-gray-600',
+																					? `ring-3 ring-orange ring-offset-2 ring-offset-background`
+																					: 'bg-muted text-muted-foreground',
 																			)}
 																		>
 																			<img src={img.path} alt={img.name} className="size-full object-cover" />
@@ -579,10 +573,9 @@ export function QuizEditorPage() {
 																						`aspect-video h-auto w-full overflow-hidden p-0`,
 																						bgField.value === img.path
 																							? `
-																								ring-3 ring-quiz-orange ring-offset-2
-																								ring-offset-background
+																								ring-3 ring-orange ring-offset-2 ring-offset-background
 																							`
-																							: 'bg-gray-100 text-gray-600',
+																							: 'bg-muted text-muted-foreground',
 																					)}
 																					title={img.prompt}
 																				>
@@ -599,7 +592,7 @@ export function QuizEditorPage() {
 																					className={`
 																						absolute top-1 right-1 size-6 rounded-full border-0
 																						bg-black/60 p-1 text-white opacity-0 transition-opacity
-																						hover:bg-red-500
+																						hover:bg-red
 																						group-hover-always:opacity-100
 																					`}
 																					title="Delete image"
@@ -629,7 +622,7 @@ export function QuizEditorPage() {
 															<div className="space-y-2">
 																<div className="flex items-center justify-between">
 																	<h4 className="flex items-center gap-1.5 text-sm font-medium">
-																		<Sparkles className="size-4 text-quiz-orange" />
+																		<Sparkles className="size-4 text-orange" />
 																		Generate with AI
 																	</h4>
 																	<span
@@ -710,7 +703,7 @@ export function QuizEditorPage() {
 												variant="subtle"
 												size="sm"
 												onClick={() => field.onChange(!field.value)}
-												className={cn(field.value && 'bg-quiz-orange text-white')}
+												className={cn(field.value && 'bg-orange text-white')}
 											>
 												<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} />
 												<span className="whitespace-nowrap">2× Points</span>
@@ -731,9 +724,7 @@ export function QuizEditorPage() {
 										/>
 										<QuestionCharCount control={control} qIndex={qIndex} />
 									</div>
-									{errors.questions?.[qIndex]?.text && (
-										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.text?.message}</p>
-									)}
+									{errors.questions?.[qIndex]?.text && <p className="mt-1 text-sm text-red">{errors.questions[qIndex]?.text?.message}</p>}
 								</div>
 								<div>
 									<Label>Answers</Label>
@@ -795,9 +786,9 @@ export function QuizEditorPage() {
 											</RadioGroup>
 										)}
 									/>
-									{errors.questions?.[qIndex]?.options && <p className={`mt-1 text-sm text-red-500`}>Each option must have text.</p>}
+									{errors.questions?.[qIndex]?.options && <p className={`mt-1 text-sm text-red`}>Each option must have text.</p>}
 									{errors.questions?.[qIndex]?.correctAnswerIndex && (
-										<p className="mt-1 text-sm text-red-500">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
+										<p className="mt-1 text-sm text-red">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
 									)}
 								</div>
 								<div className="flex w-full justify-center">
@@ -827,8 +818,8 @@ export function QuizEditorPage() {
 								variant="subtle"
 								size="lg"
 								className={`
-									flex-1 border-2 border-quiz-orange bg-quiz-orange/5 text-quiz-orange
-									hover:bg-quiz-orange/10 hover:shadow-brutal-orange-sm
+									flex-1 border-2 border-orange bg-orange/5 text-orange
+									hover:bg-orange/10 hover:shadow-brutal-sm-orange
 								`}
 							>
 								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className="mr-2 size-5" />}

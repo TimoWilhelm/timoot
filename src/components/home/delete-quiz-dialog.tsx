@@ -20,7 +20,7 @@ export function DeleteQuizDialog({ open, onOpenChange, onConfirm }: DeleteQuizDi
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle className="font-display text-2xl font-bold text-red-600 uppercase">Delete Quiz?</AlertDialogTitle>
+					<AlertDialogTitle className="font-display text-2xl font-bold text-red uppercase">Delete Quiz?</AlertDialogTitle>
 					<AlertDialogDescription className="text-base font-medium text-black">
 						This action cannot be undone. This will permanently delete your quiz from our servers.
 					</AlertDialogDescription>

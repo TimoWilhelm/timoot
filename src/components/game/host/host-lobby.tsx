@@ -58,10 +58,10 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 								</div>
 							</div>
 							<div className="mt-6 border-t-2 border-black pt-6 text-center">
-								<p className="mb-2 text-sm font-bold text-gray-500 uppercase">or enter code</p>
+								<p className="mb-2 text-sm font-bold text-muted-foreground uppercase">or enter code</p>
 								<p
 									className={`
-										rounded-lg border-2 border-black bg-yellow-300 px-4 py-2 font-mono
+										rounded-lg border-2 border-black bg-yellow px-4 py-2 font-mono
 										text-2xl font-bold tracking-wider shadow-brutal-sm
 										sm:text-3xl
 									`}
@@ -72,8 +72,8 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 							<Button type="button" variant="subtle" onClick={copyToClipboard} className="mt-4 w-full">
 								{copied ? (
 									<>
-										<Check className="size-4 text-green-600" />
-										<span className="text-green-600">Copied!</span>
+										<Check className="size-4 text-green" />
+										<span className="text-green">Copied!</span>
 									</>
 								) : (
 									<>
@@ -101,7 +101,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 									<div
 										className={`
 											flex size-8 items-center justify-center rounded-lg border-2
-											border-black bg-blue-400 shadow-brutal-sm
+											border-black bg-blue shadow-brutal-sm
 										`}
 									>
 										<Users className="size-4 text-white" />
@@ -112,7 +112,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 							<CardContent className={`flex grow flex-wrap content-start gap-2 p-4 pt-4`}>
 								<AnimatePresence>
 									{players.length === 0 ? (
-										<p className="font-medium text-gray-500">Waiting for players to join...</p>
+										<p className="font-medium text-muted-foreground">Waiting for players to join...</p>
 									) : (
 										players.map((p) => (
 											<motion.div
@@ -122,7 +122,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 												exit={{ opacity: 0, scale: 0.5 }}
 												layout
 												className={`
-													h-fit rounded-lg border-2 border-black bg-quiz-orange px-4 py-2
+													h-fit rounded-lg border-2 border-black bg-orange px-4 py-2
 													font-bold text-white shadow-brutal-sm
 												`}
 											>

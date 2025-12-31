@@ -10,7 +10,7 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="flex min-h-screen flex-col bg-slate-100">
+			<div className="flex min-h-screen flex-col bg-muted">
 				<Story />
 			</div>
 		),

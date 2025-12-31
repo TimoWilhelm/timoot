@@ -77,7 +77,8 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 						<div className="mb-3 flex h-10 items-center justify-center">
 							<div
 								className="
-									relative size-12 rounded-lg border-2 border-black shadow-brutal-sm
+									relative size-12 overflow-clip rounded-lg border-2 border-black
+									shadow-brutal-sm
 								"
 							>
 								{shapeColors.map((color, index) => {
@@ -94,7 +95,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 												height: '50%',
 											}}
 										>
-											<svg viewBox="0 0 24 24" className="size-3 fill-white">
+											<svg viewBox="0 0 24 24" className="size-3 fill-white stroke-black stroke-2">
 												<path d={shapePaths[index]} />
 											</svg>
 										</div>
@@ -102,7 +103,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 								})}
 							</div>
 						</div>
-						<p className="mt-auto text-center text-lg font-bold">Tap the shape to answer</p>
+						<p className="mt-auto text-center text-lg font-bold">Tap to answer</p>
 					</div>
 
 					{/* Instruction 2 */}
@@ -115,10 +116,10 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 						<div
 							className={`
 								mb-3 flex size-12 items-center justify-center rounded-lg border-2
-								border-black bg-quiz-orange shadow-brutal-sm
+								border-black bg-orange shadow-brutal-sm
 							`}
 						>
-							<Clock className="size-6 text-white" />
+							<Clock className="size-6" />
 						</div>
 						<p className="mt-auto text-center text-lg font-bold">Faster = More points</p>
 					</div>
@@ -133,7 +134,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 						<div
 							className={`
 								mb-3 flex size-12 items-center justify-center rounded-lg border-2
-								border-black bg-yellow-400 shadow-brutal-sm
+								border-black bg-yellow shadow-brutal-sm
 							`}
 						>
 							<Trophy className="size-6 text-black" />
@@ -165,7 +166,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 						<div
 							className={`
 								flex size-36 items-center justify-center rounded-full border-4
-								border-black bg-quiz-orange shadow-brutal-lg
+								border-black bg-orange shadow-brutal-lg
 								sm:size-44
 							`}
 						>
@@ -177,7 +178,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 									exit={{ scale: 0.5, opacity: 0 }}
 									transition={{ type: 'spring', stiffness: 400, damping: 20 }}
 									className={`
-										font-display text-7xl font-bold text-white
+										font-display text-7xl font-bold
 										sm:text-8xl
 									`}
 								>
@@ -194,8 +195,8 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.4 }}
 					className={`
-						my-4 flex items-center gap-2 rounded-lg border-2 border-black
-						bg-yellow-300 px-4 py-2 font-bold shadow-brutal-sm
+						my-4 flex items-center gap-2 rounded-lg border-2 border-black bg-yellow
+						px-4 py-2 font-bold shadow-brutal-sm
 					`}
 				>
 					<Zap className="size-6 fill-black text-black" />

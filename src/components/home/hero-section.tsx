@@ -18,8 +18,8 @@ export function HeroSection() {
 				initial={{ scale: 0.9, opacity: 0 }}
 				animate={{ scale: 1, opacity: 1 }}
 				className="
-					mb-6 inline-block -rotate-2 rounded-full border-2 border-black
-					bg-yellow-300 px-4 py-1.5 shadow-brutal
+					mb-6 inline-block -rotate-2 rounded-full border-2 border-black bg-yellow
+					px-4 py-1.5 shadow-brutal
 					sm:mb-8 sm:px-6 sm:py-2
 				"
 			>
@@ -46,7 +46,7 @@ export function HeroSection() {
 					xl:text-[10rem]
 				"
 			>
-				TIM<span className="text-quiz-orange">OOT</span>
+				TIM<span className="text-orange">OOT</span>
 			</motion.h1>
 
 			<motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="relative z-20">

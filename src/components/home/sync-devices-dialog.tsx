@@ -42,7 +42,7 @@ export function SyncDevicesDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
-				<div className="bg-blue-400 p-6">
+				<div className="bg-blue p-6">
 					<DialogHeader>
 						<DialogTitle
 							className="
@@ -62,7 +62,7 @@ export function SyncDevicesDialog({
 							<div className="flex items-center gap-2">
 								<div
 									className="
-										flex-1 rounded-xl border-2 border-black bg-gray-100 p-3 text-center
+										flex-1 rounded-xl border-2 border-black bg-muted p-3 text-center
 										font-mono text-2xl font-bold tracking-widest
 									"
 								>
@@ -88,14 +88,14 @@ export function SyncDevicesDialog({
 
 					<div className="relative py-2">
 						<div className="absolute inset-0 flex items-center">
-							<span className="w-full border-t-2 border-dashed border-gray-300" />
+							<span className="w-full border-t-2 border-dashed border-muted-foreground/30" />
 						</div>
 						<div
 							className="
 								relative flex justify-center text-xs font-bold tracking-widest uppercase
 							"
 						>
-							<span className="bg-white px-2 text-gray-400">OR</span>
+							<span className="bg-white px-2 text-muted-foreground">OR</span>
 						</div>
 					</div>
 
@@ -103,14 +103,14 @@ export function SyncDevicesDialog({
 					<div className="space-y-2">
 						<h4 className="font-bold uppercase">Sync to here</h4>
 						{showSyncWarning ? (
-							<div className="rounded-xl border-2 border-black bg-yellow-100 p-4">
-								<p className="mb-2 text-sm font-bold text-yellow-800">Warning: Existing Data</p>
+							<div className="rounded-xl border-2 border-black bg-yellow/20 p-4">
+								<p className="mb-2 text-sm font-bold text-black">Warning: Existing Data</p>
 								<p className="mb-4 text-xs">Syncing will replace your current quizzes. Are you sure?</p>
 								<div className="flex gap-2">
 									<Button size="sm" variant="subtle" onClick={onCancelWarning} className="border-black bg-white">
 										Cancel
 									</Button>
-									<Button size="sm" onClick={() => onRedeemSyncCode(true)} className="border-black bg-yellow-400 text-black">
+									<Button size="sm" onClick={() => onRedeemSyncCode(true)} className="border-black bg-yellow text-black">
 										Overwrite & Sync
 									</Button>
 								</div>

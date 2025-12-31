@@ -17,10 +17,10 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 	const strokeDashoffset = circumference * (1 - progress);
 
 	const getColors = () => {
-		if (timeLeft <= 3) return { bg: 'bg-red-500', stroke: '#b91c1c', text: 'text-white' };
-		if (timeLeft <= 5) return { bg: 'bg-orange-400', stroke: '#c2410c', text: 'text-black' };
-		if (timeLeft <= 10) return { bg: 'bg-yellow-400', stroke: '#a16207', text: 'text-black' };
-		return { bg: 'bg-emerald-400', stroke: '#047857', text: 'text-black' };
+		if (timeLeft <= 3) return { bg: 'bg-red', stroke: 'var(--color-red-dark)', text: 'text-white' };
+		if (timeLeft <= 5) return { bg: 'bg-orange', stroke: 'var(--color-orange-dark)', text: 'text-black' };
+		if (timeLeft <= 10) return { bg: 'bg-yellow', stroke: 'var(--color-yellow-dark)', text: 'text-black' };
+		return { bg: 'bg-green', stroke: 'var(--color-green-dark)', text: 'text-black' };
 	};
 
 	const colors = getColors();
@@ -109,8 +109,8 @@ function DoublePointsBadge() {
 			animate={{ scale: 1, x: 0 }}
 			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
 			className={`
-				flex items-center gap-2 rounded-lg border-4 border-black bg-quiz-orange px-4
-				py-2 text-white shadow-brutal-sm
+				flex items-center gap-2 rounded-lg border-4 border-black bg-orange px-4 py-2
+				text-white shadow-brutal-sm
 			`}
 		>
 			<motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
@@ -231,7 +231,7 @@ export function HostQuestion({
 					>
 						Question {questionIndex + 1}/{totalQuestions}
 					</span>
-					<span className="text-sm font-bold text-gray-600">
+					<span className="text-sm font-bold text-muted-foreground">
 						{answeredCount}/{totalPlayers} answered
 					</span>
 				</div>
@@ -242,8 +242,8 @@ export function HostQuestion({
 			</div>
 			<div
 				className={`
-					relative mb-4 center-col min-h-0 grow overflow-hidden rounded-xl border-4
-					border-black shadow-brutal
+					relative mb-4 flex min-h-0 grow flex-col items-center justify-center
+					overflow-hidden rounded-xl border-4 border-black shadow-brutal
 					sm:mb-8
 				`}
 			>
@@ -271,7 +271,7 @@ export function HostQuestion({
 					>
 						<h2
 							className={`
-								text-center text-3xl font-bold text-gray-900
+								text-center text-3xl font-bold text-black
 								sm:text-5xl
 							`}
 						>
@@ -296,7 +296,7 @@ export function HostQuestion({
 						className={cn(
 							`
 								flex items-center rounded-xl border-4 border-black p-4 text-xl font-bold
-								text-white shadow-brutal-sm
+								shadow-brutal-sm
 								sm:p-6 sm:text-3xl
 							`,
 							shapeColors[index],
@@ -305,7 +305,9 @@ export function HostQuestion({
 						<svg
 							viewBox="0 0 24 24"
 							className={`
-								mr-4 size-8 fill-current
+								mr-4 size-8 fill-current stroke-black/35 stroke-[1.5] text-white
+								drop-shadow-lg
+								[paint-order:stroke]
 								sm:size-12
 							`}
 						>

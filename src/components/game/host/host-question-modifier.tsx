@@ -18,9 +18,7 @@ const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, index) => ({
 function DoublePointsAnimation() {
 	return (
 		<motion.div
-			className="
-				fixed inset-0 z-50 flex items-center justify-center bg-quiz-orange
-			"
+			className="fixed inset-0 z-50 flex items-center justify-center bg-orange"
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
@@ -29,7 +27,8 @@ function DoublePointsAnimation() {
 			{/* Decorative grid background */}
 			<div
 				className={`
-					absolute inset-0 bg-[radial-gradient(#00000015_1px,transparent_1px)]
+					absolute inset-0
+					bg-[radial-gradient(var(--color-grid-medium)_1px,transparent_1px)]
 					bg-size-[24px_24px]
 				`}
 			/>
@@ -72,7 +71,7 @@ function DoublePointsAnimation() {
 						repeat: 2,
 					}}
 				>
-					<Zap className="size-12 fill-yellow-300 text-yellow-300" />
+					<Zap className="size-12 fill-yellow text-yellow" />
 				</motion.div>
 			))}
 
@@ -102,7 +101,7 @@ function DoublePointsAnimation() {
 				</motion.div>
 				<motion.div
 					className={`
-						mt-6 rounded-lg border-4 border-black bg-yellow-300 px-8 py-3 text-4xl
+						mt-6 rounded-lg border-4 border-black bg-yellow px-8 py-3 text-4xl
 						font-black tracking-wider text-black uppercase
 						shadow-[0px_6px_0px_0px_rgba(0,0,0,1)]
 					`}

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import type { GamePhase, QuestionModifier } from '@shared/types';
-import { cn } from '@/lib/utilities';
+import { cn, getThemeColor } from '@/lib/utilities';
 
 interface LeaderboardEntry {
 	id: string;
@@ -87,9 +87,9 @@ function PlayerDoublePointsAnimation() {
 // Podium rank display component
 function PodiumRankDisplay({ rank }: { rank: number }) {
 	const config = {
-		1: { bgColor: 'bg-yellow-400', textColor: 'text-black', label: '1st Place!', rankText: '1st' },
-		2: { bgColor: 'bg-gray-300', textColor: 'text-black', label: '2nd Place!', rankText: '2nd' },
-		3: { bgColor: 'bg-amber-600', textColor: 'text-white', label: '3rd Place!', rankText: '3rd' },
+		1: { bgColor: 'bg-yellow', textColor: 'text-black', label: '1st Place!', rankText: '1st' },
+		2: { bgColor: 'bg-muted', textColor: 'text-black', label: '2nd Place!', rankText: '2nd' },
+		3: { bgColor: 'bg-orange', textColor: 'text-white', label: '3rd Place!', rankText: '3rd' },
 	}[rank];
 
 	if (!config) return;
@@ -144,7 +144,12 @@ export function PlayerWaitingScreen({
 	// Trigger confetti for podium finishes when revealed
 	useEffect(() => {
 		if (phase === 'END_REVEALED' && isOnPodium) {
-			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
+			const colors = [
+				getThemeColor('--color-orange'),
+				getThemeColor('--color-gold'),
+				getThemeColor('--color-slate'),
+				getThemeColor('--color-coral'),
+			];
 			const count = 200;
 			const defaults = { origin: { y: 0.6 }, colors };
 
@@ -187,7 +192,7 @@ export function PlayerWaitingScreen({
 				return (
 					<div className="text-center">
 						<h2 className="font-display text-4xl font-bold text-white">You're in!</h2>
-						<p className="mt-2 font-medium text-slate-300">See your name on the big screen.</p>
+						<p className="mt-2 font-medium text-muted-foreground">See your name on the big screen.</p>
 					</div>
 				);
 			}
@@ -199,14 +204,13 @@ export function PlayerWaitingScreen({
 							transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
 							className={`
 								mb-4 flex size-20 items-center justify-center rounded-xl border-4
-								border-white/20 bg-quiz-orange
-								shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
+								border-white/20 bg-orange shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
 							`}
 						>
 							<Gamepad2 className="size-10 text-white" strokeWidth={2.5} />
 						</motion.div>
 						<h2 className="font-display text-4xl font-black text-white uppercase">Get Ready!</h2>
-						<p className="mt-2 text-lg font-medium text-slate-300">Look at the main screen</p>
+						<p className="mt-2 text-lg font-medium text-muted-foreground">Look at the main screen</p>
 					</div>
 				);
 			}
@@ -228,15 +232,12 @@ export function PlayerWaitingScreen({
 				if (answerResult) {
 					return (
 						<div
-							className={cn(
-								'flex flex-col items-center justify-center text-center',
-								answerResult.isCorrect ? 'text-green-400' : 'text-red-400',
-							)}
+							className={cn('flex flex-col items-center justify-center text-center', answerResult.isCorrect ? 'text-green' : 'text-red')}
 						>
 							<div
 								className={cn(
 									'flex size-28 items-center justify-center rounded-full border-4',
-									answerResult.isCorrect ? 'border-green-400 bg-green-400/20' : 'border-red-400 bg-red-400/20',
+									answerResult.isCorrect ? 'border-green bg-green/20' : 'border-red bg-red/20',
 								)}
 							>
 								{answerResult.isCorrect ? <CheckCircle className="size-16" /> : <XCircle className="size-16" />}
@@ -249,7 +250,7 @@ export function PlayerWaitingScreen({
 				return (
 					<div className="text-center">
 						<h2 className="font-display text-4xl font-bold text-white">Get ready...</h2>
-						<p className="mt-2 font-medium text-slate-300">Look at the main screen</p>
+						<p className="mt-2 font-medium text-muted-foreground">Look at the main screen</p>
 					</div>
 				);
 			}
@@ -261,8 +262,8 @@ export function PlayerWaitingScreen({
 					<div className="text-center">
 						<h2 className="mb-4 font-display text-4xl font-bold text-white">Current Standings</h2>
 						{myRank > 0 && (
-							<p className="mb-6 text-2xl font-medium text-slate-200">
-								You are in <span className="font-bold text-quiz-gold">#{myRank}</span> place!
+							<p className="mb-6 text-2xl font-medium text-muted-foreground">
+								You are in <span className="font-bold text-gold">#{myRank}</span> place!
 							</p>
 						)}
 						<ul className="space-y-3 text-lg">
@@ -271,19 +272,19 @@ export function PlayerWaitingScreen({
 									key={player.id}
 									className={`
 										mx-auto flex w-64 items-center justify-between rounded-lg border-2
-										border-white/20 bg-slate-800/50 px-4 py-2
+										border-white/20 bg-slate/50 px-4 py-2
 									`}
 								>
 									<span className="flex items-center font-bold text-white">
 										<Trophy
 											className={cn(
 												'mr-2 inline size-5',
-												index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-400' : 'text-yellow-600',
+												index === 0 ? 'text-yellow' : index === 1 ? 'text-muted-foreground' : 'text-yellow',
 											)}
 										/>
 										{player.name}
 									</span>
-									<span className="font-mono font-bold text-quiz-gold">{player.score}</span>
+									<span className="font-mono font-bold text-gold">{player.score}</span>
 								</li>
 							))}
 						</ul>
@@ -299,13 +300,13 @@ export function PlayerWaitingScreen({
 								transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
 								className={`
 									flex size-20 items-center justify-center rounded-xl border-4
-									border-white/20 bg-yellow-400
+									border-white/20 bg-yellow
 									shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
 								`}
 							>
 								<Trophy className="size-10 text-black" strokeWidth={2.5} />
 							</motion.div>
-							<p className="text-xl text-slate-300">Look at the main screen</p>
+							<p className="text-xl text-muted-foreground">Look at the main screen</p>
 						</motion.div>
 					</div>
 				);
@@ -325,14 +326,14 @@ export function PlayerWaitingScreen({
 								<div
 									className={`
 										mb-4 flex size-16 items-center justify-center rounded-xl border-4
-										border-white/20 bg-indigo-500
+										border-white/20 bg-purple
 										shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]
 									`}
 								>
 									<Star className="size-8 fill-white text-white" />
 								</div>
 								<span className="font-display text-3xl font-black text-white">#{myFinalRank}</span>
-								<p className="mt-2 text-xl font-medium text-slate-300">Thanks for playing!</p>
+								<p className="mt-2 text-xl font-medium text-muted-foreground">Thanks for playing!</p>
 							</motion.div>
 						) : undefined}
 
@@ -342,7 +343,7 @@ export function PlayerWaitingScreen({
 							transition={{ delay: 0.8 }}
 							className="mt-4 text-2xl font-medium text-white"
 						>
-							Final score: <span className="font-bold text-quiz-gold">{finalScore}</span>
+							Final score: <span className="font-bold text-gold">{finalScore}</span>
 						</motion.p>
 
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
@@ -351,8 +352,8 @@ export function PlayerWaitingScreen({
 								viewTransition
 								className={`
 									mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-white/20
-									bg-slate-700 px-4 py-2 font-bold text-white transition-all
-									hover:-translate-y-px hover:bg-slate-600
+									bg-slate px-4 py-2 font-bold text-white transition-all
+									hover:-translate-y-px hover:bg-slate/80
 									hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.1)]
 								`}
 							>
@@ -366,7 +367,7 @@ export function PlayerWaitingScreen({
 			default: {
 				return (
 					<div className="flex flex-col items-center text-center">
-						<Loader2 className="mb-4 size-12 animate-spin text-quiz-orange" />
+						<Loader2 className="mb-4 size-12 animate-spin text-orange" />
 						<h2 className="font-display text-4xl font-bold text-white">Waiting...</h2>
 					</div>
 				);

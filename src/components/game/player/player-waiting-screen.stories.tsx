@@ -11,7 +11,7 @@ const meta = {
 		(Story) => (
 			<div
 				className={`
-					flex min-h-screen items-center justify-center bg-slate-800 p-4 text-white
+					flex min-h-screen items-center justify-center bg-black p-4 text-white
 				`}
 			>
 				<Story />

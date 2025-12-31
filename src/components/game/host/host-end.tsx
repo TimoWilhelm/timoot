@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utilities';
+import { cn, getThemeColor } from '@/lib/utilities';
 import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
 interface PodiumEntry {
@@ -39,9 +39,9 @@ function getPodiumEntries(leaderboard: LeaderboardEntry[]): Map<number, PodiumEn
 }
 
 const PODIUM_CONFIG = {
-	1: { height: 'h-40 sm:h-52', color: 'bg-yellow-400 border-4 border-black', rank: '1st', delay: 2 },
-	2: { height: 'h-28 sm:h-40', color: 'bg-gray-300 border-4 border-black', rank: '2nd', delay: 1 },
-	3: { height: 'h-20 sm:h-28', color: 'bg-amber-600 border-4 border-black', rank: '3rd', delay: 0 },
+	1: { height: 'h-40 sm:h-52', color: 'bg-yellow border-4 border-black', rank: '1st', delay: 2 },
+	2: { height: 'h-28 sm:h-40', color: 'bg-muted border-4 border-black', rank: '2nd', delay: 1 },
+	3: { height: 'h-20 sm:h-28', color: 'bg-orange border-4 border-black', rank: '3rd', delay: 0 },
 } as const;
 
 function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; position: 1 | 2 | 3 }) {
@@ -75,8 +75,7 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 										'leading-tight font-bold',
 										isFirstPlace
 											? `
-												text-2xl text-quiz-orange
-												drop-shadow-[0_0_10px_rgba(244,129,32,0.6)]
+												text-2xl text-orange drop-shadow-[0_0_10px_rgba(244,129,32,0.6)]
 												sm:text-4xl
 											`
 											: `
@@ -160,7 +159,12 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 		let subtleIntervalId: ReturnType<typeof setInterval> | undefined;
 
 		const timeout = globalThis.setTimeout(() => {
-			const colors = ['#f48120', '#faad3f', '#404041', '#ff6b4a'];
+			const colors = [
+				getThemeColor('--color-orange'),
+				getThemeColor('--color-gold'),
+				getThemeColor('--color-slate'),
+				getThemeColor('--color-coral'),
+			];
 			const count = 220;
 			const defaults = { origin: { y: 0.6 }, colors };
 
@@ -253,7 +257,7 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							<motion.div
 								className={`
 									flex size-12 items-center justify-center rounded-lg border-4
-									border-black bg-yellow-400 shadow-brutal-sm
+									border-black bg-yellow shadow-brutal-sm
 									sm:size-16 sm:rounded-xl
 									md:size-20
 								`}
@@ -273,7 +277,7 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							<motion.div
 								className={`
 									flex size-12 items-center justify-center rounded-lg border-4
-									border-black bg-yellow-400 shadow-brutal-sm
+									border-black bg-yellow shadow-brutal-sm
 									sm:size-16 sm:rounded-xl
 									md:size-20
 								`}
@@ -350,8 +354,8 @@ export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.2 }}
 							className={`
-								flex items-center gap-3 rounded-lg border-2 border-black bg-yellow-300
-								px-4 py-2 text-sm font-bold text-black shadow-brutal-sm
+								flex items-center gap-3 rounded-lg border-2 border-black bg-yellow px-4
+								py-2 text-sm font-bold text-black shadow-brutal-sm
 								sm:text-base
 							`}
 						>

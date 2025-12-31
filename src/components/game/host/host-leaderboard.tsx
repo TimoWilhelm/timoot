@@ -63,7 +63,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				<motion.span
 					initial={{ opacity: 0, scale: 0 }}
 					animate={{ opacity: 1, scale: 1 }}
-					className="ml-2 rounded-full bg-green-500 px-1.5 py-0.5 text-sm text-white"
+					className="ml-2 rounded-full bg-green px-1.5 py-0.5 text-sm text-white"
 				>
 					NEW
 				</motion.span>
@@ -75,7 +75,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 		if (diff > 0) {
 			// Moved up
 			return (
-				<motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`ml-2 flex items-center text-green-500`}>
+				<motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`ml-2 flex items-center text-green`}>
 					<ChevronUp className="size-5" />
 					<span className="text-sm font-medium">{diff}</span>
 				</motion.span>
@@ -83,7 +83,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 		} else if (diff < 0) {
 			// Moved down
 			return (
-				<motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`ml-2 flex items-center text-red-500`}>
+				<motion.span initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`ml-2 flex items-center text-red`}>
 					<ChevronDown className="size-5" />
 					<span className="text-sm font-medium">{Math.abs(diff)}</span>
 				</motion.span>
@@ -111,7 +111,7 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 				<div
 					className={`
 						flex size-16 items-center justify-center rounded-full border-4
-						border-black bg-yellow-300 shadow-brutal
+						border-black bg-yellow shadow-brutal
 						sm:size-20
 					`}
 				>
@@ -167,16 +167,16 @@ export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLea
 																	mr-3 flex size-8 items-center justify-center rounded-full
 																	border-2 border-black
 																`,
-																displayRank === 1 ? 'bg-yellow-400' : displayRank === 2 ? 'bg-gray-300' : 'bg-amber-600',
+																displayRank === 1 ? 'bg-yellow' : displayRank === 2 ? 'bg-muted' : 'bg-orange',
 															)}
 														>
-															<Crown className="size-5 text-white" />
+															<Crown className="size-5" />
 														</div>
 													) : (
 														<span
 															className={`
 																mr-3 flex size-8 items-center justify-center rounded-full
-																border-2 border-black bg-gray-100 text-lg font-bold
+																border-2 border-black bg-muted text-lg font-bold
 															`}
 														>
 															{displayRank}

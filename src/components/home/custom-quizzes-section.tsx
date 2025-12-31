@@ -105,16 +105,16 @@ export function CustomQuizzesSection({
 						onClick={() => navigate('/edit')}
 						className={`
 							group relative size-full flex-col items-center justify-center gap-4
-							overflow-hidden rounded-xl border-2 border-black bg-gray-50 p-6
+							overflow-hidden rounded-xl border-2 border-black bg-muted/50 p-6
 							text-center shadow-brutal-sm transition-all duration-200
-							hover:-translate-y-px hover:bg-blue-50 hover:shadow-brutal
+							hover:-translate-y-px hover:bg-blue/10 hover:shadow-brutal
 							active:translate-y-0 active:shadow-none
 						`}
 					>
 						<div
 							className="
 								flex size-16 items-center justify-center rounded-full border-2
-								border-black bg-blue-400 shadow-brutal transition-transform
+								border-black bg-blue shadow-brutal transition-transform
 								group-hover:scale-110 group-hover:rotate-12
 							"
 						>
@@ -149,7 +149,7 @@ export function CustomQuizzesSection({
 							<div className="relative z-10 mb-4 flex w-full items-start justify-between">
 								<div
 									className="
-										rounded-lg border-2 border-black bg-purple-400 p-3 shadow-brutal-sm
+										rounded-lg border-2 border-black bg-purple p-3 shadow-brutal-sm
 									"
 								>
 									<Loader2 className="size-6 animate-spin text-white" />
@@ -157,7 +157,7 @@ export function CustomQuizzesSection({
 							</div>
 							<div className="relative z-10 w-full">
 								<h3 className="line-clamp-2 font-display text-xl leading-tight font-bold">Generating: {generatingPrompt ?? '...'}</h3>
-								<p className="mt-1 font-mono text-sm text-gray-500">{getStatusMessage(generationStatus)}</p>
+								<p className="mt-1 font-mono text-sm text-muted-foreground">{getStatusMessage(generationStatus)}</p>
 							</div>
 						</div>
 					</motion.div>
@@ -170,16 +170,16 @@ export function CustomQuizzesSection({
 									variant="ghost"
 									className={`
 										group relative size-full flex-col items-center justify-center gap-4
-										overflow-hidden rounded-xl border-2 border-black bg-gray-50 p-6
+										overflow-hidden rounded-xl border-2 border-black bg-muted/50 p-6
 										text-center shadow-brutal-sm transition-all duration-200
-										hover:-translate-y-px hover:bg-purple-50 hover:shadow-brutal
+										hover:-translate-y-px hover:bg-purple/10 hover:shadow-brutal
 										active:translate-y-0 active:shadow-none
 									`}
 								>
 									<div
 										className="
 											flex size-16 items-center justify-center rounded-full border-2
-											border-black bg-purple-400 shadow-brutal transition-transform
+											border-black bg-purple shadow-brutal transition-transform
 											group-hover:scale-110 group-hover:-rotate-12
 										"
 									>
@@ -189,7 +189,7 @@ export function CustomQuizzesSection({
 								</Button>
 							</DialogTrigger>
 							<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
-								<div className="bg-purple-400 p-6">
+								<div className="bg-purple p-6">
 									<DialogHeader>
 										<DialogTitle
 											className="
@@ -222,7 +222,7 @@ export function CustomQuizzesSection({
 											`}
 											maxLength={LIMITS.AI_PROMPT_MAX}
 										/>
-										<p className="text-right text-xs font-bold text-gray-400">
+										<p className="text-right text-xs font-bold text-muted-foreground">
 											{aiPrompt.length}/{LIMITS.AI_PROMPT_MAX}
 										</p>
 									</div>
@@ -258,14 +258,14 @@ export function CustomQuizzesSection({
 								group relative size-full flex-col items-start justify-between
 								overflow-hidden rounded-xl border-2 border-black bg-white p-6
 								shadow-brutal-sm transition-all duration-200
-								hover:-translate-y-px hover:bg-pink-50 hover:shadow-brutal
+								hover:-translate-y-px hover:bg-pink/10 hover:shadow-brutal
 								active:translate-y-0 active:shadow-none
 							`}
 						>
 							<div className="mb-4 flex items-center justify-between">
 								<div
 									className="
-										rounded-lg border-2 border-black bg-pink-400 p-3 shadow-brutal-sm
+										rounded-lg border-2 border-black bg-pink p-3 shadow-brutal-sm
 										transition-transform
 										group-hover:rotate-6
 									"
@@ -276,7 +276,11 @@ export function CustomQuizzesSection({
 							<h3 className="line-clamp-2 font-display text-xl leading-tight font-bold">{quiz.title}</h3>
 
 							<div className="flex w-full justify-between">
-								<div className="flex items-center gap-2 text-sm font-bold text-gray-500">
+								<div
+									className="
+										flex items-center gap-2 text-sm font-bold text-muted-foreground
+									"
+								>
 									<HelpCircle className="size-4" />
 									{quiz.questions.length} Questions
 								</div>
@@ -307,7 +311,7 @@ export function CustomQuizzesSection({
 											event.stopPropagation();
 											onDeleteQuiz(quiz.id);
 										}}
-										className="size-10 text-red-500"
+										className="size-10 text-red"
 									>
 										<Trash2 className="size-5.5" />
 									</Button>

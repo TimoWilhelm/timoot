@@ -57,11 +57,11 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 									relative overflow-hidden rounded-xl border-2 border-black p-4
 									shadow-brutal
 								`,
-								isCorrect ? 'border-4 border-green-600 bg-green-100 shadow-brutal-green' : 'bg-white',
+								isCorrect ? `border-4 border-green bg-green-light shadow-brutal-green` : 'bg-white',
 							)}
 						>
 							<motion.div
-								className="absolute top-0 left-0 h-full bg-green-400/40"
+								className="absolute top-0 left-0 h-full bg-green/40"
 								initial={{ width: 0 }}
 								animate={{ width: `${percentage}%` }}
 								transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
@@ -74,7 +74,7 @@ export function HostReveal({ onNext, questionText, options, correctAnswerIndex, 
 							>
 								<span className="flex items-center gap-2">
 									<span>{option}</span>
-									<CheckCircle className={cn('size-6 shrink-0', isCorrect ? `text-green-600` : `invisible`)} />
+									<CheckCircle className={cn('size-6 shrink-0', isCorrect ? `text-green` : `invisible`)} />
 								</span>
 								<span
 									className={`

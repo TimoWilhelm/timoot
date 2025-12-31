@@ -255,31 +255,32 @@ export function HostPage() {
 			<div
 				className={`
 					relative flex min-h-screen w-full flex-col items-center justify-center
-					overflow-hidden bg-[#fafafa] p-4
+					overflow-hidden bg-white p-4
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-50
 					`}
 				/>
 				<div
 					className={`
 						relative z-10 flex flex-col items-center rounded-xl border-4 border-black
-						bg-red-100 p-8 shadow-brutal-lg
+						bg-red/10 p-8 shadow-brutal-lg
 					`}
 				>
 					<div
 						className={`
 							mb-4 flex size-20 items-center justify-center rounded-full border-2
-							border-black bg-red-500 shadow-brutal
+							border-black bg-red shadow-brutal
 						`}
 					>
 						<ShieldAlert className="size-10 text-white" />
 					</div>
-					<h1 className="mb-2 font-display text-3xl font-bold text-red-600">{errorTitle}</h1>
-					<p className="mb-6 max-w-md text-center font-medium text-red-800">{errorMessage}</p>
+					<h1 className="mb-2 font-display text-3xl font-bold text-red">{errorTitle}</h1>
+					<p className="mb-6 max-w-md text-center font-medium text-red">{errorMessage}</p>
 					<Button asChild className="bg-black text-white">
 						<Link to="/" viewTransition>
 							Return to Home
@@ -294,19 +295,20 @@ export function HostPage() {
 		return (
 			<div
 				className={`
-					relative flex min-h-screen w-full items-center justify-center bg-[#fafafa]
+					relative flex min-h-screen w-full items-center justify-center bg-white
 				`}
 			>
 				<div
 					className={`
-						absolute inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)]
+						absolute inset-0
+						bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
 						bg-size-[20px_20px] opacity-50
 					`}
 				/>
 				<div
 					className={`
 						relative flex size-24 items-center justify-center rounded-full border-4
-						border-black bg-yellow-300 shadow-brutal-sm
+						border-black bg-yellow shadow-brutal-sm
 					`}
 				>
 					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />
@@ -393,7 +395,7 @@ export function HostPage() {
 	return (
 		<div
 			className={`
-				relative flex min-h-screen w-full flex-col overflow-hidden bg-[#fafafa]
+				relative flex min-h-screen w-full flex-col overflow-hidden bg-white
 				font-sans text-black
 				selection:bg-black selection:text-white
 			`}
@@ -401,7 +403,8 @@ export function HostPage() {
 			{/* Decorative Background Grid */}
 			<div
 				className={`
-					absolute inset-0 bg-[radial-gradient(#d4d4d8_1px,transparent_1px)]
+					absolute inset-0
+					bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
 					bg-size-[20px_20px] opacity-50
 				`}
 			/>
@@ -432,7 +435,7 @@ export function HostPage() {
 			<AlertDialog open={blocker.state === 'blocked'}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle className="text-red-600">Leave Game?</AlertDialogTitle>
+						<AlertDialogTitle className="text-red">Leave Game?</AlertDialogTitle>
 						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

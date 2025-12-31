@@ -38,11 +38,11 @@ function useTurnstileDevelopment() {
 			className={className}
 			style={{
 				padding: '8px 16px',
-				backgroundColor: '#f0f0f0',
-				border: '1px dashed #999',
+				backgroundColor: 'var(--color-muted)',
+				border: '1px dashed var(--color-muted-foreground)',
 				borderRadius: '4px',
 				fontSize: '12px',
-				color: '#666',
+				color: 'var(--color-muted-foreground)',
 				textAlign: 'center',
 			}}
 		>

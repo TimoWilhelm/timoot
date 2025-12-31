@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { shapeGradients, shapePaths } from '@/components/game/shared';
+import { shapeColors, shapePaths } from '@/components/game/shared';
 import { cn } from '@/lib/utilities';
 
 interface PlayerAnswerScreenProperties {
@@ -36,7 +36,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 	return (
 		<div
 			className={`
-				relative h-[calc(100vh-10rem)] max-h-[500px] w-[calc(100vw-2rem)] max-w-2xl
+				relative h-[calc(100vh-10rem)] max-h-125 w-[calc(100vw-2rem)] max-w-2xl
 				overflow-hidden
 			`}
 		>
@@ -117,6 +117,7 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 								group absolute flex items-center justify-center rounded-xl border-4
 								border-black
 							`,
+							shapeColors[originalIndex],
 							canAnswer ? 'cursor-pointer overflow-hidden' : 'cursor-not-allowed overflow-hidden',
 							isSelected && 'overflow-visible',
 							`
@@ -130,7 +131,6 @@ export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }:
 							left: pos.left,
 							width: 'calc(50% - 12px)',
 							height: 'calc(50% - 12px)',
-							background: shapeGradients[originalIndex],
 							boxShadow: '0px 4px 0px 0px rgba(0,0,0,1)',
 						}}
 					>
