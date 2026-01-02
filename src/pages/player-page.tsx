@@ -11,6 +11,8 @@ import { useGameWebSocket } from '@/hooks/use-game-web-socket';
 import { PlayerNicknameForm } from '@/components/game/player/player-nickname-form';
 import { PlayerAnswerScreen } from '@/components/game/player/player-answer-screen';
 import { PlayerWaitingScreen } from '@/components/game/player/player-waiting-screen';
+import { PlayerErrorScreen } from '@/components/game/player/player-error-screen';
+import { PlayerPageLayout } from '@/components/game/player/player-page-layout';
 import { JoinGameDialog } from '@/components/game/player/join-game-dialog';
 import { EmojiPicker } from '@/components/game/shared';
 import { useSound } from '@/hooks/use-sound';
@@ -241,22 +243,9 @@ export function PlayerPage() {
 
 	if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full items-center justify-center bg-black
-				`}
-			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-30
-					`}
-				/>
-				<div>
-					<Loader2 className="size-10 animate-spin text-orange" />
-				</div>
-			</div>
+			<PlayerPageLayout className="flex items-center justify-center">
+				<Loader2 className="size-10 animate-spin text-orange" />
+			</PlayerPageLayout>
 		);
 	}
 
@@ -271,146 +260,62 @@ export function PlayerPage() {
 
 	if (view === 'GAME_IN_PROGRESS') {
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-black p-8 text-white
-				`}
+			<PlayerErrorScreen
+				emoji="🎮"
+				title="Game Already In Progress"
+				description="Sorry, this game has already started. You can wait for the next round or join a different game."
 			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-30
-					`}
-				/>
-				<div className="relative z-10 flex flex-col items-center">
-					<div className="mb-6 text-6xl">🎮</div>
-					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game Already In Progress</h1>
-					<p
-						className="
-							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
-						"
-					>
-						Sorry, this game has already started. You can wait for the next round or join a different game.
-					</p>
-					<Button variant="accent" onClick={() => navigate('/')} className="border-2 border-slate shadow-brutal-slate">
-						Back to Home
-					</Button>
-				</div>
-			</div>
+				<Button variant="dark-accent" onClick={() => navigate('/')}>
+					Back to Home
+				</Button>
+			</PlayerErrorScreen>
 		);
 	}
 
 	if (view === 'ROOM_NOT_FOUND') {
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-black p-8 text-white
-				`}
+			<PlayerErrorScreen
+				emoji="🔍"
+				title="Game Not Found"
+				description="We couldn't find a game with that code. It may have ended or the link might be incorrect."
 			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-30
-					`}
-				/>
-				<div className="relative z-10 flex flex-col items-center">
-					<div className="mb-6 text-6xl">🔍</div>
-					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game Not Found</h1>
-					<p
-						className="
-							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
-						"
-					>
-						We couldn't find a game with that code. It may have ended or the link might be incorrect.
-					</p>
-					<Button variant="accent" onClick={() => navigate('/')} className="border-2 border-slate shadow-brutal-slate">
-						Back to Home
-					</Button>
-				</div>
-			</div>
+				<Button variant="dark-accent" onClick={() => navigate('/')}>
+					Back to Home
+				</Button>
+			</PlayerErrorScreen>
 		);
 	}
 
 	if (view === 'SESSION_EXPIRED') {
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-black p-8 text-white
-				`}
+			<PlayerErrorScreen
+				emoji="🔑"
+				title="Session Expired"
+				description="Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please rejoin the game with a new nickname."
 			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-30
-					`}
-				/>
-				<div className="relative z-10 flex flex-col items-center">
-					<div className="mb-6 text-6xl">🔑</div>
-					<h1 className="mb-4 text-center font-display text-3xl font-bold">Session Expired</h1>
-					<p
-						className="
-							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
-						"
-					>
-						Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please
-						rejoin the game with a new nickname.
-					</p>
-					<div className="flex gap-4">
-						<Button variant="accent" onClick={() => setView('NICKNAME')} className="border-2 border-slate shadow-brutal-slate">
-							Rejoin Game
-						</Button>
-						<Button
-							variant="subtle"
-							onClick={() => navigate('/')}
-							className="
-								border-2 border-slate bg-slate/50 text-white shadow-brutal-slate
-								hover:bg-slate/80
-							"
-						>
-							Back to Home
-						</Button>
-					</div>
+				<div className="flex gap-4">
+					<Button variant="dark-accent" onClick={() => setView('NICKNAME')}>
+						Rejoin Game
+					</Button>
+					<Button variant="dark-subtle" onClick={() => navigate('/')}>
+						Back to Home
+					</Button>
 				</div>
-			</div>
+			</PlayerErrorScreen>
 		);
 	}
 
 	if (view === 'GAME_FULL') {
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full flex-col items-center justify-center
-					bg-black p-8 text-white
-				`}
+			<PlayerErrorScreen
+				emoji="👥"
+				title="Game is Full"
+				description="Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round."
 			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-30
-					`}
-				/>
-				<div className="relative z-10 flex flex-col items-center">
-					<div className="mb-6 text-6xl">👥</div>
-					<h1 className="mb-4 text-center font-display text-3xl font-bold">Game is Full</h1>
-					<p
-						className="
-							mb-8 max-w-md text-center text-lg font-medium text-muted-foreground
-						"
-					>
-						Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round.
-					</p>
-					<Button variant="accent" onClick={() => navigate('/')} className="border-2 border-slate shadow-brutal-slate">
-						Back to Home
-					</Button>
-				</div>
-			</div>
+				<Button variant="dark-accent" onClick={() => navigate('/')}>
+					Back to Home
+				</Button>
+			</PlayerErrorScreen>
 		);
 	}
 
@@ -440,20 +345,7 @@ export function PlayerPage() {
 	};
 
 	return (
-		<div
-			className="
-				relative flex min-h-screen w-full flex-col bg-black p-4 text-white
-			"
-		>
-			{/* Background grid */}
-			<div
-				className={`
-					absolute inset-0
-					bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)]
-					bg-size-[20px_20px] opacity-30
-				`}
-			/>
-
+		<PlayerPageLayout className="flex flex-col p-4">
 			<header
 				className={`
 					relative z-10 flex items-center justify-between rounded-lg border-2
@@ -500,6 +392,6 @@ export function PlayerPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</PlayerPageLayout>
 	);
 }

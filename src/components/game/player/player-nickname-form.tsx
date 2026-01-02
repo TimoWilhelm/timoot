@@ -6,6 +6,7 @@ import { LIMITS, nicknameSchema } from '@shared/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlayerPageLayout } from '@/components/game/player/player-page-layout';
 
 const formSchema = z.object({
 	nickname: nicknameSchema,
@@ -36,21 +37,7 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 	};
 
 	return (
-		<div
-			className={`
-				relative flex min-h-dvh w-full items-center justify-center overflow-auto
-				bg-black p-4
-			`}
-		>
-			{/* Decorative grid */}
-			<div
-				className={`
-					absolute inset-0
-					bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
-					bg-size-[20px_20px] opacity-30
-				`}
-			/>
-
+		<PlayerPageLayout className="flex min-h-dvh items-center justify-center overflow-auto p-4">
 			<Card
 				className={`
 					relative w-full max-w-md animate-scale-in border-4 border-slate bg-black
@@ -77,22 +64,12 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 							/>
 							{errors.nickname && <p className="mt-2 text-center text-sm font-bold text-red">{errors.nickname.message}</p>}
 						</div>
-						<Button
-							type="submit"
-							className={`
-								w-full border-4 border-orange-dark bg-orange py-6 text-xl font-black
-								uppercase shadow-brutal-slate transition-colors
-								hover:-translate-y-px hover:bg-orange hover:shadow-brutal-lg-slate
-								active:translate-y-px active:shadow-none
-							`}
-							size="lg"
-							disabled={isLoading || !isValid || !nickname?.trim()}
-						>
+						<Button type="submit" variant="dark-accent" size="xl" className="w-full" disabled={isLoading || !isValid || !nickname?.trim()}>
 							{isLoading ? 'Joining...' : 'Join Game'}
 						</Button>
 					</form>
 				</CardContent>
 			</Card>
-		</div>
+		</PlayerPageLayout>
 	);
 }

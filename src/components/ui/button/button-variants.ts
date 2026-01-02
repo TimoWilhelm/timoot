@@ -39,11 +39,32 @@ export const buttonVariants = cva(
 					border-transparent text-primary underline-offset-4
 					hover:underline
 				`,
+				// Dark variants for use on dark backgrounds (player pages)
+				'dark-default': `
+					border-slate bg-white text-black shadow-brutal-sm-slate
+					hover:-translate-y-px hover:shadow-brutal-slate
+					active:translate-y-px active:shadow-none
+				`,
+				'dark-accent': `
+					border-4 border-orange-dark bg-orange text-white shadow-brutal-slate
+					hover:-translate-y-px hover:shadow-brutal-lg-slate
+					active:translate-y-px active:shadow-none
+				`,
+				'dark-subtle': `
+					border-slate bg-slate/50 text-white shadow-brutal-sm-slate
+					hover:-translate-y-px hover:bg-slate/80 hover:shadow-brutal-slate
+					active:translate-y-px active:shadow-none
+				`,
+				'dark-ghost': `
+					border-transparent text-white
+					hover:border-slate hover:bg-slate/30
+				`,
 			},
 			size: {
 				default: 'h-10 px-4 py-2',
 				sm: 'h-8 rounded-md px-3 py-1 text-xs',
 				lg: 'h-12 rounded-xl px-8 py-3 text-base',
+				xl: 'h-14 rounded-xl px-8 py-4 text-xl font-black uppercase',
 				icon: 'size-10 p-0',
 			},
 		},

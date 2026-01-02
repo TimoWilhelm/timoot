@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import type { GamePhase, QuestionModifier } from '@shared/types';
 import { cn, getThemeColor } from '@/lib/utilities';
+import { Button } from '@/components/ui/button';
 
 interface LeaderboardEntry {
 	id: string;
@@ -344,20 +345,12 @@ export function PlayerWaitingScreen({
 						</motion.p>
 
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
-							<Link
-								to="/"
-								viewTransition
-								className={`
-									mt-6 inline-flex items-center gap-2 rounded-lg border-2 border-slate
-									bg-slate/50 px-4 py-2 font-bold text-white shadow-brutal-slate
-									transition-all
-									hover:-translate-y-px hover:bg-slate/80 hover:shadow-brutal-slate
-									active:translate-y-px active:shadow-none
-								`}
-							>
-								<Home className="size-4" />
-								Back to Home
-							</Link>
+							<Button variant="dark-subtle" asChild className="mt-6">
+								<Link to="/" viewTransition>
+									<Home className="size-4" />
+									Back to Home
+								</Link>
+							</Button>
 						</motion.div>
 					</div>
 				);

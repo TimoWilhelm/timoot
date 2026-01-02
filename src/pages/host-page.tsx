@@ -25,6 +25,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { SoundToggle } from '@/components/ui/sound-toggle';
+import { HostPageLayout } from '@/components/game/host/host-page-layout';
 import { type MusicTrack, useHostSound } from '@/hooks/use-host-sound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/game/shared';
 
@@ -252,19 +253,7 @@ export function HostPage() {
 			: 'Unable to connect as host. The game may have ended or your session is no longer valid.';
 
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full flex-col items-center justify-center
-					overflow-hidden bg-white p-4
-				`}
-			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-50
-					`}
-				/>
+			<HostPageLayout className="flex flex-col items-center justify-center overflow-hidden p-4">
 				<div
 					className={`
 						relative z-10 flex flex-col items-center rounded-xl border-4 border-black
@@ -281,30 +270,19 @@ export function HostPage() {
 					</div>
 					<h1 className="mb-2 font-display text-3xl font-bold text-red">{errorTitle}</h1>
 					<p className="mb-6 max-w-md text-center font-medium text-red">{errorMessage}</p>
-					<Button asChild className="bg-black text-white">
+					<Button asChild variant="link">
 						<Link to="/" viewTransition>
 							Return to Home
 						</Link>
 					</Button>
 				</div>
-			</div>
+			</HostPageLayout>
 		);
 	}
 
 	if (isConnecting && !isConnected) {
 		return (
-			<div
-				className={`
-					relative flex min-h-screen w-full items-center justify-center bg-white
-				`}
-			>
-				<div
-					className={`
-						absolute inset-0
-						bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
-						bg-size-[20px_20px] opacity-50
-					`}
-				/>
+			<HostPageLayout className="flex items-center justify-center">
 				<div
 					className={`
 						relative flex size-24 items-center justify-center rounded-full border-4
@@ -313,7 +291,7 @@ export function HostPage() {
 				>
 					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />
 				</div>
-			</div>
+			</HostPageLayout>
 		);
 	}
 
@@ -393,22 +371,12 @@ export function HostPage() {
 	};
 
 	return (
-		<div
+		<HostPageLayout
 			className={`
-				relative flex min-h-screen w-full flex-col overflow-hidden bg-white
-				font-sans text-black
+				flex flex-col overflow-hidden font-sans
 				selection:bg-black selection:text-white
 			`}
 		>
-			{/* Decorative Background Grid */}
-			<div
-				className={`
-					absolute inset-0
-					bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
-					bg-size-[20px_20px] opacity-50
-				`}
-			/>
-
 			{/* Sound toggle button - fixed position */}
 			<div className="fixed top-4 left-4 z-50">
 				<SoundToggle onToggle={handleAudioInit} />
@@ -446,6 +414,6 @@ export function HostPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</HostPageLayout>
 	);
 }
