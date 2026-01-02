@@ -3,6 +3,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utilities';
+import { buttonVariants } from '@/components/ui/button/button-variants';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -56,16 +57,7 @@ const DialogContent = React.forwardRef<
 					{...properties}
 				>
 					{children}
-					<DialogPrimitive.Close
-						className={`
-							absolute top-4 right-4 z-10 flex size-8 cursor-pointer items-center
-							justify-center rounded-lg border-2 border-black bg-white
-							transition-colors
-							hover:bg-black hover:text-white
-							focus:ring-2 focus:ring-black focus:ring-offset-2 focus:outline-hidden
-							disabled:pointer-events-none
-						`}
-					>
+					<DialogPrimitive.Close className={cn(buttonVariants({ variant: 'subtle', size: 'icon' }), 'absolute top-4 right-4 z-10 size-8')}>
 						<X className="size-4" />
 						<span className="sr-only">Close</span>
 					</DialogPrimitive.Close>
