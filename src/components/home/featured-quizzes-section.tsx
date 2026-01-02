@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
-import { HelpCircle, Loader2, Zap } from 'lucide-react';
+import { HelpCircle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Quiz } from '@shared/types';
 import { cn } from '@/lib/utilities';
 
 interface FeaturedQuizzesSectionProperties {
 	quizzes: Quiz[];
-	startingQuizId: string | undefined;
+	startingQuizId?: string;
 	onSelectQuiz: (quiz: Quiz) => void;
 }
 
@@ -41,31 +41,37 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 				"
 			>
 				{quizzes.map((quiz, index) => (
-					<motion.div key={quiz.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+					<motion.div
+						key={quiz.id}
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: index * 0.05 }}
+						className="bg-white"
+					>
 						<Button
 							type="button"
 							variant="ghost"
+							disabled={!!startingQuizId}
 							onClick={() => onSelectQuiz(quiz)}
 							className={cn(
 								`
 									group relative size-full flex-col items-start overflow-hidden
-									rounded-xl border-2 border-black bg-white p-6 text-left
-									shadow-brutal-sm transition-all duration-200
+									rounded-xl border-2 border-black p-6 text-left shadow-brutal-sm
+									transition-all duration-200
 									hover:-translate-y-px hover:bg-yellow/10 hover:shadow-brutal
 									active:translate-y-0 active:shadow-none
 								`,
-								startingQuizId === quiz.id && 'bg-yellow/20 ring-2 ring-black ring-offset-2',
 							)}
 						>
 							<div className="mb-4 flex w-full items-start justify-between">
 								<div
 									className="
-										rounded-lg border-2 border-black bg-blue p-3 shadow-brutal-sm
+										rounded-lg border-2 border-black bg-yellow p-3 shadow-brutal-sm
 										transition-transform
 										group-hover:rotate-6
 									"
 								>
-									<Zap className="size-6 text-white" fill="currentColor" />
+									<Zap className="size-6 text-black" fill="currentColor" />
 								</div>
 							</div>
 							<h3 className="mb-2 font-display text-2xl leading-tight font-bold">{quiz.title}</h3>
@@ -77,16 +83,6 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 								<HelpCircle className="size-4" />
 								{quiz.questions.length} Questions
 							</div>
-							{startingQuizId === quiz.id && (
-								<div
-									className="
-										absolute inset-0 flex items-center justify-center bg-white/50
-										backdrop-blur-xs
-									"
-								>
-									<Loader2 className="size-8 animate-spin text-black" />
-								</div>
-							)}
 						</Button>
 					</motion.div>
 				))}

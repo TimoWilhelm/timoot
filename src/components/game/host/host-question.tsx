@@ -267,7 +267,7 @@ export function HostQuestion({
 								rounded-lg px-6 py-4
 								sm:px-10 sm:py-6
 							`,
-							backgroundImage && !imageError && `border-4 border-black bg-white/60 shadow-brutal-sm backdrop-blur-sm`,
+							backgroundImage && !imageError && `border-4 border-black bg-white/75 shadow-brutal-sm backdrop-blur-sm`,
 						)}
 					>
 						<h2
@@ -306,7 +306,7 @@ export function HostQuestion({
 						<svg
 							viewBox="0 0 24 24"
 							className={`
-								mr-4 size-8 fill-current stroke-black/35 stroke-[1.5] text-white
+								mr-4 size-8 fill-current stroke-black/35 stroke-3 text-white
 								drop-shadow-lg
 								[paint-order:stroke]
 								sm:size-12

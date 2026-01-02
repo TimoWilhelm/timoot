@@ -98,15 +98,15 @@ export function CustomQuizzesSection({
 				"
 			>
 				{/* Create New Card */}
-				<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="order-first">
+				<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
 					<Button
 						type="button"
 						variant="ghost"
 						onClick={() => navigate('/edit')}
 						className={`
 							group relative size-full flex-col items-center justify-center gap-4
-							overflow-hidden rounded-xl border-2 border-black bg-muted/50 p-6
-							text-center shadow-brutal-sm transition-all duration-200
+							overflow-hidden rounded-xl border-2 border-black p-6 text-center
+							shadow-brutal-sm transition-all duration-200
 							hover:-translate-y-px hover:bg-blue/10 hover:shadow-brutal
 							active:translate-y-0 active:shadow-none
 						`}
@@ -118,7 +118,7 @@ export function CustomQuizzesSection({
 								group-hover:scale-110 group-hover:rotate-12
 							"
 						>
-							<Plus className="size-8 text-white" strokeWidth={4} />
+							<Plus className="size-8" strokeWidth={4} />
 						</div>
 						<h3 className="font-display text-2xl font-bold">Create New</h3>
 					</Button>
@@ -162,7 +162,7 @@ export function CustomQuizzesSection({
 						</div>
 					</motion.div>
 				) : (
-					<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+					<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
 						<Dialog open={isAiDialogOpen} onOpenChange={onAiDialogOpenChange}>
 							<DialogTrigger asChild>
 								<Button
@@ -170,8 +170,8 @@ export function CustomQuizzesSection({
 									variant="ghost"
 									className={`
 										group relative size-full flex-col items-center justify-center gap-4
-										overflow-hidden rounded-xl border-2 border-black bg-muted/50 p-6
-										text-center shadow-brutal-sm transition-all duration-200
+										overflow-hidden rounded-xl border-2 border-black p-6 text-center
+										shadow-brutal-sm transition-all duration-200
 										hover:-translate-y-px hover:bg-purple/10 hover:shadow-brutal
 										active:translate-y-0 active:shadow-none
 									`}
@@ -183,7 +183,7 @@ export function CustomQuizzesSection({
 											group-hover:scale-110 group-hover:-rotate-12
 										"
 									>
-										<Wand2 className="size-8 text-white" strokeWidth={2.5} />
+										<Wand2 className="size-8" strokeWidth={2.5} />
 									</div>
 									<h3 className="font-display text-2xl font-bold">Magic Quiz</h3>
 								</Button>
@@ -249,15 +249,21 @@ export function CustomQuizzesSection({
 
 				{/* User Quizzes List */}
 				{quizzes.map((quiz, index) => (
-					<motion.div key={quiz.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+					<motion.div
+						key={quiz.id}
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: index * 0.05 }}
+						className="bg-white"
+					>
 						<Button
 							type="button"
 							variant="ghost"
 							onClick={() => onSelectQuiz(quiz)}
 							className={`
 								group relative size-full flex-col items-start justify-between
-								overflow-hidden rounded-xl border-2 border-black bg-white p-6
-								shadow-brutal-sm transition-all duration-200
+								overflow-hidden rounded-xl border-2 border-black p-6 shadow-brutal-sm
+								transition-all duration-200
 								hover:-translate-y-px hover:bg-pink/10 hover:shadow-brutal
 								active:translate-y-0 active:shadow-none
 							`}
@@ -270,7 +276,7 @@ export function CustomQuizzesSection({
 										group-hover:rotate-6
 									"
 								>
-									<Zap className="size-6 text-white" fill="currentColor" />
+									<Zap className="size-6" fill="currentColor" />
 								</div>
 							</div>
 							<h3 className="line-clamp-2 font-display text-xl leading-tight font-bold">{quiz.title}</h3>

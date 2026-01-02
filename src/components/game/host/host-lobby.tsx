@@ -104,7 +104,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 											border-black bg-blue shadow-brutal-sm
 										`}
 									>
-										<Users className="size-4 text-white" />
+										<Users className="size-4" />
 									</div>
 									Players ({players.length})
 								</CardTitle>
@@ -123,7 +123,7 @@ export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
 												layout
 												className={`
 													h-fit rounded-lg border-2 border-black bg-orange px-4 py-2
-													font-bold text-white shadow-brutal-sm
+													font-bold shadow-brutal-sm
 												`}
 											>
 												{p.name}

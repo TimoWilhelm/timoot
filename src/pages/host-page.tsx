@@ -285,8 +285,8 @@ export function HostPage() {
 			<HostPageLayout className="flex items-center justify-center">
 				<div
 					className={`
-						relative flex size-24 items-center justify-center rounded-full border-4
-						border-black bg-yellow shadow-brutal-sm
+						relative z-10 flex size-24 items-center justify-center rounded-full
+						border-4 border-black bg-yellow shadow-brutal-sm
 					`}
 				>
 					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />

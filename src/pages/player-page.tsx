@@ -237,143 +237,158 @@ export function PlayerPage() {
 		[submitAnswer],
 	);
 
-	if (view === 'JOIN_GAME') {
-		return <JoinGameDialog />;
-	}
-
-	if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
-		return (
-			<PlayerPageLayout className="flex items-center justify-center">
-				<Loader2 className="size-10 animate-spin text-orange" />
-			</PlayerPageLayout>
-		);
-	}
-
-	if (view === 'NICKNAME') {
-		return (
-			<>
-				<PlayerNicknameForm onJoin={handleJoin} isLoading={isConnecting} />
-				<Toaster richColors />
-			</>
-		);
-	}
-
-	if (view === 'GAME_IN_PROGRESS') {
-		return (
-			<PlayerErrorScreen
-				emoji="🎮"
-				title="Game Already In Progress"
-				description="Sorry, this game has already started. You can wait for the next round or join a different game."
-			>
-				<Button variant="dark-accent" onClick={() => navigate('/')}>
-					Back to Home
-				</Button>
-			</PlayerErrorScreen>
-		);
-	}
-
-	if (view === 'ROOM_NOT_FOUND') {
-		return (
-			<PlayerErrorScreen
-				emoji="🔍"
-				title="Game Not Found"
-				description="We couldn't find a game with that code. It may have ended or the link might be incorrect."
-			>
-				<Button variant="dark-accent" onClick={() => navigate('/')}>
-					Back to Home
-				</Button>
-			</PlayerErrorScreen>
-		);
-	}
-
-	if (view === 'SESSION_EXPIRED') {
-		return (
-			<PlayerErrorScreen
-				emoji="🔑"
-				title="Session Expired"
-				description="Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please rejoin the game with a new nickname."
-			>
-				<div className="flex gap-4">
-					<Button variant="dark-accent" onClick={() => setView('NICKNAME')}>
-						Rejoin Game
-					</Button>
-					<Button variant="dark-subtle" onClick={() => navigate('/')}>
-						Back to Home
-					</Button>
-				</div>
-			</PlayerErrorScreen>
-		);
-	}
-
-	if (view === 'GAME_FULL') {
-		return (
-			<PlayerErrorScreen
-				emoji="👥"
-				title="Game is Full"
-				description="Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round."
-			>
-				<Button variant="dark-accent" onClick={() => navigate('/')}>
-					Back to Home
-				</Button>
-			</PlayerErrorScreen>
-		);
-	}
-
 	// Use tracked total score (updates on reveal, syncs with leaderboard when available)
 	const myScore = totalScore;
 
-	const renderGameContent = () => {
-		if (error && !isConnected) return <div className="text-red">{error}</div>;
+	// Determine layout class based on view and state
+	// Game view is top-aligned (column), others are centered
+	const isCenterLayout = view !== 'GAME';
 
-		// Show answer buttons only during QUESTION phase (not GET_READY)
-		if (gameState.phase === 'QUESTION' && gameState.options.length > 0) {
-			const optionIndices = Array.from({ length: gameState.options.length }, (_, index) => index);
-			return <PlayerAnswerScreen onAnswer={handleAnswer} submittedAnswer={submittedAnswer} optionIndices={optionIndices} />;
+	const renderContent = () => {
+		if (view === 'JOIN_GAME') {
+			return <JoinGameDialog />;
 		}
 
-		// Show waiting screen for all other phases including GET_READY and QUESTION_MODIFIER
+		if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
+			return (
+				<div className="relative z-10 flex items-center justify-center">
+					<Loader2 className="size-10 animate-spin text-orange" />
+				</div>
+			);
+		}
+
+		if (view === 'NICKNAME') {
+			return (
+				<>
+					<PlayerNicknameForm onJoin={handleJoin} isLoading={isConnecting} />
+					<Toaster richColors />
+				</>
+			);
+		}
+
+		if (view === 'GAME_IN_PROGRESS') {
+			return (
+				<PlayerErrorScreen
+					emoji="🎮"
+					title="Game Already In Progress"
+					description="Sorry, this game has already started. You can wait for the next round or join a different game."
+				>
+					<Button variant="dark-accent" onClick={() => navigate('/')}>
+						Back to Home
+					</Button>
+				</PlayerErrorScreen>
+			);
+		}
+
+		if (view === 'ROOM_NOT_FOUND') {
+			return (
+				<PlayerErrorScreen
+					emoji="🔍"
+					title="Game Not Found"
+					description="We couldn't find a game with that code. It may have ended or the link might be incorrect."
+				>
+					<Button variant="dark-accent" onClick={() => navigate('/')}>
+						Back to Home
+					</Button>
+				</PlayerErrorScreen>
+			);
+		}
+
+		if (view === 'SESSION_EXPIRED') {
+			return (
+				<PlayerErrorScreen
+					emoji="🔑"
+					title="Session Expired"
+					description="Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please rejoin the game with a new nickname."
+				>
+					<div className="flex gap-4">
+						<Button variant="dark-accent" onClick={() => setView('NICKNAME')}>
+							Rejoin Game
+						</Button>
+						<Button variant="dark-subtle" onClick={() => navigate('/')}>
+							Back to Home
+						</Button>
+					</div>
+				</PlayerErrorScreen>
+			);
+		}
+
+		if (view === 'GAME_FULL') {
+			return (
+				<PlayerErrorScreen
+					emoji="👥"
+					title="Game is Full"
+					description="Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round."
+				>
+					<Button variant="dark-accent" onClick={() => navigate('/')}>
+						Back to Home
+					</Button>
+				</PlayerErrorScreen>
+			);
+		}
+
+		// Game view
+		if (error && !isConnected) return <div className="text-red">{error}</div>;
+
 		return (
-			<PlayerWaitingScreen
-				phase={gameState.phase}
-				answerResult={answerResult}
-				finalScore={myScore}
-				playerId={currentPlayerId}
-				leaderboard={gameState.leaderboard}
-				modifiers={gameState.modifiers}
-			/>
+			<>
+				<header
+					className={`
+						relative z-10 flex items-center justify-center rounded-lg border-2
+						border-slate bg-slate/50 px-4 py-2 text-xl font-bold
+					`}
+				>
+					<div className="flex w-full max-w-2xl justify-between">
+						<span className="font-display">{currentNickname}</span>
+						<span className="font-mono">
+							Score: <AnimatedNumber value={myScore ?? 0} instant={!hasInitialScoreSync} />
+						</span>
+					</div>
+				</header>
+				<main className="relative z-10 flex grow items-center justify-center">
+					<AnimatePresence mode="wait">
+						{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? (
+							<PlayerAnswerScreen
+								onAnswer={handleAnswer}
+								submittedAnswer={submittedAnswer}
+								optionIndices={Array.from({ length: gameState.options.length }, (_, index) => index)}
+							/>
+						) : (
+							<PlayerWaitingScreen
+								phase={gameState.phase}
+								answerResult={answerResult}
+								finalScore={myScore}
+								playerId={currentPlayerId}
+								leaderboard={gameState.leaderboard}
+								modifiers={gameState.modifiers}
+							/>
+						)}
+					</AnimatePresence>
+				</main>
+				<AnimatePresence>
+					{phaseAllowsEmoji[gameState.phase] && (
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: 0.15 }}
+							className="fixed inset-x-0 bottom-0 z-30 pb-4"
+						>
+							<EmojiPicker onEmojiSelect={sendEmoji} />
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</>
 		);
 	};
 
 	return (
-		<PlayerPageLayout className="flex flex-col p-4">
-			<header
-				className={`
-					relative z-10 flex items-center justify-between rounded-lg border-2
-					border-slate bg-slate/50 px-4 py-2 text-xl font-bold
-				`}
-			>
-				<span className="font-display">{currentNickname}</span>
-				<span className="font-mono">
-					Score: <AnimatedNumber value={myScore ?? 0} instant={!hasInitialScoreSync} />
-				</span>
-			</header>
-			<main className="relative z-10 flex grow items-center justify-center">
-				<AnimatePresence mode="wait">{renderGameContent()}</AnimatePresence>
-			</main>
-
-			<AnimatePresence>
-				{phaseAllowsEmoji[gameState.phase] && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.15 }}
-						className="fixed inset-x-0 bottom-0 z-30 pb-4"
-					>
-						<EmojiPicker onEmojiSelect={sendEmoji} />
-					</motion.div>
-				)}
-			</AnimatePresence>
+		<PlayerPageLayout
+			className={
+				isCenterLayout ? 'flex min-h-dvh items-center justify-center overflow-auto p-4' : 'flex min-h-dvh flex-col overflow-hidden p-4'
+			}
+		>
+			{renderContent()}
 
 			<Toaster richColors theme="dark" />
 
