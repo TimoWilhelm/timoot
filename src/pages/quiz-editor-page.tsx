@@ -236,15 +236,9 @@ export function QuizEditorPage() {
 			return;
 		}
 
-		if (!turnstileToken) {
-			toast.error('Please complete the captcha verification first');
-			return;
-		}
-
-		resetToken();
 		generateQuestionMutation.mutate(
 			{
-				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
+				header: { 'x-user-id': userId },
 				json: {
 					title,
 					existingQuestions: currentQuestions.map((q) => ({
@@ -296,7 +290,6 @@ export function QuizEditorPage() {
 			return;
 		}
 
-		resetToken();
 		generateImageMutation.mutate(
 			{ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken }, json: { prompt: imagePrompt } },
 			{
@@ -304,9 +297,11 @@ export function QuizEditorPage() {
 					onImageGenerated(data.path);
 					setImagePrompt('');
 					toast.success('Image generated!');
+					resetToken();
 				},
 				onError: (error) => {
 					toast.error(error.message || 'Failed to generate image');
+					resetToken();
 				},
 			},
 		);
@@ -673,6 +668,9 @@ export function QuizEditorPage() {
 																{isGeneratingImage && (
 																	<p className="text-center text-xs text-muted-foreground">Generating image, please wait...</p>
 																)}
+																<div ref={turnstileReference} className="flex justify-center">
+																	<TurnstileWidget />
+																</div>
 															</div>
 														</div>
 														<DialogFooter className="shrink-0 border-t px-4 py-3">
@@ -814,7 +812,7 @@ export function QuizEditorPage() {
 							<Button
 								type="button"
 								onClick={generateQuestion}
-								disabled={isGeneratingQuestion || !turnstileToken}
+								disabled={isGeneratingQuestion}
 								variant="subtle"
 								size="lg"
 								className={`
@@ -825,9 +823,6 @@ export function QuizEditorPage() {
 								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className="mr-2 size-5" />}
 								<span className="whitespace-nowrap">Generate with AI</span>
 							</Button>
-						</div>
-						<div ref={turnstileReference} className="flex justify-center">
-							<TurnstileWidget />
 						</div>
 					</div>
 					<div className="flex items-center justify-end gap-4">

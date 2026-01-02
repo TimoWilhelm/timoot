@@ -211,7 +211,7 @@ export function HostQuestion({
 	return (
 		<div
 			className={`
-				flex h-full max-h-screen grow flex-col overflow-hidden p-4
+				flex h-full max-h-screen grow flex-col overflow-y-auto p-4
 				sm:p-8
 			`}
 		>
@@ -241,8 +241,9 @@ export function HostQuestion({
 			</div>
 			<div
 				className={`
-					relative mb-4 flex min-h-0 grow flex-col items-center justify-center
-					overflow-hidden rounded-xl border-4 border-black shadow-brutal
+					relative mb-4 flex min-h-32 shrink-0 grow flex-col items-center
+					justify-center overflow-hidden rounded-xl border-4 border-black
+					shadow-brutal
 					sm:mb-8
 				`}
 			>
@@ -252,10 +253,11 @@ export function HostQuestion({
 				{backgroundImage && !imageError && (
 					<img src={backgroundImage} alt="" className={`absolute inset-0 size-full object-cover`} onError={() => setImageError(true)} />
 				)}
+
 				{/* Content layer */}
 				<div
 					className={`
-						relative z-10 flex size-full items-center justify-center p-4
+						relative z-10 flex w-full items-center justify-center p-4
 						sm:p-8
 					`}
 				>
@@ -265,7 +267,7 @@ export function HostQuestion({
 								rounded-lg px-6 py-4
 								sm:px-10 sm:py-6
 							`,
-							backgroundImage && !imageError && `border-4 border-black bg-white/95 shadow-brutal-sm backdrop-blur-sm`,
+							backgroundImage && !imageError && `border-4 border-black bg-white/60 shadow-brutal-sm backdrop-blur-sm`,
 						)}
 					>
 						<h2

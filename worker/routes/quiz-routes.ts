@@ -133,8 +133,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 	// AI Single Question Generation endpoint
 	.post(
 		'/api/quizzes/generate-question',
-		zValidator('header', protectedHeaderSchema),
-		verifyTurnstile,
+		zValidator('header', userIdHeaderSchema),
 		zValidator(
 			'json',
 			z.object({

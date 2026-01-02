@@ -76,7 +76,6 @@ export function HomePage() {
 			return;
 		}
 		setStartingQuizId(quizId);
-		resetToken();
 		createGameMutation.mutate(
 			{
 				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
@@ -107,6 +106,7 @@ export function HomePage() {
 					console.error(error);
 					toast.error(error.message || 'Could not start a new game. Please try again.');
 					setStartingQuizId(undefined);
+					resetToken();
 				},
 			},
 		);
@@ -134,16 +134,17 @@ export function HomePage() {
 			toast.error('Please complete the captcha verification first');
 			return;
 		}
-		resetToken();
 		generateSyncCodeMutation.mutate(
 			{ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } },
 			{
 				onSuccess: (data) => {
 					setSyncCode(data.code);
 					setSyncCodeExpiry(Date.now() + data.expiresIn * 1000);
+					resetToken();
 				},
 				onError: (error) => {
 					toast.error(error.message || 'Failed to generate sync code');
+					resetToken();
 				},
 			},
 		);
@@ -209,7 +210,6 @@ export function HomePage() {
 			generatingCardReference.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}, 100);
 
-		resetToken();
 		const client = hcWithType('/');
 		try {
 			const response = await client.api.quizzes.generate.$post({
@@ -245,6 +245,7 @@ export function HomePage() {
 		} catch (error) {
 			console.error(error);
 			toast.error(error instanceof Error ? error.message : 'Could not generate quiz. Please try again.');
+			resetToken();
 		} finally {
 			setIsGenerating(false);
 			setGenerationStatus(undefined);
