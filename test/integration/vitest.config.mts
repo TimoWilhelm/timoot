@@ -1,6 +1,7 @@
 import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+
 import { loadEnv } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 /**
  * Vitest configuration for integration tests.

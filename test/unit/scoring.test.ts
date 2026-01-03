@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildLeaderboard, calculateAnswerScore, processAnswersAndUpdateScores } from '../../worker/game/scoring';
+
 import { QUESTION_TIME_LIMIT_MS } from '../../worker/game/constants';
+import { buildLeaderboard, calculateAnswerScore, processAnswersAndUpdateScores } from '../../worker/game/scoring';
+
 import type { Answer, GameState, Player, Question } from '@shared/types';
 
 function createMockState(players: Player[], answers: Answer[], questions: Question[]): GameState {

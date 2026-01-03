@@ -1,13 +1,20 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 import { z } from 'zod';
-import type { Quiz, QuizGenerateSSEEvent } from '@shared/types';
-import { LIMITS, aiPromptSchema } from '@shared/validation';
-import { useHostStore } from '@/lib/host-store';
-import { consumeSSEStream } from '@/lib/sse-client';
-import { hcWithType } from '@/lib/api-client';
+
+import {
+	CustomQuizzesSection,
+	DeleteQuizDialog,
+	FeaturedQuizzesSection,
+	HeroSection,
+	HomeFooter,
+	MusicCreditsDialog,
+	StartGameDialog,
+	SyncDevicesDialog,
+} from '@/components/home';
+import { GridBackground } from '@/components/ui/grid-background';
 import {
 	queryKeys,
 	useCreateGame,
@@ -20,17 +27,12 @@ import {
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
-import {
-	CustomQuizzesSection,
-	DeleteQuizDialog,
-	FeaturedQuizzesSection,
-	HeroSection,
-	HomeFooter,
-	MusicCreditsDialog,
-	StartGameDialog,
-	SyncDevicesDialog,
-} from '@/components/home';
-import { GridBackground } from '@/components/ui/grid-background';
+import { hcWithType } from '@/lib/api-client';
+import { useHostStore } from '@/lib/host-store';
+import { consumeSSEStream } from '@/lib/sse-client';
+import { LIMITS, aiPromptSchema } from '@shared/validation';
+
+import type { Quiz, QuizGenerateSSEEvent } from '@shared/types';
 
 export function HomePage() {
 	const navigate = useViewTransitionNavigate();

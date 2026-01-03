@@ -1,6 +1,6 @@
 import { experimental_MCPClient as MCPClient, experimental_createMCPClient as createMCPClient } from '@ai-sdk/mcp';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {
 	type LanguageModel,
 	NoSuchToolError,
@@ -11,9 +11,10 @@ import {
 	generateText,
 	stepCountIs,
 } from 'ai';
+import { env, waitUntil } from 'cloudflare:workers';
 import { stripIndent } from 'common-tags';
 import { z } from 'zod';
-import { env, waitUntil } from 'cloudflare:workers';
+
 import type { GenerationStatus } from '@shared/types';
 
 const getCloudflareDocumentationMCP: () => Promise<MCPClient> = async () => {

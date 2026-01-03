@@ -1,9 +1,10 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Copy, Users } from 'lucide-react';
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+
+import { QRCode } from '@/components/game/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { QRCode } from '@/components/game/shared';
 
 interface HostLobbyProperties {
 	onStart: () => void;

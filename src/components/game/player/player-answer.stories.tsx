@@ -1,8 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn } from 'storybook/test';
-import { PlayerPageLayout } from './player-page-layout';
+
 import { PlayerAnswer } from './player-answer';
+import { PlayerPageLayout } from './player-page-layout';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 function PlayerAnswerWrapper({ onAnswer, submittedAnswer: initialAnswer, ...properties }: React.ComponentProps<typeof PlayerAnswer>) {
 	const [submittedAnswer, setSubmittedAnswer] = useState(initialAnswer);
@@ -29,7 +31,7 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<PlayerPageLayout className="flex items-center justify-center p-4">
+			<PlayerPageLayout variant="game">
 				<Story />
 			</PlayerPageLayout>
 		),

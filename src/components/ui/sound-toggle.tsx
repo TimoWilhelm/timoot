@@ -1,6 +1,7 @@
 import { Volume2, VolumeOff, VolumeX } from 'lucide-react';
-import { useSoundStore } from '@/lib/sound-store';
+
 import { Button } from '@/components/ui/button';
+import { useSoundStore } from '@/lib/sound-store';
 import { cn } from '@/lib/utilities';
 
 interface SoundToggleProperties {

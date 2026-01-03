@@ -4,8 +4,7 @@ labels: ['enhancement']
 body:
   - type: markdown
     attributes:
-      value:
-        Thanks for taking the time to file a feature request! Please fill out this form as
+      value: Thanks for taking the time to file a feature request! Please fill out this form as
         completely as possible.
   - type: textarea
     attributes:

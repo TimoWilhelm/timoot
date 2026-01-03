@@ -1,15 +1,16 @@
-import { type RefObject } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, HelpCircle, Loader2, Pencil, Plus, Sparkles, Trash2, Wand2, Zap } from 'lucide-react';
+import { type RefObject } from 'react';
 import { toast } from 'sonner';
 
-import type { Quiz } from '@shared/types';
-import { LIMITS } from '@shared/validation';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
+import { LIMITS } from '@shared/validation';
+
+import type { Quiz } from '@shared/types';
 
 function getStatusMessage(status: { stage: string; detail?: string } | undefined): string {
 	if (!status) return 'Preparing...';

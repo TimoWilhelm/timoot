@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+
+import { QUESTION_TIME_LIMIT_MS } from '../../worker/game/constants';
 import {
 	buildAnswerCounts,
 	buildGameEndMessage,
@@ -7,7 +9,7 @@ import {
 	buildQuestionMessage,
 	buildRevealMessage,
 } from '../../worker/game/message-builders';
-import { QUESTION_TIME_LIMIT_MS } from '../../worker/game/constants';
+
 import type { GameState } from '@shared/types';
 
 const createMockState = (overrides: Partial<GameState> = {}): GameState => ({

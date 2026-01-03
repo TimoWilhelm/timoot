@@ -1,5 +1,9 @@
 import { DurableObject } from 'cloudflare:workers';
 import { z } from 'zod';
+
+import { ErrorCode, createError } from '@shared/errors';
+import { wsClientMessageSchema } from '@shared/validation';
+
 import { CLEANUP_DELAY_MS, END_REVEAL_DELAY_MS, QUESTION_MODIFIER_DURATION_MS, questionHasModifiers } from '../game';
 import {
 	type HandlerContext,
@@ -17,8 +21,7 @@ import {
 	sendMessage,
 } from '../game-room/index';
 import { sendCurrentStateToHost } from '../game-room/state-sync';
-import { ErrorCode, createError } from '@shared/errors';
-import { wsClientMessageSchema } from '@shared/validation';
+
 import type { ClientMessage, GameState, Question } from '@shared/types';
 
 /**

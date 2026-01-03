@@ -1,4 +1,9 @@
 import { z } from 'zod';
+
+import { ErrorCode, createError } from '@shared/errors';
+import { phaseAllowsEmoji } from '@shared/phase-rules';
+import { LIMITS, nicknameSchema } from '@shared/validation';
+
 import {
 	ALL_ANSWERED_DELAY_MS,
 	END_REVEAL_DELAY_MS,
@@ -8,7 +13,6 @@ import {
 	processAnswersAndUpdateScores,
 	questionHasModifiers,
 } from '../game';
-import type { WebSocketAttachment } from './types';
 import {
 	type BroadcastContext,
 	broadcastGameEnd,
@@ -23,9 +27,8 @@ import {
 	sendMessage,
 } from './broadcast-helpers';
 import { sendCurrentStateToPlayer } from './state-sync';
-import { ErrorCode, createError } from '@shared/errors';
-import { LIMITS, nicknameSchema } from '@shared/validation';
-import { phaseAllowsEmoji } from '@shared/phase-rules';
+
+import type { WebSocketAttachment } from './types';
 import type { Answer, ClientMessage, EmojiReaction, GameState, Player } from '@shared/types';
 
 /**

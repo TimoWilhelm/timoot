@@ -1,28 +1,17 @@
-/* eslint-disable import/no-named-as-default-member */
-
-import { defineConfig } from 'eslint/config';
-import globals from 'globals';
 import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
+import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
+import { importX } from 'eslint-plugin-import-x';
+import reactCompiler from 'eslint-plugin-react-compiler';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import reactCompiler from 'eslint-plugin-react-compiler';
-import tseslint from 'typescript-eslint';
 import storybook from 'eslint-plugin-storybook';
-import { FlatCompat } from '@eslint/eslintrc';
-import unusedImports from 'eslint-plugin-unused-imports';
 import unicorn from 'eslint-plugin-unicorn';
-import eslintConfigPrettier from 'eslint-config-prettier/flat';
-import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
-
-const compat = new FlatCompat({
-	baseDirectory: import.meta.dirname,
-});
-
-const eslintImport = [
-	...compat.config({
-		extends: ['plugin:import/recommended', 'plugin:import/typescript'],
-	}),
-];
+import unusedImports from 'eslint-plugin-unused-imports';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig(
 	{ ignores: ['dist', '.wrangler', 'worker-configuration.d.ts', '.storybook', 'vitest.config.storybook.ts'] },
@@ -52,17 +41,30 @@ export default defineConfig(
 	reactRefresh.configs.vite,
 	reactCompiler.configs.recommended,
 
-	eslintImport,
+	importX.flatConfigs.recommended,
 	{
 		settings: {
-			'import/resolver': {
-				typescript: true,
-				node: true,
-			},
+			'import-x/resolver-next': [
+				createTypeScriptImportResolver({
+					alwaysTryTypes: true,
+					bun: true,
+					// project: import.meta.dirname,
+				}),
+			],
 		},
 		rules: {
-			'import/order': 'error',
-			'import/no-unresolved': [
+			'import-x/order': [
+				'error',
+				{
+					groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], 'type'],
+					'newlines-between': 'always',
+					alphabetize: {
+						order: 'asc',
+						caseInsensitive: true,
+					},
+				},
+			],
+			'import-x/no-unresolved': [
 				'error',
 				{
 					ignore: ['cloudflare:workers'],
@@ -70,6 +72,7 @@ export default defineConfig(
 			],
 		},
 	},
+
 	{
 		plugins: {
 			'unused-imports': unusedImports,

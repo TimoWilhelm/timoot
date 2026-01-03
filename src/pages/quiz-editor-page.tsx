@@ -1,6 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useBlocker, useParams } from 'react-router-dom';
-import { Control, Controller, SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	ArrowLeft,
@@ -17,14 +14,11 @@ import {
 	X,
 	Zap,
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Control, Controller, SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { Link, useBlocker, useParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
-import type { Question } from '@shared/types';
-import { LIMITS, type QuizFormInput, quizFormSchema } from '@shared/validation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -36,10 +30,13 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
 import { GridBackground } from '@/components/ui/grid-background';
-import { cn } from '@/lib/utilities';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
 	useCreateQuiz,
 	useCustomQuizzes,
@@ -51,9 +48,14 @@ import {
 	useQuizDetail,
 	useUpdateQuiz,
 } from '@/hooks/use-api';
-import { useUserId } from '@/hooks/use-user-id';
 import { useTurnstile } from '@/hooks/use-turnstile';
+import { useUserId } from '@/hooks/use-user-id';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
+import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
+import { cn } from '@/lib/utilities';
+import { LIMITS, type QuizFormInput, quizFormSchema } from '@shared/validation';
+
+import type { Question } from '@shared/types';
 
 type QuizFormData = {
 	title: string;

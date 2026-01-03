@@ -1,9 +1,11 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
+import { useEffect } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { cn, getThemeColor } from '@/lib/utilities';
+
 import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
 interface PodiumEntry {

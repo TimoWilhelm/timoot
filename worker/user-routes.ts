@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+
 import { quizRoutes, gameRoutes, imageRoutes, syncRoutes, versionRoutes } from './routes';
 
 /**

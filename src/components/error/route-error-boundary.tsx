@@ -1,7 +1,9 @@
-import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 import { useEffect } from 'react';
-import { ErrorFallback } from './error-fallback';
+import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
+
 import { Sentry } from '@/lib/sentry';
+
+import { ErrorFallback } from './error-fallback';
 
 export function RouteErrorBoundary() {
 	const error = useRouteError();

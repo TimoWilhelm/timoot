@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
-import { HostPageLayout } from './host-page-layout';
+
 import { HostEnd } from './host-end';
+import { HostPageLayout } from './host-page-layout';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
 	title: 'Host/End',
@@ -11,7 +13,7 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<HostPageLayout className="flex flex-col">
+			<HostPageLayout>
 				<Story />
 			</HostPageLayout>
 		),

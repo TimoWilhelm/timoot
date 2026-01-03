@@ -1,19 +1,18 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2, ShieldAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { Link, useBlocker, useParams } from 'react-router-dom';
-import { Loader2, ShieldAlert } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
-import type { EmojiReaction, GamePhase } from '@shared/types';
+
+import { HostEnd } from '@/components/game/host/host-end';
+import { HostGetReady } from '@/components/game/host/host-get-ready';
+import { HostLeaderboard } from '@/components/game/host/host-leaderboard';
 import { HostLobby } from '@/components/game/host/host-lobby';
+import { HostPageLayout } from '@/components/game/host/host-page-layout';
 import { HostQuestion } from '@/components/game/host/host-question';
 import { HostQuestionModifier } from '@/components/game/host/host-question-modifier';
 import { HostReveal } from '@/components/game/host/host-reveal';
-import { HostLeaderboard } from '@/components/game/host/host-leaderboard';
-import { HostEnd } from '@/components/game/host/host-end';
-import { HostGetReady } from '@/components/game/host/host-get-ready';
-import { useGameWebSocket } from '@/hooks/use-game-web-socket';
-import { useHostStore } from '@/lib/host-store';
-import { Button } from '@/components/ui/button';
+import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/game/shared';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -24,10 +23,13 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import { SoundToggle } from '@/components/ui/sound-toggle';
-import { HostPageLayout } from '@/components/game/host/host-page-layout';
+import { useGameWebSocket } from '@/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/hooks/use-host-sound';
-import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/game/shared';
+import { useHostStore } from '@/lib/host-store';
+
+import type { EmojiReaction, GamePhase } from '@shared/types';
 
 const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	LOBBY: 'lobby',
@@ -253,7 +255,7 @@ export function HostPage() {
 			: 'Unable to connect as host. The game may have ended or your session is no longer valid.';
 
 		return (
-			<HostPageLayout className="flex flex-col items-center justify-center overflow-hidden p-4">
+			<HostPageLayout variant="center">
 				<div
 					className={`
 						relative flex flex-col items-center rounded-xl border-4 border-black
@@ -282,7 +284,7 @@ export function HostPage() {
 
 	if (isConnecting && !isConnected) {
 		return (
-			<HostPageLayout className="flex items-center justify-center">
+			<HostPageLayout variant="center">
 				<div
 					className={`
 						relative flex size-24 items-center justify-center rounded-full border-4
@@ -371,12 +373,7 @@ export function HostPage() {
 	};
 
 	return (
-		<HostPageLayout
-			className={`
-				flex flex-col overflow-hidden font-sans
-				selection:bg-black selection:text-white
-			`}
-		>
+		<HostPageLayout>
 			{/* Sound toggle button - fixed position */}
 			<div className="fixed top-4 left-4 z-50">
 				<SoundToggle onToggle={handleAudioInit} />
@@ -385,10 +382,10 @@ export function HostPage() {
 			<AnimatePresence mode="wait">
 				<motion.main
 					key={gameState.phase}
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={{ opacity: 0, y: -20 }}
-					transition={{ duration: 0.3 }}
+					initial={{ opacity: 0, scale: 0.95 }}
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0.95 }}
+					transition={{ type: 'spring', stiffness: 260, damping: 20 }}
 					className="relative flex grow flex-col"
 				>
 					{renderContent()}

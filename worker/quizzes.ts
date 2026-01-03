@@ -1,5 +1,6 @@
-import type { Question, Quiz } from '@shared/types';
 import { getBackgroundImagePath } from '@shared/background-images';
+
+import type { Question, Quiz } from '@shared/types';
 
 export const GENERAL_KNOWLEDGE_QUIZ: Question[] = [
 	{

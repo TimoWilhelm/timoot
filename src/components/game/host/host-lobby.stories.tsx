@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
-import { HostPageLayout } from './host-page-layout';
+
 import { HostLobby } from './host-lobby';
+import { HostPageLayout } from './host-page-layout';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
 	title: 'Host/Lobby',

@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+
 import type { Quiz } from '@shared/types';
 
 // 6 months in milliseconds for data expiration

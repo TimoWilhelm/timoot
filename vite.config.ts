@@ -1,10 +1,11 @@
 import path from 'node:path';
-import { defineConfig, loadEnv, UserConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import devtoolsJson from 'vite-plugin-devtools-json';
+
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig, loadEnv, UserConfig } from 'vite';
+import devtoolsJson from 'vite-plugin-devtools-json';
 
 // https://vite.dev/config/
 export default function defineViteConfig({ mode }: { mode: string }): UserConfig {

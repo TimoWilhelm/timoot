@@ -1,7 +1,9 @@
 import { Gamepad2, Loader2 } from 'lucide-react';
-import type { Quiz } from '@shared/types';
+
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+import type { Quiz } from '@shared/types';
 
 interface StartGameDialogProperties {
 	open: boolean;

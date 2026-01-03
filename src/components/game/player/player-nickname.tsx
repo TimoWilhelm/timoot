@@ -1,11 +1,13 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LIMITS, nicknameSchema } from '@shared/validation';
+
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { LIMITS, nicknameSchema } from '@shared/validation';
 
 const formSchema = z.object({
 	nickname: nicknameSchema,
@@ -16,6 +18,9 @@ interface PlayerNicknameProperties {
 	onJoin: (nickname: string) => void;
 	isLoading: boolean;
 }
+
+const MotionCard = motion(Card);
+
 export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) {
 	const formReference = useRef<HTMLFormElement>(null);
 	const {
@@ -36,10 +41,12 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 	};
 
 	return (
-		<Card
+		<MotionCard
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ type: 'spring', stiffness: 260, damping: 20 }}
 			className={`
-				relative w-full max-w-md animate-scale-in border-4 border-slate bg-black
-				shadow-brutal-slate
+				relative w-full max-w-md border-4 border-slate bg-black shadow-brutal-slate
 			`}
 		>
 			<CardHeader className="border-b-2 border-slate text-center">
@@ -67,6 +74,6 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 					</Button>
 				</form>
 			</CardContent>
-		</Card>
+		</MotionCard>
 	);
 }

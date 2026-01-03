@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+
 import { shapeColors, shapePaths } from '@/components/game/shared';
 import { cn } from '@/lib/utilities';
 

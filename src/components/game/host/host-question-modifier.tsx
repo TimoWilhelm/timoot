@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
+
 import type { QuestionModifier } from '@shared/types';
 
 interface HostQuestionModifierProperties {

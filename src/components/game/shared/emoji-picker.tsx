@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+
 import { EMOJI_REACTIONS, type EmojiReaction } from '@shared/types';
 
 interface EmojiPickerProperties {

@@ -1,5 +1,6 @@
 import { QUESTION_TIME_LIMIT_MS } from './constants';
 import { buildLeaderboard } from './scoring';
+
 import type { GameState, QuestionModifier, ServerMessage } from '@shared/types';
 
 /**

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier, ServerMessage } from '@shared/types';
-import type { ErrorCodeType } from '@shared/errors';
+
 import { Sentry } from '@/lib/sentry';
+
+import type { ErrorCodeType } from '@shared/errors';
+import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier, ServerMessage } from '@shared/types';
 
 // Game state derived from WebSocket messages
 export interface LeaderboardEntry {

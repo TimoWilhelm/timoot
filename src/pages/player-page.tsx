@@ -1,23 +1,16 @@
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useBlocker, useSearchParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ErrorCode } from '@shared/errors';
-import type { GamePhase } from '@shared/types';
-import { phaseAllowsEmoji } from '@shared/phase-rules';
-import { useGameStore } from '@/lib/game-store';
-import { useGameWebSocket } from '@/hooks/use-game-web-socket';
-import { PlayerNickname } from '@/components/game/player/player-nickname';
+
 import { PlayerAnswer } from '@/components/game/player/player-answer';
-import { PlayerWaiting } from '@/components/game/player/player-waiting';
 import { PlayerError } from '@/components/game/player/player-error';
-import { PlayerPageLayout } from '@/components/game/player/player-page-layout';
 import { PlayerJoinGame } from '@/components/game/player/player-join-game';
+import { PlayerNickname } from '@/components/game/player/player-nickname';
+import { PlayerPageLayout } from '@/components/game/player/player-page-layout';
+import { PlayerWaiting } from '@/components/game/player/player-waiting';
 import { EmojiPicker } from '@/components/game/shared';
-import { useSound } from '@/hooks/use-sound';
-import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
-import { AnimatedNumber } from '@/components/ui/animated-number';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -28,7 +21,16 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { AnimatedNumber } from '@/components/ui/animated-number';
 import { Button } from '@/components/ui/button';
+import { useGameWebSocket } from '@/hooks/use-game-web-socket';
+import { useSound } from '@/hooks/use-sound';
+import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
+import { useGameStore } from '@/lib/game-store';
+import { ErrorCode } from '@shared/errors';
+import { phaseAllowsEmoji } from '@shared/phase-rules';
+
+import type { GamePhase } from '@shared/types';
 
 type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
 
@@ -240,10 +242,6 @@ export function PlayerPage() {
 	// Use tracked total score (updates on reveal, syncs with leaderboard when available)
 	const myScore = totalScore;
 
-	// Determine layout class based on view and state
-	// Game view is top-aligned (column), others are centered
-	const isCenterLayout = view !== 'GAME';
-
 	const renderContent = () => {
 		if (view === 'JOIN_GAME') {
 			return <PlayerJoinGame />;
@@ -382,11 +380,7 @@ export function PlayerPage() {
 	};
 
 	return (
-		<PlayerPageLayout
-			className={
-				isCenterLayout ? 'flex min-h-dvh items-center justify-center overflow-auto p-4' : 'flex min-h-dvh flex-col overflow-hidden p-4'
-			}
-		>
+		<PlayerPageLayout variant={view === 'GAME' ? 'game' : 'center'}>
 			{renderContent()}
 
 			<Toaster richColors theme="dark" />

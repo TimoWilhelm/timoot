@@ -1,10 +1,12 @@
-import { ChevronDown, ChevronUp, Crown, Trophy } from 'lucide-react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { ChevronDown, ChevronUp, Crown, Trophy } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
-import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utilities';
+
+import type { LeaderboardEntry } from '@/hooks/use-game-web-socket';
 
 interface HostLeaderboardProperties {
 	onNext: () => void;

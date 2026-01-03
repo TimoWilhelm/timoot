@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono/client';
+
 import { hcWithType, type Client } from '@/lib/api-client';
 
 const client: Client = hcWithType('/');

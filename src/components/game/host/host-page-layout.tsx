@@ -1,14 +1,19 @@
-import { cn } from '@/lib/utilities';
 import { GridBackground } from '@/components/ui/grid-background';
+import { cn } from '@/lib/utilities';
 
 interface HostPageLayoutProperties {
 	children: React.ReactNode;
-	className?: string;
+	variant?: 'center' | 'game';
 }
 
-export function HostPageLayout({ children, className }: HostPageLayoutProperties) {
+const variantStyles = {
+	center: 'flex min-h-dvh items-center justify-center overflow-hidden p-4',
+	game: 'flex min-h-dvh flex-col overflow-hidden selection:bg-black selection:text-white',
+};
+
+export function HostPageLayout({ children, variant = 'game' }: HostPageLayoutProperties) {
 	return (
-		<div className={cn('relative isolate min-h-screen w-full text-black', className)}>
+		<div className={cn('relative isolate min-h-screen w-full text-black', variantStyles[variant])}>
 			<div className="absolute inset-0 -z-20 bg-white" aria-hidden="true" />
 			<GridBackground className="-z-10" />
 			{children}

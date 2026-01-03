@@ -1,11 +1,13 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { adjectives, animals, colors, findMatches, isValidGameId, isValidWord } from '@/lib/words';
-import { cn } from '@/lib/utilities';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
+import { cn } from '@/lib/utilities';
+import { adjectives, animals, colors, findMatches, isValidGameId, isValidWord } from '@/lib/words';
 
 // Determine which word list to use based on current position
 function getWordListForPosition(parts: string[]): { list: string[]; label: string } | undefined {
@@ -22,6 +24,8 @@ function generateRandomPlaceholder(): string {
 	const randomAnimal = animals[Math.floor(Math.random() * animals.length)].toLowerCase();
 	return `${randomAdj}-${randomColor}-${randomAnimal}`;
 }
+
+const MotionCard = motion(Card);
 
 export function PlayerJoinGame() {
 	const navigate = useViewTransitionNavigate();
@@ -269,10 +273,12 @@ export function PlayerJoinGame() {
 	};
 
 	return (
-		<Card
+		<MotionCard
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ type: 'spring', stiffness: 260, damping: 20 }}
 			className={`
-				relative w-full max-w-md animate-scale-in border-4 border-slate bg-black
-				shadow-brutal-slate
+				relative w-full max-w-md border-4 border-slate bg-black shadow-brutal-slate
 			`}
 		>
 			<CardHeader className="border-b-2 border-slate text-center">
@@ -448,6 +454,6 @@ export function PlayerJoinGame() {
 					</Button>
 				</div>
 			</CardContent>
-		</Card>
+		</MotionCard>
 	);
 }

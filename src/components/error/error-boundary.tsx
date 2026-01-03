@@ -1,6 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { ErrorFallback } from './error-fallback';
+
 import { Sentry } from '@/lib/sentry';
+
+import { ErrorFallback } from './error-fallback';
 
 interface Properties {
 	children: ReactNode;

@@ -7,6 +7,7 @@ import {
 	buildQuestionModifierMessage,
 	buildRevealMessage,
 } from '../game';
+
 import type { WebSocketAttachment } from './types';
 import type { ClientRole, GameState, ServerMessage } from '@shared/types';
 

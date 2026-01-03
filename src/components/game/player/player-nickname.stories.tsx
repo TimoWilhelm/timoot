@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
-import { PlayerPageLayout } from './player-page-layout';
+
 import { PlayerNickname } from './player-nickname';
+import { PlayerPageLayout } from './player-page-layout';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
 	title: 'Player/NicknameForm',
@@ -14,7 +16,7 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<PlayerPageLayout className="flex items-center justify-center">
+			<PlayerPageLayout>
 				<Story />
 			</PlayerPageLayout>
 		),

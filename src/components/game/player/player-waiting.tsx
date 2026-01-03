@@ -1,11 +1,13 @@
-import { CheckCircle, Gamepad2, Home, Loader2, Star, Trophy, XCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import type { GamePhase, QuestionModifier } from '@shared/types';
-import { cn, getThemeColor } from '@/lib/utilities';
+import { motion } from 'framer-motion';
+import { CheckCircle, Gamepad2, Home, Loader2, Star, Trophy, XCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
+import { cn, getThemeColor } from '@/lib/utilities';
+
+import type { GamePhase, QuestionModifier } from '@shared/types';
 
 interface LeaderboardEntry {
 	id: string;

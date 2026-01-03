@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { HelpCircle, Zap } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import type { Quiz } from '@shared/types';
 import { cn } from '@/lib/utilities';
+
+import type { Quiz } from '@shared/types';
 
 interface FeaturedQuizzesSectionProperties {
 	quizzes: Quiz[];
