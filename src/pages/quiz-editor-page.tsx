@@ -41,6 +41,7 @@ import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
 import { cn } from '@/lib/utilities';
 import {
 	useCreateQuiz,
+	useCustomQuizzes,
 	useDeleteImage,
 	useGenerateImage,
 	useGenerateQuestion,
@@ -124,6 +125,7 @@ export function QuizEditorPage() {
 
 	// React Query hooks
 	const { data: imagesData } = useImages(userId);
+	const { data: customQuizzes = [] } = useCustomQuizzes(userId);
 	const { data: quizData, isError: quizError } = useQuizDetail(userId, quizId);
 	const loadMoreImagesMutation = useLoadMoreImages();
 	const createQuizMutation = useCreateQuiz();
@@ -213,6 +215,10 @@ export function QuizEditorPage() {
 				{ onSuccess, onError: (error) => toast.error(error.message || 'Failed to save quiz') },
 			);
 		} else {
+			if (customQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
+				toast.error(`You have reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes.`);
+				return;
+			}
 			createQuizMutation.mutate(
 				{ header: { 'x-user-id': userId }, json: processedData },
 				{ onSuccess, onError: (error) => toast.error(error.message || 'Failed to save quiz') },

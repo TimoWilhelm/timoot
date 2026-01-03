@@ -1,11 +1,12 @@
 import { type RefObject } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, HelpCircle, Loader2, Pencil, Plus, Sparkles, Trash2, Wand2, Zap } from 'lucide-react';
+import { toast } from 'sonner';
 
 import type { Quiz } from '@shared/types';
 import { LIMITS } from '@shared/validation';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
@@ -67,6 +68,23 @@ export function CustomQuizzesSection({
 	onDeleteQuiz,
 }: CustomQuizzesSectionProperties) {
 	const navigate = useViewTransitionNavigate();
+	const isLimitReached = quizzes.length >= LIMITS.MAX_QUIZZES_PER_USER;
+
+	const handleCreateClick = () => {
+		if (isLimitReached) {
+			toast.error(`You've reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes. Delete some to create more.`);
+			return;
+		}
+		navigate('/edit');
+	};
+
+	const handleMagicQuizClick = () => {
+		if (isLimitReached) {
+			toast.error(`You've reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes. Delete some to create more.`);
+			return;
+		}
+		onAiDialogOpenChange(true);
+	};
 
 	return (
 		<section>
@@ -102,13 +120,14 @@ export function CustomQuizzesSection({
 					<Button
 						type="button"
 						variant="ghost"
-						onClick={() => navigate('/edit')}
+						onClick={handleCreateClick}
 						className={`
 							group relative size-full flex-col items-center justify-center gap-4
 							overflow-hidden rounded-xl border-2 border-black p-6 text-center
 							shadow-brutal-sm transition-all duration-200
 							hover:-translate-y-px hover:bg-blue/10 hover:shadow-brutal
 							active:translate-y-0 active:shadow-none
+							${isLimitReached ? 'opacity-50 grayscale' : ''}
 						`}
 					>
 						<div
@@ -163,31 +182,32 @@ export function CustomQuizzesSection({
 					</motion.div>
 				) : (
 					<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={handleMagicQuizClick}
+							className={`
+								group relative size-full flex-col items-center justify-center gap-4
+								overflow-hidden rounded-xl border-2 border-black p-6 text-center
+								shadow-brutal-sm transition-all duration-200
+								hover:-translate-y-px hover:bg-purple/10 hover:shadow-brutal
+								active:translate-y-0 active:shadow-none
+								${isLimitReached ? 'opacity-50 grayscale' : ''}
+							`}
+						>
+							<div
+								className="
+									flex size-16 items-center justify-center rounded-full border-2
+									border-black bg-purple shadow-brutal transition-transform
+									group-hover:scale-110 group-hover:-rotate-12
+								"
+							>
+								<Wand2 className="size-8" strokeWidth={2.5} />
+							</div>
+							<h3 className="font-display text-2xl font-bold">Magic Quiz</h3>
+						</Button>
+
 						<Dialog open={isAiDialogOpen} onOpenChange={onAiDialogOpenChange}>
-							<DialogTrigger asChild>
-								<Button
-									type="button"
-									variant="ghost"
-									className={`
-										group relative size-full flex-col items-center justify-center gap-4
-										overflow-hidden rounded-xl border-2 border-black p-6 text-center
-										shadow-brutal-sm transition-all duration-200
-										hover:-translate-y-px hover:bg-purple/10 hover:shadow-brutal
-										active:translate-y-0 active:shadow-none
-									`}
-								>
-									<div
-										className="
-											flex size-16 items-center justify-center rounded-full border-2
-											border-black bg-purple shadow-brutal transition-transform
-											group-hover:scale-110 group-hover:-rotate-12
-										"
-									>
-										<Wand2 className="size-8" strokeWidth={2.5} />
-									</div>
-									<h3 className="font-display text-2xl font-bold">Magic Quiz</h3>
-								</Button>
-							</DialogTrigger>
 							<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
 								<div className="bg-purple p-6">
 									<DialogHeader>

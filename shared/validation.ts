@@ -21,6 +21,7 @@ export const LIMITS = {
 	AI_NUM_QUESTIONS_MAX: 10,
 	AI_IMAGE_PROMPT_MIN: 1,
 	AI_IMAGE_PROMPT_MAX: 100,
+	MAX_QUIZZES_PER_USER: 40,
 } as const;
 
 // ============ Base Schemas ============

@@ -7,7 +7,7 @@ import { type GeneratedQuestion, generateQuizFromPrompt, generateSingleQuestion 
 import { PREDEFINED_QUIZZES } from '../quizzes';
 import { checkRateLimit } from './utilities';
 import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
-import { aiGenerateRequestSchema, quizSchema } from '@shared/validation';
+import { LIMITS, aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 import type { ApiResponse, GenerationStatus, Quiz, QuizGenerateSSEEvent } from '@shared/types';
 
 /**
@@ -49,6 +49,13 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 		const quiz = c.req.valid('json');
 		const userId = getUserId(c);
 		const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+		const existingQuizzes = await quizStoreStub.getCustomQuizzes();
+		if (existingQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
+			return c.json(
+				{ success: false, error: `You have reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes.` } satisfies ApiResponse,
+				400,
+			);
+		}
 		const data = await quizStoreStub.saveCustomQuiz(quiz);
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
@@ -96,6 +103,17 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 
 			const { prompt, numQuestions } = c.req.valid('json');
 
+			const userId = getUserId(c);
+			const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+			const existingQuizzes = await quizStoreStub.getCustomQuizzes();
+
+			if (existingQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
+				return c.json(
+					{ success: false, error: `You have reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes.` } satisfies ApiResponse,
+					400,
+				);
+			}
+
 			const writeSSEEvent = (stream: Parameters<Parameters<typeof streamSSE>[1]>[0], event: QuizGenerateSSEEvent) => {
 				return stream.writeSSE({ event: event.event, data: JSON.stringify(event.data) });
 			};
@@ -111,8 +129,8 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 					});
 
 					// Save the generated quiz as a custom quiz
-					const userId = getUserId(c);
-					const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+					// Note: validation of limit was done before generation, but parallel requests could still race.
+					// Since consistency isn't critical (just soft limit), this is fine.
 					const savedQuiz = await quizStoreStub.saveCustomQuiz({
 						title: generatedQuiz.title,
 						questions: generatedQuiz.questions,

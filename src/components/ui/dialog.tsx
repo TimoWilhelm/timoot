@@ -7,8 +7,6 @@ import { buttonVariants } from '@/components/ui/button/button-variants';
 
 const Dialog = DialogPrimitive.Root;
 
-const DialogTrigger = DialogPrimitive.Trigger;
-
 const DialogPortal = DialogPrimitive.Portal;
 
 const DialogOverlay = React.forwardRef<
@@ -116,4 +114,4 @@ const DialogDescription = React.forwardRef<
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
-export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription };
+export { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription };

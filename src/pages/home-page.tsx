@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { z } from 'zod';
 import type { Quiz, QuizGenerateSSEEvent } from '@shared/types';
-import { aiPromptSchema } from '@shared/validation';
+import { LIMITS, aiPromptSchema } from '@shared/validation';
 import { useHostStore } from '@/lib/host-store';
 import { consumeSSEStream } from '@/lib/sse-client';
 import { hcWithType } from '@/lib/api-client';
@@ -187,6 +187,11 @@ export function HomePage() {
 	};
 
 	const handleGenerateAiQuiz = async () => {
+		if (customQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
+			toast.error(`You have reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes.`);
+			return;
+		}
+
 		const result = aiPromptSchema.safeParse(aiPrompt);
 		if (!result.success) {
 			toast.error(z.prettifyError(result.error));

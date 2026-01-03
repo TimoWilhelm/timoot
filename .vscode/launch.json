@@ -18,6 +18,13 @@
 			"url": "http://localhost:3000",
 			"webRoot": "${workspaceFolder}/src",
 			"sourceMaps": true
+		},
+		{
+			"name": "Storybook",
+			"type": "chrome",
+			"request": "launch",
+			"url": "http://localhost:6006",
+			"preLaunchTask": "storybook"
 		}
 	],
 	"compounds": [
