@@ -85,12 +85,6 @@
 	--color-red-dark: color-mix(in srgb, var(--color-red) 80%, black);
 	--color-green-dark: color-mix(in srgb, var(--color-green) 80%, black);
 
-	/* Grid/Background pattern colors */
-	--color-grid-slate: #334155;
-	--color-grid-zinc: #d4d4d8;
-	--color-grid-light: rgba(0, 0, 0, 0.05);
-	--color-grid-medium: rgba(0, 0, 0, 0.1);
-
 	--animate-overlay-in: overlay-in 0.2s ease-out;
 	--animate-overlay-out: overlay-out 0.2s ease-in forwards;
 	--animate-modal-in: modal-in 0.2s ease-out;

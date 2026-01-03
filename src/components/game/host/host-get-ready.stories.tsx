@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
+import { HostPageLayout } from './host-page-layout';
 import { HostGetReady } from './host-get-ready';
 
 const meta = {
@@ -13,9 +14,9 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="min-h-screen bg-muted">
+			<HostPageLayout>
 				<Story />
-			</div>
+			</HostPageLayout>
 		),
 	],
 } satisfies Meta<typeof HostGetReady>;

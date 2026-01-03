@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn } from 'storybook/test';
+import { PlayerPageLayout } from './player-page-layout';
 import { PlayerAnswerScreen } from './player-answer-screen';
 
 function PlayerAnswerScreenWrapper({
@@ -32,9 +33,9 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div className={`flex min-h-screen items-center justify-center bg-black p-4`}>
+			<PlayerPageLayout className="flex items-center justify-center p-4">
 				<Story />
-			</div>
+			</PlayerPageLayout>
 		),
 	],
 } satisfies Meta<typeof PlayerAnswerScreen>;

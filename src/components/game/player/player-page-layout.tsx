@@ -8,8 +8,9 @@ interface PlayerPageLayoutProperties {
 
 export function PlayerPageLayout({ children, className }: PlayerPageLayoutProperties) {
 	return (
-		<div className={cn('relative min-h-screen w-full bg-black text-white', className)}>
-			<GridBackground />
+		<div className={cn('relative isolate min-h-screen w-full text-white', className)}>
+			<div className="absolute inset-0 -z-20 bg-black" aria-hidden="true" />
+			<GridBackground variant="dark" className="-z-10" />
 			{children}
 		</div>
 	);

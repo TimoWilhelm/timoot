@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
+import { HostPageLayout } from './host-page-layout';
 import { HostEnd } from './host-end';
 
 const meta = {
@@ -10,9 +11,9 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="flex min-h-screen flex-col bg-muted">
+			<HostPageLayout className="flex flex-col">
 				<Story />
-			</div>
+			</HostPageLayout>
 		),
 	],
 } satisfies Meta<typeof HostEnd>;

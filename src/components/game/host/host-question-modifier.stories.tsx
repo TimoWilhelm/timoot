@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { HostPageLayout } from './host-page-layout';
 import { HostQuestionModifier } from './host-question-modifier';
 
 const meta = {
@@ -7,6 +8,13 @@ const meta = {
 	parameters: {
 		layout: 'fullscreen',
 	},
+	decorators: [
+		(Story) => (
+			<HostPageLayout>
+				<Story />
+			</HostPageLayout>
+		),
+	],
 } satisfies Meta<typeof HostQuestionModifier>;
 
 export default meta;

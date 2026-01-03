@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
+import { HostPageLayout } from './host-page-layout';
 import { HostLeaderboard } from './host-leaderboard';
 
 const meta = {
@@ -13,9 +14,9 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="flex min-h-screen flex-col bg-muted">
+			<HostPageLayout className="flex flex-col">
 				<Story />
-			</div>
+			</HostPageLayout>
 		),
 	],
 } satisfies Meta<typeof HostLeaderboard>;

@@ -1,17 +1,23 @@
 import { cn } from '@/lib/utilities';
 
-const variants = {
-	dark: 'bg-[radial-gradient(var(--color-grid-slate)_1px,transparent_1px)] opacity-30',
-	light: 'bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)] opacity-50',
-} as const;
-
 interface GridBackgroundProperties {
-	variant?: keyof typeof variants;
 	className?: string;
+	variant?: 'default' | 'dark';
 }
 
-export function GridBackground({ variant = 'dark', className }: GridBackgroundProperties) {
+export function GridBackground({ className, variant = 'default' }: GridBackgroundProperties) {
 	return (
-		<div className={cn('pointer-events-none absolute inset-0 bg-size-[20px_20px]', variants[variant], className)} aria-hidden="true" />
+		<div
+			className={cn(
+				`
+					pointer-events-none absolute inset-0
+					bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
+					bg-size-[20px_20px]
+				`,
+				variant === 'dark' ? 'opacity-50' : 'opacity-30',
+				className,
+			)}
+			aria-hidden="true"
+		/>
 	);
 }

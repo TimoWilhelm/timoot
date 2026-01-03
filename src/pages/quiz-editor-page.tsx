@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
+import { GridBackground } from '@/components/ui/grid-background';
 import { cn } from '@/lib/utilities';
 import {
 	useCreateQuiz,
@@ -364,15 +365,8 @@ export function QuizEditorPage() {
 		});
 	};
 	return (
-		<div className="relative min-h-screen bg-muted/50">
-			{/* Decorative grid background */}
-			<div
-				className={`
-					absolute inset-0
-					bg-[radial-gradient(var(--color-grid-light)_1px,transparent_1px)]
-					bg-size-[20px_20px]
-				`}
-			/>
+		<div className="relative isolate min-h-screen bg-muted/50">
+			<GridBackground className="-z-10" />
 			<div
 				className={`
 					relative mx-auto max-w-4xl px-4 py-12

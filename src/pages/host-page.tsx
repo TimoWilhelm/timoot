@@ -256,7 +256,7 @@ export function HostPage() {
 			<HostPageLayout className="flex flex-col items-center justify-center overflow-hidden p-4">
 				<div
 					className={`
-						relative z-10 flex flex-col items-center rounded-xl border-4 border-black
+						relative flex flex-col items-center rounded-xl border-4 border-black
 						bg-red/10 p-8 shadow-brutal-lg
 					`}
 				>
@@ -285,8 +285,8 @@ export function HostPage() {
 			<HostPageLayout className="flex items-center justify-center">
 				<div
 					className={`
-						relative z-10 flex size-24 items-center justify-center rounded-full
-						border-4 border-black bg-yellow shadow-brutal-sm
+						relative flex size-24 items-center justify-center rounded-full border-4
+						border-black bg-yellow shadow-brutal-sm
 					`}
 				>
 					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />
@@ -389,7 +389,7 @@ export function HostPage() {
 					animate={{ opacity: 1, y: 0 }}
 					exit={{ opacity: 0, y: -20 }}
 					transition={{ duration: 0.3 }}
-					className="relative z-10 flex grow flex-col"
+					className="relative flex grow flex-col"
 				>
 					{renderContent()}
 				</motion.main>

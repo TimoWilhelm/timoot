@@ -75,7 +75,7 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 						className={cn(
 							colors.text,
 							`
-								relative z-10 font-display text-2xl font-black tabular-nums
+								relative font-display text-2xl font-black tabular-nums
 								sm:text-3xl
 							`,
 						)}
@@ -257,7 +257,7 @@ export function HostQuestion({
 				{/* Content layer */}
 				<div
 					className={`
-						relative z-10 flex w-full items-center justify-center p-4
+						relative flex w-full items-center justify-center p-4
 						sm:p-8
 					`}
 				>

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
+import { PlayerPageLayout } from './player-page-layout';
 import { PlayerNicknameForm } from './player-nickname-form';
 
 const meta = {
@@ -11,6 +12,13 @@ const meta = {
 	args: {
 		onJoin: fn(),
 	},
+	decorators: [
+		(Story) => (
+			<PlayerPageLayout className="flex items-center justify-center">
+				<Story />
+			</PlayerPageLayout>
+		),
+	],
 } satisfies Meta<typeof PlayerNicknameForm>;
 
 export default meta;

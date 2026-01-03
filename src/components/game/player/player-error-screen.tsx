@@ -7,7 +7,7 @@ interface PlayerErrorScreenProperties {
 
 export function PlayerErrorScreen({ emoji, title, description, children }: PlayerErrorScreenProperties) {
 	return (
-		<div className="relative z-10 flex flex-col items-center">
+		<div className="relative flex flex-col items-center">
 			<div className="mb-6 text-6xl">{emoji}</div>
 			<h1 className="mb-4 text-center font-display text-3xl font-bold">{title}</h1>
 			<p

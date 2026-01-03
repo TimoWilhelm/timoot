@@ -44,7 +44,7 @@ export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: H
 				sm:p-10
 			`}
 		>
-			<div className="relative z-10 flex max-w-3xl flex-col items-center">
+			<div className="relative flex max-w-3xl flex-col items-center">
 				{/* Main title */}
 				<motion.h1
 					initial={{ opacity: 0, y: -20 }}

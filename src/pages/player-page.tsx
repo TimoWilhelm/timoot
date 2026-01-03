@@ -251,7 +251,7 @@ export function PlayerPage() {
 
 		if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
 			return (
-				<div className="relative z-10 flex items-center justify-center">
+				<div className="relative flex items-center justify-center">
 					<Loader2 className="size-10 animate-spin text-orange" />
 				</div>
 			);
@@ -334,8 +334,8 @@ export function PlayerPage() {
 			<>
 				<header
 					className={`
-						relative z-10 flex items-center justify-center rounded-lg border-2
-						border-slate bg-slate/50 px-4 py-2 text-xl font-bold
+						relative flex items-center justify-center rounded-lg border-2 border-slate
+						bg-slate/50 px-4 py-2 text-xl font-bold
 					`}
 				>
 					<div className="flex w-full max-w-2xl justify-between">
@@ -345,7 +345,7 @@ export function PlayerPage() {
 						</span>
 					</div>
 				</header>
-				<main className="relative z-10 flex grow items-center justify-center">
+				<main className="relative flex grow items-center justify-center">
 					<AnimatePresence mode="wait">
 						{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? (
 							<PlayerAnswerScreen

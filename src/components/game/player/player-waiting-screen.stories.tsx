@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { PlayerPageLayout } from './player-page-layout';
 import { PlayerWaitingScreen } from './player-waiting-screen';
 
 const meta = {
@@ -9,13 +10,9 @@ const meta = {
 	},
 	decorators: [
 		(Story) => (
-			<div
-				className={`
-					flex min-h-screen items-center justify-center bg-black p-4 text-white
-				`}
-			>
+			<PlayerPageLayout className="flex items-center justify-center p-4">
 				<Story />
-			</div>
+			</PlayerPageLayout>
 		),
 	],
 } satisfies Meta<typeof PlayerWaitingScreen>;

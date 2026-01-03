@@ -24,14 +24,6 @@ function DoublePointsAnimation() {
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
 		>
-			{/* Decorative grid background */}
-			<div
-				className={`
-					absolute inset-0
-					bg-[radial-gradient(var(--color-grid-medium)_1px,transparent_1px)]
-					bg-size-[24px_24px]
-				`}
-			/>
 			{/* Background pulse rings */}
 			{Array.from({ length: 3 }).map((_, index) => (
 				<motion.div
@@ -77,7 +69,7 @@ function DoublePointsAnimation() {
 
 			{/* Main 2x text */}
 			<motion.div
-				className="relative z-10 flex flex-col items-center"
+				className="relative flex flex-col items-center"
 				initial={{ scale: 0, rotate: -180 }}
 				animate={{ scale: 1, rotate: 0 }}
 				transition={{

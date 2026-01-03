@@ -38,8 +38,8 @@ export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProp
 	return (
 		<Card
 			className={`
-				relative z-10 w-full max-w-md animate-scale-in border-4 border-slate
-				bg-black shadow-brutal-slate
+				relative w-full max-w-md animate-scale-in border-4 border-slate bg-black
+				shadow-brutal-slate
 			`}
 		>
 			<CardHeader className="border-b-2 border-slate text-center">

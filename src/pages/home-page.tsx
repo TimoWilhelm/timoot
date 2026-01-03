@@ -30,6 +30,7 @@ import {
 	StartGameDialog,
 	SyncDevicesDialog,
 } from '@/components/home';
+import { GridBackground } from '@/components/ui/grid-background';
 
 export function HomePage() {
 	const navigate = useViewTransitionNavigate();
@@ -272,22 +273,14 @@ export function HomePage() {
 	return (
 		<div
 			className="
-				relative min-h-screen w-full overflow-x-hidden bg-white font-sans
+				relative isolate min-h-screen w-full overflow-x-hidden bg-white font-sans
 				selection:bg-black selection:text-white
 			"
 		>
-			{/* Decorative Background Grid */}
-			<div
-				className="
-					absolute inset-0
-					bg-[radial-gradient(var(--color-grid-zinc)_1px,transparent_1px)]
-					bg-size-[20px_20px] opacity-50
-				"
-			/>
-
+			<GridBackground className="-z-10" />
 			<main
 				className="
-					relative z-10 mx-auto max-w-7xl px-4 py-8
+					relative mx-auto max-w-7xl px-4 py-8
 					md:py-16
 				"
 			>

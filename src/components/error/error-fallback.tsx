@@ -45,15 +45,6 @@ export function ErrorFallback({
 				relative flex min-h-screen items-center justify-center bg-muted/50 p-4
 			"
 		>
-			{/* Background grid */}
-			<div
-				className={`
-					absolute inset-0
-					bg-[radial-gradient(var(--color-grid-light)_1px,transparent_1px)]
-					bg-size-[20px_20px]
-				`}
-			/>
-
 			<div
 				className="
 					flex w-full max-w-md flex-col items-center justify-center text-center
