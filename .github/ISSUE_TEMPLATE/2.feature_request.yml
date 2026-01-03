@@ -1,0 +1,24 @@
+name: Feature Request
+description: Create a feature request
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value:
+        Thanks for taking the time to file a feature request! Please fill out this form as
+        completely as possible.
+  - type: textarea
+    attributes:
+      label: The feature you'd like to request
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The solution you'd like
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Alternatives you've considered
+    validations:
+      required: false

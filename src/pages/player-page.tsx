@@ -261,7 +261,6 @@ export function PlayerPage() {
 			return (
 				<>
 					<PlayerNickname onJoin={handleJoin} isLoading={isConnecting} />
-					<Toaster richColors />
 				</>
 			);
 		}

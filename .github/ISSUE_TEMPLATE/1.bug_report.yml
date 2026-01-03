@@ -1,0 +1,32 @@
+name: Bug Report
+description: Create a bug report
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value:
+        Thanks for taking the time to file a bug report! Please fill out this form as completely as
+        possible.
+  - type: input
+    attributes:
+      label: What did you see?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What did you expect to see?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What sequence of events led you to see what you saw?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Any other info
+      description:
+        OS, time of day, location, anything that causes you to see something different doing the
+        same thing
+    validations:
+      required: true

@@ -88,7 +88,7 @@ test.describe('Player Game Flow E2E', () => {
 				await host.waitForMessage('lobbyUpdate', 10_000, (m) => m.players.length === 1);
 
 				// Verify player name and score are displayed
-				await expect(page.getByText('RoundFlowPlayer')).toBeVisible({ timeout: 10_000 });
+				await expect(page.getByText('RoundFlowPlayer', { exact: true })).toBeVisible({ timeout: 10_000 });
 				await expect(page.getByText(/score:/i)).toBeVisible();
 
 				// Start game
