@@ -10,15 +10,5 @@
 		{
 			"path": "./tsconfig.worker.json"
 		}
-	],
-	"compilerOptions": {
-		"incremental": true,
-		"types": ["./worker-configuration.d.ts"],
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["./src/*"],
-			"@shared/*": ["./shared/*"]
-		},
-		"skipLibCheck": true
-	}
+	]
 }

@@ -6,10 +6,10 @@ import { z } from 'zod';
 
 import { LIMITS, aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 
-import { type GeneratedQuestion, generateQuizFromPrompt, generateSingleQuestion } from '../ai';
-import { PREDEFINED_QUIZZES } from '../quizzes';
-import { checkRateLimit } from './utilities';
-import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
+import { PREDEFINED_QUIZZES } from '../lib/quizzes';
+import { checkRateLimit } from '../lib/utilities';
+import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
+import { type GeneratedQuestion, generateQuizFromPrompt, generateSingleQuestion } from '../services/ai';
 
 import type { ApiResponse, GenerationStatus, Quiz, QuizGenerateSSEEvent } from '@shared/types';
 

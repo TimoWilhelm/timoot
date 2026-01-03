@@ -1,7 +1,7 @@
 import { Music } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { musicCredits } from '@shared/music-credits';
+import { musicCredits } from '@/lib/music-credits';
 
 interface MusicCreditsDialogProperties {
 	open: boolean;

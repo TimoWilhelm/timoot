@@ -18,10 +18,11 @@
 
 		/* Linting */
 		"strict": true,
-		"noUnusedLocals": false,
-		"noUnusedParameters": false,
-		"noFallthroughCasesInSwitch": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
+
 		"paths": {
 			"@shared/*": ["./shared/*"]
 		}

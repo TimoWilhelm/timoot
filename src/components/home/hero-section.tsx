@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Gamepad2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
+import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 
 export function HeroSection() {
 	const navigate = useViewTransitionNavigate();

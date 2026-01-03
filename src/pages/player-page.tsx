@@ -19,10 +19,10 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { useSound } from '@/hooks/sound/use-sound';
+import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { useGameWebSocket } from '@/hooks/use-game-web-socket';
-import { useSound } from '@/hooks/use-sound';
-import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
-import { useGameStore } from '@/lib/game-store';
+import { useGameStore } from '@/lib/stores/game-store';
 import { ErrorCode } from '@shared/errors';
 import { isGamePhaseActive } from '@shared/phase-rules';
 

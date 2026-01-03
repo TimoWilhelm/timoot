@@ -138,3 +138,19 @@ export function isValidGameId(gameId: string): boolean {
 	if (parts.length !== 3) return false;
 	return isValidWord(parts[0], adjectives) && isValidWord(parts[1], colors) && isValidWord(parts[2], animals);
 }
+
+// Determine which word list to use based on current position
+export function getWordListForPosition(parts: string[]): { list: string[]; label: string } | undefined {
+	if (parts.length === 1) return { list: adjectives, label: 'Adjective' };
+	if (parts.length === 2) return { list: colors, label: 'Color' };
+	if (parts.length === 3) return { list: animals, label: 'Animal' };
+	return undefined;
+}
+
+// Generate a random placeholder example
+export function generateRandomPlaceholder(): string {
+	const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)].toLowerCase();
+	const randomColor = colors[Math.floor(Math.random() * colors.length)].toLowerCase();
+	const randomAnimal = animals[Math.floor(Math.random() * animals.length)].toLowerCase();
+	return `${randomAdj}-${randomColor}-${randomAnimal}`;
+}

@@ -19,9 +19,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { SoundToggle } from '@/components/ui/sound-toggle';
+import { type MusicTrack, useHostSound } from '@/hooks/sound/use-host-sound';
 import { useGameWebSocket } from '@/hooks/use-game-web-socket';
-import { type MusicTrack, useHostSound } from '@/hooks/use-host-sound';
-import { useHostStore } from '@/lib/host-store';
+import { useHostStore } from '@/lib/stores/host-store';
 import { isGamePhaseActive, phaseAllowsManualAdvance } from '@shared/phase-rules';
 
 import type { EmojiReaction, GamePhase } from '@shared/types';

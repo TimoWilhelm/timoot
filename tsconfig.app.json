@@ -7,6 +7,7 @@
 		"lib": ["ES2023", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
 		"skipLibCheck": true,
+		"allowSyntheticDefaultImports": true,
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
@@ -22,11 +23,11 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
-		"allowSyntheticDefaultImports": true,
-		"baseUrl": ".",
+
 		"paths": {
 			"@/*": ["./src/*"],
-			"@shared/*": ["./shared/*"]
+			"@shared/*": ["./shared/*"],
+			"@server/*": ["./dist/worker/worker/*"]
 		}
 	},
 	"include": ["src"],

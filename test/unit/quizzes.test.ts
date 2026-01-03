@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../../worker/quizzes';
+import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../../worker/lib/quizzes';
 
 describe('quizzes.ts', () => {
 	describe('PREDEFINED_QUIZZES', () => {

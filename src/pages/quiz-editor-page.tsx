@@ -1,59 +1,22 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-	ArrowLeft,
-	ChevronDown,
-	ChevronUp,
-	ImageIcon,
-	ImageOff,
-	Loader2,
-	PlusCircle,
-	Save,
-	Sparkles,
-	Trash2,
-	Wand2,
-	X,
-	Zap,
-} from 'lucide-react';
+import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Control, Controller, SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { FormProvider, SubmitHandler } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { TitleCharCount } from '@/components/quiz-editor/char-counters';
+import { ImageSelectionDialog } from '@/components/quiz-editor/image-selection-dialog';
+import { QuizQuestionCard } from '@/components/quiz-editor/quiz-question-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { GridBackground } from '@/components/ui/grid-background';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-	useCreateQuiz,
-	useCustomQuizzes,
-	useDeleteImage,
-	useGenerateImage,
-	useGenerateQuestion,
-	useImages,
-	useLoadMoreImages,
-	useQuizDetail,
-	useUpdateQuiz,
-} from '@/hooks/use-api';
-import { useTurnstile } from '@/hooks/use-turnstile';
+import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
+import { useCreateQuiz, useCustomQuizzes, useGenerateQuestion, useQuizDetail, useUpdateQuiz } from '@/hooks/use-api';
+import { useQuizForm } from '@/hooks/use-quiz-form';
 import { useUserId } from '@/hooks/use-user-id';
-import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
-import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
-import { cn } from '@/lib/utilities';
-import { LIMITS, type QuizFormInput, quizFormSchema } from '@shared/validation';
+import { LIMITS, type QuizFormInput } from '@shared/validation';
 
 import type { Question } from '@shared/types';
 
@@ -62,92 +25,38 @@ type QuizFormData = {
 	questions: Question[];
 };
 
-function TitleCharCount({ control }: { control: Control<QuizFormInput> }) {
-	const value = useWatch({ control, name: 'title' });
-	return (
-		<span
-			className={`
-				pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs
-				text-muted-foreground
-			`}
-		>
-			{value?.length || 0}/{LIMITS.QUIZ_TITLE_MAX}
-		</span>
-	);
-}
-
-function QuestionCharCount({ control, qIndex }: { control: Control<QuizFormInput>; qIndex: number }) {
-	const value = useWatch({ control, name: `questions.${qIndex}.text` });
-	return (
-		<span
-			className={`
-				pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs
-				text-muted-foreground
-			`}
-		>
-			{value?.length || 0}/{LIMITS.QUESTION_TEXT_MAX}
-		</span>
-	);
-}
-
-function OptionCharCount({ control, qIndex, oIndex }: { control: Control<QuizFormInput>; qIndex: number; oIndex: number }) {
-	const value = useWatch({ control, name: `questions.${qIndex}.options.${oIndex}` });
-	return (
-		<span
-			className={`
-				pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs
-				text-muted-foreground
-			`}
-		>
-			{value?.length || 0}/{LIMITS.OPTION_TEXT_MAX}
-		</span>
-	);
-}
-
 export function QuizEditorPage() {
 	const { quizId } = useParams<{ quizId?: string }>();
 	const navigate = useViewTransitionNavigate();
+	const { userId } = useUserId();
+
+	const { methods, fieldArray } = useQuizForm();
 	const {
-		register,
 		control,
 		handleSubmit,
 		reset,
 		getValues,
+		setValue,
 		formState: { errors, isSubmitting, isDirty },
-	} = useForm<QuizFormInput>({
-		resolver: zodResolver(quizFormSchema),
-		defaultValues: { title: '', questions: [] },
-	});
-	const { fields, append, remove, update, move } = useFieldArray({ control, name: 'questions' });
+	} = methods;
+	const { fields, append, remove, update, move } = fieldArray;
+
 	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
-	const [imageToDelete, setImageToDelete] = useState<string | undefined>();
-	const [imagePrompt, setImagePrompt] = useState('');
-	const turnstileReference = useRef<HTMLDivElement>(null);
-	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
-	const { userId } = useUserId();
 
 	// React Query hooks
-	const { data: imagesData } = useImages(userId);
 	const { data: customQuizzes = [] } = useCustomQuizzes(userId);
 	const { data: quizData, isError: quizError } = useQuizDetail(userId, quizId);
-	const loadMoreImagesMutation = useLoadMoreImages();
 	const createQuizMutation = useCreateQuiz();
 	const updateQuizMutation = useUpdateQuiz();
 	const generateQuestionMutation = useGenerateQuestion();
-	const generateImageMutation = useGenerateImage();
-	const deleteImageMutation = useDeleteImage();
 
-	const aiImages = imagesData?.images ?? [];
-	const aiImagesCursor = imagesData?.nextCursor;
-	const isLoadingMoreImages = loadMoreImagesMutation.isPending;
 	const isGeneratingQuestion = generateQuestionMutation.isPending;
-	const isGeneratingImage = generateImageMutation.isPending;
 
 	// Track intentional navigation after save to skip the blocker
 	const skipBlockerReference = useRef(false);
 
-	// Block navigation when there are unsaved changes (unless intentionally navigating after save)
-	const blocker = useBlocker(() => isDirty && !skipBlockerReference.current);
+	// Block navigation when there are unsaved changes
+	useBlocker(() => isDirty && !skipBlockerReference.current);
 
 	// Warn before browser/tab close when there are unsaved changes
 	useEffect(() => {
@@ -187,11 +96,6 @@ export function QuizEditorPage() {
 			navigate('/edit');
 		}
 	}, [quizError, navigate]);
-
-	const loadMoreImages = () => {
-		if (!aiImagesCursor || isLoadingMoreImages) return;
-		loadMoreImagesMutation.mutate({ userId, cursor: aiImagesCursor });
-	};
 
 	const onSubmit: SubmitHandler<QuizFormInput> = async (data) => {
 		const processedData: QuizFormData = {
@@ -274,98 +178,6 @@ export function QuizEditorPage() {
 		);
 	};
 
-	const deleteImage = (imageId: string) => {
-		deleteImageMutation.mutate(
-			{ userId, imageId },
-			{
-				onSuccess: () => {
-					toast.success('Image deleted');
-					setImageToDelete(undefined);
-				},
-				onError: (error) => toast.error(error.message || 'Failed to delete image'),
-			},
-		);
-	};
-
-	const generateImage = (onImageGenerated: (path: string) => void) => {
-		if (!imagePrompt.trim()) {
-			toast.error('Please enter a prompt for the image');
-			return;
-		}
-
-		if (!turnstileToken) {
-			turnstileReference.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			toast.error('Please complete the captcha verification first');
-			return;
-		}
-
-		generateImageMutation.mutate(
-			{ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken }, json: { prompt: imagePrompt } },
-			{
-				onSuccess: (data) => {
-					onImageGenerated(data.path);
-					setImagePrompt('');
-					toast.success('Image generated!');
-					resetToken();
-				},
-				onError: (error) => {
-					toast.error(error.message || 'Failed to generate image');
-					resetToken();
-				},
-			},
-		);
-	};
-
-	const addOption = (qIndex: number) => {
-		const currentQuestion = getValues(`questions.${qIndex}`);
-		if (currentQuestion.options.length < LIMITS.OPTIONS_MAX) {
-			update(qIndex, {
-				...currentQuestion,
-				options: [...currentQuestion.options, ''],
-			});
-		}
-	};
-	const removeOption = (qIndex: number, oIndex: number) => {
-		const currentQuestion = getValues(`questions.${qIndex}`);
-		if (currentQuestion.options.length > LIMITS.OPTIONS_MIN) {
-			const newOptions = currentQuestion.options.filter((_, index) => index !== oIndex);
-			const currentCorrect = Number.parseInt(currentQuestion.correctAnswerIndex, 10);
-			const newCorrect =
-				currentCorrect === oIndex
-					? 0 // If the deleted option was correct, default to the first option
-					: currentCorrect > oIndex
-						? currentCorrect - 1 // If a preceding option was deleted, shift index down
-						: currentCorrect;
-			update(qIndex, {
-				...currentQuestion,
-				options: newOptions,
-				correctAnswerIndex: String(newCorrect),
-			});
-		}
-	};
-	const moveOption = (qIndex: number, oIndex: number, direction: 'up' | 'down') => {
-		const currentQuestion = getValues(`questions.${qIndex}`);
-		const newIndex = direction === 'up' ? oIndex - 1 : oIndex + 1;
-		if (newIndex < 0 || newIndex >= currentQuestion.options.length) return;
-
-		const newOptions = [...currentQuestion.options];
-		[newOptions[oIndex], newOptions[newIndex]] = [newOptions[newIndex], newOptions[oIndex]];
-
-		// Update correctAnswerIndex if the correct answer was moved
-		const currentCorrect = Number.parseInt(currentQuestion.correctAnswerIndex, 10);
-		let newCorrect = currentCorrect;
-		if (currentCorrect === oIndex) {
-			newCorrect = newIndex;
-		} else if (currentCorrect === newIndex) {
-			newCorrect = oIndex;
-		}
-
-		update(qIndex, {
-			...currentQuestion,
-			options: newOptions,
-			correctAnswerIndex: String(newCorrect),
-		});
-	};
 	return (
 		<div className="relative isolate min-h-screen bg-muted/50">
 			<GridBackground className="-z-10" />
@@ -376,500 +188,95 @@ export function QuizEditorPage() {
 					lg:px-8
 				`}
 			>
-				<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
-					<div className="flex items-center gap-4">
-						<Link to="/" viewTransition>
-							<Button type="button" variant="subtle" size="icon" className="size-12">
-								<ArrowLeft className="size-5" />
-							</Button>
-						</Link>
-						<h1
-							className={`
-								font-display text-2xl font-bold
-								sm:text-4xl
-							`}
-						>
-							{quizId ? 'Edit Quiz' : 'Create a New Quiz'}
-						</h1>
-					</div>
-					<Card>
-						<CardHeader>
-							<CardTitle>Quiz Details</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<Label htmlFor="title">Quiz Title</Label>
-							<div className="relative">
-								<Input
-									id="title"
-									{...register('title')}
-									placeholder="e.g., 'Fun Facts Friday'"
-									className="pr-16 text-lg"
-									maxLength={LIMITS.QUIZ_TITLE_MAX}
-								/>
-								<TitleCharCount control={control} />
-							</div>
-							{errors.title && <p className="mt-1 text-sm text-red">{errors.title.message}</p>}
-						</CardContent>
-					</Card>
-					{fields.map((field, qIndex) => (
-						<Card key={field.id}>
-							<CardHeader className="flex flex-row flex-wrap items-center gap-2">
-								<CardTitle className="order-1">Question {qIndex + 1}</CardTitle>
-								<div
-									className={`
-										order-2 ml-auto flex items-center gap-1 border-l pl-2
-										sm:order-3 sm:ml-0
-									`}
-								>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										onClick={() => move(qIndex, qIndex - 1)}
-										disabled={qIndex === 0}
-										className="text-muted-foreground"
-									>
-										<ChevronUp className="size-5" />
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										onClick={() => move(qIndex, qIndex + 1)}
-										disabled={qIndex === fields.length - 1}
-										className="text-muted-foreground"
-									>
-										<ChevronDown className="size-5" />
-									</Button>
-									<AlertDialog>
-										<AlertDialogTrigger asChild>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												className={`
-													text-red
-													hover:text-red
-												`}
-											>
-												<Trash2 />
-											</Button>
-										</AlertDialogTrigger>
-										<AlertDialogContent>
-											<AlertDialogHeader>
-												<AlertDialogTitle>Delete Question {qIndex + 1}?</AlertDialogTitle>
-												<AlertDialogDescription>
-													You have unsaved changes. Are you sure you want to delete this question? Your changes will be lost.
-												</AlertDialogDescription>
-											</AlertDialogHeader>
-											<AlertDialogFooter>
-												<AlertDialogCancel>Cancel</AlertDialogCancel>
-												<AlertDialogAction onClick={() => remove(qIndex)} variant="danger">
-													Delete
-												</AlertDialogAction>
-											</AlertDialogFooter>
-										</AlertDialogContent>
-									</AlertDialog>
-								</div>
-								<div
-									className={`
-										order-3 flex basis-full flex-wrap items-center gap-2
-										sm:order-2 sm:ml-auto sm:basis-auto
-									`}
-								>
-									<Controller
-										control={control}
-										name={`questions.${qIndex}.backgroundImage`}
-										render={({ field: bgField }) => (
-											<>
-												<Button
-													type="button"
-													variant="subtle"
-													onClick={() => setOpenImagePopover(qIndex)}
-													className="relative h-8 w-20 overflow-hidden p-0"
-												>
-													{bgField.value ? (
-														<img src={bgField.value} alt="" className={`absolute inset-0 size-full object-cover`} />
-													) : (
-														<span className="flex items-center gap-1.5">
-															<ImageIcon className="size-4" />
-															Image
-														</span>
-													)}
-												</Button>
-												<Dialog
-													open={openImagePopover === qIndex}
-													onOpenChange={(open) => {
-														if (!open && !isGeneratingImage) {
-															setOpenImagePopover(undefined);
-														}
-													}}
-												>
-													<DialogContent
-														className="
-															flex max-h-[90dvh] max-w-md flex-col overflow-hidden p-0
-														"
-													>
-														<DialogHeader className="shrink-0 border-b px-4 pt-4 pb-3">
-															<DialogTitle>Background Image</DialogTitle>
-														</DialogHeader>
-														<div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-															{/* Default Images */}
-															<div className="space-y-2">
-																<h4 className="text-sm font-medium text-muted-foreground">Default</h4>
-																<div className="grid grid-cols-3 gap-2">
-																	<Button
-																		type="button"
-																		variant="subtle"
-																		onClick={() => bgField.onChange('')}
-																		className={cn(
-																			`aspect-video h-auto bg-muted text-muted-foreground`,
-																			!bgField.value && `ring-3 ring-orange ring-offset-2 ring-offset-background`,
-																		)}
-																	>
-																		<div
-																			className="
-																				flex flex-col items-center gap-1 text-muted-foreground
-																			"
-																		>
-																			<ImageOff className="size-5" />
-																			<span className="text-[10px]">None</span>
-																		</div>
-																	</Button>
-																	{DEFAULT_BACKGROUND_IMAGES.map((img) => (
-																		<Button
-																			key={img.id}
-																			type="button"
-																			variant="subtle"
-																			onClick={() => bgField.onChange(img.path)}
-																			className={cn(
-																				`aspect-video h-auto overflow-hidden p-0`,
-																				bgField.value === img.path
-																					? `ring-3 ring-orange ring-offset-2 ring-offset-background`
-																					: 'bg-muted text-muted-foreground',
-																			)}
-																		>
-																			<img src={img.path} alt={img.name} className="size-full object-cover" />
-																		</Button>
-																	))}
-																</div>
-															</div>
-
-															{/* AI Generated Images */}
-															{aiImages.length > 0 && (
-																<div className="space-y-2">
-																	<h4 className="text-sm font-medium text-muted-foreground">AI Generated</h4>
-																	<div className="grid grid-cols-3 gap-2">
-																		{aiImages.map((img) => (
-																			<div key={img.id} className="group relative">
-																				<Button
-																					type="button"
-																					variant="subtle"
-																					onClick={() => bgField.onChange(img.path)}
-																					className={cn(
-																						`aspect-video h-auto w-full overflow-hidden p-0`,
-																						bgField.value === img.path
-																							? `
-																								ring-3 ring-orange ring-offset-2 ring-offset-background
-																							`
-																							: 'bg-muted text-muted-foreground',
-																					)}
-																					title={img.prompt}
-																				>
-																					<img src={img.path} alt={img.name} className="size-full object-cover" />
-																				</Button>
-																				<Button
-																					type="button"
-																					variant="ghost"
-																					size="icon"
-																					onClick={(event) => {
-																						event.stopPropagation();
-																						setImageToDelete(img.id);
-																					}}
-																					className={`
-																						absolute top-1 right-1 size-6 rounded-full border-0
-																						bg-black/60 p-1 text-white opacity-0 transition-opacity
-																						hover:bg-red
-																						group-hover-always:opacity-100
-																					`}
-																					title="Delete image"
-																				>
-																					<X className="size-3" />
-																				</Button>
-																			</div>
-																		))}
-																	</div>
-																	{aiImagesCursor && (
-																		<Button
-																			type="button"
-																			variant="subtle"
-																			size="sm"
-																			className="w-full"
-																			onClick={loadMoreImages}
-																			disabled={isLoadingMoreImages}
-																		>
-																			{isLoadingMoreImages ? <Loader2 className="mr-2 size-4 animate-spin" /> : undefined}
-																			Load More
-																		</Button>
-																	)}
-																</div>
-															)}
-
-															{/* AI Image Generation */}
-															<div className="space-y-2">
-																<div className="flex items-center justify-between">
-																	<h4 className="flex items-center gap-1.5 text-sm font-medium">
-																		<Sparkles className="size-4 text-orange" />
-																		Generate with AI
-																	</h4>
-																	<span
-																		className="
-																			flex items-center gap-1 text-[10px] text-muted-foreground
-																		"
-																	>
-																		<img src="/icons/blackforestlabs.svg" alt="Black Forest Labs" className="size-3" />
-																		FLUX.2
-																	</span>
-																</div>
-																<div className="flex items-center gap-2">
-																	<div className="relative flex-1">
-																		<Input
-																			placeholder="Describe the image..."
-																			value={imagePrompt}
-																			onChange={(event) => setImagePrompt(event.target.value)}
-																			className="pr-14 text-sm"
-																			maxLength={LIMITS.AI_IMAGE_PROMPT_MAX}
-																			disabled={isGeneratingImage}
-																			onKeyDown={(event) => {
-																				if (event.key === 'Enter') {
-																					event.preventDefault();
-																					void generateImage(bgField.onChange);
-																				}
-																			}}
-																		/>
-																		<span
-																			className="
-																				pointer-events-none absolute top-1/2 right-2
-																				-translate-y-1/2 text-xs text-muted-foreground
-																			"
-																		>
-																			{imagePrompt.length}/{LIMITS.AI_IMAGE_PROMPT_MAX}
-																		</span>
-																	</div>
-																	<Button
-																		type="button"
-																		variant="accent"
-																		size="icon"
-																		onClick={() => generateImage(bgField.onChange)}
-																		disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
-																		className="shrink-0"
-																	>
-																		{isGeneratingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
-																	</Button>
-																</div>
-																{isGeneratingImage && (
-																	<p className="text-center text-xs text-muted-foreground">Generating image, please wait...</p>
-																)}
-																<div ref={turnstileReference} className="flex justify-center">
-																	<TurnstileWidget />
-																</div>
-															</div>
-														</div>
-														<DialogFooter className="shrink-0 border-t px-4 py-3">
-															<Button
-																type="button"
-																variant="accent"
-																onClick={() => setOpenImagePopover(undefined)}
-																disabled={isGeneratingImage}
-																className={`
-																	w-full
-																	sm:w-auto
-																`}
-															>
-																Done
-															</Button>
-														</DialogFooter>
-													</DialogContent>
-												</Dialog>
-											</>
-										)}
-									/>
-									<Controller
-										control={control}
-										name={`questions.${qIndex}.isDoublePoints`}
-										render={({ field }) => (
-											<Button
-												type="button"
-												variant="subtle"
-												size="sm"
-												onClick={() => field.onChange(!field.value)}
-												className={cn(field.value && 'bg-orange text-white')}
-											>
-												<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} />
-												<span className="whitespace-nowrap">2× Points</span>
-											</Button>
-										)}
-									/>
-								</div>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div>
-									<Label>Question Text</Label>
-									<div className="relative">
-										<Input
-											{...register(`questions.${qIndex}.text`)}
-											placeholder="What is...?"
-											maxLength={LIMITS.QUESTION_TEXT_MAX}
-											className="pr-16"
-										/>
-										<QuestionCharCount control={control} qIndex={qIndex} />
-									</div>
-									{errors.questions?.[qIndex]?.text && <p className="mt-1 text-sm text-red">{errors.questions[qIndex]?.text?.message}</p>}
-								</div>
-								<div>
-									<Label>Answers</Label>
-									<Controller
-										control={control}
-										name={`questions.${qIndex}.correctAnswerIndex`}
-										render={({ field: { onChange, value } }) => (
-											<RadioGroup onValueChange={onChange} value={String(value)} className={`mt-2 space-y-2`}>
-												{getValues(`questions.${qIndex}.options`).map((_, oIndex) => (
-													<div key={`${field.id}-option-${oIndex}`} className={`flex items-center gap-2`}>
-														<div className="flex flex-col">
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon"
-																className="size-5 text-muted-foreground"
-																onClick={() => moveOption(qIndex, oIndex, 'up')}
-																disabled={oIndex === 0}
-															>
-																<ChevronUp className="size-3" />
-															</Button>
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon"
-																className="size-5 text-muted-foreground"
-																onClick={() => moveOption(qIndex, oIndex, 'down')}
-																disabled={oIndex === getValues(`questions.${qIndex}.options`).length - 1}
-															>
-																<ChevronDown className="size-3" />
-															</Button>
-														</div>
-														<RadioGroupItem value={String(oIndex)} id={`q${qIndex}o${oIndex}`} />
-														<div className="relative grow">
-															<Input
-																{...register(`questions.${qIndex}.options.${oIndex}`)}
-																placeholder={`Option ${oIndex + 1}`}
-																maxLength={LIMITS.OPTION_TEXT_MAX}
-																className="pr-14"
-															/>
-															<OptionCharCount control={control} qIndex={qIndex} oIndex={oIndex} />
-														</div>
-														{getValues(`questions.${qIndex}.options`).length > LIMITS.OPTIONS_MIN && (
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon"
-																onClick={() => removeOption(qIndex, oIndex)}
-																className={`
-																	text-muted-foreground
-																	hover:text-destructive
-																`}
-															>
-																<Trash2 className="size-4" />
-															</Button>
-														)}
-													</div>
-												))}
-											</RadioGroup>
-										)}
-									/>
-									{errors.questions?.[qIndex]?.options && <p className={`mt-1 text-sm text-red`}>Each option must have text.</p>}
-									{errors.questions?.[qIndex]?.correctAnswerIndex && (
-										<p className="mt-1 text-sm text-red">{errors.questions[qIndex]?.correctAnswerIndex?.message}</p>
-									)}
-								</div>
-								<div className="flex w-full justify-center">
-									{getValues(`questions.${qIndex}.options`).length < LIMITS.OPTIONS_MAX && (
-										<Button type="button" variant="subtle" onClick={() => addOption(qIndex)}>
-											<PlusCircle className="mr-2 size-4" /> Add Option
-										</Button>
-									)}
-								</div>
-							</CardContent>
-						</Card>
-					))}
-					<div className="flex flex-col gap-3">
-						<div
-							className={`
-								flex flex-col gap-3
-								sm:flex-row
-							`}
-						>
-							<Button type="button" onClick={addQuestion} variant="subtle" size="lg" className="flex-1">
-								<PlusCircle className="mr-2 size-5" /> Add Question
-							</Button>
-							<Button
-								type="button"
-								onClick={generateQuestion}
-								disabled={isGeneratingQuestion}
-								variant="subtle"
-								size="lg"
+				<FormProvider {...methods}>
+					<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
+						<div className="flex items-center gap-4">
+							<Link to="/" viewTransition>
+								<Button type="button" variant="subtle" size="icon" className="size-12">
+									<ArrowLeft className="size-5" />
+								</Button>
+							</Link>
+							<h1
 								className={`
-									flex-1 border-2 border-orange bg-orange/5 text-orange
-									hover:bg-orange/10 hover:shadow-brutal-sm-orange
+									font-display text-2xl font-bold
+									sm:text-4xl
 								`}
 							>
-								{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Wand2 className="mr-2 size-5" />}
-								<span className="whitespace-nowrap">Generate with AI</span>
+								{quizId ? 'Edit Quiz' : 'Create a New Quiz'}
+							</h1>
+							<Button type="button" variant="accent" onClick={generateQuestion} disabled={isGeneratingQuestion} className="ml-auto">
+								{isGeneratingQuestion ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
+								Generate Question
 							</Button>
 						</div>
-					</div>
-					<div className="flex items-center justify-end gap-4">
-						<Button type="submit" variant="accent" disabled={isSubmitting} size="lg">
-							{isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Save className="mr-2 size-5" />}
-							Save Quiz
-						</Button>
-					</div>
-				</form>
+						<Card>
+							<CardHeader>
+								<CardTitle>Quiz Details</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<Label htmlFor="title">Quiz Title</Label>
+								<div className="relative">
+									<Input
+										id="title"
+										{...methods.register('title')}
+										placeholder="e.g., 'Fun Facts Friday'"
+										className="pr-16 text-lg"
+										maxLength={LIMITS.QUIZ_TITLE_MAX}
+									/>
+									<TitleCharCount control={control} />
+								</div>
+								{errors.title && <p className="mt-1 text-sm text-red">{errors.title.message}</p>}
+							</CardContent>
+						</Card>
+
+						{fields.map((field, index) => (
+							<QuizQuestionCard
+								key={field.id}
+								index={index}
+								id={field.id}
+								update={update}
+								move={move}
+								remove={remove}
+								isFirst={index === 0}
+								isLast={index === fields.length - 1}
+								onOpenImageDialog={setOpenImagePopover}
+							/>
+						))}
+
+						{fields.length < LIMITS.QUESTIONS_MAX && (
+							<Button type="button" variant="subtle" className="w-full py-8 text-lg" onClick={addQuestion}>
+								<PlusCircle className="mr-2 size-6" /> Add Question
+							</Button>
+						)}
+
+						<div className="flex justify-end gap-4">
+							<Link to="/" viewTransition>
+								<Button type="button" variant="subtle">
+									Cancel
+								</Button>
+							</Link>
+							<Button type="submit" disabled={isSubmitting}>
+								{isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+								Save Quiz
+							</Button>
+						</div>
+					</form>
+
+					<ImageSelectionDialog
+						open={openImagePopover !== undefined}
+						onOpenChange={(open) => {
+							if (!open) setOpenImagePopover(undefined);
+						}}
+						selectedImage={openImagePopover === undefined ? undefined : getValues(`questions.${openImagePopover}.backgroundImage`)}
+						onSelectImage={(path) => {
+							if (openImagePopover !== undefined) {
+								setValue(`questions.${openImagePopover}.backgroundImage`, path, { shouldDirty: true });
+							}
+						}}
+						userId={userId}
+					/>
+				</FormProvider>
 			</div>
-			<Toaster richColors />
-
-			{/* Unsaved changes dialog */}
-			<AlertDialog open={blocker.state === 'blocked'}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-						<AlertDialogDescription>
-							You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay on Page</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()} variant="danger">
-							Leave Page
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-
-			{/* Delete image confirmation dialog */}
-			<AlertDialog open={!!imageToDelete} onOpenChange={(open) => !open && setImageToDelete(undefined)}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Delete Image?</AlertDialogTitle>
-						<AlertDialogDescription>Are you sure you want to delete this image? This action cannot be undone.</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction onClick={() => imageToDelete && deleteImage(imageToDelete)} variant="danger">
-							Delete
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }

@@ -15,6 +15,7 @@ import {
 	SyncDevicesDialog,
 } from '@/components/home';
 import { GridBackground } from '@/components/ui/grid-background';
+import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import {
 	queryKeys,
 	useCreateGame,
@@ -24,12 +25,11 @@ import {
 	usePredefinedQuizzes,
 	useRedeemSyncCode,
 } from '@/hooks/use-api';
-import { useTurnstile } from '@/hooks/use-turnstile';
 import { useUserId } from '@/hooks/use-user-id';
-import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
-import { hcWithType } from '@/lib/api-client';
-import { useHostStore } from '@/lib/host-store';
-import { consumeSSEStream } from '@/lib/sse-client';
+import { useTurnstile } from '@/hooks/utils/use-turnstile';
+import { hcWithType } from '@/lib/clients/api-client';
+import { consumeSSEStream } from '@/lib/clients/sse-client';
+import { useHostStore } from '@/lib/stores/host-store';
 import { LIMITS, aiPromptSchema } from '@shared/validation';
 
 import type { Quiz, QuizGenerateSSEEvent } from '@shared/types';

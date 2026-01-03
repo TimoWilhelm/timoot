@@ -185,7 +185,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		}
 	}
 
-	async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
+	async webSocketClose(_ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
 		console.log(`WebSocket closed: code=${code}, reason=${reason}, wasClean=${wasClean}`);
 
 		// Check if all connections are closed, schedule cleanup
@@ -196,7 +196,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		}
 	}
 
-	async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
+	async webSocketError(_ws: WebSocket, error: unknown): Promise<void> {
 		console.error('WebSocket error:', error);
 
 		// Check if all connections are closed, schedule cleanup

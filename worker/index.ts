@@ -5,7 +5,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 
-import { userRoutes } from './user-routes';
+import { userRoutes } from './routes/user-routes';
 
 // Export Durable Object classes to make them available in wrangler
 

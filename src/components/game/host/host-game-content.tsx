@@ -5,8 +5,8 @@ import { HostLobby } from '@/components/game/host/host-lobby';
 import { HostQuestion } from '@/components/game/host/host-question';
 import { HostQuestionModifier } from '@/components/game/host/host-question-modifier';
 import { HostReveal } from '@/components/game/host/host-reveal';
+import { SoundType } from '@/hooks/sound/use-host-sound';
 import { WebSocketGameState } from '@/hooks/use-game-web-socket';
-import { SoundType } from '@/hooks/use-host-sound';
 
 interface HostGameContentProperties {
 	gameState: WebSocketGameState;

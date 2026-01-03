@@ -9,7 +9,14 @@
 		"declarationMap": true,
 		"emitDeclarationOnly": true,
 		"noEmit": false,
-		"outDir": "./dist/worker"
+		"outDir": "./dist/worker",
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true
 	},
 	"include": ["worker", "shared"]
 }

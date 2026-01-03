@@ -4,10 +4,10 @@ import { Hono } from 'hono';
 
 import { createGameRequestSchema } from '@shared/validation';
 
-import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../quizzes';
-import { generateGameId } from '../words';
-import { checkRateLimit } from './utilities';
-import { protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
+import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../lib/quizzes';
+import { checkRateLimit } from '../lib/utilities';
+import { protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
+import { generateGameId } from '../lib/words';
 
 import type { ApiResponse, GameState } from '@shared/types';
 

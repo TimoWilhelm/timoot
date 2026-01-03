@@ -18,7 +18,7 @@
 
 import { hc } from 'hono/client';
 
-import type { ApiRoutes } from '../../dist/worker/worker/user-routes';
+import type { ApiRoutes } from '@server/routes/user-routes';
 
 export type { InferRequestType, InferResponseType } from 'hono/client';
 

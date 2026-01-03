@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { imagePromptSchema } from '@shared/validation';
 
-import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from './validators';
+import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
 
 import type { ApiResponse } from '@shared/types';
 
