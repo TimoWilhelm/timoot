@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useSoundStore } from '@/lib/sound-store';
 
-type SoundType =
+export type SoundType =
 	| 'tick' // Countdown tick (5-4 seconds)
 	| 'tickUrgent' // Critical countdown (3-2-1 seconds)
 	| 'timeUp' // Time ran out
@@ -340,7 +340,8 @@ export function useHostSound() {
 			}
 			if (backgroundMusicReference.current) {
 				backgroundMusicReference.current.pause();
-				backgroundMusicReference.current = undefined;
+				// eslint-disable-next-line unicorn/no-null
+				backgroundMusicReference.current = null;
 			}
 		};
 	}, []);

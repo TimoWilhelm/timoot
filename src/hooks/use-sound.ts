@@ -20,7 +20,8 @@ export function useSound() {
 			// Cleanup
 			if (audioReference.current) {
 				audioReference.current.pause();
-				audioReference.current = undefined;
+				// eslint-disable-next-line unicorn/no-null
+				audioReference.current = null;
 			}
 		};
 	}, []);

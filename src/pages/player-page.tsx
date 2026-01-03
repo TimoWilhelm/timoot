@@ -1,16 +1,13 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useBlocker, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 
-import { PlayerAnswer } from '@/components/game/player/player-answer';
+import { PlayerActiveGame } from '@/components/game/player/player-active-game';
 import { PlayerError } from '@/components/game/player/player-error';
 import { PlayerJoinGame } from '@/components/game/player/player-join-game';
 import { PlayerNickname } from '@/components/game/player/player-nickname';
 import { PlayerPageLayout } from '@/components/game/player/player-page-layout';
-import { PlayerWaiting } from '@/components/game/player/player-waiting';
-import { EmojiPicker } from '@/components/game/shared';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -21,29 +18,15 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AnimatedNumber } from '@/components/ui/animated-number';
 import { Button } from '@/components/ui/button';
 import { useGameWebSocket } from '@/hooks/use-game-web-socket';
 import { useSound } from '@/hooks/use-sound';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
 import { useGameStore } from '@/lib/game-store';
 import { ErrorCode } from '@shared/errors';
-import { phaseAllowsEmoji } from '@shared/phase-rules';
-
-import type { GamePhase } from '@shared/types';
+import { isGamePhaseActive } from '@shared/phase-rules';
 
 type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
-
-const phaseIsActiveForPlayer: Record<GamePhase, boolean> = {
-	LOBBY: false,
-	GET_READY: true,
-	QUESTION_MODIFIER: true,
-	QUESTION: true,
-	REVEAL: true,
-	LEADERBOARD: true,
-	END_INTRO: false,
-	END_REVEALED: false,
-};
 
 export function PlayerPage() {
 	const navigate = useViewTransitionNavigate();
@@ -205,7 +188,7 @@ export function PlayerPage() {
 	}, [gameState.leaderboard, currentPlayerId, hasInitialScoreSync]);
 
 	// Block navigation when game is active (not in LOBBY or END)
-	const isGameActive = view === 'GAME' && isConnected && phaseIsActiveForPlayer[gameState.phase];
+	const isGameActive = view === 'GAME' && isConnected && isGamePhaseActive[gameState.phase];
 	const blocker = useBlocker(isGameActive);
 
 	// Warn before browser/tab close when game is active
@@ -328,54 +311,17 @@ export function PlayerPage() {
 		if (error && !isConnected) return <div className="text-red">{error}</div>;
 
 		return (
-			<>
-				<header
-					className={`
-						relative flex items-center justify-center rounded-lg border-2 border-slate
-						bg-slate/50 px-4 py-2 text-xl font-bold
-					`}
-				>
-					<div className="flex w-full max-w-2xl justify-between">
-						<span className="font-display">{currentNickname}</span>
-						<span className="font-mono">
-							Score: <AnimatedNumber value={myScore ?? 0} instant={!hasInitialScoreSync} />
-						</span>
-					</div>
-				</header>
-				<main className="relative flex grow items-center justify-center">
-					<AnimatePresence mode="wait">
-						{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? (
-							<PlayerAnswer
-								onAnswer={handleAnswer}
-								submittedAnswer={submittedAnswer}
-								optionIndices={Array.from({ length: gameState.options.length }, (_, index) => index)}
-							/>
-						) : (
-							<PlayerWaiting
-								phase={gameState.phase}
-								answerResult={answerResult}
-								finalScore={myScore}
-								playerId={currentPlayerId}
-								leaderboard={gameState.leaderboard}
-								modifiers={gameState.modifiers}
-							/>
-						)}
-					</AnimatePresence>
-				</main>
-				<AnimatePresence>
-					{phaseAllowsEmoji[gameState.phase] && (
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							transition={{ duration: 0.15 }}
-							className="fixed inset-x-0 bottom-0 z-30 pb-4"
-						>
-							<EmojiPicker onEmojiSelect={sendEmoji} />
-						</motion.div>
-					)}
-				</AnimatePresence>
-			</>
+			<PlayerActiveGame
+				gameState={gameState}
+				nickname={currentNickname}
+				score={myScore ?? 0}
+				hasInitialScoreSync={hasInitialScoreSync}
+				submittedAnswer={submittedAnswer}
+				onAnswer={handleAnswer}
+				onSendEmoji={sendEmoji}
+				answerResult={answerResult}
+				playerId={currentPlayerId}
+			/>
 		);
 	};
 

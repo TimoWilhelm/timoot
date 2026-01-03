@@ -10,7 +10,7 @@ interface StartGameDialogProperties {
 	onOpenChange: (open: boolean) => void;
 	selectedQuiz: Quiz | undefined;
 	isGameStarting: boolean;
-	turnstileToken: string | null;
+	turnstileToken: string | null | undefined;
 	TurnstileWidget: React.ComponentType<{ className?: string }>;
 	onStartGame: () => void;
 }
@@ -26,7 +26,7 @@ export function StartGameDialog({
 }: StartGameDialogProperties) {
 	return (
 		<Dialog open={open} onOpenChange={(o) => !isGameStarting && onOpenChange(o)}>
-			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 				<div className="bg-yellow p-6">
 					<DialogHeader>
 						<DialogTitle

@@ -38,10 +38,10 @@ interface CustomQuizzesSectionProperties {
 	isGenerating: boolean;
 	generatingPrompt: string | undefined;
 	generationStatus: { stage: string; detail?: string } | undefined;
-	generatingCardRef: RefObject<HTMLDivElement | null>;
+	generatingCardRef: RefObject<HTMLDivElement>;
 	aiPrompt: string;
 	isAiDialogOpen: boolean;
-	turnstileToken: string | null;
+	turnstileToken: string | null | undefined;
 	TurnstileWidget: React.ComponentType<{ className?: string }>;
 	onAiPromptChange: (value: string) => void;
 	onAiDialogOpenChange: (open: boolean) => void;
@@ -209,7 +209,7 @@ export function CustomQuizzesSection({
 						</Button>
 
 						<Dialog open={isAiDialogOpen} onOpenChange={onAiDialogOpenChange}>
-							<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
+							<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 								<div className="bg-purple p-6">
 									<DialogHeader>
 										<DialogTitle

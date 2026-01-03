@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Sentry } from '@/lib/sentry';
 
@@ -262,7 +262,7 @@ export function useGameWebSocket({
 	);
 
 	// Store connect in a ref to enable self-reference for reconnection
-	const connectReference = useRef<() => void>();
+	const connectReference = useRef<() => void>(undefined);
 
 	const connect = useCallback(() => {
 		// Prevent duplicate connections - check both OPEN and CONNECTING states
@@ -319,7 +319,8 @@ export function useGameWebSocket({
 	}, [gameId, role, hostSecret, playerId, playerToken, handleMessage]);
 
 	// Update ref after connect is defined
-	useEffect(() => {
+	// Update ref after connect is defined
+	useLayoutEffect(() => {
 		connectReference.current = connect;
 	});
 
@@ -330,7 +331,7 @@ export function useGameWebSocket({
 			return;
 		}
 
-		connectReference.current();
+		connectReference.current?.();
 
 		return () => {
 			if (reconnectTimeoutReference.current) {

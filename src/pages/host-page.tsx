@@ -4,14 +4,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 
-import { HostEnd } from '@/components/game/host/host-end';
-import { HostGetReady } from '@/components/game/host/host-get-ready';
-import { HostLeaderboard } from '@/components/game/host/host-leaderboard';
-import { HostLobby } from '@/components/game/host/host-lobby';
+import { HostGameContent } from '@/components/game/host/host-game-content';
 import { HostPageLayout } from '@/components/game/host/host-page-layout';
-import { HostQuestion } from '@/components/game/host/host-question';
-import { HostQuestionModifier } from '@/components/game/host/host-question-modifier';
-import { HostReveal } from '@/components/game/host/host-reveal';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/components/game/shared';
 import {
 	AlertDialog,
@@ -28,6 +22,7 @@ import { SoundToggle } from '@/components/ui/sound-toggle';
 import { useGameWebSocket } from '@/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/hooks/use-host-sound';
 import { useHostStore } from '@/lib/host-store';
+import { isGamePhaseActive, phaseAllowsManualAdvance } from '@shared/phase-rules';
 
 import type { EmojiReaction, GamePhase } from '@shared/types';
 
@@ -40,28 +35,6 @@ const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	LEADERBOARD: 'leaderboard',
 	END_INTRO: 'celebration',
 	END_REVEALED: 'celebration',
-};
-
-const phaseIsActive: Record<GamePhase, boolean> = {
-	LOBBY: false,
-	GET_READY: true,
-	QUESTION_MODIFIER: true,
-	QUESTION: true,
-	REVEAL: true,
-	LEADERBOARD: true,
-	END_INTRO: false,
-	END_REVEALED: false,
-};
-
-const phaseAllowsManualAdvance: Record<GamePhase, boolean> = {
-	LOBBY: false,
-	GET_READY: false,
-	QUESTION_MODIFIER: false,
-	QUESTION: false,
-	REVEAL: true,
-	LEADERBOARD: true,
-	END_INTRO: false,
-	END_REVEALED: false,
 };
 
 const getMusicTrackForPhase = (phase: GamePhase): MusicTrack | null => {
@@ -113,7 +86,7 @@ export function HostPage() {
 	};
 
 	// Track if game is in an active phase
-	const isGameActive = isConnected && phaseIsActive[gameState.phase];
+	const isGameActive = isConnected && isGamePhaseActive[gameState.phase];
 
 	// Block navigation when game is active (not in LOBBY or END)
 	const blocker = useBlocker(isGameActive);
@@ -297,81 +270,6 @@ export function HostPage() {
 		);
 	}
 
-	const renderContent = () => {
-		switch (gameState.phase) {
-			case 'LOBBY': {
-				return (
-					<HostLobby
-						onStart={() => {
-							handleAudioInit();
-							startGame();
-						}}
-						players={gameState.players}
-						gameId={gameState.gameId}
-					/>
-				);
-			}
-			case 'GET_READY': {
-				return (
-					<HostGetReady
-						countdownMs={gameState.getReadyCountdownMs}
-						totalQuestions={gameState.totalQuestions}
-						onCountdownBeep={() => playSound('countdown321')}
-					/>
-				);
-			}
-			case 'QUESTION_MODIFIER': {
-				return (
-					<HostQuestionModifier
-						questionIndex={gameState.questionIndex}
-						totalQuestions={gameState.totalQuestions}
-						modifiers={gameState.modifiers}
-					/>
-				);
-			}
-			case 'QUESTION': {
-				return (
-					<HostQuestion
-						onNext={nextState}
-						questionText={gameState.questionText}
-						options={gameState.options}
-						questionIndex={gameState.questionIndex}
-						totalQuestions={gameState.totalQuestions}
-						startTime={gameState.startTime}
-						timeLimitMs={gameState.timeLimitMs}
-						answeredCount={gameState.answeredCount}
-						totalPlayers={gameState.players.length}
-						isDoublePoints={gameState.isDoublePoints}
-						backgroundImage={gameState.backgroundImage}
-						onCountdownTick={playCountdownTick}
-						onTimeUp={() => playSound('timeUp')}
-					/>
-				);
-			}
-			case 'REVEAL': {
-				return (
-					<HostReveal
-						onNext={nextState}
-						questionText={gameState.questionText}
-						options={gameState.options}
-						correctAnswerIndex={gameState.correctAnswerIndex!}
-						answerCounts={gameState.answerCounts}
-					/>
-				);
-			}
-			case 'LEADERBOARD': {
-				return <HostLeaderboard onNext={nextState} leaderboard={gameState.leaderboard} isLastQuestion={gameState.isLastQuestion} />;
-			}
-			case 'END_INTRO':
-			case 'END_REVEALED': {
-				return <HostEnd leaderboard={gameState.leaderboard} revealed={gameState.endRevealed} />;
-			}
-			default: {
-				return <div>Unknown game phase.</div>;
-			}
-		}
-	};
-
 	return (
 		<HostPageLayout>
 			{/* Sound toggle button - fixed position */}
@@ -388,7 +286,16 @@ export function HostPage() {
 					transition={{ type: 'spring', stiffness: 260, damping: 20 }}
 					className="relative flex grow flex-col"
 				>
-					{renderContent()}
+					<HostGameContent
+						gameState={gameState}
+						onStartGame={() => {
+							handleAudioInit();
+							startGame();
+						}}
+						onNextState={nextState}
+						onPlaySound={playSound}
+						onPlayCountdownTick={playCountdownTick}
+					/>
 				</motion.main>
 			</AnimatePresence>
 			<Toaster richColors />

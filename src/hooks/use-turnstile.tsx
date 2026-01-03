@@ -1,25 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 declare global {
-	interface Window {
-		turnstile?: {
-			render: (
-				container: string | HTMLElement,
-				options: {
-					sitekey: string;
-					callback?: (token: string) => void;
-					'expired-callback'?: () => void;
-					'error-callback'?: () => void;
-					theme?: 'light' | 'dark' | 'auto';
-					size?: 'normal' | 'compact';
-					appearance?: 'always' | 'execute' | 'interaction-only';
-				},
-			) => string;
-			reset: (widgetId: string) => void;
-			remove: (widgetId: string) => void;
-			getResponse: (widgetId: string) => string | undefined;
-		};
-	}
+	var turnstile:
+		| {
+				render: (
+					container: string | HTMLElement,
+					options: {
+						sitekey: string;
+						callback?: (token: string) => void;
+						'expired-callback'?: () => void;
+						'error-callback'?: () => void;
+						theme?: 'light' | 'dark' | 'auto';
+						size?: 'normal' | 'compact';
+						appearance?: 'always' | 'execute' | 'interaction-only';
+					},
+				) => string;
+				reset: (widgetId: string) => void;
+				remove: (widgetId: string) => void;
+				getResponse: (widgetId: string) => string | undefined;
+		  }
+		| undefined;
 }
 
 interface TurnstileWidgetProperties {

@@ -1,4 +1,3 @@
-import React from 'react';
 import QRCodeReact from 'react-qr-code';
 interface QRCodeProperties {
 	value: string;

@@ -5,7 +5,14 @@
 		"type": true
 	},
 	"tags": ["-lintignore"],
-	"entry": ["src/main.tsx", "worker/index.ts", "worker/user-routes.ts", "playwright.config.ts"],
+	"entry": [
+		"src/main.tsx",
+		"worker/index.ts",
+		"worker/user-routes.ts",
+		"playwright.config.ts",
+		"vitest.react.config.ts",
+		"test/setup-react.ts"
+	],
 	"ignoreDependencies": ["cloudflare"],
 	"ignoreBinaries": ["wrangler"],
 	"ignoreFiles": ["src/vite-environment.d.ts", "test/unit/environment.d.ts"]

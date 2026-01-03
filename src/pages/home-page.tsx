@@ -297,7 +297,7 @@ export function HomePage() {
 						<FeaturedQuizzesSection quizzes={predefinedQuizzes} startingQuizId={startingQuizId} onSelectQuiz={handleSelectQuiz} />
 
 						<CustomQuizzesSection
-							quizzes={customQuizzes}
+							quizzes={customQuizzes as Quiz[]}
 							isGenerating={isGenerating}
 							generatingPrompt={generatingPrompt}
 							generationStatus={generationStatus}

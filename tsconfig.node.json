@@ -26,5 +26,5 @@
 			"@shared/*": ["./shared/*"]
 		}
 	},
-	"include": ["vite.config.ts", "tailwind.config.ts", "playwright.config.ts", "test"]
+	"include": ["vite.config.ts", "tailwind.config.ts", "playwright.config.ts", "test", "vitest.react.config.ts"]
 }

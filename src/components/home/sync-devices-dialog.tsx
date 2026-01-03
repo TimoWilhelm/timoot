@@ -13,7 +13,7 @@ interface SyncDevicesDialogProperties {
 	showSyncWarning: boolean;
 	isGeneratingSyncCode: boolean;
 	isRedeemingSyncCode: boolean;
-	turnstileToken: string | null;
+	turnstileToken: string | null | undefined;
 	TurnstileWidget: React.ComponentType<{ className?: string }>;
 	onSyncCodeInputChange: (value: string) => void;
 	onGenerateSyncCode: () => void;
@@ -41,7 +41,7 @@ export function SyncDevicesDialog({
 }: SyncDevicesDialogProperties) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[425px]">
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 				<div className="bg-blue p-6">
 					<DialogHeader>
 						<DialogTitle

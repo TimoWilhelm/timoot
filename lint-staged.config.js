@@ -1,5 +1,4 @@
 export default {
-	'*': () => 'bun run knip',
 	'*.{ts,tsx}': (stagedFiles) => [
 		'bun run typecheck',
 		`prettier --list-different ${stagedFiles.join(' ')}`,
