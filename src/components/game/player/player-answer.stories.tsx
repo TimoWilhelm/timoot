@@ -2,16 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn } from 'storybook/test';
 import { PlayerPageLayout } from './player-page-layout';
-import { PlayerAnswerScreen } from './player-answer-screen';
+import { PlayerAnswer } from './player-answer';
 
-function PlayerAnswerScreenWrapper({
-	onAnswer,
-	submittedAnswer: initialAnswer,
-	...properties
-}: React.ComponentProps<typeof PlayerAnswerScreen>) {
+function PlayerAnswerWrapper({ onAnswer, submittedAnswer: initialAnswer, ...properties }: React.ComponentProps<typeof PlayerAnswer>) {
 	const [submittedAnswer, setSubmittedAnswer] = useState(initialAnswer);
 	return (
-		<PlayerAnswerScreen
+		<PlayerAnswer
 			{...properties}
 			submittedAnswer={submittedAnswer}
 			onAnswer={(index) => {
@@ -24,7 +20,7 @@ function PlayerAnswerScreenWrapper({
 
 const meta = {
 	title: 'Player/AnswerScreen',
-	component: PlayerAnswerScreenWrapper,
+	component: PlayerAnswerWrapper,
 	parameters: {
 		layout: 'fullscreen',
 	},
@@ -38,7 +34,7 @@ const meta = {
 			</PlayerPageLayout>
 		),
 	],
-} satisfies Meta<typeof PlayerAnswerScreen>;
+} satisfies Meta<typeof PlayerAnswer>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

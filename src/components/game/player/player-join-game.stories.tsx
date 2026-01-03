@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PlayerPageLayout } from './player-page-layout';
-import { JoinGameDialog } from './join-game-dialog';
+import { PlayerJoinGame } from './player-join-game';
 
 const meta = {
-	title: 'Player/JoinGameDialog',
-	component: JoinGameDialog,
+	title: 'Player/PlayerJoinGame',
+	component: PlayerJoinGame,
 	parameters: {
 		layout: 'fullscreen',
 	},
@@ -15,7 +15,7 @@ const meta = {
 			</PlayerPageLayout>
 		),
 	],
-} satisfies Meta<typeof JoinGameDialog>;
+} satisfies Meta<typeof PlayerJoinGame>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

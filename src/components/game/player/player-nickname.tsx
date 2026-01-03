@@ -12,11 +12,11 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
-interface PlayerNicknameFormProperties {
+interface PlayerNicknameProperties {
 	onJoin: (nickname: string) => void;
 	isLoading: boolean;
 }
-export function PlayerNicknameForm({ onJoin, isLoading }: PlayerNicknameFormProperties) {
+export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) {
 	const formReference = useRef<HTMLFormElement>(null);
 	const {
 		register,

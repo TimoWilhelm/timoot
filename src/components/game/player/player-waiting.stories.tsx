@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PlayerPageLayout } from './player-page-layout';
-import { PlayerWaitingScreen } from './player-waiting-screen';
+import { PlayerWaiting } from './player-waiting';
 
 const meta = {
 	title: 'Player/WaitingScreen',
-	component: PlayerWaitingScreen,
+	component: PlayerWaiting,
 	parameters: {
 		layout: 'fullscreen',
 	},
@@ -15,7 +15,7 @@ const meta = {
 			</PlayerPageLayout>
 		),
 	],
-} satisfies Meta<typeof PlayerWaitingScreen>;
+} satisfies Meta<typeof PlayerWaiting>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

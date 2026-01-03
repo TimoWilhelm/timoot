@@ -8,12 +8,12 @@ import type { GamePhase } from '@shared/types';
 import { phaseAllowsEmoji } from '@shared/phase-rules';
 import { useGameStore } from '@/lib/game-store';
 import { useGameWebSocket } from '@/hooks/use-game-web-socket';
-import { PlayerNicknameForm } from '@/components/game/player/player-nickname-form';
-import { PlayerAnswerScreen } from '@/components/game/player/player-answer-screen';
-import { PlayerWaitingScreen } from '@/components/game/player/player-waiting-screen';
-import { PlayerErrorScreen } from '@/components/game/player/player-error-screen';
+import { PlayerNickname } from '@/components/game/player/player-nickname';
+import { PlayerAnswer } from '@/components/game/player/player-answer';
+import { PlayerWaiting } from '@/components/game/player/player-waiting';
+import { PlayerError } from '@/components/game/player/player-error';
 import { PlayerPageLayout } from '@/components/game/player/player-page-layout';
-import { JoinGameDialog } from '@/components/game/player/join-game-dialog';
+import { PlayerJoinGame } from '@/components/game/player/player-join-game';
 import { EmojiPicker } from '@/components/game/shared';
 import { useSound } from '@/hooks/use-sound';
 import { useViewTransitionNavigate } from '@/hooks/use-view-transition-navigate';
@@ -246,7 +246,7 @@ export function PlayerPage() {
 
 	const renderContent = () => {
 		if (view === 'JOIN_GAME') {
-			return <JoinGameDialog />;
+			return <PlayerJoinGame />;
 		}
 
 		if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
@@ -260,7 +260,7 @@ export function PlayerPage() {
 		if (view === 'NICKNAME') {
 			return (
 				<>
-					<PlayerNicknameForm onJoin={handleJoin} isLoading={isConnecting} />
+					<PlayerNickname onJoin={handleJoin} isLoading={isConnecting} />
 					<Toaster richColors />
 				</>
 			);
@@ -268,7 +268,7 @@ export function PlayerPage() {
 
 		if (view === 'GAME_IN_PROGRESS') {
 			return (
-				<PlayerErrorScreen
+				<PlayerError
 					emoji="🎮"
 					title="Game Already In Progress"
 					description="Sorry, this game has already started. You can wait for the next round or join a different game."
@@ -276,13 +276,13 @@ export function PlayerPage() {
 					<Button variant="dark-accent" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
-				</PlayerErrorScreen>
+				</PlayerError>
 			);
 		}
 
 		if (view === 'ROOM_NOT_FOUND') {
 			return (
-				<PlayerErrorScreen
+				<PlayerError
 					emoji="🔍"
 					title="Game Not Found"
 					description="We couldn't find a game with that code. It may have ended or the link might be incorrect."
@@ -290,13 +290,13 @@ export function PlayerPage() {
 					<Button variant="dark-accent" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
-				</PlayerErrorScreen>
+				</PlayerError>
 			);
 		}
 
 		if (view === 'SESSION_EXPIRED') {
 			return (
-				<PlayerErrorScreen
+				<PlayerError
 					emoji="🔑"
 					title="Session Expired"
 					description="Your session could not be restored. This can happen if you cleared your browser data or if too much time has passed. Please rejoin the game with a new nickname."
@@ -309,13 +309,13 @@ export function PlayerPage() {
 							Back to Home
 						</Button>
 					</div>
-				</PlayerErrorScreen>
+				</PlayerError>
 			);
 		}
 
 		if (view === 'GAME_FULL') {
 			return (
-				<PlayerErrorScreen
+				<PlayerError
 					emoji="👥"
 					title="Game is Full"
 					description="Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round."
@@ -323,7 +323,7 @@ export function PlayerPage() {
 					<Button variant="dark-accent" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
-				</PlayerErrorScreen>
+				</PlayerError>
 			);
 		}
 
@@ -348,13 +348,13 @@ export function PlayerPage() {
 				<main className="relative flex grow items-center justify-center">
 					<AnimatePresence mode="wait">
 						{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? (
-							<PlayerAnswerScreen
+							<PlayerAnswer
 								onAnswer={handleAnswer}
 								submittedAnswer={submittedAnswer}
 								optionIndices={Array.from({ length: gameState.options.length }, (_, index) => index)}
 							/>
 						) : (
-							<PlayerWaitingScreen
+							<PlayerWaiting
 								phase={gameState.phase}
 								answerResult={answerResult}
 								finalScore={myScore}

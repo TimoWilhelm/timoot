@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { shapeColors, shapePaths } from '@/components/game/shared';
 import { cn } from '@/lib/utilities';
 
-interface PlayerAnswerScreenProperties {
+interface PlayerAnswerProperties {
 	onAnswer: (index: number) => void;
 	submittedAnswer: number | undefined;
 	optionIndices: number[];
@@ -18,7 +18,7 @@ function getPosition(displayIndex: number) {
 	};
 }
 
-export function PlayerAnswerScreen({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerScreenProperties) {
+export function PlayerAnswer({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerProperties) {
 	const [showPulse, setShowPulse] = useState(false);
 
 	// Trigger pulse animation after selection

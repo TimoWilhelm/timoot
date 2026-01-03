@@ -1,11 +1,11 @@
-interface PlayerErrorScreenProperties {
+interface PlayerErrorProperties {
 	emoji: string;
 	title: string;
 	description: string;
 	children: React.ReactNode;
 }
 
-export function PlayerErrorScreen({ emoji, title, description, children }: PlayerErrorScreenProperties) {
+export function PlayerError({ emoji, title, description, children }: PlayerErrorProperties) {
 	return (
 		<div className="relative flex flex-col items-center">
 			<div className="mb-6 text-6xl">{emoji}</div>

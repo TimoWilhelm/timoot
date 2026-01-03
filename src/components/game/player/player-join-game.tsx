@@ -23,7 +23,7 @@ function generateRandomPlaceholder(): string {
 	return `${randomAdj}-${randomColor}-${randomAnimal}`;
 }
 
-export function JoinGameDialog() {
+export function PlayerJoinGame() {
 	const navigate = useViewTransitionNavigate();
 	const [value, setValue] = useState('');
 	const [showSuggestions, setShowSuggestions] = useState(false);

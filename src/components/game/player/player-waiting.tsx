@@ -14,7 +14,7 @@ interface LeaderboardEntry {
 	rank: number;
 }
 
-interface PlayerWaitingScreenProperties {
+interface PlayerWaitingProperties {
 	phase: GamePhase;
 	answerResult: { isCorrect: boolean; score: number } | undefined;
 	finalScore?: number;
@@ -128,14 +128,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 	);
 }
 
-export function PlayerWaitingScreen({
-	phase,
-	answerResult,
-	finalScore,
-	playerId,
-	leaderboard = [],
-	modifiers = [],
-}: PlayerWaitingScreenProperties) {
+export function PlayerWaiting({ phase, answerResult, finalScore, playerId, leaderboard = [], modifiers = [] }: PlayerWaitingProperties) {
 	// Find player's final rank
 	const myFinalEntry = leaderboard.find((p) => p.id === playerId);
 	const myFinalRank = myFinalEntry?.rank ?? 0;

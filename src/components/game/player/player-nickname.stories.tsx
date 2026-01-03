@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn } from 'storybook/test';
 import { PlayerPageLayout } from './player-page-layout';
-import { PlayerNicknameForm } from './player-nickname-form';
+import { PlayerNickname } from './player-nickname';
 
 const meta = {
 	title: 'Player/NicknameForm',
-	component: PlayerNicknameForm,
+	component: PlayerNickname,
 	parameters: {
 		layout: 'fullscreen',
 	},
@@ -19,7 +19,7 @@ const meta = {
 			</PlayerPageLayout>
 		),
 	],
-} satisfies Meta<typeof PlayerNicknameForm>;
+} satisfies Meta<typeof PlayerNickname>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
