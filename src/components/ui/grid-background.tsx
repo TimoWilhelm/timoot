@@ -14,7 +14,7 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
 					bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
 					bg-size-[20px_20px]
 				`,
-				variant === 'dark' ? 'opacity-50' : 'opacity-30',
+				variant === 'dark' ? 'opacity-40' : 'opacity-20',
 				className,
 			)}
 			aria-hidden="true"
