@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
@@ -18,8 +17,6 @@ interface PlayerNicknameProperties {
 	onJoin: (nickname: string) => void;
 	isLoading: boolean;
 }
-
-const MotionCard = motion(Card);
 
 export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) {
 	const formReference = useRef<HTMLFormElement>(null);
@@ -41,10 +38,7 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 	};
 
 	return (
-		<MotionCard
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+		<Card
 			className={`
 				relative w-full max-w-md border-4 border-slate bg-black shadow-brutal-slate
 			`}
@@ -74,6 +68,6 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 					</Button>
 				</form>
 			</CardContent>
-		</MotionCard>
+		</Card>
 	);
 }

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,6 @@ import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { useGameCode } from '@/hooks/game/use-game-code';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { cn } from '@/lib/utilities';
-
-const MotionCard = motion(Card);
 
 export function PlayerJoinGame() {
 	const navigate = useViewTransitionNavigate();
@@ -41,10 +38,7 @@ export function PlayerJoinGame() {
 	};
 
 	return (
-		<MotionCard
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+		<Card
 			className={`
 				relative w-full max-w-md border-4 border-slate bg-black shadow-brutal-slate
 			`}
@@ -222,6 +216,6 @@ export function PlayerJoinGame() {
 					</Button>
 				</div>
 			</CardContent>
-		</MotionCard>
+		</Card>
 	);
 }
