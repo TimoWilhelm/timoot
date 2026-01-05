@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { QUESTION_TIME_LIMIT_MS } from '../constants';
+import { QUESTION_TIME_LIMIT_MS } from './constants';
 import {
 	buildAnswerCounts,
 	buildGameEndMessage,
@@ -8,7 +8,7 @@ import {
 	buildLobbyMessage,
 	buildQuestionMessage,
 	buildRevealMessage,
-} from '../message-builders';
+} from './message-builders';
 
 import type { GameState } from '@shared/types';
 

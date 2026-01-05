@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { AnimatedNumber } from '@/components/animated-number/animated-number';
+import { EmojiPicker } from '@/features/game/player/components/emoji-picker';
 import { PlayerAnswer } from '@/features/game/player/player-answer';
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { PlayerWaiting } from '@/features/game/player/player-waiting';
-import { EmojiPicker } from '@/features/game/shared';
 import { phaseAllowsEmoji } from '@shared/phase-rules';
 
 export function PlayerActiveGame() {

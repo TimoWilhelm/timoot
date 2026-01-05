@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-import { useGameWebSocket } from '../use-game-web-socket';
+import { useGameWebSocket } from './use-game-web-socket';
 
 // Mock WebSocket
 let mockWsInstance: MockWebSocket | undefined;

@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
+import { QRCode } from '@/features/game/host/components/qr-code';
 import { useHostGameContext } from '@/features/game/host/host-game-context';
-import { QRCode } from '@/features/game/shared';
 
 export function HostLobby() {
 	const { gameState, onStartGame } = useHostGameContext();

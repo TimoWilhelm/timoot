@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { QUESTION_TIME_LIMIT_MS } from '../constants';
-import { buildLeaderboard, calculateAnswerScore, processAnswersAndUpdateScores } from '../scoring';
+import { QUESTION_TIME_LIMIT_MS } from './constants';
+import { buildLeaderboard, calculateAnswerScore, processAnswersAndUpdateScores } from './scoring';
 
 import type { Answer, GameState, Player, Question } from '@shared/types';
 

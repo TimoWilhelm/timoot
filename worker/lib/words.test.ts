@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { adjectives, animals, colors, generateGameId } from '../words';
+import { adjectives, animals, colors, generateGameId } from './words';
 
 describe('words.ts', () => {
 	describe('generateGameId', () => {

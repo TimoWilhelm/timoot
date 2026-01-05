@@ -3,7 +3,7 @@ import { Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useHostGameContext } from '@/features/game/host/host-game-context';
-import { shapeColors, shapePaths } from '@/features/game/shared';
+import { shapeColors, shapePaths } from '@/features/game/shared/shapes';
 import { cn } from '@/lib/utilities';
 
 interface CountdownTimerProperties {

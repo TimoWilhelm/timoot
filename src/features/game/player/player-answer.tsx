@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
-import { shapeColors, shapePaths } from '@/features/game/shared';
+import { shapeColors, shapePaths } from '@/features/game/shared/shapes';
 import { cn } from '@/lib/utilities';
 
 function getPosition(displayIndex: number) {
