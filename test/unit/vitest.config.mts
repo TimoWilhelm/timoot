@@ -1,10 +1,14 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
 
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(dirname, '../../');
+
 export default defineWorkersConfig({
 	test: {
-		root: path.resolve(__dirname, '../../'),
+		root: projectRoot,
 		include: ['worker/**/*.test.{ts,tsx}'],
 		globals: true,
 		poolOptions: {
@@ -16,8 +20,8 @@ export default defineWorkersConfig({
 	},
 	resolve: {
 		alias: {
-			'@': path.resolve(__dirname, '../../src'),
-			'@shared': path.resolve(__dirname, '../../shared'),
+			'@': path.resolve(projectRoot, 'src'),
+			'@shared': path.resolve(projectRoot, 'shared'),
 		},
 	},
 });

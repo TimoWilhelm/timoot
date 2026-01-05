@@ -6,19 +6,20 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(dirname, '../../');
 
 export default defineConfig({
 	plugins: [
 		react(),
 		storybookTest({
-			configDir: path.join(dirname, '.storybook'),
+			configDir: path.join(projectRoot, '.storybook'),
 			storybookScript: 'bun run storybook --ci',
 		}),
 	],
 	resolve: {
 		alias: {
-			'@': path.join(dirname, './src'),
-			'@shared': path.join(dirname, './shared'),
+			'@': path.join(projectRoot, 'src'),
+			'@shared': path.join(projectRoot, 'shared'),
 		},
 	},
 	test: {
@@ -29,6 +30,6 @@ export default defineConfig({
 			provider: 'playwright',
 			instances: [{ browser: 'chromium' }],
 		},
-		setupFiles: ['./.storybook/vitest.setup.ts'],
+		setupFiles: [path.join(projectRoot, '.storybook/vitest.setup.ts')],
 	},
 });
