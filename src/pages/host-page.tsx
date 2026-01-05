@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { Link, useBlocker, useParams } from 'react-router-dom';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 import { HostGameContent } from '@/components/game/host/host-game-content';
 import { HostPageLayout } from '@/components/game/host/host-page-layout';
@@ -298,7 +298,6 @@ export function HostPage() {
 					/>
 				</motion.main>
 			</AnimatePresence>
-			<Toaster richColors />
 
 			{/* Floating emojis from players */}
 			<FloatingEmojis ref={floatingEmojisReference} />

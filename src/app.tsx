@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Toaster } from 'sonner';
 
 import { ErrorBoundary, RouteErrorBoundary } from '@/components/error';
 import { queryClient } from '@/lib/clients/query-client';
@@ -7,6 +8,7 @@ import { HomePage } from '@/pages/home-page';
 import { HostPage } from '@/pages/host-page';
 import { PlayerPage } from '@/pages/player-page';
 import { QuizEditorPage } from '@/pages/quiz-editor-page';
+
 const router = createBrowserRouter([
 	{
 		path: '/',
@@ -29,11 +31,13 @@ const router = createBrowserRouter([
 		errorElement: <RouteErrorBoundary />,
 	},
 ]);
+
 export function App() {
 	return (
 		<ErrorBoundary>
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router} />
+				<Toaster richColors closeButton />
 			</QueryClientProvider>
 		</ErrorBoundary>
 	);

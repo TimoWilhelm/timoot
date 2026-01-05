@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useBlocker, useSearchParams } from 'react-router-dom';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 import { PlayerActiveGame } from '@/components/game/player/player-active-game';
 import { PlayerError } from '@/components/game/player/player-error';
@@ -328,8 +328,6 @@ export function PlayerPage() {
 	return (
 		<PlayerPageLayout variant={view === 'GAME' ? 'game' : 'center'}>
 			{renderContent()}
-
-			<Toaster richColors theme="dark" />
 
 			{/* Leave game confirmation dialog */}
 			<AlertDialog open={blocker.state === 'blocked'}>

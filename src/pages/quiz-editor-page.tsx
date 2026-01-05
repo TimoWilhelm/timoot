@@ -223,10 +223,6 @@ export function QuizEditorPage() {
 							>
 								{quizId ? 'Edit Quiz' : 'Create a New Quiz'}
 							</h1>
-							<Button type="button" variant="accent" onClick={generateQuestion} disabled={isGeneratingQuestion} className="ml-auto">
-								{isGeneratingQuestion ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
-								Generate Question
-							</Button>
 						</div>
 						<Card>
 							<CardHeader>
@@ -261,11 +257,28 @@ export function QuizEditorPage() {
 							/>
 						))}
 
-						{fields.length < LIMITS.QUESTIONS_MAX && (
-							<Button type="button" variant="subtle" className="w-full py-8 text-lg" onClick={addQuestion}>
-								<PlusCircle className="mr-2 size-6" /> Add Question
+						<div
+							className={`
+								flex flex-col gap-4
+								sm:flex-row
+							`}
+						>
+							{fields.length < LIMITS.QUESTIONS_MAX && (
+								<Button type="button" variant="subtle" className="flex-1 py-8 text-lg" onClick={addQuestion}>
+									<PlusCircle className="mr-2 size-6" /> Add Question
+								</Button>
+							)}
+							<Button
+								type="button"
+								variant="accent"
+								onClick={generateQuestion}
+								disabled={isGeneratingQuestion || fields.length >= LIMITS.QUESTIONS_MAX}
+								className="flex-1 py-8 text-lg"
+							>
+								{isGeneratingQuestion ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
+								Generate Question
 							</Button>
-						)}
+						</div>
 
 						<div className="flex justify-end gap-4">
 							<Link to="/" viewTransition>

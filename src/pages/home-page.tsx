@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 import {
@@ -350,8 +350,6 @@ export function HomePage() {
 			/>
 
 			<MusicCreditsDialog open={isMusicCreditsOpen} onOpenChange={setIsMusicCreditsOpen} />
-
-			<Toaster richColors closeButton />
 		</div>
 	);
 }
