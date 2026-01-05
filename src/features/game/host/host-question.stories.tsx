@@ -1,6 +1,6 @@
 import { expect, fn } from 'storybook/test';
 
-import { HostGameProvider } from '@/features/game/host/host-game-context';
+import { HostGameProvider } from '@/features/game/host/host-game-provider';
 
 import { HostPageLayout } from './host-page-layout';
 import { HostQuestion } from './host-question';

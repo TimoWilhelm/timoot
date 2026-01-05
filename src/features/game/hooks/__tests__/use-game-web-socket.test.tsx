@@ -6,6 +6,10 @@ import { useGameWebSocket } from '../use-game-web-socket';
 // Mock WebSocket
 let mockWsInstance: MockWebSocket | undefined;
 
+function setMockInstance(instance: MockWebSocket) {
+	mockWsInstance = instance;
+}
+
 class MockWebSocket {
 	static OPEN = 1;
 	static CONNECTING = 0;
@@ -18,8 +22,7 @@ class MockWebSocket {
 
 	constructor(url: string) {
 		this.url = url;
-		// eslint-disable-next-line @typescript-eslint/no-this-alias, unicorn/no-this-assignment
-		mockWsInstance = this;
+		setMockInstance(this);
 	}
 
 	addEventListener(event: string, callback: (...arguments_: unknown[]) => void) {
@@ -35,8 +38,7 @@ class MockWebSocket {
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-globalThis.WebSocket = MockWebSocket as any;
+vi.stubGlobal('WebSocket', MockWebSocket);
 
 describe('useGameWebSocket', () => {
 	beforeEach(() => {

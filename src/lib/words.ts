@@ -139,11 +139,15 @@ export function isValidGameId(gameId: string): boolean {
 	return isValidWord(parts[0], adjectives) && isValidWord(parts[1], colors) && isValidWord(parts[2], animals);
 }
 
+const ADJECTIVE_INFO = { list: adjectives, label: 'Adjective' };
+const COLOR_INFO = { list: colors, label: 'Color' };
+const ANIMAL_INFO = { list: animals, label: 'Animal' };
+
 // Determine which word list to use based on current position
 export function getWordListForPosition(parts: string[]): { list: string[]; label: string } | undefined {
-	if (parts.length === 1) return { list: adjectives, label: 'Adjective' };
-	if (parts.length === 2) return { list: colors, label: 'Color' };
-	if (parts.length === 3) return { list: animals, label: 'Animal' };
+	if (parts.length === 1) return ADJECTIVE_INFO;
+	if (parts.length === 2) return COLOR_INFO;
+	if (parts.length === 3) return ANIMAL_INFO;
 	return undefined;
 }
 

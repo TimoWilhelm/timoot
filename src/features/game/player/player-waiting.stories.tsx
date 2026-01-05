@@ -1,6 +1,6 @@
 import { fn } from 'storybook/test';
 
-import { PlayerGameProvider } from '@/features/game/player/player-game-context';
+import { PlayerGameProvider } from '@/features/game/player/player-game-provider';
 
 import { PlayerPageLayout } from './player-page-layout';
 import { PlayerWaiting } from './player-waiting';

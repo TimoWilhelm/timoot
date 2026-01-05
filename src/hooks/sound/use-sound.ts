@@ -10,7 +10,7 @@ const sounds = {
 };
 type SoundEvent = keyof typeof sounds;
 export function useSound() {
-	const audioReference = useRef<HTMLAudioElement | null>(null);
+	const audioReference = useRef<HTMLAudioElement | undefined>(undefined);
 	useEffect(() => {
 		// Pre-create the audio element to be reused.
 		// This can help with performance and browser restrictions on audio playback.
@@ -20,8 +20,7 @@ export function useSound() {
 			// Cleanup
 			if (audioReference.current) {
 				audioReference.current.pause();
-				// eslint-disable-next-line unicorn/no-null
-				audioReference.current = null;
+				audioReference.current = undefined;
 			}
 		};
 	}, []);

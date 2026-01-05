@@ -1,9 +1,9 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext } from 'react';
 
 import type { WebSocketGameState } from '@/features/game/hooks/use-game-web-socket';
 import type { SoundType } from '@/features/game/hooks/use-host-sound';
 
-interface HostGameContextProperties {
+export interface HostGameContextProperties {
 	gameState: WebSocketGameState;
 	onStartGame: () => void;
 	onNextState: () => void;
@@ -11,15 +11,8 @@ interface HostGameContextProperties {
 	onPlayCountdownTick: (timeLeft: number) => void;
 }
 
-const HostGameContext = createContext<HostGameContextProperties | undefined>(undefined);
+export const HostGameContext = createContext<HostGameContextProperties | undefined>(undefined);
 
-export function HostGameProvider({ children, ...value }: { children: React.ReactNode } & HostGameContextProperties) {
-	const contextValue = useMemo(() => value, [value]);
-
-	return <HostGameContext.Provider value={contextValue}>{children}</HostGameContext.Provider>;
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
 export function useHostGameContext() {
 	const context = useContext(HostGameContext);
 	if (!context) {

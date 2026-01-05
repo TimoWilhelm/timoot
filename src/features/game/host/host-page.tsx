@@ -19,7 +19,7 @@ import { SoundToggle } from '@/components/sound-toggle/sound-toggle';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
 import { HostGameContent } from '@/features/game/host/host-game-content';
-import { HostGameProvider } from '@/features/game/host/host-game-context';
+import { HostGameProvider } from '@/features/game/host/host-game-provider';
 import { HostPageLayout } from '@/features/game/host/host-page-layout';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/shared';
 import { useHostStore } from '@/lib/stores/host-store';

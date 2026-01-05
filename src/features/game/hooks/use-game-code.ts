@@ -28,8 +28,7 @@ export function useGameCode() {
 
 	const parts = value.split('-');
 	const currentPart = parts.at(-1) || '';
-	const partsCount = parts.length;
-	const wordInfo = useMemo(() => getWordListForPosition(parts), [partsCount]); // eslint-disable-line react-hooks/exhaustive-deps
+	const wordInfo = getWordListForPosition(parts);
 	const suggestions = useMemo(() => (wordInfo ? findMatches(currentPart, wordInfo.list).slice(0, 8) : []), [currentPart, wordInfo]);
 
 	const isComplete = isValidGameId(value);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { expect, fn } from 'storybook/test';
 
-import { PlayerGameProvider } from '@/features/game/player/player-game-context';
+import { PlayerGameProvider } from '@/features/game/player/player-game-provider';
 
 import { PlayerAnswer } from './player-answer';
 import { PlayerPageLayout } from './player-page-layout';

@@ -4,10 +4,10 @@ import { BACKGROUND_MUSIC_VOLUME, MUSIC_TRACKS, MusicTrack, SoundType, sounds } 
 import { useSoundStore } from '@/lib/stores/sound-store';
 
 export function useHostSound() {
-	const audioContextReference = useRef<AudioContext | null>(null);
-	const masterGainReference = useRef<GainNode | null>(null);
-	const backgroundMusicReference = useRef<HTMLAudioElement | null>(null);
-	const currentTrackReference = useRef<MusicTrack | null>(null);
+	const audioContextReference = useRef<AudioContext | undefined>(undefined);
+	const masterGainReference = useRef<GainNode | undefined>(undefined);
+	const backgroundMusicReference = useRef<HTMLAudioElement | undefined>(undefined);
+	const currentTrackReference = useRef<MusicTrack | undefined>(undefined);
 	const { isMuted, volume, setBlocked } = useSoundStore();
 	const lastTickTimeReference = useRef<number>(0);
 
@@ -160,8 +160,7 @@ export function useHostSound() {
 			}
 			if (backgroundMusicReference.current) {
 				backgroundMusicReference.current.pause();
-				// eslint-disable-next-line unicorn/no-null
-				backgroundMusicReference.current = null;
+				backgroundMusicReference.current = undefined;
 			}
 		};
 	}, []);
