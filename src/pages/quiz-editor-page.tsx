@@ -7,6 +7,16 @@ import { toast } from 'sonner';
 import { TitleCharCount } from '@/components/quiz-editor/char-counters';
 import { ImageSelectionDialog } from '@/components/quiz-editor/image-selection-dialog';
 import { QuizQuestionCard } from '@/components/quiz-editor/quiz-question-card';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GridBackground } from '@/components/ui/grid-background';
@@ -56,7 +66,7 @@ export function QuizEditorPage() {
 	const skipBlockerReference = useRef(false);
 
 	// Block navigation when there are unsaved changes
-	useBlocker(() => isDirty && !skipBlockerReference.current);
+	const blocker = useBlocker(() => isDirty && !skipBlockerReference.current);
 
 	// Warn before browser/tab close when there are unsaved changes
 	useEffect(() => {
@@ -277,6 +287,36 @@ export function QuizEditorPage() {
 					/>
 				</FormProvider>
 			</div>
+
+			<AlertDialog
+				open={blocker.state === 'blocked'}
+				onOpenChange={(open) => {
+					if (!open && blocker.state === 'blocked') {
+						blocker.reset();
+					}
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+						<AlertDialogDescription>
+							You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={() => blocker.reset?.()}>Stay</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								skipBlockerReference.current = true;
+								blocker.proceed?.();
+							}}
+							variant="danger"
+						>
+							Leave
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
