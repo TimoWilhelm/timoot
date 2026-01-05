@@ -4,15 +4,13 @@ import { useState } from 'react';
 
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { QRCode } from '@/features/game/shared';
 
-interface HostLobbyProperties {
-	onStart: () => void;
-	players: { id: string; name: string }[];
-	gameId: string;
-}
-
-export function HostLobby({ onStart, players, gameId }: HostLobbyProperties) {
+export function HostLobby() {
+	const { gameState, onStartGame } = useHostGameContext();
+	const { players, gameId } = gameState;
+	const onStart = onStartGame; // Alias to match existing code usage
 	const joinUrl = `${globalThis.location.origin}/play?gameId=${gameId}`;
 	const [copied, setCopied] = useState(false);
 

@@ -1,22 +1,66 @@
 import { useState } from 'react';
 import { expect, fn } from 'storybook/test';
 
+import { PlayerGameProvider } from '@/features/game/player/player-game-context';
+
 import { PlayerAnswer } from './player-answer';
 import { PlayerPageLayout } from './player-page-layout';
 
+import type { WebSocketGameState } from '@/features/game/hooks/use-game-web-socket';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-function PlayerAnswerWrapper({ onAnswer, submittedAnswer: initialAnswer, ...properties }: React.ComponentProps<typeof PlayerAnswer>) {
+const mockGameState: WebSocketGameState = {
+	phase: 'QUESTION',
+	gameId: 'ABC123',
+	pin: 'ABC123',
+	players: [],
+	getReadyCountdownMs: 0,
+	modifiers: [],
+	questionIndex: 0,
+	totalQuestions: 10,
+	questionText: 'Test Question',
+	options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+	startTime: Date.now(),
+	timeLimitMs: 20_000,
+	isDoublePoints: false,
+	backgroundImage: undefined,
+	answeredCount: 0,
+	correctAnswerIndex: undefined,
+	playerResult: undefined,
+	answerCounts: [],
+	leaderboard: [],
+	isLastQuestion: false,
+	endRevealed: false,
+};
+
+function PlayerAnswerWrapper({
+	onAnswer,
+	submittedAnswer: initialAnswer,
+	optionIndices,
+}: {
+	onAnswer: (index: number) => void;
+	submittedAnswer: number | undefined;
+	optionIndices: number[];
+}) {
 	const [submittedAnswer, setSubmittedAnswer] = useState(initialAnswer);
 	return (
-		<PlayerAnswer
-			{...properties}
+		<PlayerGameProvider
+			gameState={{
+				...mockGameState,
+				options: Array.from({ length: optionIndices.length }, (_, index) => `Option ${index + 1}`),
+			}}
+			nickname="Player"
+			score={100}
+			hasInitialScoreSync={true}
 			submittedAnswer={submittedAnswer}
 			onAnswer={(index) => {
 				setSubmittedAnswer(index);
 				onAnswer(index);
 			}}
-		/>
+			onSendEmoji={fn()}
+		>
+			<PlayerAnswer />
+		</PlayerGameProvider>
 	);
 }
 
@@ -36,7 +80,7 @@ const meta = {
 			</PlayerPageLayout>
 		),
 	],
-} satisfies Meta<typeof PlayerAnswer>;
+} satisfies Meta<typeof PlayerAnswerWrapper>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

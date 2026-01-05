@@ -4,6 +4,7 @@ import { Trophy } from 'lucide-react';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/button';
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { cn, getThemeColor } from '@/lib/utilities';
 
 import type { LeaderboardEntry } from '@/features/game/hooks/use-game-web-socket';
@@ -140,12 +141,9 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 	);
 }
 
-interface HostEndProperties {
-	leaderboard: LeaderboardEntry[];
-	revealed: boolean;
-}
-
-export function HostEnd({ leaderboard, revealed }: HostEndProperties) {
+export function HostEnd() {
+	const { gameState } = useHostGameContext();
+	const { leaderboard, endRevealed: revealed } = gameState;
 	const podiumEntries = getPodiumEntries(leaderboard);
 
 	// Get entries for each position (may be undefined if not enough players or skipped due to ties)

@@ -2,17 +2,12 @@ import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 
 import { Button } from '@/components/button';
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { cn } from '@/lib/utilities';
 
-interface HostRevealProperties {
-	onNext: () => void;
-	questionText: string;
-	options: string[];
-	correctAnswerIndex: number;
-	answerCounts: number[];
-}
-
-export function HostReveal({ onNext, questionText, options, correctAnswerIndex, answerCounts }: HostRevealProperties) {
+export function HostReveal() {
+	const { gameState, onNextState: onNext } = useHostGameContext();
+	const { questionText, options, correctAnswerIndex, answerCounts } = gameState;
 	const totalAnswers = answerCounts.reduce((a, b) => a + b, 0);
 	return (
 		<div

@@ -1,14 +1,9 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
+import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { shapeColors, shapePaths } from '@/features/game/shared';
 import { cn } from '@/lib/utilities';
-
-interface PlayerAnswerProperties {
-	onAnswer: (index: number) => void;
-	submittedAnswer: number | undefined;
-	optionIndices: number[];
-}
 
 function getPosition(displayIndex: number) {
 	const row = Math.floor(displayIndex / 2);
@@ -19,7 +14,9 @@ function getPosition(displayIndex: number) {
 	};
 }
 
-export function PlayerAnswer({ onAnswer, submittedAnswer, optionIndices }: PlayerAnswerProperties) {
+export function PlayerAnswer() {
+	const { onAnswer, submittedAnswer, gameState } = usePlayerGameContext();
+	const optionIndices = Array.from({ length: gameState.options.length }, (_, index) => index);
 	const [showPulse, setShowPulse] = useState(false);
 
 	// Trigger pulse animation after selection

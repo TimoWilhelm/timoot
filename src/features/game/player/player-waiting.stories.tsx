@@ -1,11 +1,71 @@
+import { fn } from 'storybook/test';
+
+import { PlayerGameProvider } from '@/features/game/player/player-game-context';
+
 import { PlayerPageLayout } from './player-page-layout';
 import { PlayerWaiting } from './player-waiting';
 
+import type { WebSocketGameState } from '@/features/game/hooks/use-game-web-socket';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const mockGameState: WebSocketGameState = {
+	phase: 'LOBBY',
+	gameId: 'ABC123',
+	pin: 'ABC123',
+	players: [],
+	getReadyCountdownMs: 0,
+	modifiers: [],
+	questionIndex: 0,
+	totalQuestions: 10,
+	questionText: '',
+	options: [],
+	startTime: Date.now(),
+	timeLimitMs: 20_000,
+	isDoublePoints: false,
+	backgroundImage: undefined,
+	answeredCount: 0,
+	correctAnswerIndex: undefined,
+	playerResult: undefined,
+	answerCounts: [],
+	leaderboard: [],
+	isLastQuestion: false,
+	endRevealed: false,
+};
+
+interface PlayerWaitingWrapperProperties {
+	phase?: WebSocketGameState['phase'];
+	answerResult?: { isCorrect: boolean; score: number };
+	finalScore?: number;
+	playerId?: string;
+	leaderboard?: WebSocketGameState['leaderboard'];
+	modifiers?: WebSocketGameState['modifiers'];
+}
+
+function PlayerWaitingWrapper({ phase, answerResult, finalScore, playerId, leaderboard, modifiers }: PlayerWaitingWrapperProperties) {
+	return (
+		<PlayerGameProvider
+			gameState={{
+				...mockGameState,
+				phase: phase ?? mockGameState.phase,
+				leaderboard: leaderboard || [],
+				modifiers: modifiers || [],
+			}}
+			nickname="Player"
+			score={finalScore || 100}
+			hasInitialScoreSync={true}
+			answerResult={answerResult}
+			playerId={playerId}
+			onAnswer={fn()}
+			onSendEmoji={fn()}
+		>
+			<PlayerWaiting />
+		</PlayerGameProvider>
+	);
+}
 
 const meta = {
 	title: 'Player/WaitingScreen',
-	component: PlayerWaiting,
+	component: PlayerWaitingWrapper,
 	parameters: {
 		layout: 'fullscreen',
 	},
@@ -16,7 +76,7 @@ const meta = {
 			</PlayerPageLayout>
 		),
 	],
-} satisfies Meta<typeof PlayerWaiting>;
+} satisfies Meta<typeof PlayerWaitingWrapper>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -17,6 +17,7 @@ import { Button } from '@/components/button';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerActiveGame } from '@/features/game/player/player-active-game';
 import { PlayerError } from '@/features/game/player/player-error';
+import { PlayerGameProvider } from '@/features/game/player/player-game-context';
 import { PlayerJoinGame } from '@/features/game/player/player-join-game';
 import { PlayerNickname } from '@/features/game/player/player-nickname';
 import { PlayerPageLayout } from '@/features/game/player/player-page-layout';
@@ -311,7 +312,7 @@ export function PlayerPage() {
 		if (error && !isConnected) return <div className="text-red">{error}</div>;
 
 		return (
-			<PlayerActiveGame
+			<PlayerGameProvider
 				gameState={gameState}
 				nickname={currentNickname}
 				score={myScore ?? 0}
@@ -321,7 +322,9 @@ export function PlayerPage() {
 				onSendEmoji={sendEmoji}
 				answerResult={answerResult}
 				playerId={currentPlayerId}
-			/>
+			>
+				<PlayerActiveGame />
+			</PlayerGameProvider>
 		);
 	};
 

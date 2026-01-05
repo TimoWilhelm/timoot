@@ -5,25 +5,8 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/button';
+import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { cn, getThemeColor } from '@/lib/utilities';
-
-import type { GamePhase, QuestionModifier } from '@shared/types';
-
-interface LeaderboardEntry {
-	id: string;
-	name: string;
-	score: number;
-	rank: number;
-}
-
-interface PlayerWaitingProperties {
-	phase: GamePhase;
-	answerResult: { isCorrect: boolean; score: number } | undefined;
-	finalScore?: number;
-	playerId: string | undefined;
-	leaderboard?: LeaderboardEntry[];
-	modifiers?: QuestionModifier[];
-}
 
 // Double Points animation for player screen
 function PlayerDoublePointsAnimation() {
@@ -130,7 +113,9 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 	);
 }
 
-export function PlayerWaiting({ phase, answerResult, finalScore, playerId, leaderboard = [], modifiers = [] }: PlayerWaitingProperties) {
+export function PlayerWaiting() {
+	const { gameState, answerResult, score: finalScore, playerId } = usePlayerGameContext();
+	const { phase, leaderboard, modifiers } = gameState;
 	// Find player's final rank
 	const myFinalEntry = leaderboard.find((p) => p.id === playerId);
 	const myFinalRank = myFinalEntry?.rank ?? 0;

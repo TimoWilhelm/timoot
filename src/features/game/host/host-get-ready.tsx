@@ -2,16 +2,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Trophy, Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { shapeColors, shapePaths } from '@/features/game/shared';
 import { cn } from '@/lib/utilities';
 
-interface HostGetReadyProperties {
-	countdownMs: number;
-	totalQuestions: number;
-	onCountdownBeep?: () => void;
-}
+export function HostGetReady() {
+	const { gameState, onPlaySound } = useHostGameContext();
+	const { getReadyCountdownMs: countdownMs, totalQuestions } = gameState;
+	const onCountdownBeep = () => onPlaySound('countdown321');
 
-export function HostGetReady({ countdownMs, totalQuestions, onCountdownBeep }: HostGetReadyProperties) {
 	const [countdown, setCountdown] = useState(Math.ceil(countdownMs / 1000));
 	const onCountdownBeepReference = useRef(onCountdownBeep);
 

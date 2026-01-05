@@ -1,13 +1,7 @@
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 
-import type { QuestionModifier } from '@shared/types';
-
-interface HostQuestionModifierProperties {
-	questionIndex: number;
-	totalQuestions: number;
-	modifiers: QuestionModifier[];
-}
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 
 // Pre-generated sparkle positions (generated once at module load, not during render)
 const SPARKLE_POSITIONS = Array.from({ length: 20 }, (_, index) => ({
@@ -130,7 +124,9 @@ function DoublePointsAnimation() {
 	);
 }
 
-export function HostQuestionModifier({ questionIndex, totalQuestions, modifiers }: HostQuestionModifierProperties) {
+export function HostQuestionModifier() {
+	const { gameState } = useHostGameContext();
+	const { questionIndex, totalQuestions, modifiers } = gameState;
 	// For now, only support double points modifier
 	// Future modifiers can be added here with their own animations
 	const hasDoublePoints = modifiers.includes('doublePoints');

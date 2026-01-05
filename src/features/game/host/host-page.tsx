@@ -19,6 +19,7 @@ import { SoundToggle } from '@/components/sound-toggle/sound-toggle';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
 import { HostGameContent } from '@/features/game/host/host-game-content';
+import { HostGameProvider } from '@/features/game/host/host-game-context';
 import { HostPageLayout } from '@/features/game/host/host-page-layout';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/shared';
 import { useHostStore } from '@/lib/stores/host-store';
@@ -286,7 +287,7 @@ export function HostPage() {
 					transition={{ duration: 0.15, ease: 'easeOut' }}
 					className="relative flex grow flex-col"
 				>
-					<HostGameContent
+					<HostGameProvider
 						gameState={gameState}
 						onStartGame={() => {
 							handleAudioInit();
@@ -295,7 +296,9 @@ export function HostPage() {
 						onNextState={nextState}
 						onPlaySound={playSound}
 						onPlayCountdownTick={playCountdownTick}
-					/>
+					>
+						<HostGameContent />
+					</HostGameProvider>
 				</motion.main>
 			</AnimatePresence>
 

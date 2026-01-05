@@ -1,6 +1,5 @@
-import { WebSocketGameState } from '@/features/game/hooks/use-game-web-socket';
-import { SoundType } from '@/features/game/hooks/use-host-sound';
 import { HostEnd } from '@/features/game/host/host-end';
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { HostGetReady } from '@/features/game/host/host-get-ready';
 import { HostLeaderboard } from '@/features/game/host/host-leaderboard';
 import { HostLobby } from '@/features/game/host/host-lobby';
@@ -8,73 +7,31 @@ import { HostQuestion } from '@/features/game/host/host-question';
 import { HostQuestionModifier } from '@/features/game/host/host-question-modifier';
 import { HostReveal } from '@/features/game/host/host-reveal';
 
-interface HostGameContentProperties {
-	gameState: WebSocketGameState;
-	onStartGame: () => void;
-	onNextState: () => void;
-	onPlaySound: (sound: SoundType) => void;
-	onPlayCountdownTick: (timeLeft: number) => void;
-}
+export function HostGameContent() {
+	const { gameState } = useHostGameContext();
 
-export function HostGameContent({ gameState, onStartGame, onNextState, onPlaySound, onPlayCountdownTick }: HostGameContentProperties) {
 	switch (gameState.phase) {
 		case 'LOBBY': {
-			return <HostLobby onStart={onStartGame} players={gameState.players} gameId={gameState.gameId} />;
+			return <HostLobby />;
 		}
 		case 'GET_READY': {
-			return (
-				<HostGetReady
-					countdownMs={gameState.getReadyCountdownMs}
-					totalQuestions={gameState.totalQuestions}
-					onCountdownBeep={() => onPlaySound('countdown321')}
-				/>
-			);
+			return <HostGetReady />;
 		}
 		case 'QUESTION_MODIFIER': {
-			return (
-				<HostQuestionModifier
-					questionIndex={gameState.questionIndex}
-					totalQuestions={gameState.totalQuestions}
-					modifiers={gameState.modifiers}
-				/>
-			);
+			return <HostQuestionModifier />;
 		}
 		case 'QUESTION': {
-			return (
-				<HostQuestion
-					onNext={onNextState}
-					questionText={gameState.questionText}
-					options={gameState.options}
-					questionIndex={gameState.questionIndex}
-					totalQuestions={gameState.totalQuestions}
-					startTime={gameState.startTime}
-					timeLimitMs={gameState.timeLimitMs}
-					answeredCount={gameState.answeredCount}
-					totalPlayers={gameState.players.length}
-					isDoublePoints={gameState.isDoublePoints}
-					backgroundImage={gameState.backgroundImage}
-					onCountdownTick={onPlayCountdownTick}
-					onTimeUp={() => onPlaySound('timeUp')}
-				/>
-			);
+			return <HostQuestion />;
 		}
 		case 'REVEAL': {
-			return (
-				<HostReveal
-					onNext={onNextState}
-					questionText={gameState.questionText}
-					options={gameState.options}
-					correctAnswerIndex={gameState.correctAnswerIndex!}
-					answerCounts={gameState.answerCounts}
-				/>
-			);
+			return <HostReveal />;
 		}
 		case 'LEADERBOARD': {
-			return <HostLeaderboard onNext={onNextState} leaderboard={gameState.leaderboard} isLastQuestion={gameState.isLastQuestion} />;
+			return <HostLeaderboard />;
 		}
 		case 'END_INTRO':
 		case 'END_REVEALED': {
-			return <HostEnd leaderboard={gameState.leaderboard} revealed={gameState.endRevealed} />;
+			return <HostEnd />;
 		}
 		default: {
 			return <div>Unknown game phase.</div>;

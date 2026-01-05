@@ -4,17 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/button';
 import { Card, CardContent } from '@/components/card/card';
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { cn } from '@/lib/utilities';
 
 import type { LeaderboardEntry } from '@/features/game/hooks/use-game-web-socket';
 
-interface HostLeaderboardProperties {
-	onNext: () => void;
-	leaderboard: LeaderboardEntry[];
-	isLastQuestion: boolean;
-}
-
-export function HostLeaderboard({ onNext, leaderboard, isLastQuestion }: HostLeaderboardProperties) {
+export function HostLeaderboard() {
+	const { gameState, onNextState: onNext } = useHostGameContext();
+	const { leaderboard, isLastQuestion } = gameState;
 	const top5 = leaderboard.slice(0, 5);
 	const [animationPhase, setAnimationPhase] = useState<'intro' | 'reorder' | 'done'>('intro');
 

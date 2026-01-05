@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { shapeColors, shapePaths } from '@/features/game/shared';
 import { cn } from '@/lib/utilities';
 
@@ -133,37 +134,25 @@ function DoublePointsBadge() {
 	);
 }
 
-interface HostQuestionProperties {
-	onNext: () => void;
-	questionText: string;
-	options: string[];
-	questionIndex: number;
-	totalQuestions: number;
-	startTime: number;
-	timeLimitMs: number;
-	answeredCount: number;
-	totalPlayers: number;
-	isDoublePoints?: boolean;
-	backgroundImage?: string;
-	onCountdownTick?: (timeLeft: number) => void;
-	onTimeUp?: () => void;
-}
+export function HostQuestion() {
+	const { gameState, onNextState, onPlaySound, onPlayCountdownTick } = useHostGameContext();
+	const {
+		questionText,
+		options,
+		questionIndex,
+		totalQuestions,
+		startTime,
+		timeLimitMs,
+		answeredCount,
+		players,
+		isDoublePoints,
+		backgroundImage,
+	} = gameState;
 
-export function HostQuestion({
-	onNext,
-	questionText,
-	options,
-	questionIndex,
-	totalQuestions,
-	startTime,
-	timeLimitMs,
-	answeredCount,
-	totalPlayers,
-	isDoublePoints,
-	backgroundImage,
-	onCountdownTick,
-	onTimeUp,
-}: HostQuestionProperties) {
+	const totalPlayers = players.length;
+	const onNext = onNextState; // Alias
+	const onCountdownTick = onPlayCountdownTick; // Alias
+	const onTimeUp = () => onPlaySound('timeUp');
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
 	const [imageError, setImageError] = useState(false);

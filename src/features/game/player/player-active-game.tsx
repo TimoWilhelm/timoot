@@ -1,37 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { AnimatedNumber } from '@/components/animated-number/animated-number';
-import { WebSocketGameState } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerAnswer } from '@/features/game/player/player-answer';
+import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { PlayerWaiting } from '@/features/game/player/player-waiting';
 import { EmojiPicker } from '@/features/game/shared';
 import { phaseAllowsEmoji } from '@shared/phase-rules';
-import { EmojiReaction } from '@shared/types';
 
-interface PlayerActiveGameProperties {
-	gameState: WebSocketGameState;
-	nickname: string;
-	score: number;
-	hasInitialScoreSync: boolean;
-	submittedAnswer?: number;
-	onAnswer: (index: number) => void;
-	onSendEmoji: (emoji: EmojiReaction) => void;
-	// Optional items that were derived in PlayerPage
-	answerResult?: { isCorrect: boolean; score: number };
-	playerId?: string;
-}
-
-export function PlayerActiveGame({
-	gameState,
-	nickname,
-	score,
-	hasInitialScoreSync,
-	submittedAnswer,
-	onAnswer,
-	onSendEmoji,
-	answerResult,
-	playerId,
-}: PlayerActiveGameProperties) {
+export function PlayerActiveGame() {
+	const { gameState, nickname, score, hasInitialScoreSync, onSendEmoji } = usePlayerGameContext();
 	return (
 		<>
 			<header
@@ -49,22 +26,7 @@ export function PlayerActiveGame({
 			</header>
 			<main className="relative flex grow items-center justify-center">
 				<AnimatePresence mode="wait">
-					{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? (
-						<PlayerAnswer
-							onAnswer={onAnswer}
-							submittedAnswer={submittedAnswer}
-							optionIndices={Array.from({ length: gameState.options.length }, (_, index) => index)}
-						/>
-					) : (
-						<PlayerWaiting
-							phase={gameState.phase}
-							answerResult={answerResult}
-							finalScore={score}
-							playerId={playerId}
-							leaderboard={gameState.leaderboard}
-							modifiers={gameState.modifiers}
-						/>
-					)}
+					{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? <PlayerAnswer /> : <PlayerWaiting />}
 				</AnimatePresence>
 			</main>
 			<AnimatePresence>
