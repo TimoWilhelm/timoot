@@ -1,9 +1,36 @@
-import { expect } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
+
+import { HostGameProvider } from '@/features/game/host/host-game-provider';
 
 import { HostEnd } from './host-end';
 import { HostPageLayout } from './host-page-layout';
 
+import type { WebSocketGameState } from '@/features/game/hooks/use-game-web-socket';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const mockGameState: WebSocketGameState = {
+	phase: 'END_REVEALED',
+	gameId: 'ABC123',
+	pin: 'ABC123',
+	players: [],
+	getReadyCountdownMs: 0,
+	modifiers: [],
+	questionIndex: 0,
+	totalQuestions: 10,
+	questionText: '',
+	options: [],
+	startTime: 0,
+	timeLimitMs: 20_000,
+	isDoublePoints: false,
+	backgroundImage: undefined,
+	answeredCount: 0,
+	correctAnswerIndex: undefined,
+	playerResult: undefined,
+	answerCounts: [],
+	leaderboard: [],
+	isLastQuestion: false,
+	endRevealed: true,
+};
 
 const meta = {
 	title: 'Host/End',
@@ -12,10 +39,22 @@ const meta = {
 		layout: 'fullscreen',
 	},
 	decorators: [
-		(Story) => (
-			<HostPageLayout>
-				<Story />
-			</HostPageLayout>
+		(Story, { args }) => (
+			<HostGameProvider
+				gameState={{
+					...mockGameState,
+					...args,
+					endRevealed: (args as { revealed?: boolean }).revealed ?? mockGameState.endRevealed,
+				}}
+				onStartGame={fn()}
+				onNextState={fn()}
+				onPlaySound={fn()}
+				onPlayCountdownTick={fn()}
+			>
+				<HostPageLayout>
+					<Story />
+				</HostPageLayout>
+			</HostGameProvider>
 		),
 	],
 } satisfies Meta<typeof HostEnd>;
