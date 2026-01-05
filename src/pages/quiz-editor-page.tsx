@@ -49,7 +49,7 @@ export function QuizEditorPage() {
 		setValue,
 		formState: { errors, isSubmitting, isDirty },
 	} = methods;
-	const { fields, append, remove, update, move } = fieldArray;
+	const { fields, append, remove, move } = fieldArray;
 
 	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
 
@@ -86,6 +86,7 @@ export function QuizEditorPage() {
 				...quizData,
 				questions: quizData.questions.map((q) => ({
 					...q,
+					options: q.options.map((opt) => ({ value: opt })),
 					correctAnswerIndex: String(q.correctAnswerIndex),
 					backgroundImage: q.backgroundImage,
 				})),
@@ -94,7 +95,9 @@ export function QuizEditorPage() {
 		} else if (!quizId) {
 			reset({
 				title: '',
-				questions: [{ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined }],
+				questions: [
+					{ text: '', options: [{ value: '' }, { value: '' }], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined },
+				],
 			});
 		}
 	}, [quizId, quizData, reset]);
@@ -112,7 +115,7 @@ export function QuizEditorPage() {
 			...data,
 			questions: data.questions.map((q) => ({
 				text: q.text,
-				options: q.options,
+				options: q.options.map((opt) => opt.value),
 				correctAnswerIndex: Number.parseInt(q.correctAnswerIndex, 10),
 				isDoublePoints: q.isDoublePoints,
 				backgroundImage: q.backgroundImage,
@@ -144,7 +147,13 @@ export function QuizEditorPage() {
 	};
 
 	const addQuestion = () =>
-		append({ text: '', options: ['', ''], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined });
+		append({
+			text: '',
+			options: [{ value: '' }, { value: '' }],
+			correctAnswerIndex: '0',
+			isDoublePoints: false,
+			backgroundImage: undefined,
+		});
 
 	const generateQuestion = () => {
 		const title = getValues('title');
@@ -166,7 +175,7 @@ export function QuizEditorPage() {
 					title,
 					existingQuestions: currentQuestions.map((q) => ({
 						text: q.text,
-						options: q.options,
+						options: q.options.map((opt) => opt.value),
 						correctAnswerIndex: Number(q.correctAnswerIndex),
 					})),
 				},
@@ -175,7 +184,7 @@ export function QuizEditorPage() {
 				onSuccess: (data) => {
 					append({
 						text: data.text,
-						options: data.options,
+						options: data.options.map((opt) => ({ value: opt })),
 						correctAnswerIndex: String(data.correctAnswerIndex),
 						isDoublePoints: false,
 					});
@@ -244,7 +253,6 @@ export function QuizEditorPage() {
 								key={field.id}
 								index={index}
 								id={field.id}
-								update={update}
 								move={move}
 								remove={remove}
 								isFirst={index === 0}

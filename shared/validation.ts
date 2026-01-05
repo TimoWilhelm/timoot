@@ -65,6 +65,13 @@ const optionTextSchema = z
 	.max(LIMITS.OPTION_TEXT_MAX, `Option must be at most ${LIMITS.OPTION_TEXT_MAX} characters`);
 
 /**
+ * Option object schema for form input (useFieldArray requires objects)
+ */
+const optionFormSchema = z.object({
+	value: optionTextSchema,
+});
+
+/**
  * AI prompt validation
  */
 export const aiPromptSchema = z
@@ -108,12 +115,12 @@ const questionSchema = z.object({
 });
 
 /**
- * Question schema for form input (correctAnswerIndex as string for radio buttons)
+ * Question schema for form input (correctAnswerIndex as string for radio buttons, options as objects for useFieldArray)
  */
 const questionFormSchema = z.object({
 	text: questionTextSchema,
 	options: z
-		.array(optionTextSchema)
+		.array(optionFormSchema)
 		.min(LIMITS.OPTIONS_MIN, `A question must have at least ${LIMITS.OPTIONS_MIN} options`)
 		.max(LIMITS.OPTIONS_MAX, `A question can have at most ${LIMITS.OPTIONS_MAX} options`),
 	correctAnswerIndex: z.string().min(1, 'A correct answer must be selected'),

@@ -31,7 +31,7 @@ export function QuestionCharCount({ control, qIndex }: { control: Control<QuizFo
 }
 
 export function OptionCharCount({ control, qIndex, oIndex }: { control: Control<QuizFormInput>; qIndex: number; oIndex: number }) {
-	const value = useWatch({ control, name: `questions.${qIndex}.options.${oIndex}` });
+	const value = useWatch({ control, name: `questions.${qIndex}.options.${oIndex}.value` });
 	return (
 		<span
 			className={`

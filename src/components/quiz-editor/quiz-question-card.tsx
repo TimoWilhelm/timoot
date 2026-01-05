@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, ImageIcon, PlusCircle, Trash2, Zap } from 'lucide-react';
-import { UseFieldArrayMove, UseFieldArrayRemove, UseFieldArrayUpdate, useFormContext, Controller } from 'react-hook-form';
+import { useEffect, useRef } from 'react';
+import { UseFieldArrayMove, UseFieldArrayRemove, useFieldArray, useFormContext, Controller } from 'react-hook-form';
 
 import { OptionCharCount, QuestionCharCount } from '@/components/quiz-editor/char-counters';
 import {
@@ -24,7 +25,6 @@ import { LIMITS, type QuizFormInput } from '@shared/validation';
 type QuizQuestionCardProperties = {
 	index: number;
 	id: string; // field.id
-	update: UseFieldArrayUpdate<QuizFormInput, 'questions'>;
 	move: UseFieldArrayMove;
 	remove: UseFieldArrayRemove;
 	isFirst: boolean;
@@ -32,53 +32,57 @@ type QuizQuestionCardProperties = {
 	onOpenImageDialog: (index: number) => void;
 };
 
-export function QuizQuestionCard({ index, id, update, move, remove, isFirst, isLast, onOpenImageDialog }: QuizQuestionCardProperties) {
+export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onOpenImageDialog }: QuizQuestionCardProperties) {
 	const {
 		register,
 		control,
 		getValues,
+		setValue,
 		formState: { errors },
 	} = useFormContext<QuizFormInput>();
 
+	// Nested useFieldArray for options - this allows append/remove without remounting all inputs
+	const {
+		fields: optionFields,
+		append: appendOption,
+		remove: removeOptionFromArray,
+		move: moveOptionInArray,
+	} = useFieldArray({
+		control,
+		name: `questions.${index}.options`,
+	});
+
+	const optionInputReferences = useRef<(HTMLInputElement | null)[]>([]);
+	const shouldFocusNewOptionReference = useRef(false);
+
 	const addOption = () => {
-		const currentQuestion = getValues(`questions.${index}`);
-		if (currentQuestion.options.length < LIMITS.OPTIONS_MAX) {
-			update(index, {
-				...currentQuestion,
-				options: [...currentQuestion.options, ''],
-			});
+		if (optionFields.length < LIMITS.OPTIONS_MAX) {
+			shouldFocusNewOptionReference.current = true;
+			appendOption({ value: '' });
 		}
 	};
 
-	const removeOption = (oIndex: number) => {
-		const currentQuestion = getValues(`questions.${index}`);
-		if (currentQuestion.options.length > LIMITS.OPTIONS_MIN) {
-			const newOptions = currentQuestion.options.filter((_, index_) => index_ !== oIndex);
-			const currentCorrect = Number.parseInt(currentQuestion.correctAnswerIndex, 10);
+	const handleRemoveOption = (oIndex: number) => {
+		if (optionFields.length > LIMITS.OPTIONS_MIN) {
+			const currentCorrect = Number.parseInt(getValues(`questions.${index}.correctAnswerIndex`), 10);
 			const newCorrect =
 				currentCorrect === oIndex
 					? 0 // If the deleted option was correct, default to the first option
 					: currentCorrect > oIndex
 						? currentCorrect - 1 // If a preceding option was deleted, shift index down
 						: currentCorrect;
-			update(index, {
-				...currentQuestion,
-				options: newOptions,
-				correctAnswerIndex: String(newCorrect),
-			});
+
+			removeOptionFromArray(oIndex);
+			setValue(`questions.${index}.correctAnswerIndex`, String(newCorrect));
 		}
 	};
 
-	const moveOption = (oIndex: number, direction: 'up' | 'down') => {
-		const currentQuestion = getValues(`questions.${index}`);
+	const handleMoveOption = (oIndex: number, direction: 'up' | 'down') => {
 		const newIndex = direction === 'up' ? oIndex - 1 : oIndex + 1;
-		if (newIndex < 0 || newIndex >= currentQuestion.options.length) return;
-
-		const newOptions = [...currentQuestion.options];
-		[newOptions[oIndex], newOptions[newIndex]] = [newOptions[newIndex], newOptions[oIndex]];
+		if (newIndex < 0 || newIndex >= optionFields.length) return;
 
 		// Update correctAnswerIndex if the correct answer was moved
-		const currentCorrect = Number.parseInt(currentQuestion.correctAnswerIndex, 10);
+		const currentCorrect = Number.parseInt(getValues(`questions.${index}.correctAnswerIndex`), 10);
 		let newCorrect = currentCorrect;
 		if (currentCorrect === oIndex) {
 			newCorrect = newIndex;
@@ -86,12 +90,18 @@ export function QuizQuestionCard({ index, id, update, move, remove, isFirst, isL
 			newCorrect = oIndex;
 		}
 
-		update(index, {
-			...currentQuestion,
-			options: newOptions,
-			correctAnswerIndex: String(newCorrect),
-		});
+		moveOptionInArray(oIndex, newIndex);
+		setValue(`questions.${index}.correctAnswerIndex`, String(newCorrect));
 	};
+
+	// Focus the newly added option input
+	useEffect(() => {
+		if (shouldFocusNewOptionReference.current) {
+			const lastIndex = optionFields.length - 1;
+			optionInputReferences.current[lastIndex]?.focus();
+			shouldFocusNewOptionReference.current = false;
+		}
+	}, [optionFields.length]);
 
 	return (
 		<Card key={id}>
@@ -219,15 +229,15 @@ export function QuizQuestionCard({ index, id, update, move, remove, isFirst, isL
 						name={`questions.${index}.correctAnswerIndex`}
 						render={({ field: { onChange, value } }) => (
 							<RadioGroup onValueChange={onChange} value={String(value)} className={`mt-2 space-y-2`}>
-								{getValues(`questions.${index}.options`).map((_, oIndex) => (
-									<div key={`${id}-option-${oIndex}`} className={`flex items-center gap-2`}>
+								{optionFields.map((field, oIndex) => (
+									<div key={field.id} className={`flex items-center gap-2`}>
 										<div className="flex flex-col">
 											<Button
 												type="button"
 												variant="ghost"
 												size="icon"
 												className="size-5 text-muted-foreground"
-												onClick={() => moveOption(oIndex, 'up')}
+												onClick={() => handleMoveOption(oIndex, 'up')}
 												disabled={oIndex === 0}
 											>
 												<ChevronUp className="size-3" />
@@ -237,8 +247,8 @@ export function QuizQuestionCard({ index, id, update, move, remove, isFirst, isL
 												variant="ghost"
 												size="icon"
 												className="size-5 text-muted-foreground"
-												onClick={() => moveOption(oIndex, 'down')}
-												disabled={oIndex === getValues(`questions.${index}.options`).length - 1}
+												onClick={() => handleMoveOption(oIndex, 'down')}
+												disabled={oIndex === optionFields.length - 1}
 											>
 												<ChevronDown className="size-3" />
 											</Button>
@@ -246,19 +256,28 @@ export function QuizQuestionCard({ index, id, update, move, remove, isFirst, isL
 										<RadioGroupItem value={String(oIndex)} id={`q${index}o${oIndex}`} />
 										<div className="relative grow">
 											<Input
-												{...register(`questions.${index}.options.${oIndex}`)}
+												{...(() => {
+													const { ref, ...rest } = register(`questions.${index}.options.${oIndex}.value`);
+													return {
+														...rest,
+														ref: (element: HTMLInputElement | null) => {
+															ref(element);
+															optionInputReferences.current[oIndex] = element;
+														},
+													};
+												})()}
 												placeholder={`Option ${oIndex + 1}`}
 												maxLength={LIMITS.OPTION_TEXT_MAX}
 												className="pr-14"
 											/>
 											<OptionCharCount control={control} qIndex={index} oIndex={oIndex} />
 										</div>
-										{getValues(`questions.${index}.options`).length > LIMITS.OPTIONS_MIN && (
+										{optionFields.length > LIMITS.OPTIONS_MIN && (
 											<Button
 												type="button"
 												variant="ghost"
 												size="icon"
-												onClick={() => removeOption(oIndex)}
+												onClick={() => handleRemoveOption(oIndex)}
 												className={`
 													text-muted-foreground
 													hover:text-destructive
@@ -278,7 +297,7 @@ export function QuizQuestionCard({ index, id, update, move, remove, isFirst, isL
 					)}
 				</div>
 				<div className="flex w-full justify-center">
-					{getValues(`questions.${index}.options`).length < LIMITS.OPTIONS_MAX && (
+					{optionFields.length < LIMITS.OPTIONS_MAX && (
 						<Button type="button" variant="subtle" onClick={addOption}>
 							<PlusCircle className="mr-2 size-4" /> Add Option
 						</Button>
