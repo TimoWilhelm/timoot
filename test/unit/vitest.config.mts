@@ -4,13 +4,13 @@ import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
 
 export default defineWorkersConfig({
 	test: {
-		include: ['test/unit/**/*.test.ts'],
+		root: path.resolve(__dirname, '../../'),
+		include: ['worker/**/*.test.{ts,tsx}'],
 		globals: true,
 		poolOptions: {
 			workers: {
-				wrangler: {
-					configPath: '../../wrangler.jsonc',
-				},
+				main: path.resolve(__dirname, '../../worker/index.ts'),
+				isolatedStorage: false,
 			},
 		},
 	},

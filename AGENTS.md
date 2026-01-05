@@ -51,8 +51,24 @@
 
 # Project Structure
 
+<folder_structure>
+1. **Group by Feature**: Organize files by feature, not type. Code that changes together stays together.
+2. **Reusable Components**: Place strictly reusable UI components in `src/components/[type]` (e.g., `buttons`, `forms`).
+3. **Feature Modules**: Each part of the website (feature) has its own folder in `src/features/` containing its specific pages, components, and hooks.
+</folder_structure>
+
+<test_location>
+- Colocate unit tests with the code they test in a `__tests__` directory.
+- Example: `src/features/game/my-component.tsx` -> `src/features/game/__tests__/my-component.test.tsx`
+- Integration and E2E tests remain in `test/` directory.
+</test_location>
+
 <directories>
-- `src/` - React app (pages, components, hooks)
+- `src/` - React app sources
+  - `components/` - Reusable UI components grouped by type (e.g. `button/`, `dialog/`)
+  - `features/` - Feature-based modules (e.g. `game/`, `auth/`) containing pages, components, hooks, and utils
+  - `lib/` - Shared utilities and libraries
+  - `hooks/` - Shared global hooks
 - `worker/` - Cloudflare Worker (API routes, Durable Objects)
 - `shared/` - Shared code between frontend and worker
 - `test/` - Unit, integration and end-to-end tests

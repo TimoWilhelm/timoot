@@ -2,12 +2,12 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
-import { ErrorBoundary, RouteErrorBoundary } from '@/components/error';
+import { ErrorBoundary, RouteErrorBoundary } from '@/features/error';
+import { HostPage } from '@/features/game/host/host-page';
+import { PlayerPage } from '@/features/game/player/player-page';
+import { HomePage } from '@/features/home/home-page';
+import { QuizEditorPage } from '@/features/quiz-editor/quiz-editor-page';
 import { queryClient } from '@/lib/clients/query-client';
-import { HomePage } from '@/pages/home-page';
-import { HostPage } from '@/pages/host-page';
-import { PlayerPage } from '@/pages/player-page';
-import { QuizEditorPage } from '@/pages/quiz-editor-page';
 
 const router = createBrowserRouter([
 	{
