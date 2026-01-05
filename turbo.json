@@ -59,7 +59,7 @@
 			"cache": false
 		},
 		"test:storybook": {
-			"inputs": ["src/**", ".storybook/**", "vitest.config.storybook.ts"],
+			"inputs": ["src/**", ".storybook/**", "test/e2e/vitest.config.ts"],
 			"cache": true
 		}
 	}

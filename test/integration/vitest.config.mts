@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
 					singleThread: true, // Run tests sequentially to avoid port conflicts
 				},
 			},
-			reporters: ['verbose'],
+			reporters: ['default'],
 			env: {
 				// Default values - can be overridden via .env or CLI
 				TEST_BASE_URL: environment.TEST_BASE_URL || 'http://localhost:3000',

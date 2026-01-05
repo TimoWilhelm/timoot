@@ -84,9 +84,8 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	};
 
 	const startTime = Date.now();
-	console.log('  Creating game...');
+
 	const game = await createGame(baseUrl);
-	console.log(`  Game created: ${game.gameId}`);
 
 	// Connect host
 	const host = new WsTestClient({
@@ -99,23 +98,15 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	await host.waitForMessage('lobbyUpdate');
 
 	// Connect all players concurrently
-	console.log(`  Connecting ${playerCount} players...`);
+
 	const playerNames = generatePlayerNames(playerCount, 'Player');
 	const playerPromises = playerNames.map((name) => simulatePlayer(baseUrl, game.gameId, name, metrics));
 	const playerResults = await Promise.all(playerPromises);
 	const players = playerResults.filter((p): p is WsTestClient => p !== null);
-	console.log(`  ${players.length}/${playerCount} players connected`);
 
 	// Wait for all players to be in lobby (with graceful timeout)
 	if (players.length > 0) {
-		console.log('  Waiting for lobby to sync...');
-		await host
-			.waitForMessage('lobbyUpdate', 5000, (m) => m.players.length >= players.length)
-			.catch(() => {
-				const lobbyMsgs = host.getMessagesByType('lobbyUpdate');
-				const lastLobby = lobbyMsgs.at(-1);
-				console.log(`  Lobby has ${lastLobby?.players.length ?? 0}/${players.length} players, continuing...`);
-			});
+		await host.waitForMessage('lobbyUpdate', 5000, (m) => m.players.length >= players.length).catch(() => {});
 	}
 
 	// Start game (only if we have players)
@@ -123,20 +114,19 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	const lastLobby = lobbyMsgs.at(-1);
 	if (!lastLobby || lastLobby.players.length === 0) {
 		// No players joined - skip game
-		console.log('  No players joined - skipping game');
+
 		host.close();
 		for (const p of players) p.close();
 		return metrics;
 	}
-	console.log('  Starting game...');
+
 	await host.startGame().catch(() => {});
 
 	// Wait for question (with timeout handling)
-	console.log('  Waiting for first question...');
+
 	await host.waitForMessage('getReady', 10_000).catch(() => {});
 	const questionPromises = players.map((p) => p.waitForMessage('questionStart', 20_000).catch(() => {}));
 	await Promise.all(questionPromises);
-	console.log('  Question received, submitting answers...');
 
 	// All players submit answers (with timeout)
 	const answerPromises = players.map(async (player, index) => {
@@ -157,14 +147,13 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	await new Promise((r) => setTimeout(r, 500));
 
 	// Host advances to reveal
-	console.log('  Advancing to reveal...');
+
 	host.nextState();
 	const revealPromises = players.map((p) => p.waitForMessage('reveal', 10_000).catch(() => {}));
 	await Promise.all(revealPromises);
 
 	// Send emojis burst
 	if (sendEmojis) {
-		console.log(`  Sending emoji burst (${CONCURRENCY_TEST_EMOJI_BURST} per player)...`);
 		const emojis: EmojiReaction[] = ['❤️', '😂', '🤔', '🎉'];
 		for (const player of players) {
 			for (let index = 0; index < CONCURRENCY_TEST_EMOJI_BURST; index++) {
@@ -178,10 +167,10 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	}
 
 	// Continue game through remaining questions until end
-	console.log('  Playing through remaining questions...');
+
 	let phase = 'REVEAL';
 	let attempts = 0;
-	let questionNumber = 1;
+
 	const maxAttempts = 50; // Prevent infinite loop
 
 	while (phase !== 'END' && attempts < maxAttempts) {
@@ -198,12 +187,9 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 			]);
 
 			if (nextMessage.type === 'gameEnd') {
-				console.log('  Game ended');
 				phase = 'END';
 				break;
 			} else if (nextMessage.type === 'questionStart') {
-				questionNumber++;
-				console.log(`  Question ${questionNumber}...`);
 				// Answer the question
 				const answerProms = players.map(async (player, index) => {
 					try {
@@ -245,8 +231,6 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 describe('Concurrency Tests', () => {
 	describe('Single Game Concurrency', () => {
 		it(`should handle ${CONCURRENCY_TEST_PLAYERS} concurrent players in a single game`, async () => {
-			console.log(`\n🚀 Running concurrency test with ${CONCURRENCY_TEST_PLAYERS} players against ${BASE_URL}`);
-
 			const metrics = await runGameWithPlayers(BASE_URL, CONCURRENCY_TEST_PLAYERS, true);
 
 			console.log('\n📊 Concurrency Test Results:');
@@ -277,10 +261,6 @@ describe('Concurrency Tests', () => {
 
 	describe('Multiple Concurrent Games', () => {
 		it(`should handle ${CONCURRENCY_TEST_GAMES} concurrent games with ${CONCURRENCY_TEST_PLAYERS} players each`, async () => {
-			console.log(
-				`\n🚀 Running concurrent games test: ${CONCURRENCY_TEST_GAMES} games x ${CONCURRENCY_TEST_PLAYERS} players against ${BASE_URL}`,
-			);
-
 			const startTime = Date.now();
 			const gamePromises: Promise<ConcurrencyTestMetrics>[] = [];
 
@@ -358,8 +338,6 @@ describe('Concurrency Tests', () => {
 		it('should handle rapid emoji sending from multiple players', async () => {
 			const playerCount = 10;
 			const emojisPerPlayer = 20;
-
-			console.log(`\n🎉 Running emoji burst test: ${playerCount} players x ${emojisPerPlayer} emojis`);
 
 			const game = await createGame(BASE_URL);
 			const host = new WsTestClient({
@@ -457,8 +435,6 @@ describe('Concurrency Tests', () => {
 	describe('Rapid Player Joins', () => {
 		it('should handle rapid player joins without race conditions', async () => {
 			const playerCount = 30;
-
-			console.log(`\n⚡ Running rapid join test: ${playerCount} players joining simultaneously`);
 
 			const game = await createGame(BASE_URL);
 			const host = new WsTestClient({

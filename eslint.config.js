@@ -14,7 +14,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-	{ ignores: ['dist', '.wrangler', 'worker-configuration.d.ts', '.storybook', 'vitest.config.storybook.ts'] },
+	{ ignores: ['dist', '.wrangler', 'worker-configuration.d.ts', '.storybook'] },
 
 	js.configs.recommended,
 
@@ -48,7 +48,7 @@ export default defineConfig(
 				createTypeScriptImportResolver({
 					alwaysTryTypes: true,
 					bun: true,
-					// project: import.meta.dirname,
+					project: import.meta.dirname,
 				}),
 			],
 		},

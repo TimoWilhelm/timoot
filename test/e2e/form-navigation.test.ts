@@ -3,6 +3,15 @@ import { expect, test } from 'playwright/test';
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 
 test.describe('Quiz Editor Navigation', () => {
+	test('non-dirty form does not prompt confirmation on cancel', async ({ page }) => {
+		await page.goto('/edit');
+		await page.getByRole('button', { name: /cancel/i }).click();
+
+		const dialog = page.getByRole('alertdialog');
+		await expect(dialog).not.toBeVisible();
+		expect(page.url()).not.toContain('/edit');
+	});
+
 	test('dirty form prompts confirmation on cancel button', async ({ page }) => {
 		// 1. Navigate to quiz editor
 		await page.goto('/edit');
@@ -42,28 +51,6 @@ test.describe('Quiz Editor Navigation', () => {
 
 		await page.getByRole('button', { name: /leave/i }).click();
 		await expect(dialog).not.toBeVisible();
-		await expect(page).toHaveURL(BASE_URL + '/');
-	});
-
-	test.skip('dirty form prompts on browser back', async ({ page }) => {
-		// Establish history
-		await page.goto('/');
-		await page.goto('/edit');
-
-		await page.getByLabel('Quiz Title').fill('Dirty Quiz 3');
-		await page.getByLabel('Quiz Title').blur();
-		// Wait for state to settle
-		await page.waitForTimeout(500);
-
-		await page.goBack();
-
-		const dialog = page.getByRole('alertdialog');
-		await expect(dialog).toBeVisible();
-
-		// Click Leave and verify we moved away
-		await page.getByRole('button', { name: /leave/i }).click();
-		await expect(dialog).not.toBeVisible();
-		// We should be back at home (/) since we have history [home, edit] and went back
 		await expect(page).toHaveURL(BASE_URL + '/');
 	});
 });
