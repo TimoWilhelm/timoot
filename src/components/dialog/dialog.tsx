@@ -55,10 +55,6 @@ const DialogContent = React.forwardRef<
 					{...properties}
 				>
 					{children}
-					<DialogPrimitive.Close className={cn(buttonVariants({ variant: 'subtle', size: 'icon' }), 'absolute top-4 right-4 z-10 size-8')}>
-						<X className="size-4" />
-						<span className="sr-only">Close</span>
-					</DialogPrimitive.Close>
 				</DialogPrimitive.Content>
 			</div>
 		</DialogOverlay>
@@ -66,17 +62,21 @@ const DialogContent = React.forwardRef<
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
-	<div
-		className={cn(
-			`
-				flex flex-col space-y-1.5 text-center
+const DialogHeader = ({ className, children, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
+	<div className={cn('flex flex-row items-start justify-between gap-4', className)} {...properties}>
+		<div
+			className="
+				flex flex-1 flex-col space-y-1.5 text-center
 				sm:text-left
-			`,
-			className,
-		)}
-		{...properties}
-	/>
+			"
+		>
+			{children}
+		</div>
+		<DialogPrimitive.Close className={cn(buttonVariants({ variant: 'subtle', size: 'icon' }), 'shrink-0')}>
+			<X className="size-4" />
+			<span className="sr-only">Close</span>
+		</DialogPrimitive.Close>
+	</div>
 );
 DialogHeader.displayName = 'DialogHeader';
 

@@ -54,21 +54,20 @@ export function HeroSection() {
 				<Button
 					onClick={() => navigate('/play')}
 					variant="accent"
+					size="xl"
 					className="
-						group relative inline-flex items-center gap-2 rounded-lg px-6 py-5
-						font-display text-xl font-bold tracking-wide uppercase shadow-brutal
-						hover:-translate-y-0.5 hover:shadow-brutal-lg
-						active:translate-y-0 active:shadow-brutal-sm
-						sm:gap-3 sm:rounded-xl sm:px-10 sm:py-8 sm:text-3xl
-						md:gap-4 md:px-12 md:py-10 md:text-4xl
+						group relative inline-flex items-center gap-3 px-8 py-6 font-display
+						text-2xl font-bold tracking-wide uppercase
+						sm:gap-4 sm:rounded-2xl sm:px-12 sm:py-8 sm:text-4xl
+						md:px-16 md:py-10 md:text-5xl
 					"
 				>
 					<Gamepad2
 						className="
-							size-6 transition-transform
+							size-7 transition-transform
 							group-hover:rotate-12
-							sm:size-8
-							md:size-10
+							sm:size-10
+							md:size-12
 						"
 						strokeWidth={2.5}
 					/>

@@ -252,27 +252,28 @@
 /* ========================================
    View Transitions - Neo-Brutalist Style
    ======================================== */
-@keyframes view-fast-fade-out {
+@keyframes view-slide-out {
 	to {
 		opacity: 0;
+		transform: translateX(-30px);
 	}
 }
 
-@keyframes view-snap-in {
+@keyframes view-slide-in {
 	from {
 		opacity: 0;
-		transform: translateY(30px);
+		transform: translateX(30px);
 	}
 	to {
 		opacity: 1;
-		transform: translateY(0);
+		transform: translateX(0);
 	}
 }
 
 ::view-transition-old(root) {
-	animation: 100ms cubic-bezier(0.4, 0, 1, 1) both view-fast-fade-out;
+	animation: 150ms cubic-bezier(0.4, 0, 1, 1) both view-slide-out;
 }
 
 ::view-transition-new(root) {
-	animation: 300ms cubic-bezier(0, 0, 0.2, 1) 50ms both view-snap-in;
+	animation: 300ms cubic-bezier(0, 0, 0.2, 1) 50ms both view-slide-in;
 }

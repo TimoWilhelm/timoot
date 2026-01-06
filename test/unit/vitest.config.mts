@@ -13,7 +13,7 @@ export default defineWorkersConfig({
 		globals: true,
 		poolOptions: {
 			workers: {
-				main: path.resolve(__dirname, '../../worker/index.ts'),
+				main: path.resolve(projectRoot, 'worker/index.ts'),
 				isolatedStorage: false,
 			},
 		},
