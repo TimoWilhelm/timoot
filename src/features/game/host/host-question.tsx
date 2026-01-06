@@ -304,7 +304,7 @@ export function HostQuestion() {
 						>
 							<path d={shapePaths[index]} />
 						</svg>
-						{option}
+						<span>{option}</span>
 					</motion.div>
 				))}
 			</div>

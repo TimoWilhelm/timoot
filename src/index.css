@@ -49,6 +49,7 @@
 
 	--color-black: #000;
 	--color-white: #fff;
+
 	/* Base Colors */
 	--color-orange: #f48120;
 	--color-gold: #faad3f;
@@ -57,9 +58,9 @@
 	--color-blue: #60a5fa;
 	--color-purple: #c084fc;
 	--color-pink: #f472b6;
-	--color-yellow: #facc15;
+	--color-yellow: #fae315;
 	--color-red: #ef4444;
-	--color-green: #16a34a;
+	--color-green: #19c056;
 
 	/* Light Variants (20% opacity on white) */
 	--color-orange-light: color-mix(in srgb, var(--color-orange) 20%, white);
