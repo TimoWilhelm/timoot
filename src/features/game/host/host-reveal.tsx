@@ -57,7 +57,7 @@ export function HostReveal() {
 							)}
 						>
 							<motion.div
-								className="absolute top-0 left-0 h-full bg-green/40"
+								className={cn('absolute top-0 left-0 h-full', isCorrect ? `bg-green/20` : `bg-slate/20`)}
 								initial={{ width: 0 }}
 								animate={{ width: `${percentage}%` }}
 								transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
@@ -70,7 +70,7 @@ export function HostReveal() {
 							>
 								<span className="flex items-center gap-2">
 									<span>{option}</span>
-									<CheckCircle className={cn('size-6 shrink-0', isCorrect ? `text-green` : `invisible`)} />
+									<CheckCircle className={cn('size-6 shrink-0', isCorrect ? `text-green-dark` : `invisible`)} />
 								</span>
 								<span
 									className={`

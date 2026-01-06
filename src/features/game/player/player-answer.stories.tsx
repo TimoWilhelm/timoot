@@ -59,7 +59,9 @@ function PlayerAnswerWrapper({
 			}}
 			onSendEmoji={fn()}
 		>
-			<PlayerAnswer />
+			<div className="flex flex-1 items-center justify-center">
+				<PlayerAnswer />
+			</div>
 		</PlayerGameProvider>
 	);
 }

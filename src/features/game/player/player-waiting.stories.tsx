@@ -58,7 +58,9 @@ function PlayerWaitingWrapper({ phase, answerResult, finalScore, playerId, leade
 			onAnswer={fn()}
 			onSendEmoji={fn()}
 		>
-			<PlayerWaiting />
+			<div className="flex flex-1 items-center justify-center">
+				<PlayerWaiting />
+			</div>
 		</PlayerGameProvider>
 	);
 }
