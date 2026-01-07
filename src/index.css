@@ -86,12 +86,12 @@
 	--color-red-dark: color-mix(in srgb, var(--color-red) 80%, black);
 	--color-green-dark: color-mix(in srgb, var(--color-green) 80%, black);
 
-	--animate-overlay-in: overlay-in 0.2s ease-out;
-	--animate-overlay-out: overlay-out 0.2s ease-in forwards;
-	--animate-modal-in: modal-in 0.2s ease-out;
-	--animate-modal-out: modal-out 0.2s ease-in forwards;
-	--animate-popover-in: popover-in 0.2s ease-out;
-	--animate-popover-out: popover-out 0.2s ease-in forwards;
+	--animate-overlay-in: overlay-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+	--animate-overlay-out: overlay-out 0.1s ease-in forwards;
+	--animate-modal-in: modal-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+	--animate-modal-out: modal-out 0.1s ease-in forwards;
+	--animate-popover-in: popover-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+	--animate-popover-out: popover-out 0.1s ease-in forwards;
 
 	@keyframes overlay-in {
 		from {
@@ -113,21 +113,21 @@
 	@keyframes modal-in {
 		from {
 			opacity: 0;
-			transform: scale(0.95);
+			transform: scale(0.95) translateY(10px);
 		}
 		to {
 			opacity: 1;
-			transform: scale(1);
+			transform: scale(1) translateY(0);
 		}
 	}
 	@keyframes modal-out {
 		from {
 			opacity: 1;
-			transform: scale(1);
+			transform: scale(1) translateY(0);
 		}
 		to {
 			opacity: 0;
-			transform: scale(0.95);
+			transform: scale(0.95) translateY(10px);
 		}
 	}
 
@@ -255,30 +255,27 @@
 @keyframes view-slam-out {
 	to {
 		opacity: 0;
-		transform: scale(0.92);
-		filter: blur(2px);
+		transform: scale(0.95) translateY(10px);
 	}
 }
 
 @keyframes view-slam-in {
 	from {
 		opacity: 0;
-		transform: scale(1.08);
-		filter: blur(2px);
+		transform: scale(1.05) translateY(-10px);
 	}
 	to {
 		opacity: 1;
-		transform: scale(1);
-		filter: blur(0);
+		transform: scale(1) translateY(0);
 	}
 }
 
 ::view-transition-old(root) {
-	animation: 200ms cubic-bezier(0.2, 0, 0, 1) both view-slam-out;
+	animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) both view-slam-out;
 	z-index: 1;
 }
 
 ::view-transition-new(root) {
-	animation: 200ms cubic-bezier(0.2, 0, 0, 1) both view-slam-in;
+	animation: 150ms cubic-bezier(0.16, 1, 0.3, 1) both view-slam-in;
 	z-index: 2;
 }

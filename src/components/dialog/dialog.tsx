@@ -37,7 +37,7 @@ const DialogContent = React.forwardRef<
 			<div
 				className={`
 					flex h-dvh items-center justify-center overflow-y-auto p-4
-					transition-[height] duration-200 ease-out
+					transition-[height] duration-150 ease-out
 				`}
 			>
 				<DialogPrimitive.Content
@@ -45,7 +45,7 @@ const DialogContent = React.forwardRef<
 					className={cn(
 						`
 							relative z-50 grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl
-							border-4 border-black bg-white p-0 duration-200
+							border-4 border-black bg-white p-0 duration-150
 							data-[state=closed]:animate-modal-out
 							data-[state=open]:animate-modal-in
 							sm:max-w-lg
