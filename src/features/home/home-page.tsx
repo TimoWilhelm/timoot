@@ -133,21 +133,15 @@ export function HomePage() {
 	};
 
 	const handleGenerateSyncCode = () => {
-		if (!turnstileToken) {
-			toast.error('Please complete the captcha verification first');
-			return;
-		}
 		generateSyncCodeMutation.mutate(
-			{ header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken } },
+			{ header: { 'x-user-id': userId } },
 			{
 				onSuccess: (data) => {
 					setSyncCode(data.code);
 					setSyncCodeExpiry(Date.now() + data.expiresIn * 1000);
-					resetToken();
 				},
 				onError: (error) => {
 					toast.error(error.message || 'Failed to generate sync code');
-					resetToken();
 				},
 			},
 		);
@@ -340,8 +334,6 @@ export function HomePage() {
 				showSyncWarning={showSyncWarning}
 				isGeneratingSyncCode={isGeneratingSyncCode}
 				isRedeemingSyncCode={isRedeemingSyncCode}
-				turnstileToken={turnstileToken}
-				TurnstileWidget={TurnstileWidget}
 				onSyncCodeInputChange={setSyncCodeInput}
 				onGenerateSyncCode={handleGenerateSyncCode}
 				onRedeemSyncCode={handleRedeemSyncCode}

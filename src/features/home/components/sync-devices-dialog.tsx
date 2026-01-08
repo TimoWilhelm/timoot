@@ -13,8 +13,6 @@ interface SyncDevicesDialogProperties {
 	showSyncWarning: boolean;
 	isGeneratingSyncCode: boolean;
 	isRedeemingSyncCode: boolean;
-	turnstileToken: string | null | undefined;
-	TurnstileWidget: React.ComponentType<{ className?: string }>;
 	onSyncCodeInputChange: (value: string) => void;
 	onGenerateSyncCode: () => void;
 	onRedeemSyncCode: (confirmed: boolean) => void;
@@ -31,8 +29,6 @@ export function SyncDevicesDialog({
 	showSyncWarning,
 	isGeneratingSyncCode,
 	isRedeemingSyncCode,
-	turnstileToken,
-	TurnstileWidget,
 	onSyncCodeInputChange,
 	onGenerateSyncCode,
 	onRedeemSyncCode,
@@ -73,16 +69,13 @@ export function SyncDevicesDialog({
 								</Button>
 							</div>
 						) : (
-							<div className="space-y-2">
-								<TurnstileWidget className="flex justify-center" />
-								<Button
-									onClick={onGenerateSyncCode}
-									disabled={isGeneratingSyncCode || !turnstileToken}
-									className="w-full border-2 border-black font-bold shadow-brutal"
-								>
-									Generate Code
-								</Button>
-							</div>
+							<Button
+								onClick={onGenerateSyncCode}
+								disabled={isGeneratingSyncCode}
+								className="w-full border-2 border-black font-bold shadow-brutal"
+							>
+								Generate Code
+							</Button>
 						)}
 					</div>
 

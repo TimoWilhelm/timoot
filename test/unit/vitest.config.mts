@@ -9,7 +9,7 @@ const projectRoot = path.join(dirname, '../../');
 export default defineWorkersConfig({
 	test: {
 		root: projectRoot,
-		include: ['worker/**/*.test.{ts,tsx}'],
+		include: ['worker/**/*.test.{ts,tsx}', 'shared/**/*.test.{ts,tsx}'],
 		globals: true,
 		poolOptions: {
 			workers: {

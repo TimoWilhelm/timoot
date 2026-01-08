@@ -2,7 +2,7 @@ import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { protectedHeaderSchema, userIdHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
+import { userIdHeaderSchema, getUserId } from '../lib/validators';
 
 import type { ApiResponse } from '@shared/types';
 
@@ -26,8 +26,8 @@ function generateSyncCode(): string {
  * Sync routes with RPC-compatible chained methods.
  */
 export const syncRoutes = new Hono<{ Bindings: Env }>()
-	// Generate a sync code for the current user (requires turnstile - expensive operation)
-	.post('/api/sync/generate', zValidator('header', protectedHeaderSchema), verifyTurnstile, async (c) => {
+	// Generate a sync code for the current user
+	.post('/api/sync/generate', zValidator('header', userIdHeaderSchema), async (c) => {
 		const userId = getUserId(c);
 		if (userId === 'anonymous') {
 			return c.json({ success: false, error: 'Valid user ID required' } satisfies ApiResponse, 400);

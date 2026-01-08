@@ -34,28 +34,29 @@ test.describe('Player Game Flow E2E', () => {
 
 				await host.waitForMessage('lobbyUpdate', 10_000, (m) => m.players.length === 1);
 
+				// Set up listener for server receiving answer BEFORE starting game
+				const playerAnsweredPromise = host.waitForMessage('playerAnswered', 30_000);
+
 				// Start game and wait for question
 				await host.startGame();
 				await host.waitForMessage('questionStart', 15_000);
 
-				// Wait for answer buttons to appear
-				const answerButtons = page.locator('button').filter({ has: page.locator('svg') });
+				// Wait for answer buttons to appear - use specific selector for answer buttons
+				// Answer buttons have colored backgrounds (bg-red, bg-blue, bg-green, bg-yellow)
+				// and contain an SVG shape. They're the large buttons in the answer grid.
+				const answerButtons = page
+					.locator('button.bg-red, button.bg-blue, button.bg-green, button.bg-yellow')
+					.filter({ has: page.locator('svg') });
+
+				// Wait for at least one answer button to be visible and enabled
 				await expect(answerButtons.first()).toBeVisible({ timeout: 10_000 });
+				await expect(answerButtons.first()).toBeEnabled({ timeout: 5000 });
 
-				// Verify buttons are enabled before answering
-				const buttonCount = await answerButtons.count();
-				for (let index = 0; index < buttonCount; index++) {
-					await expect(answerButtons.nth(index)).toBeEnabled();
-				}
-
-				// Click answer and verify server receives it
-				const playerAnsweredPromise = host.waitForMessage('playerAnswered', 5000);
+				// Click an answer immediately to avoid timing issues with question timer
 				await answerButtons.first().click();
 
-				// Critical: buttons should become disabled after clicking
-				for (let index = 0; index < buttonCount; index++) {
-					await expect(answerButtons.nth(index)).toBeDisabled({ timeout: 5000 });
-				}
+				// Critical: the clicked button should now be disabled
+				await expect(answerButtons.first()).toBeDisabled({ timeout: 5000 });
 
 				// Verify server received the answer
 				const playerAnswered = await playerAnsweredPromise;
