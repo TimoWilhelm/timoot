@@ -103,6 +103,7 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 }
 
 // 2x Badge component for during the question - displayed in header
+// Compact on mobile (just icon + 2×), full on larger screens (2× Points)
 function DoublePointsBadge() {
 	return (
 		<motion.div
@@ -110,25 +111,34 @@ function DoublePointsBadge() {
 			animate={{ scale: 1, x: 0 }}
 			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
 			className={`
-				flex items-center gap-2 rounded-lg border-4 border-black bg-orange px-4 py-2
+				flex items-center gap-1 rounded-lg border-2 border-black bg-orange px-2 py-1
 				text-white shadow-brutal-sm
+				sm:gap-2 sm:border-4 sm:px-4 sm:py-2
 			`}
 		>
 			<motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
 				<Zap
 					className={`
-						size-7 fill-current
+						size-5 fill-current
 						sm:size-8
 					`}
 				/>
 			</motion.div>
 			<span
 				className={`
-					text-xl font-black uppercase
+					text-base font-black uppercase
 					sm:text-2xl
 				`}
 			>
-				2× Points
+				<span className="sm:hidden">2×</span>
+				<span
+					className={`
+						hidden
+						sm:inline
+					`}
+				>
+					2× Points
+				</span>
 			</span>
 		</motion.div>
 	);

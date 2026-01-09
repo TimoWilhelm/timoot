@@ -103,20 +103,20 @@ export function HostLeaderboard() {
 				initial={{ opacity: 0, y: -30 }}
 				animate={{ opacity: 1, y: 0 }}
 				className={`
-					flex items-center gap-4 font-display text-5xl font-bold
-					sm:text-6xl
+					flex items-center gap-2 font-display text-3xl font-bold
+					sm:gap-4 sm:text-6xl
 				`}
 			>
 				<div
 					className={`
-						flex size-16 items-center justify-center rounded-full border-4
+						flex size-12 shrink-0 items-center justify-center rounded-full border-4
 						border-black bg-yellow shadow-brutal
 						sm:size-20
 					`}
 				>
 					<Trophy
 						className={`
-							size-8 text-black
+							size-6 text-black
 							sm:size-10
 						`}
 					/>

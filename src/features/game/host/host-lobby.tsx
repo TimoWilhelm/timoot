@@ -81,17 +81,30 @@ export function HostLobby() {
 									</>
 								)}
 							</Button>
+							{/* Mobile-only: Compact player count */}
+							<div
+								className={`
+									mt-4 flex items-center justify-center gap-2 border-t-2 border-dashed
+									border-black/30 pt-4 text-muted-foreground
+									lg:hidden
+								`}
+							>
+								<Users className="size-4" />
+								<span className="text-sm font-medium">
+									{players.length} {players.length === 1 ? 'player' : 'players'} joined
+								</span>
+							</div>
 						</Card>
 					</motion.div>
 
-					{/* Right: Players List */}
+					{/* Right: Players List - hidden on mobile, visible on lg */}
 					<motion.div
 						initial={{ opacity: 0, scale: 0.95 }}
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.1 }}
 						className={`
-							flex w-full max-w-sm
-							lg:flex-1
+							hidden w-full max-w-sm
+							lg:flex lg:flex-1
 						`}
 					>
 						<Card className="flex grow flex-col">

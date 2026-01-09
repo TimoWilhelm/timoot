@@ -273,8 +273,13 @@ export function HostPage() {
 
 	return (
 		<HostPageLayout>
-			{/* Sound toggle button - fixed position */}
-			<div className="fixed top-4 left-4 z-50">
+			{/* Sound toggle button - fixed position, responsive spacing */}
+			<div
+				className="
+					fixed top-2 left-2 z-40
+					sm:top-4 sm:left-4
+				"
+			>
 				<SoundToggle onToggle={handleAudioInit} />
 			</div>
 
