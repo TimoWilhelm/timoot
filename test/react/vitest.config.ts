@@ -13,7 +13,7 @@ export default defineConfig({
 		environment: 'jsdom',
 		include: ['src/**/*.test.{ts,tsx}'],
 		globals: true,
-		setupFiles: [path.join(projectRoot, 'test/setup-react.ts')],
+		setupFiles: [path.join(projectRoot, 'test/react/setup.ts')],
 	},
 	resolve: {
 		alias: {
