@@ -1,5 +1,5 @@
 import { zValidator } from '@hono/zod-validator';
-import { waitUntil } from 'cloudflare:workers';
+import { waitUntil, env } from 'cloudflare:workers';
 import { oneLine } from 'common-tags';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -40,7 +40,7 @@ interface AIImageListResponse {
 /**
  * Image routes with RPC-compatible chained methods.
  */
-export const imageRoutes = new Hono<{ Bindings: Env }>()
+export const imageRoutes = new Hono<{ Bindings: never }>()
 	// AI Image Generation endpoint (requires turnstile - expensive operation)
 	.post(
 		'/api/images/generate',
@@ -74,7 +74,7 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 				const formContentType = formRequest.headers.get('content-type') || 'multipart/form-data';
 
 				// @ts-expect-error model types not available
-				const response = await c.env.AI.run('@cf/black-forest-labs/flux-2-dev', {
+				const response = await env.AI.run('@cf/black-forest-labs/flux-2-dev', {
 					multipart: {
 						body: formStream,
 						contentType: formContentType,
@@ -107,7 +107,7 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 					createdAt: new Date().toISOString(),
 				};
 
-				await c.env.KV_IMAGES.put(`user:${kvUserId}:image:${imageId}`, bytes, {
+				await env.KV_IMAGES.put(`user:${kvUserId}:image:${imageId}`, bytes, {
 					metadata,
 				});
 
@@ -143,7 +143,7 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 
 			// Cache miss - fetch from KV (with metadata to refresh TTL)
 			const kvKey = `user:${kvUserId}:image:${imageId}`;
-			const kvResult = await c.env.KV_IMAGES.getWithMetadata<AIImageMetadata>(kvKey, { type: 'arrayBuffer' });
+			const kvResult = await env.KV_IMAGES.getWithMetadata<AIImageMetadata>(kvKey, { type: 'arrayBuffer' });
 
 			if (!kvResult.value) {
 				return c.json({ success: false, error: 'Image not found' }, 404);
@@ -178,7 +178,7 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 			try {
 				const kvUserId = getUserId(c);
 				const cursor = c.req.valid('query').cursor;
-				const listResult = await c.env.KV_IMAGES.list({
+				const listResult = await env.KV_IMAGES.list({
 					prefix: `user:${kvUserId}:image:`,
 					limit: 10,
 					cursor: cursor || undefined,
@@ -221,12 +221,12 @@ export const imageRoutes = new Hono<{ Bindings: Env }>()
 
 		try {
 			// Check if image exists
-			const existing = await c.env.KV_IMAGES.get(`user:${kvUserId}:image:${imageId}`);
+			const existing = await env.KV_IMAGES.get(`user:${kvUserId}:image:${imageId}`);
 			if (!existing) {
 				return c.json({ success: false, error: 'Image not found' } satisfies ApiResponse, 404);
 			}
 
-			await c.env.KV_IMAGES.delete(`user:${kvUserId}:image:${imageId}`);
+			await env.KV_IMAGES.delete(`user:${kvUserId}:image:${imageId}`);
 
 			return c.json({ success: true, data: { id: imageId } } satisfies ApiResponse<{ id: string }>);
 		} catch (error) {

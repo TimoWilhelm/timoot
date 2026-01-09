@@ -24,7 +24,7 @@ export const protectedHeaderSchema = z.object({
  * Middleware to verify turnstile token for protected routes.
  * Use after withProtectedHeader to get the token and verify it.
  */
-export async function verifyTurnstile(c: Context<{ Bindings: Env }>, next: Next) {
+export async function verifyTurnstile(c: Context<{ Bindings: never }>, next: Next) {
 	const turnstileResponse = await validateTurnstile(c, getTurnstileToken(c));
 	if (turnstileResponse) {
 		return turnstileResponse;

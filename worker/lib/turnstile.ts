@@ -1,3 +1,5 @@
+import { env } from 'cloudflare:workers';
+
 import type { Context } from 'hono';
 
 interface TurnstileValidationResponse {
@@ -11,7 +13,7 @@ interface TurnstileValidationResponse {
  * Validate a Turnstile token server-side.
  * Returns null if valid, or an error Response if invalid.
  */
-export async function validateTurnstile(c: Context<{ Bindings: Env }>, token: string | null | undefined): Promise<Response | undefined> {
+export async function validateTurnstile(c: Context<{ Bindings: never }>, token: string | null | undefined): Promise<Response | undefined> {
 	// Skip validation in development
 	if (import.meta.env.DEV) {
 		return undefined;
@@ -28,7 +30,7 @@ export async function validateTurnstile(c: Context<{ Bindings: Env }>, token: st
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
-				secret: c.env.TURNSTILE_SECRET_KEY,
+				secret: env.TURNSTILE_SECRET_KEY,
 				response: token,
 				remoteip: ip,
 			}),

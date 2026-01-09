@@ -6,7 +6,7 @@ import { quizRoutes, gameRoutes, imageRoutes, syncRoutes, versionRoutes } from '
  * Compose all API routes with RPC-compatible type inference.
  * Routes are organized by resource in separate modules under ./routes/
  */
-const apiRoutes = new Hono<{ Bindings: Env }>()
+const apiRoutes = new Hono<{ Bindings: never }>()
 	.route('', quizRoutes)
 	.route('', gameRoutes)
 	.route('', imageRoutes)
@@ -19,6 +19,6 @@ export type ApiRoutes = typeof apiRoutes;
 /**
  * Register all user-facing API routes on the main app.
  */
-export function userRoutes(app: Hono<{ Bindings: Env }>) {
+export function userRoutes(app: Hono<{ Bindings: never }>) {
 	app.route('', apiRoutes);
 }

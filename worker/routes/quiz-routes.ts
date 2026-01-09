@@ -1,5 +1,5 @@
 import { zValidator } from '@hono/zod-validator';
-import { exports, waitUntil } from 'cloudflare:workers';
+import { env, exports, waitUntil } from 'cloudflare:workers';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import { z } from 'zod';
@@ -17,7 +17,7 @@ import type { ApiResponse, GenerationStatus, Quiz, QuizGenerateSSEEvent } from '
  * Quiz routes with RPC-compatible chained methods.
  * Routes are chained to enable type inference for the Hono client.
  */
-export const quizRoutes = new Hono<{ Bindings: Env }>()
+export const quizRoutes = new Hono<{ Bindings: never }>()
 	// Get predefined quizzes (no auth required)
 	.get('/api/quizzes', (c) => {
 		return c.json({ success: true, data: PREDEFINED_QUIZZES } satisfies ApiResponse<Quiz[]>, 200, {
@@ -101,7 +101,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 		verifyTurnstile,
 		zValidator('json', aiGenerateRequestSchema),
 		async (c) => {
-			const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'quiz-generate');
+			const rateLimitResponse = await checkRateLimit(c, env.AI_RATE_LIMITER, 'quiz-generate');
 			if (rateLimitResponse) return rateLimitResponse;
 
 			const { prompt, numQuestions } = c.req.valid('json');
@@ -172,7 +172,7 @@ export const quizRoutes = new Hono<{ Bindings: Env }>()
 			}),
 		),
 		async (c) => {
-			const rateLimitResponse = await checkRateLimit(c, c.env.AI_RATE_LIMITER, 'question-generate');
+			const rateLimitResponse = await checkRateLimit(c, env.AI_RATE_LIMITER, 'question-generate');
 			if (rateLimitResponse) return rateLimitResponse;
 
 			try {

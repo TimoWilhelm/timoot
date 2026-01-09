@@ -16,7 +16,7 @@ type RateLimitErrorResponse = TypedResponse<ApiResponse<never>, 429, 'json'>;
  * Rate limiting is disabled in development mode.
  */
 export async function checkRateLimit(
-	c: Context<{ Bindings: Env }>,
+	c: Context<{ Bindings: never }>,
 	rateLimiter: RateLimiter,
 	endpoint: string,
 ): Promise<RateLimitErrorResponse | undefined> {

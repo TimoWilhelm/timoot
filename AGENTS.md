@@ -135,9 +135,11 @@ This document is a collection of guidelines for agents working on the project.
 
 - Integration tests: Vitest (`bun run test:integration`).
 
-- Component tests: Vitest + Storybook (`bun run test:storybook`).
+- React component tests: Vitest + jsdom (`bun run test:react`).
 
-- E2E tests: Vitest + Playwright (`bun run test:e2e`).
+- Component visual tests: Vitest + Storybook (`bun run test:storybook`).
+
+- E2E tests: Playwright (`bun run test:e2e`).
 
 - Linting: ESLint (`bun lint`).
 
@@ -146,3 +148,37 @@ This document is a collection of guidelines for agents working on the project.
 - Report unused dependencies: Knip (`bun knip`).
 
 - Type checking: TypeScript (`bun typecheck`).
+
+## Worker Testing
+
+Worker code runs in Cloudflare's workerd runtime, which requires special test configuration.
+
+- Worker tests are located in `worker/**/*.test.ts` and `shared/**/*.test.ts`.
+
+- Configuration is in `test/unit/vitest.config.mts` using `defineWorkersConfig` from `@cloudflare/vitest-pool-workers`.
+
+- Tests run in a simulated Workers environment with isolated storage disabled.
+
+- The main worker entrypoint must be specified in `poolOptions.workers.main`.
+
+- Use absolute paths (`path.resolve()`) for all config paths to avoid resolution issues.
+
+- Run with `bun run test:unit` which includes both worker and shared code tests.
+
+## Accessibility Testing
+
+Accessibility is built into the development workflow.
+
+- Storybook includes `@storybook/addon-a11y` for real-time a11y audits in the UI.
+
+- Stories display accessibility violations directly in the Storybook panel.
+
+- Use semantic HTML elements and proper ARIA attributes.
+
+- Ensure all interactive elements have unique, descriptive `id` attributes.
+
+- Include visible focus indicators on all focusable elements.
+
+- Use sufficient color contrast (neo-brutalism style helps with this).
+
+- Test with keyboard navigation (Tab, Enter, Escape keys).

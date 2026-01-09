@@ -1,5 +1,5 @@
 import { zValidator } from '@hono/zod-validator';
-import { exports } from 'cloudflare:workers';
+import { env, exports } from 'cloudflare:workers';
 import { Hono } from 'hono';
 
 import { createGameRequestSchema } from '@shared/validation';
@@ -15,7 +15,7 @@ import type { ApiResponse, GameState } from '@shared/types';
  * Game routes with RPC-compatible chained methods.
  * Note: WebSocket endpoints don't work with hc client, use fetch directly.
  */
-export const gameRoutes = new Hono<{ Bindings: Env }>()
+export const gameRoutes = new Hono<{ Bindings: never }>()
 	// Host WebSocket upgrade endpoint - requires token validation BEFORE connection
 	.get('/api/games/:gameId/host-ws', async (c) => {
 		const { gameId } = c.req.param();
@@ -92,7 +92,7 @@ export const gameRoutes = new Hono<{ Bindings: Env }>()
 		zValidator('json', createGameRequestSchema),
 		async (c) => {
 			// Rate limit game creation
-			const rateLimitResponse = await checkRateLimit(c, c.env.GAME_RATE_LIMITER, 'game-create');
+			const rateLimitResponse = await checkRateLimit(c, env.GAME_RATE_LIMITER, 'game-create');
 			if (rateLimitResponse) return rateLimitResponse;
 
 			const { quizId } = c.req.valid('json');

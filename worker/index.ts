@@ -9,7 +9,7 @@ import { userRoutes } from './routes/user-routes';
 
 // Export Durable Object classes to make them available in wrangler
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: never }>();
 
 if (import.meta.env.DEV) {
 	app.use('*', logger());

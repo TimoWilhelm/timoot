@@ -1,4 +1,5 @@
 import { zValidator } from '@hono/zod-validator';
+import { env } from 'cloudflare:workers';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -25,7 +26,7 @@ function generateSyncCode(): string {
 /**
  * Sync routes with RPC-compatible chained methods.
  */
-export const syncRoutes = new Hono<{ Bindings: Env }>()
+export const syncRoutes = new Hono<{ Bindings: never }>()
 	// Generate a sync code for the current user
 	.post('/api/sync/generate', zValidator('header', userIdHeaderSchema), async (c) => {
 		const userId = getUserId(c);
@@ -39,7 +40,7 @@ export const syncRoutes = new Hono<{ Bindings: Env }>()
 			let attempts = 0;
 			do {
 				code = generateSyncCode();
-				const existing = await c.env.KV_SYNC.get(`sync:${code}`);
+				const existing = await env.KV_SYNC.get(`sync:${code}`);
 				if (!existing) break;
 				attempts++;
 			} while (attempts < 5);
@@ -54,7 +55,7 @@ export const syncRoutes = new Hono<{ Bindings: Env }>()
 			};
 
 			// Store with 15 minute expiration
-			await c.env.KV_SYNC.put(`sync:${code}`, JSON.stringify(syncData), {
+			await env.KV_SYNC.put(`sync:${code}`, JSON.stringify(syncData), {
 				expirationTtl: 15 * 60, // 15 minutes
 			});
 
@@ -77,7 +78,7 @@ export const syncRoutes = new Hono<{ Bindings: Env }>()
 			const { code } = c.req.valid('json');
 
 			try {
-				const syncDataString = await c.env.KV_SYNC.get(`sync:${code}`);
+				const syncDataString = await env.KV_SYNC.get(`sync:${code}`);
 				if (!syncDataString) {
 					return c.json({ success: false, error: 'Sync code not found or expired' } satisfies ApiResponse, 404);
 				}
@@ -85,7 +86,7 @@ export const syncRoutes = new Hono<{ Bindings: Env }>()
 				const syncData = JSON.parse(syncDataString) as SyncCodeData;
 
 				// Delete the code after use (one-time use)
-				await c.env.KV_SYNC.delete(`sync:${code}`);
+				await env.KV_SYNC.delete(`sync:${code}`);
 
 				return c.json({
 					success: true,
