@@ -81,18 +81,63 @@ export function HostLobby() {
 									</>
 								)}
 							</Button>
-							{/* Mobile-only: Compact player count */}
+							{/* Mobile-only: Compact player count & Recent list */}
 							<div
 								className={`
-									mt-4 flex items-center justify-center gap-2 border-t-2 border-dashed
-									border-black/30 pt-4 text-muted-foreground
+									mt-4 flex flex-col gap-4 border-t-2 border-dashed border-black/30 pt-4
 									lg:hidden
 								`}
 							>
-								<Users className="size-4" />
-								<span className="text-sm font-medium">
-									{players.length} {players.length === 1 ? 'player' : 'players'} joined
-								</span>
+								<div
+									className="
+										flex items-center justify-center gap-2 text-muted-foreground
+									"
+								>
+									<Users className="size-4" />
+									<span className="text-sm font-medium">
+										{players.length} {players.length === 1 ? 'player' : 'players'} joined
+									</span>
+								</div>
+
+								<div className="relative h-20 w-full overflow-hidden px-1 pb-1">
+									{players.length === 0 ? (
+										<div className="absolute inset-0 flex items-center justify-center">
+											<p className="text-xs font-bold text-muted-foreground/50 italic">Waiting for players...</p>
+										</div>
+									) : (
+										<div
+											className="
+												size-full mask-[linear-gradient(to_bottom,black_50%,transparent)]
+											"
+										>
+											<div className="flex flex-wrap justify-center">
+												<AnimatePresence mode="popLayout">
+													{players.toReversed().map((p) => (
+														<motion.div
+															layout
+															key={p.id}
+															initial={{ opacity: 0, scale: 0.5 }}
+															animate={{ opacity: 1, scale: 1 }}
+															exit={{ opacity: 0, scale: 0.5 }}
+															transition={{
+																type: 'spring',
+																stiffness: 500,
+																damping: 30,
+																mass: 1,
+															}}
+															className={`
+																mr-2 mb-2 rounded-md border-2 border-black bg-orange px-3 py-1
+																text-xs font-bold text-black shadow-brutal-sm
+															`}
+														>
+															{p.name}
+														</motion.div>
+													))}
+												</AnimatePresence>
+											</div>
+										</div>
+									)}
+								</div>
 							</div>
 						</Card>
 					</motion.div>
