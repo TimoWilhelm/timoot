@@ -225,15 +225,17 @@ export function PlayerPage() {
 	// Use tracked total score (updates on reveal, syncs with leaderboard when available)
 	const myScore = totalScore;
 
+	const isSpinnerVisible = view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected);
+
 	const renderContent = () => {
 		if (view === 'JOIN_GAME') {
 			return <PlayerJoinGame />;
 		}
 
-		if (view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected)) {
+		if (isSpinnerVisible) {
 			return (
 				<div className="relative flex items-center justify-center">
-					<Loader2 className="size-10 animate-spin text-orange" />
+					<Loader2 className="size-12 animate-spin text-orange" />
 				</div>
 			);
 		}
@@ -328,7 +330,7 @@ export function PlayerPage() {
 	};
 
 	return (
-		<PlayerPageLayout variant={view === 'GAME' ? 'game' : 'center'}>
+		<PlayerPageLayout variant={view === 'GAME' && !isSpinnerVisible ? 'game' : 'center'}>
 			{renderContent()}
 
 			{/* Leave game confirmation dialog */}

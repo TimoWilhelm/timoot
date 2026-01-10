@@ -259,13 +259,8 @@ export function HostPage() {
 	if (isConnecting && !isConnected) {
 		return (
 			<HostPageLayout variant="center">
-				<div
-					className={`
-						relative flex size-24 items-center justify-center rounded-full border-4
-						border-black bg-yellow shadow-brutal-sm
-					`}
-				>
-					<Loader2 className="size-12 animate-spin text-black" strokeWidth={3} />
+				<div className="relative flex items-center justify-center">
+					<Loader2 className="size-12 animate-spin text-orange" />
 				</div>
 			</HostPageLayout>
 		);
