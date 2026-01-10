@@ -26,7 +26,6 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 		build: {
 			sourcemap: true,
 			minify: true,
-			target: 'ES2023',
 		},
 		css: {
 			devSourcemap: true,
@@ -43,7 +42,6 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 			include: ['react', 'react-dom', 'react-router-dom'],
 			force: true,
 		},
-		// Clear cache more aggressively
 		cacheDir: 'node_modules/.vite',
 	});
 }

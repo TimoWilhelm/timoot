@@ -153,13 +153,16 @@ export function HostLobby() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.2 }}
-					className="flex justify-center"
+					className="flex w-full justify-center"
 				>
 					<Button
 						onClick={onStart}
 						variant="accent"
 						size="lg"
-						className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
+						className={`
+							w-full max-w-sm rounded-xl border-4 p-4 text-lg font-black uppercase
+							sm:px-12 sm:py-8 sm:text-2xl
+						`}
 						disabled={players.length === 0}
 					>
 						{players.length === 0 ? 'Waiting for players...' : 'Start Game'}

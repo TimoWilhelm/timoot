@@ -125,17 +125,19 @@ export function CustomQuizzesSection({
 						className={`
 							group relative size-full flex-col items-center justify-center gap-4
 							overflow-hidden rounded-xl border-2 border-black p-6 text-center
-							shadow-brutal-sm transition-all duration-200
-							hover:-translate-y-px hover:bg-blue/10 hover:shadow-brutal
-							active:translate-y-0 active:shadow-none
+							shadow-brutal-sm transition-all duration-75
+							hover:-translate-y-0.5 hover:bg-blue/10 hover:shadow-brutal
+							active:translate-y-0.5 active:shadow-brutal-inset
 							${isLimitReached ? 'opacity-50 grayscale' : ''}
 						`}
 					>
 						<div
 							className="
 								flex size-16 items-center justify-center rounded-full border-2
-								border-black bg-blue shadow-brutal transition-transform
+								border-black bg-blue shadow-brutal transition-all duration-75
 								group-hover:scale-110 group-hover:rotate-12
+								group-active:translate-y-0.5 group-active:scale-95 group-active:rotate-0
+								group-active:shadow-brutal-inset
 							"
 						>
 							<Plus className="size-8" strokeWidth={4} />
@@ -150,7 +152,7 @@ export function CustomQuizzesSection({
 							className={`
 								relative flex size-full flex-col items-start justify-between
 								overflow-hidden rounded-xl border-2 border-black bg-white p-6 text-left
-								shadow-brutal-sm transition-all duration-200
+								shadow-brutal-sm transition-all duration-75
 							`}
 						>
 							<motion.div
@@ -190,17 +192,19 @@ export function CustomQuizzesSection({
 							className={`
 								group relative size-full flex-col items-center justify-center gap-4
 								overflow-hidden rounded-xl border-2 border-black p-6 text-center
-								shadow-brutal-sm transition-all duration-200
-								hover:-translate-y-px hover:bg-purple/10 hover:shadow-brutal
-								active:translate-y-0 active:shadow-none
+								shadow-brutal-sm transition-all duration-75
+								hover:-translate-y-0.5 hover:bg-purple/10 hover:shadow-brutal
+								active:translate-y-0.5 active:shadow-brutal-inset
 								${isLimitReached ? 'opacity-50 grayscale' : ''}
 							`}
 						>
 							<div
 								className="
 									flex size-16 items-center justify-center rounded-full border-2
-									border-black bg-purple shadow-brutal transition-transform
+									border-black bg-purple shadow-brutal transition-all duration-75
 									group-hover:scale-110 group-hover:-rotate-12
+									group-active:translate-y-0.5 group-active:scale-95
+									group-active:rotate-0 group-active:shadow-brutal-inset
 								"
 							>
 								<Wand2 className="size-8" strokeWidth={2.5} />
@@ -284,17 +288,19 @@ export function CustomQuizzesSection({
 							className={`
 								group relative size-full flex-col items-start justify-between
 								overflow-hidden rounded-xl border-2 border-black p-6 shadow-brutal-sm
-								transition-all duration-200
-								hover:-translate-y-px hover:bg-pink/10 hover:shadow-brutal
-								active:translate-y-0 active:shadow-none
+								transition-all duration-75
+								hover:-translate-y-0.5 hover:bg-pink/10 hover:shadow-brutal
+								active:translate-y-0.5 active:shadow-brutal-inset
 							`}
 						>
 							<div className="mb-4 flex items-center justify-between">
 								<div
 									className="
 										rounded-lg border-2 border-black bg-pink p-3 shadow-brutal-sm
-										transition-transform
+										transition-all duration-75
 										group-hover:rotate-6
+										group-active:translate-y-0.5 group-active:rotate-0
+										group-active:shadow-brutal-inset-sm
 									"
 								>
 									<Zap className="size-6" fill="currentColor" />

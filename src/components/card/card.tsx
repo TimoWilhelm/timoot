@@ -8,7 +8,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
 		className={cn(
 			`
 				rounded-xl border-2 border-black bg-white text-card-foreground shadow-brutal
-				transition-all duration-200
+				transition-all duration-75 ease-out
 			`,
 			className,
 		)}

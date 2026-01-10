@@ -59,9 +59,9 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 								`
 									group relative size-full flex-col items-start overflow-hidden
 									rounded-xl border-2 border-black p-6 text-left shadow-brutal-sm
-									transition-all duration-200
-									hover:-translate-y-px hover:bg-yellow/10 hover:shadow-brutal
-									active:translate-y-0 active:shadow-none
+									transition-all duration-75
+									hover:-translate-y-0.5 hover:bg-yellow/10 hover:shadow-brutal
+									active:translate-y-0.5 active:shadow-brutal-inset
 								`,
 							)}
 						>
@@ -69,8 +69,10 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 								<div
 									className="
 										rounded-lg border-2 border-black bg-yellow p-3 shadow-brutal-sm
-										transition-transform
+										transition-all duration-75
 										group-hover:rotate-6
+										group-active:translate-y-0.5 group-active:rotate-0
+										group-active:shadow-brutal-inset-sm
 									"
 								>
 									<Zap className="size-6 text-black" fill="currentColor" />

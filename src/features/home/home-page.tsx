@@ -94,7 +94,6 @@ export function HomePage() {
 						}
 						if (result.data.id && result.data.hostSecret) {
 							addSecret(result.data.id, result.data.hostSecret);
-							toast.success('New game created!');
 							navigate(`/host/${result.data.id}`);
 						} else {
 							toast.error('Game created, but missing ID or secret.');
@@ -281,6 +280,26 @@ export function HomePage() {
 				"
 			>
 				<HeroSection />
+
+				<div
+					className="
+						relative my-12 flex items-center justify-center
+						sm:my-16
+					"
+				>
+					<div aria-hidden="true" className="absolute inset-0 flex items-center">
+						<div className="w-full border-t-2 border-slate" />
+					</div>
+					<div className="relative bg-white px-6">
+						<span
+							className="
+								font-display text-sm font-bold tracking-widest text-black uppercase
+							"
+						>
+							Or start your own game
+						</span>
+					</div>
+				</div>
 
 				{isLoading ? (
 					<div className="flex justify-center py-20">

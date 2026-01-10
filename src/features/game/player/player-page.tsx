@@ -209,7 +209,6 @@ export function PlayerPage() {
 			pendingNicknameReference.current = name; // Update ref immediately
 			setCurrentNickname(name);
 			join(name);
-			toast.success(`Welcome, ${name}!`);
 			playSound('join');
 			// Session will be saved in handleConnected when server confirms with playerId
 		},

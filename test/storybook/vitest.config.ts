@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url';
 
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type UserConfig } from 'vite';
+
+import type { InlineConfig } from 'vitest/node';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(dirname, '../../');
@@ -32,4 +34,4 @@ export default defineConfig({
 		},
 		setupFiles: [path.join(projectRoot, '.storybook/vitest.setup.ts')],
 	},
-});
+} as UserConfig & { test: InlineConfig });

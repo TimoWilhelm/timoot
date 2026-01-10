@@ -70,7 +70,7 @@ export function ImageSelectionDialog({ open, onOpenChange, selectedImage, onSele
 				onSuccess: (data) => {
 					onSelectImage(data.path);
 					setImagePrompt('');
-					toast.success('Image generated!');
+
 					resetToken();
 				},
 				onError: (error) => {

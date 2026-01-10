@@ -2,7 +2,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type UserConfig } from 'vite';
+
+import type { InlineConfig } from 'vitest/node';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(dirname, '../../');
@@ -21,4 +23,4 @@ export default defineConfig({
 			'@shared': path.join(projectRoot, 'shared'),
 		},
 	},
-});
+} as UserConfig & { test: InlineConfig });

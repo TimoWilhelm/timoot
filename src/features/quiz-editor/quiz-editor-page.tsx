@@ -188,7 +188,6 @@ export function QuizEditorPage() {
 						correctAnswerIndex: String(data.correctAnswerIndex),
 						isDoublePoints: false,
 					});
-					toast.success('Question generated!');
 				},
 				onError: (error) => {
 					toast.error(error.message || 'Failed to generate question');
@@ -210,11 +209,11 @@ export function QuizEditorPage() {
 				<FormProvider {...methods}>
 					<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
 						<div className="flex items-center gap-4">
-							<Link to="/" viewTransition>
-								<Button type="button" variant="subtle" size="icon" className="size-12">
+							<Button variant="subtle" size="icon" className="size-12" asChild>
+								<Link to="/" viewTransition>
 									<ArrowLeft className="size-5" />
-								</Button>
-							</Link>
+								</Link>
+							</Button>
 							<h1
 								className={`
 									font-display text-2xl font-bold
@@ -292,11 +291,11 @@ export function QuizEditorPage() {
 						)}
 
 						<div className="flex justify-end gap-4">
-							<Link to="/" viewTransition>
-								<Button type="button" variant="subtle">
+							<Button variant="subtle" asChild>
+								<Link to="/" viewTransition>
 									Cancel
-								</Button>
-							</Link>
+								</Link>
+							</Button>
 							<Button type="submit" disabled={isSubmitting}>
 								{isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
 								Save Quiz
