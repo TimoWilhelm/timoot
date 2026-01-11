@@ -1,15 +1,17 @@
-import { ImageOff, Loader2, Sparkles, Wand2, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { ImageOff, Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { Suspense, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog/dialog';
 import { Input } from '@/components/input/input';
-import { useDeleteImage, useGenerateImage, useImages, useLoadMoreImages } from '@/hooks/use-api';
+import { useGenerateImage } from '@/hooks/use-api';
 import { useTurnstile } from '@/hooks/utils/use-turnstile';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
 import { cn } from '@/lib/utilities';
 import { LIMITS } from '@shared/validation';
+
+import { UserImagesList } from './user-images-list';
 
 type ImageSelectionDialogProperties = {
 	open: boolean;
@@ -25,32 +27,8 @@ export function ImageSelectionDialog({ open, onOpenChange, selectedImage, onSele
 
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 
-	const { data: imagesData } = useImages(userId);
-	const loadMoreImagesMutation = useLoadMoreImages();
 	const generateImageMutation = useGenerateImage();
-	const deleteImageMutation = useDeleteImage();
-
-	const aiImages = imagesData?.images ?? [];
-	const aiImagesCursor = imagesData?.nextCursor;
-	const isLoadingMoreImages = loadMoreImagesMutation.isPending;
 	const isGeneratingImage = generateImageMutation.isPending;
-
-	const loadMoreImages = () => {
-		if (!aiImagesCursor || isLoadingMoreImages) return;
-		loadMoreImagesMutation.mutate({ userId, cursor: aiImagesCursor });
-	};
-
-	const deleteImage = (imageId: string) => {
-		deleteImageMutation.mutate(
-			{ userId, imageId },
-			{
-				onSuccess: () => {
-					toast.success('Image deleted');
-				},
-				onError: (error) => toast.error(error.message || 'Failed to delete image'),
-			},
-		);
-	};
 
 	const generateImage = () => {
 		if (!imagePrompt.trim()) {
@@ -132,56 +110,25 @@ export function ImageSelectionDialog({ open, onOpenChange, selectedImage, onSele
 						</div>
 					</div>
 
-					{/* AI Generated Images */}
-					{aiImages.length > 0 && (
-						<div className="space-y-2">
-							<h4 className="text-sm font-medium text-muted-foreground">AI Generated</h4>
-							<div className="grid grid-cols-3 gap-2">
-								{aiImages.map((img) => (
-									<div key={img.id} className="group relative">
-										<Button
-											type="button"
-											variant="subtle"
-											onClick={() => onSelectImage(img.path)}
-											className={cn(
-												`aspect-video h-auto w-full overflow-hidden p-0`,
-												selectedImage === img.path
-													? `ring-3 ring-orange ring-offset-2 ring-offset-background`
-													: 'bg-muted text-muted-foreground',
-											)}
-											title={img.prompt}
-										>
-											<img src={img.path} alt={img.name} className="size-full object-cover" />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											onClick={(event) => {
-												event.stopPropagation();
-												deleteImage(img.id);
-											}}
-											className={`
-												absolute top-1 right-1 size-6 rounded-full border-0 bg-black/60 p-1
-												text-white opacity-0 transition-opacity
-												hover:bg-red
-												group-hover-always:opacity-100
-											`}
-											title="Delete image"
-										>
-											<X className="size-3" />
-										</Button>
-									</div>
-								))}
+					{/* AI Generated Images with Suspense */}
+					<Suspense
+						fallback={
+							<div className="space-y-2">
+								<h4 className="text-sm font-medium text-muted-foreground">AI Generated</h4>
+								<div
+									className={`
+										flex h-20 items-center justify-center rounded-md border border-dashed
+										text-muted-foreground
+									`}
+								>
+									<Loader2 className="mr-2 size-4 animate-spin" />
+									Loading images...
+								</div>
 							</div>
-							{aiImagesCursor && (
-								<Button type="button" variant="subtle" size="sm" className="w-full" onClick={loadMoreImages} disabled={isLoadingMoreImages}>
-									{isLoadingMoreImages ? <Loader2 className="mr-2 size-4 animate-spin" /> : undefined}
-									Load More
-								</Button>
-							)}
-						</div>
-					)}
+						}
+					>
+						<UserImagesList userId={userId} selectedImage={selectedImage} onSelectImage={onSelectImage} />
+					</Suspense>
 
 					{/* AI Image Generation */}
 					<div className="space-y-2">

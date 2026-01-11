@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, ShieldAlert } from 'lucide-react';
-import { useCallback, useEffect, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -19,13 +19,15 @@ import { SoundToggle } from '@/components/sound-toggle/sound-toggle';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/host/components/floating-emojis';
-import { HostGameContent } from '@/features/game/host/host-game-content';
 import { HostGameProvider } from '@/features/game/host/host-game-provider';
 import { HostPageLayout } from '@/features/game/host/host-page-layout';
 import { useHostStore } from '@/lib/stores/host-store';
 import { isGamePhaseActive, phaseAllowsManualAdvance } from '@shared/phase-rules';
 
 import type { EmojiReaction, GamePhase } from '@shared/types';
+
+// Lazy load the heavy game content component
+const HostGameContent = lazy(() => import('@/features/game/host/host-game-content').then((m) => ({ default: m.HostGameContent })));
 
 const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	LOBBY: 'lobby',
@@ -297,7 +299,15 @@ export function HostPage() {
 						onPlaySound={playSound}
 						onPlayCountdownTick={playCountdownTick}
 					>
-						<HostGameContent />
+						<Suspense
+							fallback={
+								<div className="flex grow items-center justify-center">
+									<Loader2 className="size-12 animate-spin text-orange" />
+								</div>
+							}
+						>
+							<HostGameContent />
+						</Suspense>
 					</HostGameProvider>
 				</motion.main>
 			</AnimatePresence>

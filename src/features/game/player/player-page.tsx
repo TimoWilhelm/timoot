@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useBlocker, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -15,7 +15,6 @@ import {
 } from '@/components/alert-dialog/alert-dialog';
 import { Button } from '@/components/button';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
-import { PlayerActiveGame } from '@/features/game/player/player-active-game';
 import { PlayerError } from '@/features/game/player/player-error';
 import { PlayerGameProvider } from '@/features/game/player/player-game-provider';
 import { PlayerJoinGame } from '@/features/game/player/player-join-game';
@@ -27,6 +26,9 @@ import { useGameStore } from '@/lib/stores/game-store';
 import { ErrorCode } from '@shared/errors';
 import { createMachine } from '@shared/fsm';
 import { isGamePhaseActive } from '@shared/phase-rules';
+
+// Lazy load the heavy game component
+const PlayerActiveGame = lazy(() => import('@/features/game/player/player-active-game').then((m) => ({ default: m.PlayerActiveGame })));
 
 // Player view state machine
 type PlayerView = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
@@ -356,7 +358,15 @@ export function PlayerPage() {
 				answerResult={answerResult}
 				playerId={currentPlayerId}
 			>
-				<PlayerActiveGame />
+				<Suspense
+					fallback={
+						<div className="flex items-center justify-center">
+							<Loader2 className="size-12 animate-spin text-orange" />
+						</div>
+					}
+				>
+					<PlayerActiveGame />
+				</Suspense>
 			</PlayerGameProvider>
 		);
 	};
