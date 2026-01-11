@@ -259,6 +259,20 @@
 	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+@utility underline-slide {
+	text-decoration: none;
+	background-image: linear-gradient(transparent calc(100% - 1px), currentColor 1px);
+	background-position-x: left;
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	transition: background-size 0.3s;
+
+	&:hover {
+		background-position-x: 100%;
+		background-size: 0 100%;
+	}
+}
+
 /* ========================================
    View Transitions - Neo-Brutalist Style
    ======================================== */

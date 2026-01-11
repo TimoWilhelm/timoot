@@ -19,10 +19,10 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 	const strokeDashoffset = circumference * (1 - progress);
 
 	const getColors = () => {
-		if (timeLeft <= 3) return { bg: 'bg-red', stroke: 'var(--color-red-dark)', text: 'text-white' };
-		if (timeLeft <= 5) return { bg: 'bg-orange', stroke: 'var(--color-orange-dark)', text: 'text-black' };
-		if (timeLeft <= 10) return { bg: 'bg-yellow', stroke: 'var(--color-yellow-dark)', text: 'text-black' };
-		return { bg: 'bg-green', stroke: 'var(--color-green-dark)', text: 'text-black' };
+		if (timeLeft <= 3) return { bg: 'bg-red', border: 'border-red-dark', text: 'text-white' };
+		if (timeLeft <= 5) return { bg: 'bg-orange', border: 'border-orange-dark', text: 'text-black' };
+		if (timeLeft <= 10) return { bg: 'bg-yellow', border: 'border-yellow-dark', text: 'text-black' };
+		return { bg: 'bg-green', border: 'border-green-dark', text: 'text-black' };
 	};
 
 	const colors = getColors();
@@ -52,16 +52,16 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 			>
 				{/* Progress ring */}
 				<svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 64 64">
-					<circle cx="32" cy="32" r="26" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="4" />
+					<circle cx="32" cy="32" r="26" fill="none" stroke="none" strokeWidth="4" />
 					<motion.circle
 						cx="32"
 						cy="32"
 						r="26"
 						fill="none"
 						strokeWidth="4"
-						strokeLinecap="square"
+						strokeLinecap="round"
 						strokeDasharray={circumference}
-						animate={{ strokeDashoffset, stroke: colors.stroke }}
+						animate={{ strokeDashoffset, stroke: 'rgba(0,0,0,0.33)' }}
 						transition={{ strokeDashoffset: { duration: 0.1, ease: 'linear' }, stroke: { duration: 0.3 } }}
 					/>
 				</svg>
@@ -94,7 +94,7 @@ function CountdownTimer({ timeLeft, totalTime }: CountdownTimerProperties) {
 						initial={{ scale: 1, opacity: 0.6 }}
 						animate={{ scale: 1.3, opacity: 0 }}
 						transition={{ duration: 0.6, repeat: Infinity, ease: 'easeOut' }}
-						className="absolute inset-0 rounded-full border-[3px] border-black"
+						className={cn('absolute inset-0 rounded-full border-[3px]', colors.border)}
 					/>
 				)}
 			</AnimatePresence>

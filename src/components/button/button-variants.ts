@@ -7,7 +7,7 @@ export const buttonVariants = cva(
 		duration-75
 		focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2
 		focus-visible:outline-hidden
-		disabled:pointer-events-none disabled:opacity-50
+		disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none
 	`,
 	{
 		variants: {
@@ -37,8 +37,8 @@ export const buttonVariants = cva(
 					hover:border-black hover:bg-muted
 				`,
 				link: `
-					border-transparent text-primary underline-offset-4
-					hover:underline
+					border-transparent underline-slide text-primary transition-none
+					[transition:background-size_0.3s]
 				`,
 				// Dark variants for use on dark backgrounds (player pages)
 				'dark-default': `
@@ -139,6 +139,11 @@ export const buttonVariants = cva(
 					hover:-translate-y-1 hover:shadow-brutal-lg-slate
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
+			},
+			// Link variant should have no padding/height - it's inline text
+			{
+				variant: 'link',
+				class: 'h-auto p-0',
 			},
 		],
 		defaultVariants: {
