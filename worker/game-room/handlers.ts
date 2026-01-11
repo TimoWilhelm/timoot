@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { ErrorCode, createError } from '@shared/errors';
-import { phaseAllowsEmoji } from '@shared/phase-rules';
+import { gamePhaseMachine, type GamePhaseEvent, phaseAllowsEmoji } from '@shared/phase-rules';
 import { LIMITS, nicknameSchema } from '@shared/validation';
 
 import {
@@ -192,7 +192,7 @@ export async function handleStartGame(
 	}
 
 	// Transition to GET_READY phase with countdown before first question
-	state.phase = 'GET_READY';
+	state.phase = gamePhaseMachine.transition(state.phase, 'START_GAME');
 	await context.storage.put('game_state', state);
 
 	// Broadcast get ready message to all clients
@@ -299,7 +299,7 @@ export async function handleSendEmoji(
  */
 export async function advanceToReveal(context: HandlerContext, state: GameState): Promise<void> {
 	processAnswersAndUpdateScores(state);
-	state.phase = 'REVEAL';
+	state.phase = gamePhaseMachine.transition(state.phase, 'ALL_ANSWERED');
 	await context.storage.put('game_state', state);
 
 	// Broadcast reveal with appropriate data for each role
@@ -334,41 +334,43 @@ export async function handleNextState(
 		case 'REVEAL': {
 			// After revealing the final question, skip the LEADERBOARD phase
 			// and go straight to END_INTRO to show the podium screen without spoilers.
-			if (state.currentQuestionIndex >= state.questions.length - 1) {
-				state.phase = 'END_INTRO';
-				state.players.sort((a, b) => b.score - a.score);
-				await context.storage.put('game_state', state);
+			const isLastQuestion = state.currentQuestionIndex >= state.questions.length - 1;
+			const event: GamePhaseEvent = isLastQuestion ? 'REVEAL_FINAL' : 'REVEAL_NEXT';
+			state.phase = gamePhaseMachine.transition(state.phase, event);
+			state.players.sort((a, b) => b.score - a.score);
+			await context.storage.put('game_state', state);
+			if (isLastQuestion) {
 				broadcastGameEnd(context, state, false);
 				// Schedule transition to END_REVEALED after intro animation
 				await context.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
 			} else {
-				state.phase = 'LEADERBOARD';
-				state.players.sort((a, b) => b.score - a.score);
-				await context.storage.put('game_state', state);
 				broadcastLeaderboard(context, state);
 			}
 			break;
 		}
 		case 'LEADERBOARD': {
-			if (state.currentQuestionIndex < state.questions.length - 1) {
+			const hasMoreQuestions = state.currentQuestionIndex < state.questions.length - 1;
+			if (hasMoreQuestions) {
 				state.currentQuestionIndex++;
 				state.answers = [];
 				for (const p of state.players) p.answered = false;
 				// Check if next question has modifiers
 				if (questionHasModifiers(state)) {
+					// Note: FSM transitions to QUESTION, but we go to QUESTION_MODIFIER first
+					// This is an intermediate state before FSM's NEXT_QUESTION completes
 					state.phase = 'QUESTION_MODIFIER';
 					await context.storage.put('game_state', state);
 					broadcastQuestionModifier(context, state);
 					// Schedule automatic transition to QUESTION after modifier display
 					await context.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 				} else {
-					state.phase = 'QUESTION';
+					state.phase = gamePhaseMachine.transition(state.phase, 'NEXT_QUESTION');
 					state.questionStartTime = Date.now();
 					await context.storage.put('game_state', state);
 					broadcastQuestionStart(context, state);
 				}
 			} else {
-				state.phase = 'END_INTRO';
+				state.phase = gamePhaseMachine.transition(state.phase, 'LEADERBOARD_FINAL');
 				await context.storage.put('game_state', state);
 				broadcastGameEnd(context, state, false);
 				// Schedule transition to END_REVEALED after intro animation

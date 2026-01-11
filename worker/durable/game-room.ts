@@ -1,6 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 
 import { ErrorCode, createError } from '@shared/errors';
+import { gamePhaseMachine } from '@shared/phase-rules';
 import { parseClientMessage } from '@shared/ws-messages';
 
 import { CLEANUP_DELAY_MS, END_REVEAL_DELAY_MS, QUESTION_MODIFIER_DURATION_MS, questionHasModifiers } from '../game';
@@ -217,13 +218,13 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		// Handle GET_READY -> QUESTION_MODIFIER or QUESTION transition
 		if (state?.phase === 'GET_READY') {
 			if (questionHasModifiers(state)) {
-				state.phase = 'QUESTION_MODIFIER';
+				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_WITH_MODIFIER');
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionModifier(context, state);
 				// Schedule transition to QUESTION after modifier display
 				await this.ctx.storage.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 			} else {
-				state.phase = 'QUESTION';
+				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_NO_MODIFIER');
 				state.questionStartTime = Date.now();
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionStart(context, state);
@@ -233,7 +234,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 		// Handle QUESTION_MODIFIER -> QUESTION transition
 		if (state?.phase === 'QUESTION_MODIFIER') {
-			state.phase = 'QUESTION';
+			state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_MODIFIER_DONE');
 			state.questionStartTime = Date.now();
 			await this.ctx.storage.put('game_state', state);
 			broadcastQuestionStart(context, state);
@@ -248,7 +249,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 
 		// Handle END_INTRO -> END_REVEALED transition
 		if (state?.phase === 'END_INTRO') {
-			state.phase = 'END_REVEALED';
+			state.phase = gamePhaseMachine.transition(state.phase, 'REVEAL_WINNER');
 			await this.ctx.storage.put('game_state', state);
 			broadcastGameEnd(context, state, true);
 			return;

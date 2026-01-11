@@ -35,17 +35,27 @@ export const phaseAllowsManualAdvance: Record<GamePhase, boolean> = {
 	END_REVEALED: false,
 };
 
-// Game phase state machine
-
-type GamePhaseEvent = 'START_GAME' | 'NEXT' | 'REVEAL_WINNER';
+// Game phase state machine events
+export type GamePhaseEvent =
+	| 'START_GAME' // LOBBY → GET_READY (host starts game)
+	| 'TIMER_WITH_MODIFIER' // GET_READY → QUESTION_MODIFIER (auto, question has modifier)
+	| 'TIMER_NO_MODIFIER' // GET_READY → QUESTION (auto, no modifier)
+	| 'TIMER_MODIFIER_DONE' // QUESTION_MODIFIER → QUESTION (auto, modifier displayed)
+	| 'ALL_ANSWERED' // QUESTION → REVEAL (auto or manual)
+	| 'TIME_EXPIRED' // QUESTION → REVEAL (auto or manual)
+	| 'REVEAL_NEXT' // REVEAL → LEADERBOARD (host advances, more questions)
+	| 'REVEAL_FINAL' // REVEAL → END_INTRO (host advances, was last question)
+	| 'NEXT_QUESTION' // LEADERBOARD → QUESTION_MODIFIER/QUESTION (host advances)
+	| 'LEADERBOARD_FINAL' // LEADERBOARD → END_INTRO (last question done)
+	| 'REVEAL_WINNER'; // END_INTRO → END_REVEALED (auto after delay)
 
 export const gamePhaseMachine = createMachine<GamePhase, GamePhaseEvent>({
 	LOBBY: { START_GAME: 'GET_READY' },
-	GET_READY: { NEXT: 'QUESTION' },
-	QUESTION_MODIFIER: { NEXT: 'QUESTION' },
-	QUESTION: { NEXT: 'REVEAL' },
-	REVEAL: { NEXT: 'LEADERBOARD' },
-	LEADERBOARD: { NEXT: 'GET_READY', START_GAME: 'END_INTRO' }, // NEXT for more questions, START_GAME (reused) for final
+	GET_READY: { TIMER_WITH_MODIFIER: 'QUESTION_MODIFIER', TIMER_NO_MODIFIER: 'QUESTION' },
+	QUESTION_MODIFIER: { TIMER_MODIFIER_DONE: 'QUESTION' },
+	QUESTION: { ALL_ANSWERED: 'REVEAL', TIME_EXPIRED: 'REVEAL' },
+	REVEAL: { REVEAL_NEXT: 'LEADERBOARD', REVEAL_FINAL: 'END_INTRO' },
+	LEADERBOARD: { NEXT_QUESTION: 'QUESTION', LEADERBOARD_FINAL: 'END_INTRO' },
 	END_INTRO: { REVEAL_WINNER: 'END_REVEALED' },
 	END_REVEALED: {}, // Terminal state
 });
