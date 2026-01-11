@@ -5,9 +5,8 @@ import { CustomQuizzesSection, FeaturedQuizzesSection } from '@/features/home/co
 import type { Quiz } from '@shared/types';
 
 interface QuizSectionsProperties {
-	// Accept generic promise property from useQuery - the actual data is typed when consumed
-	predefinedQuizQuery: { promise: Promise<unknown> };
-	customQuizQuery: { promise: Promise<unknown> };
+	predefinedQuizQuery: { promise: Promise<Quiz[]> };
+	customQuizQuery: { promise: Promise<Quiz[]> };
 	startingQuizId: string | undefined;
 	isGenerating: boolean;
 	generatingPrompt: string | undefined;
@@ -48,11 +47,8 @@ export function QuizSections({
 	onEditQuiz,
 	onDeleteQuiz,
 }: QuizSectionsProperties) {
-	// Use React 19's use() hook to consume the query promises
-	// This will suspend the component until the data is ready
-	// Type assertions needed because useQuery().promise has complex internal types
-	const predefinedQuizzes = use(predefinedQuizQuery.promise) as Quiz[];
-	const customQuizzes = use(customQuizQuery.promise) as Quiz[];
+	const predefinedQuizzes = use(predefinedQuizQuery.promise);
+	const customQuizzes = use(customQuizQuery.promise);
 
 	return (
 		<div className="space-y-20">

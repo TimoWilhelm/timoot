@@ -49,7 +49,7 @@ const PODIUM_CONFIG = {
 
 function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; position: 1 | 2 | 3 }) {
 	// Use entry's rank for styling if exists, otherwise use the position for placeholder height
-	const config = PODIUM_CONFIG[entry?.rank as keyof typeof PODIUM_CONFIG] ?? PODIUM_CONFIG[position];
+	const config = PODIUM_CONFIG[position];
 	const { height, color, rank, delay } = config;
 
 	// Pre-allocate the space but keep content invisible until revealed
@@ -70,7 +70,7 @@ function PodiumPlace({ entry, position }: { entry: PodiumEntry | undefined; posi
 					{/* Player names (handles multiple tied players) */}
 					<div className="mb-1 flex flex-col items-center">
 						{entry.players.map((player, index) => {
-							const isFirstPlace = entry.rank === 1;
+							const isFirstPlace = position === 1;
 							return (
 								<motion.p
 									key={player.name}

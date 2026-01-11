@@ -62,15 +62,9 @@ export function QuizEditorPage() {
 function EditQuizForm({ quizId }: { quizId: string }) {
 	const { userId } = useUserId();
 
-	// Fetch quiz data using useQuery - this will be consumed with use() below
 	const quizQuery = useQuizDetail(userId, quizId);
+	const quizData = use(quizQuery.promise);
 
-	// Use React 19's use() hook to suspend until quiz data is ready
-	// This replaces the useEffect that was syncing quizData to form state
-	const quizData = use(quizQuery.promise) as { title: string; questions: Question[] };
-
-	// Transform quiz data to form format
-	// This is stable because quizData is stable after suspense resolves
 	const initialFormData = useMemo(
 		(): QuizFormInput => ({
 			...quizData,

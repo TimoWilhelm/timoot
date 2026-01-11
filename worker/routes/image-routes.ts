@@ -10,19 +10,18 @@ import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile }
 
 import type { ApiResponse } from '@shared/types';
 
-// AI Image types
-interface AIImageMetadata {
-	id: string;
-	name: string;
-	prompt: string;
-	createdAt: string;
-}
+// Zod schemas for validation
+const fluxResponseSchema = z.union([z.object({ result: z.object({ image: z.string() }) }), z.object({ image: z.string() })]);
 
-interface FluxResponse {
-	result: { image: string };
-	errors: unknown[];
-	messages: unknown[];
-}
+const aiImageMetadataSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	prompt: z.string(),
+	createdAt: z.string(),
+});
+
+// AI Image types
+type AIImageMetadata = z.infer<typeof aiImageMetadataSchema>;
 
 interface AIImageListItem {
 	id: string;
@@ -82,7 +81,13 @@ export const imageRoutes = new Hono<{ Bindings: never }>()
 				});
 
 				// Handle different response structures
-				const image = (response as FluxResponse).result?.image ?? (response as { image?: string }).image;
+				const parsedResponse = fluxResponseSchema.safeParse(response);
+				if (!parsedResponse.success) {
+					throw new Error(`Invalid AI response: ${JSON.stringify(response)}`);
+				}
+				const data = parsedResponse.data;
+				const image = 'result' in data ? data.result.image : data.image;
+
 				if (!image) {
 					throw new Error(`No image returned from AI. Response: ${JSON.stringify(response)}`);
 				}
@@ -185,7 +190,8 @@ export const imageRoutes = new Hono<{ Bindings: never }>()
 				});
 
 				const images: AIImageListItem[] = listResult.keys.map((key: { name: string; metadata?: unknown }) => {
-					const metadata = key.metadata as AIImageMetadata | undefined;
+					const metadataResult = aiImageMetadataSchema.safeParse(key.metadata);
+					const metadata = metadataResult.success ? metadataResult.data : undefined;
 					const id = metadata?.id || key.name.replace(/^user:[^:]+:image:/, '');
 					return {
 						id,

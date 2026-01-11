@@ -6,6 +6,7 @@ import {
 	NoSuchToolError,
 	Output,
 	type ToolCallRepairFunction,
+	type ToolExecutionOptions,
 	ToolLoopAgent,
 	type ToolSet,
 	generateText,
@@ -156,32 +157,47 @@ export async function generateQuizFromPrompt(
 	}
 }
 
+// Helper to safely access object properties
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+// Helper to check if arguments object has a query string property
+const getQuery = (arguments_: unknown): string | undefined => {
+	if (isRecord(arguments_) && typeof arguments_.query === 'string') {
+		return arguments_.query;
+	}
+	return undefined;
+};
+
 async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[], onStatusUpdate?: OnStatusUpdate) {
 	const mcpToolSets = await Promise.all(mcpServers.flatMap((mcp) => mcp.tools()));
-	const mcpTools = Object.assign({}, ...mcpToolSets);
+	const mcpTools: ToolSet = {};
+	for (const tools of mcpToolSets) {
+		Object.assign(mcpTools, tools);
+	}
 
 	// Wrap tools to intercept calls and report status
-	const instrumentedTools = Object.fromEntries(
-		Object.entries(mcpTools).map(([name, tool]) => {
-			const typedTool = tool as { execute: (arguments_: unknown, options: unknown) => Promise<unknown> };
-			return [
-				name,
-				{
-					...(tool as object),
-					execute: async (arguments_: unknown, options: unknown) => {
-						if (name === 'search_cloudflare_documentation') {
-							const query = (arguments_ as { query?: string })?.query;
-							onStatusUpdate?.({ stage: 'reading_docs', detail: query || 'Cloudflare docs' });
-						} else if (name === 'web_search_exa') {
-							const query = (arguments_ as { query?: string })?.query;
-							onStatusUpdate?.({ stage: 'searching_web', detail: query || 'the web' });
-						}
-						return typedTool.execute(arguments_, options);
-					},
-				},
-			];
-		}),
-	);
+	const instrumentedTools: ToolSet = {};
+
+	for (const [name, tool] of Object.entries(mcpTools)) {
+		instrumentedTools[name] = {
+			...tool,
+			description: tool.description ?? undefined,
+			strict: tool.strict ?? undefined,
+			inputSchema: tool.inputSchema,
+			execute: async (arguments_: unknown, options: ToolExecutionOptions) => {
+				if (name === 'search_cloudflare_documentation') {
+					const query = getQuery(arguments_);
+					onStatusUpdate?.({ stage: 'reading_docs', detail: query || 'Cloudflare docs' });
+				} else if (name === 'web_search_exa') {
+					const query = getQuery(arguments_);
+					onStatusUpdate?.({ stage: 'searching_web', detail: query || 'the web' });
+				}
+				return tool.execute?.(arguments_, options);
+			},
+		};
+	}
 
 	const instructions = stripIndent`
 		You are a professional researcher.
@@ -194,7 +210,7 @@ async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[]
 		model,
 		output: Output.text(),
 		instructions,
-		tools: instrumentedTools as ToolSet,
+		tools: instrumentedTools,
 		experimental_repairToolCall: repairToolCall(model),
 		stopWhen: stepCountIs(10),
 	});
@@ -268,7 +284,11 @@ const repairToolCall: <T extends ToolSet>(model: LanguageModel) => ToolCallRepai
 			return null;
 		}
 
-		const tool = tools[toolCall.toolName as keyof typeof tools];
+		if (!(toolCall.toolName in tools)) {
+			// eslint-disable-next-line unicorn/no-null -- required by ToolCallRepairFunction type
+			return null;
+		}
+		const tool = tools[toolCall.toolName];
 
 		if (tool.inputSchema === undefined) {
 			// eslint-disable-next-line unicorn/no-null -- required by ToolCallRepairFunction type

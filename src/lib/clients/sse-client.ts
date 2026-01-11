@@ -4,6 +4,8 @@
  * Works with Hono's streamSSE helper and provides type-safe event parsing.
  */
 
+import type { z } from 'zod';
+
 export interface SSECallbacks<T extends { event: string; data: unknown }> {
 	onEvent: (event: T) => void;
 	onError?: (error: Error) => void;
@@ -23,7 +25,7 @@ export interface SSECallbacks<T extends { event: string; data: unknown }> {
  *
  * // Use with Hono RPC client response
  * const response = await client.api.stream.$post({ json: { ... } });
- * await consumeSSEStream<MySSEEvent>(response, {
+ * await consumeSSEStream(response, mySSESchema, {
  *   onEvent: (event) => {
  *     if (event.event === 'progress') {
  *       console.log(event.data.percent); // fully typed
@@ -34,6 +36,7 @@ export interface SSECallbacks<T extends { event: string; data: unknown }> {
  */
 export async function consumeSSEStream<T extends { event: string; data: unknown }>(
 	response: Response,
+	schema: z.ZodType<T>,
 	callbacks: SSECallbacks<T>,
 ): Promise<void> {
 	if (!response.ok || !response.body) {
@@ -60,10 +63,11 @@ export async function consumeSSEStream<T extends { event: string; data: unknown 
 				} else if (line.startsWith('data: ')) {
 					if (currentEvent) {
 						try {
-							const data = JSON.parse(line.slice(6)) as T['data'];
-							callbacks.onEvent({ event: currentEvent, data } as T);
-						} catch {
-							callbacks.onError?.(new Error(`Failed to parse SSE data: ${line.slice(6)}`));
+							const data: unknown = JSON.parse(line.slice(6));
+							const event = schema.parse({ event: currentEvent, data });
+							callbacks.onEvent(event);
+						} catch (error) {
+							callbacks.onError?.(error instanceof Error ? error : new Error(`Failed to parse SSE data: ${line.slice(6)}`));
 						}
 					}
 					currentEvent = '';

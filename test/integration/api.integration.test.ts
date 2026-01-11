@@ -1,31 +1,40 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 
-interface ApiResponse<T = unknown> {
-	success: boolean;
-	data?: T;
-	error?: string;
+// Helper to safely parse JSON response in tests with Zod validation
+async function parseJson<T>(response: Response, schema: z.Schema<T>): Promise<T> {
+	const json = await response.json();
+	return schema.parse(json);
 }
 
-interface Quiz {
-	id: string;
-	title: string;
-	type: string;
-	questions: Question[];
-}
+// Zod schemas for test data
+const questionSchema = z.object({
+	text: z.string(),
+	options: z.array(z.string()),
+	correctAnswerIndex: z.number(),
+});
 
-interface Question {
-	text: string;
-	options: string[];
-	correctAnswerIndex: number;
-}
+const quizSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	type: z.string(),
+	questions: z.array(questionSchema),
+});
 
-interface CreateGameData {
-	id: string;
-	hostSecret: string;
-	pin: string;
-}
+const createGameDataSchema = z.object({
+	id: z.string(),
+	hostSecret: z.string(),
+	pin: z.string(),
+});
+
+const apiResponseSchema = <T extends z.ZodTypeAny>(schema: T) =>
+	z.object({
+		success: z.boolean(),
+		data: schema.optional(),
+		error: z.string().optional(),
+	});
 
 /**
  * Integration tests for REST API endpoints.
@@ -44,7 +53,7 @@ describe('REST API Integration Tests', () => {
 			const response = await fetch(`${BASE_URL}/api/quizzes`);
 			expect(response.ok).toBe(true);
 
-			const result = (await response.json()) as ApiResponse<Quiz[]>;
+			const result = await parseJson(response, apiResponseSchema(z.array(quizSchema)));
 			expect(result.success).toBe(true);
 			expect(Array.isArray(result.data)).toBe(true);
 			expect(result.data!.length).toBeGreaterThan(0);
@@ -60,7 +69,7 @@ describe('REST API Integration Tests', () => {
 
 		it('predefined quizzes have valid question structure', async () => {
 			const response = await fetch(`${BASE_URL}/api/quizzes`);
-			const result = (await response.json()) as ApiResponse<Quiz[]>;
+			const result = await parseJson(response, apiResponseSchema(z.array(quizSchema)));
 
 			for (const quiz of result.data!) {
 				for (const question of quiz.questions) {
@@ -89,7 +98,7 @@ describe('REST API Integration Tests', () => {
 
 			expect(response.ok).toBe(true);
 
-			const result = (await response.json()) as ApiResponse<CreateGameData>;
+			const result = await parseJson(response, apiResponseSchema(createGameDataSchema));
 			expect(result.success).toBe(true);
 			expect(result.data).toHaveProperty('id'); // API uses 'id', not 'gameId'
 			expect(result.data).toHaveProperty('hostSecret');
@@ -102,7 +111,7 @@ describe('REST API Integration Tests', () => {
 		it('POST /api/games with quizId creates game with specified quiz', async () => {
 			// First get a predefined quiz ID
 			const quizzesResponse = await fetch(`${BASE_URL}/api/quizzes`);
-			const quizzesResult = (await quizzesResponse.json()) as ApiResponse<Quiz[]>;
+			const quizzesResult = await parseJson(quizzesResponse, apiResponseSchema(z.array(quizSchema)));
 			const quizId = quizzesResult.data![0].id;
 
 			const response = await fetch(`${BASE_URL}/api/games`, {
@@ -116,7 +125,7 @@ describe('REST API Integration Tests', () => {
 			});
 
 			expect(response.ok).toBe(true);
-			const result = (await response.json()) as ApiResponse<CreateGameData>;
+			const result = await parseJson(response, apiResponseSchema(createGameDataSchema));
 			expect(result.success).toBe(true);
 			expect(result.data!.id).toBeTruthy();
 		});
@@ -134,7 +143,7 @@ describe('REST API Integration Tests', () => {
 				},
 				body: JSON.stringify({}),
 			});
-			const createResult = (await createResponse.json()) as ApiResponse<CreateGameData>;
+			const createResult = await parseJson(createResponse, apiResponseSchema(createGameDataSchema));
 			const gameId = createResult.data!.id; // API uses 'id', not 'gameId'
 
 			// Check if it exists

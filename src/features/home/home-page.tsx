@@ -29,9 +29,9 @@ import { useTurnstile } from '@/hooks/utils/use-turnstile';
 import { hcWithType } from '@/lib/clients/api-client';
 import { consumeSSEStream } from '@/lib/clients/sse-client';
 import { useHostStore } from '@/lib/stores/host-store';
-import { LIMITS, aiPromptSchema } from '@shared/validation';
+import { LIMITS, aiPromptSchema, quizGenerateSSEEventSchema } from '@shared/validation';
 
-import type { Quiz, QuizGenerateSSEEvent } from '@shared/types';
+import type { Quiz } from '@shared/types';
 
 export function HomePage() {
 	const navigate = useViewTransitionNavigate();
@@ -85,8 +85,8 @@ export function HomePage() {
 			{
 				onSuccess: (result) => {
 					if (result.success && result.data) {
-						if ('error' in result.data) {
-							toast.error((result.data as { error: string }).error);
+						if ('error' in result.data && typeof result.data.error === 'string') {
+							toast.error(result.data.error);
 							setStartingQuizId(undefined);
 							return;
 						}
@@ -216,7 +216,7 @@ export function HomePage() {
 				json: { prompt, numQuestions: 5 },
 			});
 
-			await consumeSSEStream<QuizGenerateSSEEvent>(response, {
+			await consumeSSEStream(response, quizGenerateSSEEventSchema, {
 				onEvent: (event) => {
 					switch (event.event) {
 						case 'status': {

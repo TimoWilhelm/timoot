@@ -36,6 +36,10 @@ export async function verifyTurnstile(c: Context<{ Bindings: never }>, next: Nex
  * Get user ID from validated headers
  */
 export function getUserId(c: Context): string {
-	const headers = c.req.valid('header' as never) as { 'x-user-id': string };
-	return headers['x-user-id'];
+	const userId = c.req.header('x-user-id');
+	if (!userId) {
+		// Should not happen if validation middleware is used, but safe to throw or handle
+		throw new Error('User ID header missing in protected route');
+	}
+	return userId;
 }

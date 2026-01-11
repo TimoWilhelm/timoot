@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono/client';
 
 import { hcWithType, type Client } from '@/lib/clients/api-client';
+import { apiQuizSchema } from '@shared/validation';
 
 const client: Client = hcWithType('/');
 
@@ -27,7 +28,7 @@ export function usePredefinedQuizzes() {
 			const response = await client.api.quizzes.$get();
 			const result = await response.json();
 			if (!result.success) throw new Error('error' in result ? String(result.error) : 'Failed to fetch quizzes');
-			return result.data;
+			return apiQuizSchema.array().parse(result.data);
 		},
 	});
 }
@@ -39,7 +40,7 @@ export function useCustomQuizzes(userId: string) {
 			const response = await client.api.quizzes.custom.$get({ header: { 'x-user-id': userId } });
 			const result = await response.json();
 			if (!result.success) throw new Error('error' in result ? String(result.error) : 'Failed to fetch custom quizzes');
-			return result.data;
+			return apiQuizSchema.array().parse(result.data);
 		},
 	});
 }

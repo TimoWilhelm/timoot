@@ -44,7 +44,13 @@ const meta = {
 				gameState={{
 					...mockGameState,
 					...args,
-					endRevealed: (args as { revealed?: boolean }).revealed ?? mockGameState.endRevealed,
+					endRevealed: (() => {
+						if (typeof args === 'object' && args !== null) {
+							const value = Reflect.get(args, 'revealed');
+							if (typeof value === 'boolean') return value;
+						}
+						return mockGameState.endRevealed;
+					})(),
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}

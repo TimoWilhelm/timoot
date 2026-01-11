@@ -40,6 +40,7 @@
 		"clsx": "^2.1.1",
 		"common-tags": "^1.8.2",
 		"concurrently": "^9.2.1",
+		"devalue": "^5.6.1",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-import-resolver-typescript": "^4.4.4",
@@ -107,8 +108,5 @@
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},
-	"type": "module",
-	"dependencies": {
-		"devalue": "^5.6.1"
-	}
+	"type": "module"
 }

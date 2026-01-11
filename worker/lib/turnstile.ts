@@ -1,18 +1,15 @@
 import { env } from 'cloudflare:workers';
+import { z } from 'zod'; // Import Zod
 
 import type { Context } from 'hono';
 
-interface TurnstileValidationResponse {
-	success: boolean;
-	'error-codes'?: string[];
-	challenge_ts?: string;
-	hostname?: string;
-}
+const turnstileResponseSchema = z.object({
+	success: z.boolean(),
+	'error-codes': z.array(z.string()).optional(),
+	challenge_ts: z.string().optional(),
+	hostname: z.string().optional(),
+});
 
-/**
- * Validate a Turnstile token server-side.
- * Returns null if valid, or an error Response if invalid.
- */
 export async function validateTurnstile(c: Context<{ Bindings: never }>, token: string | null | undefined): Promise<Response | undefined> {
 	// Skip validation in development
 	if (import.meta.env.DEV) {
@@ -36,10 +33,11 @@ export async function validateTurnstile(c: Context<{ Bindings: never }>, token: 
 			}),
 		});
 
-		const result = (await response.json()) as TurnstileValidationResponse;
+		const data: unknown = await response.json();
+		const result = turnstileResponseSchema.safeParse(data);
 
-		if (!result.success) {
-			console.error('[Turnstile Validation Failed]', result['error-codes']);
+		if (!result.success || !result.data.success) {
+			console.error('[Turnstile Validation Failed]', result.success ? result.data['error-codes'] : result.error);
 			return c.json({ success: false, error: 'Turnstile verification failed' }, 403);
 		}
 

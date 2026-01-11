@@ -47,7 +47,13 @@ const meta = {
 				gameState={{
 					...mockGameState,
 					...args,
-					getReadyCountdownMs: (args as { countdownMs?: number }).countdownMs ?? mockGameState.getReadyCountdownMs,
+					getReadyCountdownMs: (() => {
+						if (typeof args === 'object' && args !== null) {
+							const value = Reflect.get(args, 'countdownMs');
+							if (typeof value === 'number') return value;
+						}
+						return mockGameState.getReadyCountdownMs;
+					})(),
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}

@@ -3,38 +3,41 @@ import { fileURLToPath } from 'node:url';
 
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import react from '@vitejs/plugin-react';
-import { defineConfig, type UserConfig } from 'vite';
-
-import type { InlineConfig } from 'vitest/node';
+import { defineConfig, mergeConfig } from 'vite';
+import { defineConfig as defineVitestConfig } from 'vitest/config';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(dirname, '../../');
 
-export default defineConfig({
-	plugins: [
-		react(),
-		storybookTest({
-			configDir: path.join(projectRoot, '.storybook'),
-			storybookScript: 'bun run storybook --ci',
-			tags: {
-				skip: ['skip-test'],
+export default mergeConfig(
+	defineConfig({
+		plugins: [
+			react(),
+			storybookTest({
+				configDir: path.join(projectRoot, '.storybook'),
+				storybookScript: 'bun run storybook --ci',
+				tags: {
+					skip: ['skip-test'],
+				},
+			}),
+		],
+		resolve: {
+			alias: {
+				'@': path.join(projectRoot, 'src'),
+				'@shared': path.join(projectRoot, 'shared'),
 			},
-		}),
-	],
-	resolve: {
-		alias: {
-			'@': path.join(projectRoot, 'src'),
-			'@shared': path.join(projectRoot, 'shared'),
 		},
-	},
-	test: {
-		name: 'storybook',
-		browser: {
-			enabled: true,
-			headless: true,
-			provider: 'playwright',
-			instances: [{ browser: 'chromium' }],
+	}),
+	defineVitestConfig({
+		test: {
+			name: 'storybook',
+			browser: {
+				enabled: true,
+				headless: true,
+				provider: 'playwright',
+				instances: [{ browser: 'chromium' }],
+			},
+			setupFiles: [path.join(projectRoot, '.storybook/vitest.setup.ts')],
 		},
-		setupFiles: [path.join(projectRoot, '.storybook/vitest.setup.ts')],
-	},
-} as UserConfig & { test: InlineConfig });
+	}),
+);

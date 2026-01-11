@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { parseServerMessage, serializeMessage, type ParsedServerMessage } from '@shared/ws-messages';
 
 import type { ClientMessage, ClientRole, EmojiReaction } from '@shared/types';
@@ -15,6 +17,16 @@ export interface WsClientOptions {
 export interface ConnectedResult {
 	playerId?: string;
 	playerToken?: string;
+}
+
+/**
+ * Type guard to check if a message is of a specific type
+ */
+function isMessageType<T extends ParsedServerMessage['type']>(
+	message: ParsedServerMessage,
+	type: T,
+): message is Extract<ParsedServerMessage, { type: T }> {
+	return message.type === type;
 }
 
 /**
@@ -131,8 +143,8 @@ export class WsTestClient {
 	): Promise<Extract<ParsedServerMessage, { type: T }>> {
 		// Check existing queue first
 		const existing = this.messageQueue.find(
-			(m) => m.type === type && (!predicate || predicate(m as Extract<ParsedServerMessage, { type: T }>)),
-		) as Extract<ParsedServerMessage, { type: T }> | undefined;
+			(m): m is Extract<ParsedServerMessage, { type: T }> => isMessageType(m, type) && (!predicate || predicate(m)),
+		);
 		if (existing) {
 			return existing;
 		}
@@ -145,11 +157,12 @@ export class WsTestClient {
 			}, timeout);
 
 			const handler = (message: ParsedServerMessage) => {
-				if (message.type === type && (!predicate || predicate(message as Extract<ParsedServerMessage, { type: T }>))) {
+				if (isMessageType(message, type) && (!predicate || predicate(message))) {
 					clearTimeout(timeoutId);
 					const index = this.messageHandlers.indexOf(handler);
 					if (index !== -1) this.messageHandlers.splice(index, 1);
-					resolve(message as Extract<ParsedServerMessage, { type: T }>);
+					// Verify generic match with predicate
+					resolve(message);
 				}
 			};
 
@@ -168,7 +181,7 @@ export class WsTestClient {
 	 * Get messages of a specific type
 	 */
 	getMessagesByType<T extends ParsedServerMessage['type']>(type: T): Extract<ParsedServerMessage, { type: T }>[] {
-		return this.messageQueue.filter((m) => m.type === type) as Extract<ParsedServerMessage, { type: T }>[];
+		return this.messageQueue.filter((m): m is Extract<ParsedServerMessage, { type: T }> => isMessageType(m, type));
 	}
 
 	/**
@@ -219,9 +232,9 @@ export class WsTestClient {
 			return { playerId: message.playerId, playerToken: message.playerToken };
 		} catch {
 			// If timeout, check if credentials arrived in queue anyway
-			const connectedMessage = this.messageQueue.find((m) => m.type === 'connected' && 'playerId' in m && m.playerId) as
-				| Extract<ParsedServerMessage, { type: 'connected' }>
-				| undefined;
+			const connectedMessage = this.messageQueue.find(
+				(m): m is Extract<ParsedServerMessage, { type: 'connected' }> => m.type === 'connected' && 'playerId' in m && !!m.playerId,
+			);
 
 			if (connectedMessage) {
 				this.playerId = connectedMessage.playerId;
@@ -265,17 +278,19 @@ export class WsTestClient {
 	}
 }
 
-interface ApiResponse<T> {
-	success: boolean;
-	data?: T;
-	error?: string;
-}
+// Zod schemas for API responses
+const createGameResponseSchema = z.object({
+	id: z.string(),
+	hostSecret: z.string(),
+	pin: z.string(),
+});
 
-interface CreateGameResponse {
-	id: string;
-	hostSecret: string;
-	pin: string;
-}
+const apiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+	z.object({
+		success: z.boolean(),
+		data: dataSchema.optional(),
+		error: z.string().optional(),
+	});
 
 /**
  * Create a game via the API
@@ -295,15 +310,17 @@ export async function createGame(baseUrl: string, quizId?: string): Promise<{ ga
 		throw new Error(`Failed to create game: ${response.status} ${response.statusText}`);
 	}
 
-	const data: ApiResponse<CreateGameResponse> = await response.json();
-	if (!data.success || !data.data) {
-		throw new Error(`Failed to create game: ${data.error}`);
+	const json = await response.json();
+	const result = apiResponseSchema(createGameResponseSchema).parse(json);
+
+	if (!result.success || !result.data) {
+		throw new Error(`Failed to create game: ${result.error}`);
 	}
 
 	return {
-		gameId: data.data.id,
-		hostSecret: data.data.hostSecret,
-		pin: data.data.pin,
+		gameId: result.data.id,
+		hostSecret: result.data.hostSecret,
+		pin: result.data.pin,
 	};
 }
 

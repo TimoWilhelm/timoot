@@ -9,8 +9,8 @@ import {
 	buildQuestionModifierMessage,
 	buildRevealMessage,
 } from '../game';
+import { getAttachment } from './types';
 
-import type { WebSocketAttachment } from './types';
 import type { ClientRole, GameState, ServerMessage } from '@shared/types';
 
 /**
@@ -39,7 +39,7 @@ export function sendMessage(ws: WebSocket, message: ServerMessage): void {
 function broadcastToAll(context: BroadcastContext, message: ServerMessage): void {
 	const sockets = context.getWebSockets();
 	for (const ws of sockets) {
-		const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
+		const attachment = getAttachment(ws);
 		if (attachment?.authenticated) {
 			sendMessage(ws, message);
 		}
@@ -52,7 +52,7 @@ function broadcastToAll(context: BroadcastContext, message: ServerMessage): void
 export function broadcastToRole(context: BroadcastContext, role: ClientRole, message: ServerMessage): void {
 	const sockets = context.getWebSockets();
 	for (const ws of sockets) {
-		const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
+		const attachment = getAttachment(ws);
 		if (attachment?.authenticated && attachment.role === role) {
 			sendMessage(ws, message);
 		}
@@ -104,7 +104,7 @@ export function broadcastReveal(context: BroadcastContext, state: GameState): vo
 	// Send to each player with their individual result
 	const sockets = context.getWebSockets();
 	for (const ws of sockets) {
-		const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
+		const attachment = getAttachment(ws);
 		if (attachment?.authenticated && attachment.role === 'player' && attachment.playerId) {
 			sendMessage(ws, buildRevealMessage(state, attachment.playerId));
 		}

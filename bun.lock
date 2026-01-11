@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "timoot",
-      "dependencies": {
-        "devalue": "^5.6.1",
-      },
       "devDependencies": {
         "@ai-sdk/mcp": "^1.0.0",
         "@ai-sdk/openai-compatible": "^2.0.0",
@@ -46,6 +43,7 @@
         "clsx": "^2.1.1",
         "common-tags": "^1.8.2",
         "concurrently": "^9.2.1",
+        "devalue": "^5.6.1",
         "eslint": "^9.39.2",
         "eslint-config-prettier": "^10.1.8",
         "eslint-import-resolver-typescript": "^4.4.4",

@@ -11,6 +11,7 @@ import {
 	broadcastGameEnd,
 	broadcastQuestionModifier,
 	broadcastQuestionStart,
+	getAttachment,
 	handleJoin,
 	handleNextState,
 	handlePlayerConnect,
@@ -21,7 +22,7 @@ import {
 } from '../game-room/index';
 import { sendCurrentStateToHost } from '../game-room/state-sync';
 
-import type { ClientMessage, GameState, Question } from '@shared/types';
+import type { GameState, Question } from '@shared/types';
 
 /**
  * GameRoomDurableObject - One instance per game room
@@ -71,7 +72,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			server.serializeAttachment({
 				role: 'host',
 				authenticated: true,
-			} as WebSocketAttachment);
+			} satisfies WebSocketAttachment);
 
 			// Cancel any pending cleanup alarm since we have a new connection
 			await this.ctx.storage.deleteAlarm();
@@ -110,7 +111,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			server.serializeAttachment({
 				role: 'player',
 				authenticated: false,
-			} as WebSocketAttachment);
+			} satisfies WebSocketAttachment);
 
 			// Cancel any pending cleanup alarm since we have a new connection
 			await this.ctx.storage.deleteAlarm();
@@ -131,8 +132,8 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				sendMessage(ws, { type: 'error', ...createError(ErrorCode.VALIDATION_ERROR, parseResult.error) });
 				return;
 			}
-			const data = parseResult.data as ClientMessage;
-			const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
+			const data = parseResult.data;
+			const attachment = getAttachment(ws);
 
 			// Handle connection/authentication (only for players now)
 			if (data.type === 'connect') {

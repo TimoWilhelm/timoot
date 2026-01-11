@@ -7,11 +7,14 @@ import { userIdHeaderSchema, getUserId } from '../lib/validators';
 
 import type { ApiResponse } from '@shared/types';
 
-// Sync code types
-interface SyncCodeData {
-	userId: string;
-	createdAt: string;
-}
+// Define schema for sync data validation
+const syncCodeDataSchema = z.object({
+	userId: z.string(),
+	createdAt: z.string(),
+});
+
+// Sync code types inferred from schema
+type SyncCodeData = z.infer<typeof syncCodeDataSchema>;
 
 // Generate a short 6-character alphanumeric code (uppercase for readability)
 function generateSyncCode(): string {
@@ -83,7 +86,11 @@ export const syncRoutes = new Hono<{ Bindings: never }>()
 					return c.json({ success: false, error: 'Sync code not found or expired' } satisfies ApiResponse, 404);
 				}
 
-				const syncData = JSON.parse(syncDataString) as SyncCodeData;
+				const parseResult = syncCodeDataSchema.safeParse(JSON.parse(syncDataString));
+				if (!parseResult.success) {
+					return c.json({ success: false, error: 'Invalid sync data' } satisfies ApiResponse, 500);
+				}
+				const syncData = parseResult.data;
 
 				// Delete the code after use (one-time use)
 				await env.KV_SYNC.delete(`sync:${code}`);

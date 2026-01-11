@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ErrorCode } from './errors';
+import { ERROR_CODE_VALUES } from './errors';
 import { EMOJI_REACTIONS } from './types';
 
 // ============ Validation Constants ============
@@ -167,6 +167,46 @@ export const createGameRequestSchema = z.object({
 	quizId: z.string().optional(),
 });
 
+/**
+ * API Quiz schema (for response validation)
+ * Enforces strict Quiz type compliance (required id, optional type)
+ */
+export const apiQuizSchema = quizSchema.extend({
+	id: z.string(),
+	type: z.enum(['predefined', 'custom']).optional(),
+});
+
+/**
+ * Generation Status schema
+ */
+export const generationStatusSchema = z.object({
+	stage: z.enum(['researching', 'reading_docs', 'searching_web', 'generating']),
+	detail: z.string().optional(),
+});
+
+/**
+ * Quiz Generate SSE Event schema
+ */
+export const quizGenerateSSEEventSchema = z.discriminatedUnion('event', [
+	z.object({ event: z.literal('status'), data: generationStatusSchema }),
+	z.object({
+		event: z.literal('complete'),
+		data: z.object({
+			success: z.boolean(),
+			data: apiQuizSchema.optional(),
+			error: z.string().optional(),
+		}),
+	}),
+	z.object({
+		event: z.literal('error'),
+		data: z.object({
+			success: z.boolean(),
+			data: z.unknown().optional(),
+			error: z.string().optional(),
+		}),
+	}),
+]);
+
 // ============ WebSocket Message Schemas ============
 
 const wsConnectHostSchema = z.object({
@@ -230,11 +270,7 @@ const wsConnectedSchema = z.object({
 	playerToken: z.string().optional(),
 });
 
-// ErrorCode values as a tuple for proper Zod type inference
-const ERROR_CODE_VALUES = Object.values(ErrorCode) as unknown as readonly [
-	(typeof ErrorCode)[keyof typeof ErrorCode],
-	...(typeof ErrorCode)[keyof typeof ErrorCode][],
-];
+// Use ERROR_CODE_VALUES imported from errors.ts for Zod enum
 
 const wsErrorSchema = z.object({
 	type: z.literal('error'),

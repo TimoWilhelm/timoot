@@ -2,26 +2,27 @@
  * Machine-readable error codes for WebSocket communication.
  * Use these codes for programmatic error handling instead of matching on human-readable messages.
  */
-export const ErrorCode = {
+
+/**
+ * ErrorCode object - provides convenient access like ErrorCode.GAME_NOT_FOUND
+ */
+export const ErrorCode = Object.freeze({
 	// Game state errors
 	GAME_NOT_FOUND: 'GAME_NOT_FOUND',
 	GAME_ALREADY_STARTED: 'GAME_ALREADY_STARTED',
 	GAME_NOT_IN_LOBBY: 'GAME_NOT_IN_LOBBY',
 	INVALID_STATE_TRANSITION: 'INVALID_STATE_TRANSITION',
-
 	// Authentication errors
 	INVALID_SESSION_TOKEN: 'INVALID_SESSION_TOKEN',
 	HOST_ALREADY_AUTHENTICATED: 'HOST_ALREADY_AUTHENTICATED',
 	NOT_AUTHENTICATED: 'NOT_AUTHENTICATED',
 	HOST_ENDPOINT_REQUIRED: 'HOST_ENDPOINT_REQUIRED',
-
 	// Permission errors
 	ONLY_PLAYERS_CAN_JOIN: 'ONLY_PLAYERS_CAN_JOIN',
 	ONLY_HOST_CAN_START: 'ONLY_HOST_CAN_START',
 	ONLY_HOST_CAN_ADVANCE: 'ONLY_HOST_CAN_ADVANCE',
 	ONLY_PLAYERS_CAN_ANSWER: 'ONLY_PLAYERS_CAN_ANSWER',
 	ONLY_PLAYERS_CAN_SEND_EMOJI: 'ONLY_PLAYERS_CAN_SEND_EMOJI',
-
 	// Player action errors
 	GAME_FULL: 'GAME_FULL',
 	ALREADY_JOINED: 'ALREADY_JOINED',
@@ -30,14 +31,23 @@ export const ErrorCode = {
 	TIME_EXPIRED: 'TIME_EXPIRED',
 	INVALID_ANSWER_INDEX: 'INVALID_ANSWER_INDEX',
 	NOT_IN_QUESTION_PHASE: 'NOT_IN_QUESTION_PHASE',
-
 	// Message errors
 	UNKNOWN_MESSAGE_TYPE: 'UNKNOWN_MESSAGE_TYPE',
 	INVALID_MESSAGE_FORMAT: 'INVALID_MESSAGE_FORMAT',
 	VALIDATION_ERROR: 'VALIDATION_ERROR',
-} as const;
+} satisfies Record<string, string>);
 
+// Derive the type from ErrorCode object
 export type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
+
+// Export values array for Zod enum - derived from ErrorCode object with typed helper
+function getErrorCodeValuesArray(): [ErrorCodeType, ...ErrorCodeType[]] {
+	const values = Object.values(ErrorCode);
+	// We know ErrorCode has at least one value, so this is safe
+	const [first, ...rest] = values;
+	return [first, ...rest];
+}
+export const ERROR_CODE_VALUES = getErrorCodeValuesArray();
 
 /**
  * Human-readable messages for each error code.

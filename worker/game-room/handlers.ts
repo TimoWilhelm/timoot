@@ -27,8 +27,8 @@ import {
 	sendMessage,
 } from './broadcast-helpers';
 import { sendCurrentStateToPlayer } from './state-sync';
+import { type WebSocketAttachment } from './types';
 
-import type { WebSocketAttachment } from './types';
 import type { Answer, ClientMessage, EmojiReaction, GameState, Player } from '@shared/types';
 
 /**
@@ -87,7 +87,7 @@ export async function handlePlayerConnect(
 			role: 'player',
 			playerId: playerId,
 			authenticated: true,
-		} as WebSocketAttachment);
+		} satisfies WebSocketAttachment);
 
 		// Send back the token so client can verify/restore it
 		sendMessage(ws, { type: 'connected', role: 'player', playerId, playerToken: existingPlayer.token });
@@ -97,7 +97,7 @@ export async function handlePlayerConnect(
 		ws.serializeAttachment({
 			role: 'player',
 			authenticated: true, // Authenticated but not yet joined
-		} as WebSocketAttachment);
+		} satisfies WebSocketAttachment);
 
 		sendMessage(ws, { type: 'connected', role: 'player' });
 
@@ -162,7 +162,7 @@ export async function handleJoin(
 	ws.serializeAttachment({
 		...attachment,
 		playerId,
-	} as WebSocketAttachment);
+	} satisfies WebSocketAttachment);
 
 	// Send confirmation to the joining player with their secure token
 	sendMessage(ws, { type: 'connected', role: 'player', playerId, playerToken });
