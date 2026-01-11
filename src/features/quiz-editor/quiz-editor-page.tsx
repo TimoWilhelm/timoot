@@ -1,5 +1,5 @@
 import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, SubmitHandler } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card
 import { GridBackground } from '@/components/grid-background/grid-background';
 import { Input } from '@/components/input/input';
 import { Label } from '@/components/label/label';
+import { LoadingFallback } from '@/components/loading-fallback';
 import { TitleCharCount } from '@/features/quiz-editor/components/char-counters';
 import { ImageSelectionDialog } from '@/features/quiz-editor/components/image-selection-dialog';
 import { QuizQuestionCard } from '@/features/quiz-editor/components/quiz-question-card';
@@ -35,12 +36,84 @@ type QuizFormData = {
 	questions: Question[];
 };
 
+/**
+ * Main page component - conditionally renders EditQuizForm or NewQuizForm based on quizId
+ */
 export function QuizEditorPage() {
 	const { quizId } = useParams<{ quizId?: string }>();
+
+	return (
+		<div className="relative isolate min-h-screen bg-muted/50">
+			<GridBackground className="-z-10" />
+			{quizId ? (
+				<Suspense fallback={<LoadingFallback message="Loading quiz..." />}>
+					<EditQuizForm quizId={quizId} />
+				</Suspense>
+			) : (
+				<NewQuizForm />
+			)}
+		</div>
+	);
+}
+
+/**
+ * Form for editing an existing quiz - uses Suspense to load quiz data
+ */
+function EditQuizForm({ quizId }: { quizId: string }) {
+	const { userId } = useUserId();
+
+	// Fetch quiz data using useQuery - this will be consumed with use() below
+	const quizQuery = useQuizDetail(userId, quizId);
+
+	// Use React 19's use() hook to suspend until quiz data is ready
+	// This replaces the useEffect that was syncing quizData to form state
+	const quizData = use(quizQuery.promise) as { title: string; questions: Question[] };
+
+	// Transform quiz data to form format
+	// This is stable because quizData is stable after suspense resolves
+	const initialFormData = useMemo(
+		(): QuizFormInput => ({
+			...quizData,
+			questions: quizData.questions.map((q) => ({
+				...q,
+				options: q.options.map((opt) => ({ value: opt })),
+				correctAnswerIndex: String(q.correctAnswerIndex),
+				backgroundImage: q.backgroundImage,
+			})),
+		}),
+		[quizData],
+	);
+
+	return <QuizEditorForm quizId={quizId} initialData={initialFormData} />;
+}
+
+/**
+ * Form for creating a new quiz - no data fetching needed
+ */
+function NewQuizForm() {
+	const defaultData: QuizFormInput = {
+		title: '',
+		questions: [
+			{ text: '', options: [{ value: '' }, { value: '' }], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined },
+		],
+	};
+
+	return <QuizEditorForm initialData={defaultData} />;
+}
+
+interface QuizEditorFormProperties {
+	quizId?: string;
+	initialData: QuizFormInput;
+}
+
+/**
+ * Shared form component for both edit and create flows
+ */
+function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 	const navigate = useViewTransitionNavigate();
 	const { userId } = useUserId();
 
-	const { methods, fieldArray } = useQuizForm();
+	const { methods, fieldArray } = useQuizForm({ defaultValues: initialData });
 	const {
 		control,
 		handleSubmit,
@@ -55,7 +128,6 @@ export function QuizEditorPage() {
 
 	// React Query hooks
 	const { data: customQuizzes = [] } = useCustomQuizzes(userId);
-	const { data: quizData, isError: quizError } = useQuizDetail(userId, quizId);
 	const createQuizMutation = useCreateQuiz();
 	const updateQuizMutation = useUpdateQuiz();
 	const generateQuestionMutation = useGenerateQuestion();
@@ -69,6 +141,7 @@ export function QuizEditorPage() {
 	const blocker = useBlocker(() => isDirty && !skipBlockerReference.current);
 
 	// Warn before browser/tab close when there are unsaved changes
+	// NOTE: This useEffect is necessary - it's an event listener, not data fetching
 	useEffect(() => {
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			if (isDirty) {
@@ -78,37 +151,6 @@ export function QuizEditorPage() {
 		window.addEventListener('beforeunload', handleBeforeUnload);
 		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
 	}, [isDirty]);
-
-	// Reset form when quiz data is loaded or when creating new quiz
-	useEffect(() => {
-		if (quizId && quizData) {
-			const formData: QuizFormInput = {
-				...quizData,
-				questions: quizData.questions.map((q) => ({
-					...q,
-					options: q.options.map((opt) => ({ value: opt })),
-					correctAnswerIndex: String(q.correctAnswerIndex),
-					backgroundImage: q.backgroundImage,
-				})),
-			};
-			reset(formData);
-		} else if (!quizId) {
-			reset({
-				title: '',
-				questions: [
-					{ text: '', options: [{ value: '' }, { value: '' }], correctAnswerIndex: '0', isDoublePoints: false, backgroundImage: undefined },
-				],
-			});
-		}
-	}, [quizId, quizData, reset]);
-
-	// Handle quiz fetch error
-	useEffect(() => {
-		if (quizError) {
-			toast.error('Could not load quiz for editing.');
-			navigate('/edit');
-		}
-	}, [quizError, navigate]);
 
 	const onSubmit: SubmitHandler<QuizFormInput> = async (data) => {
 		const processedData: QuizFormData = {
@@ -197,8 +239,7 @@ export function QuizEditorPage() {
 	};
 
 	return (
-		<div className="relative isolate min-h-screen bg-muted/50">
-			<GridBackground className="-z-10" />
+		<>
 			<div
 				className={`
 					relative mx-auto max-w-4xl px-4 py-12
@@ -348,6 +389,6 @@ export function QuizEditorPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</>
 	);
 }

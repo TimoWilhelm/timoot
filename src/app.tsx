@@ -1,4 +1,4 @@
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, QueryErrorResetBoundary } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -41,11 +41,15 @@ const router = createBrowserRouter([
 
 export function App() {
 	return (
-		<ErrorBoundary>
-			<QueryClientProvider client={queryClient}>
-				<RouterProvider router={router} />
-				<Toaster richColors closeButton />
-			</QueryClientProvider>
-		</ErrorBoundary>
+		<QueryClientProvider client={queryClient}>
+			<QueryErrorResetBoundary>
+				{({ reset }) => (
+					<ErrorBoundary key={String(reset)}>
+						<RouterProvider router={router} />
+						<Toaster richColors closeButton />
+					</ErrorBoundary>
+				)}
+			</QueryErrorResetBoundary>
+		</QueryClientProvider>
 	);
 }

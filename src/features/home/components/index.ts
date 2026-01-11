@@ -6,3 +6,4 @@ export { StartGameDialog } from './start-game-dialog';
 export { DeleteQuizDialog } from './delete-quiz-dialog';
 export { SyncDevicesDialog } from './sync-devices-dialog';
 export { MusicCreditsDialog } from './music-credits-dialog';
+export { QuizSections } from './quiz-sections';

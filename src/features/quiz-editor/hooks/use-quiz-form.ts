@@ -3,10 +3,14 @@ import { useFieldArray, useForm } from 'react-hook-form';
 
 import { type QuizFormInput, quizFormSchema } from '@shared/validation';
 
-export function useQuizForm() {
+interface UseQuizFormOptions {
+	defaultValues?: QuizFormInput;
+}
+
+export function useQuizForm(options?: UseQuizFormOptions) {
 	const methods = useForm<QuizFormInput>({
 		resolver: zodResolver(quizFormSchema),
-		defaultValues: { title: '', questions: [] },
+		defaultValues: options?.defaultValues ?? { title: '', questions: [] },
 	});
 
 	const { control } = methods;

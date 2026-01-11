@@ -1,17 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { GridBackground } from '@/components/grid-background/grid-background';
+import { LoadingFallback } from '@/components/loading-fallback';
 import {
-	CustomQuizzesSection,
 	DeleteQuizDialog,
-	FeaturedQuizzesSection,
 	HeroSection,
 	HomeFooter,
 	MusicCreditsDialog,
+	QuizSections,
 	StartGameDialog,
 	SyncDevicesDialog,
 } from '@/features/home/components';
@@ -57,10 +56,9 @@ export function HomePage() {
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 	const { userId, setUserId } = useUserId();
 
-	// React Query hooks
-	const { data: predefinedQuizzes = [], isLoading: isLoadingPredefined } = usePredefinedQuizzes();
-	const { data: customQuizzes = [], isLoading: isLoadingCustom } = useCustomQuizzes(userId);
-	const isLoading = isLoadingPredefined || isLoadingCustom;
+	// React Query hooks - queries are consumed with use() in QuizSections
+	const predefinedQuizQuery = usePredefinedQuizzes();
+	const customQuizQuery = useCustomQuizzes(userId);
 
 	const queryClient = useQueryClient();
 	const createGameMutation = useCreateGame();
@@ -152,7 +150,7 @@ export function HomePage() {
 			return;
 		}
 		// Warn if user has existing custom quizzes
-		if (!confirmed && customQuizzes.length > 0) {
+		if (!confirmed && (customQuizQuery.data?.length ?? 0) > 0) {
 			setShowSyncWarning(true);
 			return;
 		}
@@ -183,7 +181,7 @@ export function HomePage() {
 	};
 
 	const handleGenerateAiQuiz = async () => {
-		if (customQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
+		if ((customQuizQuery.data?.length ?? 0) >= LIMITS.MAX_QUIZZES_PER_USER) {
 			toast.error(`You have reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes.`);
 			return;
 		}
@@ -301,35 +299,29 @@ export function HomePage() {
 					</div>
 				</div>
 
-				{isLoading ? (
-					<div className="flex justify-center py-20">
-						<Loader2 className="size-16 animate-spin text-black" strokeWidth={3} />
-					</div>
-				) : (
-					<div className="space-y-20">
-						<FeaturedQuizzesSection quizzes={predefinedQuizzes} startingQuizId={startingQuizId} onSelectQuiz={handleSelectQuiz} />
-
-						<CustomQuizzesSection
-							quizzes={customQuizzes as Quiz[]}
-							isGenerating={isGenerating}
-							generatingPrompt={generatingPrompt}
-							generationStatus={generationStatus}
-							generatingCardRef={(element) => {
-								generatingCardReference.current = element;
-							}}
-							aiPrompt={aiPrompt}
-							isAiDialogOpen={isAiDialogOpen}
-							turnstileToken={turnstileToken}
-							TurnstileWidget={TurnstileWidget}
-							onAiPromptChange={setAiPrompt}
-							onAiDialogOpenChange={setIsAiDialogOpen}
-							onGenerateAiQuiz={handleGenerateAiQuiz}
-							onSelectQuiz={handleSelectQuiz}
-							onEditQuiz={(quizId) => navigate(`/edit/${quizId}`)}
-							onDeleteQuiz={setQuizToDelete}
-						/>
-					</div>
-				)}
+				<Suspense fallback={<LoadingFallback />}>
+					<QuizSections
+						predefinedQuizQuery={predefinedQuizQuery}
+						customQuizQuery={customQuizQuery}
+						startingQuizId={startingQuizId}
+						isGenerating={isGenerating}
+						generatingPrompt={generatingPrompt}
+						generationStatus={generationStatus}
+						generatingCardRef={(element) => {
+							generatingCardReference.current = element;
+						}}
+						aiPrompt={aiPrompt}
+						isAiDialogOpen={isAiDialogOpen}
+						turnstileToken={turnstileToken}
+						TurnstileWidget={TurnstileWidget}
+						onAiPromptChange={setAiPrompt}
+						onAiDialogOpenChange={setIsAiDialogOpen}
+						onGenerateAiQuiz={handleGenerateAiQuiz}
+						onSelectQuiz={handleSelectQuiz}
+						onEditQuiz={(quizId) => navigate(`/edit/${quizId}`)}
+						onDeleteQuiz={setQuizToDelete}
+					/>
+				</Suspense>
 			</main>
 
 			<HomeFooter onMusicCreditsClick={() => setIsMusicCreditsOpen(true)} onSyncDevicesClick={handleOpenSyncDialog} />
