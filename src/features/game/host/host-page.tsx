@@ -62,7 +62,7 @@ export function HostPage() {
 		floatingEmojisReference.current?.addEmoji(emoji);
 	}, []);
 
-	const { isConnecting, isConnected, error, gameState, startGame, nextState } = useGameWebSocket({
+	const { connectionState, error, gameState, startGame, nextState } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
@@ -87,7 +87,7 @@ export function HostPage() {
 	};
 
 	// Track if game is in an active phase
-	const isGameActive = isConnected && isGamePhaseActive[gameState.phase];
+	const isGameActive = connectionState === 'connected' && isGamePhaseActive[gameState.phase];
 
 	// Block navigation when game is active (not in LOBBY or END)
 	const blocker = useBlocker(isGameActive);
@@ -108,7 +108,7 @@ export function HostPage() {
 			if (key !== 'ArrowRight' && key !== 'PageDown' && key !== ' ' && key !== 'Enter') return;
 
 			// Only allow advancing when connected and in phases that have a manual Next button
-			if (!isConnected) return;
+			if (connectionState !== 'connected') return;
 			if (!phaseAllowsManualAdvance[gameState.phase]) return;
 
 			// Prevent advancing too quickly after phase change
@@ -125,11 +125,11 @@ export function HostPage() {
 
 		globalThis.addEventListener('keydown', handleKeyDown);
 		return () => globalThis.removeEventListener('keydown', handleKeyDown);
-	}, [isConnected, gameState.phase, nextState]);
+	}, [connectionState, gameState.phase, nextState]);
 
 	// Play sounds on game phase changes or reconnection
 	useEffect(() => {
-		if (!isConnected) {
+		if (connectionState !== 'connected') {
 			wasConnectedReference.current = false;
 			return;
 		}
@@ -196,11 +196,11 @@ export function HostPage() {
 			}
 			previousPhaseReference.current = currentPhase;
 		}
-	}, [isConnected, gameState.phase, gameState.modifiers, playSound, startBackgroundMusic, stopBackgroundMusic]);
+	}, [connectionState, gameState.phase, gameState.modifiers, playSound, startBackgroundMusic, stopBackgroundMusic]);
 
 	// Play sound when new player joins lobby
 	useEffect(() => {
-		if (!isConnected || gameState.phase !== 'LOBBY') return;
+		if (connectionState !== 'connected' || gameState.phase !== 'LOBBY') return;
 
 		const currentCount = gameState.players.length;
 		// Only play sound if we have a previous count to compare against (not initial render)
@@ -208,7 +208,7 @@ export function HostPage() {
 			playSound('playerJoin');
 		}
 		previousPlayersCountReference.current = currentCount;
-	}, [isConnected, gameState.phase, gameState.players.length, playSound]);
+	}, [connectionState, gameState.phase, gameState.players.length, playSound]);
 
 	// Warn before browser/tab close when game is active
 	useEffect(() => {
@@ -222,7 +222,7 @@ export function HostPage() {
 	}, [isGameActive]);
 
 	// Show error immediately for missing secret (before loading check)
-	if (hasMissingSecret || (error && !isConnected)) {
+	if (hasMissingSecret || (error && connectionState !== 'connected')) {
 		const errorTitle = hasMissingSecret ? 'Session Expired' : 'Access Denied';
 		const errorMessage = hasMissingSecret
 			? 'Your host session for this game was not found. This can happen if you cleared your browser data or are using a different browser.'
@@ -256,7 +256,7 @@ export function HostPage() {
 		);
 	}
 
-	if (isConnecting && !isConnected) {
+	if (connectionState === 'connecting') {
 		return (
 			<HostPageLayout variant="center">
 				<div className="relative flex items-center justify-center">

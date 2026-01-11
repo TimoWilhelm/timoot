@@ -25,9 +25,36 @@ import { useSound } from '@/hooks/sound/use-sound';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { useGameStore } from '@/lib/stores/game-store';
 import { ErrorCode } from '@shared/errors';
+import { createMachine } from '@shared/fsm';
 import { isGamePhaseActive } from '@shared/phase-rules';
 
-type View = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
+// Player view state machine
+type PlayerView = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
+type PlayerViewEvent = 'CONNECTED' | 'JOINED' | 'GAME_STARTED' | 'GAME_NOT_FOUND' | 'SESSION_INVALID' | 'GAME_FULL' | 'RETRY';
+
+const playerViewMachine = createMachine<PlayerView, PlayerViewEvent>({
+	LOADING: {
+		CONNECTED: 'NICKNAME',
+		JOINED: 'GAME',
+		GAME_STARTED: 'GAME_IN_PROGRESS',
+		GAME_NOT_FOUND: 'ROOM_NOT_FOUND',
+		SESSION_INVALID: 'SESSION_EXPIRED',
+		GAME_FULL: 'GAME_FULL',
+	},
+	JOIN_GAME: {}, // Terminal - user navigates away
+	NICKNAME: {
+		JOINED: 'GAME',
+		GAME_STARTED: 'GAME_IN_PROGRESS',
+		GAME_NOT_FOUND: 'ROOM_NOT_FOUND',
+		SESSION_INVALID: 'SESSION_EXPIRED',
+		GAME_FULL: 'GAME_FULL',
+	},
+	GAME: {}, // Terminal - game in progress
+	GAME_IN_PROGRESS: { RETRY: 'NICKNAME' },
+	ROOM_NOT_FOUND: {}, // Terminal - error
+	SESSION_EXPIRED: { RETRY: 'NICKNAME' },
+	GAME_FULL: {}, // Terminal - error
+});
 
 export function PlayerPage() {
 	const navigate = useViewTransitionNavigate();
@@ -46,11 +73,16 @@ export function PlayerPage() {
 	const isReconnecting = !!(urlGameId && storedPlayerId && storedPlayerToken && sessionGameId === urlGameId);
 	const isDifferentGame = !!(urlGameId && storedPlayerId && sessionGameId && sessionGameId !== urlGameId);
 
-	const [view, setView] = useState<View>(() => {
+	const [view, setView] = useState<PlayerView>(() => {
 		if (!urlGameId) return 'JOIN_GAME';
 		if (isReconnecting) return 'GAME';
 		return 'LOADING';
 	});
+
+	// Helper to transition view state using the state machine
+	const transitionView = useCallback((event: PlayerViewEvent) => {
+		setView((current) => playerViewMachine.transition(current, event));
+	}, []);
 	const [currentPlayerId, setCurrentPlayerId] = useState<string | undefined>(() =>
 		isReconnecting ? (storedPlayerId ?? undefined) : undefined,
 	);
@@ -86,7 +118,7 @@ export function PlayerPage() {
 				if (nicknameToSave) {
 					setSession({ gameId: urlGameId, playerId, playerToken, nickname: nicknameToSave });
 				}
-				setView('GAME');
+				transitionView('JOINED');
 			} else if (!playerId) {
 				// No playerId returned - either new player or reconnect failed
 				if (storedPlayerId) {
@@ -99,21 +131,21 @@ export function PlayerPage() {
 					setCurrentNickname('');
 				}
 				// Game exists, show nickname form (handleError will override to GAME_IN_PROGRESS if game started)
-				setView('NICKNAME');
+				transitionView('CONNECTED');
 			}
 		},
-		[urlGameId, setSession, storedPlayerId, clearSession],
+		[urlGameId, setSession, storedPlayerId, clearSession, transitionView],
 	);
 
 	const handleError = useCallback(
 		(code: string, message: string) => {
 			switch (code) {
 				case ErrorCode.GAME_ALREADY_STARTED: {
-					setView('GAME_IN_PROGRESS');
+					transitionView('GAME_STARTED');
 					break;
 				}
 				case ErrorCode.GAME_NOT_FOUND: {
-					setView('ROOM_NOT_FOUND');
+					transitionView('GAME_NOT_FOUND');
 					break;
 				}
 				case ErrorCode.INVALID_SESSION_TOKEN: {
@@ -123,11 +155,11 @@ export function PlayerPage() {
 					setCurrentPlayerToken(undefined);
 					pendingNicknameReference.current = '';
 					setCurrentNickname('');
-					setView('SESSION_EXPIRED');
+					transitionView('SESSION_INVALID');
 					break;
 				}
 				case ErrorCode.GAME_FULL: {
-					setView('GAME_FULL');
+					transitionView('GAME_FULL');
 					break;
 				}
 				default: {
@@ -135,10 +167,10 @@ export function PlayerPage() {
 				}
 			}
 		},
-		[clearSession],
+		[clearSession, transitionView],
 	);
 
-	const { isConnecting, isConnected, error, gameState, submittedAnswer, join, submitAnswer, sendEmoji } = useGameWebSocket({
+	const { connectionState, error, gameState, submittedAnswer, join, submitAnswer, sendEmoji } = useGameWebSocket({
 		gameId: urlGameId!,
 		role: 'player',
 		playerId: currentPlayerId,
@@ -189,7 +221,7 @@ export function PlayerPage() {
 	}, [gameState.leaderboard, currentPlayerId, hasInitialScoreSync]);
 
 	// Block navigation when game is active (not in LOBBY or END)
-	const isGameActive = view === 'GAME' && isConnected && isGamePhaseActive[gameState.phase];
+	const isGameActive = view === 'GAME' && connectionState === 'connected' && isGamePhaseActive[gameState.phase];
 	const blocker = useBlocker(isGameActive);
 
 	// Warn before browser/tab close when game is active
@@ -225,7 +257,7 @@ export function PlayerPage() {
 	// Use tracked total score (updates on reveal, syncs with leaderboard when available)
 	const myScore = totalScore;
 
-	const isSpinnerVisible = view === 'LOADING' || (view === 'GAME' && isConnecting && !isConnected);
+	const isSpinnerVisible = view === 'LOADING' || (view === 'GAME' && connectionState === 'connecting');
 
 	const renderContent = () => {
 		if (view === 'JOIN_GAME') {
@@ -243,7 +275,7 @@ export function PlayerPage() {
 		if (view === 'NICKNAME') {
 			return (
 				<>
-					<PlayerNickname onJoin={handleJoin} isLoading={isConnecting} />
+					<PlayerNickname onJoin={handleJoin} isLoading={connectionState === 'connecting'} />
 				</>
 			);
 		}
@@ -310,7 +342,7 @@ export function PlayerPage() {
 		}
 
 		// Game view
-		if (error && !isConnected) return <div className="text-red">{error}</div>;
+		if (error && connectionState !== 'connected') return <div className="text-red">{error}</div>;
 
 		return (
 			<PlayerGameProvider

@@ -61,8 +61,7 @@ describe('useGameWebSocket', () => {
 			}),
 		);
 
-		expect(result.current.isConnected).toBe(false);
-		expect(result.current.isConnecting).toBe(true); // Auto connects
+		expect(result.current.connectionState).toBe('connecting'); // Auto connects
 		expect(result.current.gameState.phase).toBe('LOBBY');
 	});
 
@@ -98,7 +97,6 @@ describe('useGameWebSocket', () => {
 			);
 		});
 
-		expect(result!.current.isConnected).toBe(true);
-		expect(result!.current.isConnecting).toBe(false);
+		expect(result!.current.connectionState).toBe('connected');
 	});
 });

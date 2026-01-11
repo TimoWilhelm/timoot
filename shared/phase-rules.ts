@@ -1,3 +1,5 @@
+import { createMachine } from './fsm';
+
 import type { GamePhase } from './types';
 
 export const phaseAllowsEmoji: Record<GamePhase, boolean> = {
@@ -32,3 +34,18 @@ export const phaseAllowsManualAdvance: Record<GamePhase, boolean> = {
 	END_INTRO: false,
 	END_REVEALED: false,
 };
+
+// Game phase state machine
+
+type GamePhaseEvent = 'START_GAME' | 'NEXT' | 'REVEAL_WINNER';
+
+export const gamePhaseMachine = createMachine<GamePhase, GamePhaseEvent>({
+	LOBBY: { START_GAME: 'GET_READY' },
+	GET_READY: { NEXT: 'QUESTION' },
+	QUESTION_MODIFIER: { NEXT: 'QUESTION' },
+	QUESTION: { NEXT: 'REVEAL' },
+	REVEAL: { NEXT: 'LEADERBOARD' },
+	LEADERBOARD: { NEXT: 'GET_READY', START_GAME: 'END_INTRO' }, // NEXT for more questions, START_GAME (reused) for final
+	END_INTRO: { REVEAL_WINNER: 'END_REVEALED' },
+	END_REVEALED: {}, // Terminal state
+});

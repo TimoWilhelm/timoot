@@ -1,10 +1,22 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Sentry } from '@/lib/sentry';
+import { createMachine } from '@shared/fsm';
 import { parseServerMessage, serializeMessage, type ParsedServerMessage } from '@shared/ws-messages';
 
 import type { ErrorCodeType } from '@shared/errors';
 import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier } from '@shared/types';
+
+// Connection state machine
+export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'disconnected';
+type ConnectionEvent = 'CONNECT' | 'CONNECTED' | 'DISCONNECTED' | 'RECONNECT';
+
+const connectionMachine = createMachine<ConnectionState, ConnectionEvent>({
+	idle: { CONNECT: 'connecting' },
+	connecting: { CONNECTED: 'connected', DISCONNECTED: 'disconnected' },
+	connected: { DISCONNECTED: 'disconnected' },
+	disconnected: { RECONNECT: 'connecting' },
+});
 
 // Game state derived from WebSocket messages
 export interface LeaderboardEntry {
@@ -95,8 +107,7 @@ export function useGameWebSocket({
 }: UseGameWebSocketOptions) {
 	const wsReference = useRef<WebSocket | undefined>(undefined);
 	const reconnectTimeoutReference = useRef<NodeJS.Timeout | undefined>(undefined);
-	const [isConnected, setIsConnected] = useState(false);
-	const [isConnecting, setIsConnecting] = useState(!!gameId);
+	const [connectionState, setConnectionState] = useState<ConnectionState>(() => (gameId ? 'connecting' : 'idle'));
 	const [error, setError] = useState<string | undefined>();
 	const [gameState, setGameState] = useState<WebSocketGameState>(initialGameState);
 	const [submittedAnswer, setSubmittedAnswer] = useState<number | undefined>();
@@ -116,8 +127,7 @@ export function useGameWebSocket({
 
 			switch (message.type) {
 				case 'connected': {
-					setIsConnected(true);
-					setIsConnecting(false);
+					setConnectionState((s) => connectionMachine.transition(s, 'CONNECTED'));
 					setError(undefined);
 					onConnected?.(message.playerId, message.playerToken);
 					break;
@@ -273,7 +283,7 @@ export function useGameWebSocket({
 		// Prevent duplicate connections - check both OPEN and CONNECTING states
 		if (wsReference.current?.readyState === WebSocket.OPEN || wsReference.current?.readyState === WebSocket.CONNECTING) return;
 
-		setIsConnecting(true);
+		setConnectionState((s) => connectionMachine.transition(s, 'CONNECT'));
 		setError(undefined);
 
 		const protocol = globalThis.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -301,18 +311,16 @@ export function useGameWebSocket({
 		ws.addEventListener('message', handleMessage);
 
 		ws.addEventListener('close', (event) => {
-			setIsConnected(false);
-
 			// Attempt reconnection for unexpected closures
 			if (event.code !== 1000 && event.code < 4000) {
-				// Keep isConnecting true to show loading state during reconnect delay
-				setIsConnecting(true);
+				// Transition to reconnecting state (stays 'connecting' to show loading)
+				setConnectionState((s) => connectionMachine.transition(s, 'RECONNECT'));
 				setError(undefined);
 				reconnectTimeoutReference.current = setTimeout(() => {
 					connectReference.current?.();
 				}, 2000);
 			} else {
-				setIsConnecting(false);
+				setConnectionState((s) => connectionMachine.transition(s, 'DISCONNECTED'));
 			}
 		});
 
@@ -393,8 +401,7 @@ export function useGameWebSocket({
 	);
 
 	return {
-		isConnected,
-		isConnecting,
+		connectionState,
 		error,
 		gameState,
 		submittedAnswer,
