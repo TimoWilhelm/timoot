@@ -179,7 +179,7 @@ export const apiQuizSchema = quizSchema.extend({
 /**
  * Generation Status schema
  */
-export const generationStatusSchema = z.object({
+const generationStatusSchema = z.object({
 	stage: z.enum(['researching', 'reading_docs', 'searching_web', 'generating']),
 	detail: z.string().optional(),
 });

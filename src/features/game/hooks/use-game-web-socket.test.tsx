@@ -1,6 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
+import { serializeMessage } from '@shared/ws-messages';
+
 import { useGameWebSocket } from './use-game-web-socket';
 
 // Mock WebSocket
@@ -88,7 +90,12 @@ describe('useGameWebSocket', () => {
 			mockWsInstance!.readyState = 1;
 			mockWsInstance!.triggerEvent('open');
 			// Simulate server sending 'connected' message
-			mockWsInstance!.triggerEvent('message', new MessageEvent('message', { data: JSON.stringify({ type: 'connected' }) }));
+			mockWsInstance!.triggerEvent(
+				'message',
+				new MessageEvent('message', {
+					data: serializeMessage({ type: 'connected', role: 'player' }),
+				}),
+			);
 		});
 
 		expect(result!.current.isConnected).toBe(true);
