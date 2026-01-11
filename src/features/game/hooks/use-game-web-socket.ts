@@ -92,8 +92,8 @@ export function useGameWebSocket({
 	onPlayerJoined,
 	onEmojiReceived,
 }: UseGameWebSocketOptions) {
-	const wsReference = useRef<WebSocket | undefined>();
-	const reconnectTimeoutReference = useRef<NodeJS.Timeout | undefined>();
+	const wsReference = useRef<WebSocket | undefined>(undefined);
+	const reconnectTimeoutReference = useRef<NodeJS.Timeout | undefined>(undefined);
 	const [isConnected, setIsConnected] = useState(false);
 	const [isConnecting, setIsConnecting] = useState(!!gameId);
 	const [error, setError] = useState<string | undefined>();

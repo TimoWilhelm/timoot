@@ -354,8 +354,8 @@ export function HostEnd() {
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.2 }}
 							className={`
-								flex items-center gap-3 rounded-lg border-2 border-black bg-yellow px-4
-								py-2 text-sm font-bold text-black shadow-brutal-sm
+								flex items-center gap-3 rounded-full border-2 border-black bg-yellow
+								px-4 py-2 text-sm font-bold text-black shadow-brutal-sm
 								sm:text-base
 							`}
 						>

@@ -1,4 +1,4 @@
-import { expect, fn } from 'storybook/test';
+import { expect, fn, waitFor, within } from 'storybook/test';
 
 import { HostGameProvider } from '@/features/game/host/host-game-provider';
 
@@ -88,7 +88,12 @@ export const OnePlayer: Story = {
 	},
 };
 
-export const FewPlayers: Story = {
+export const FewPlayersDesktop: Story = {
+	globals: {
+		viewport: {
+			value: 'desktop',
+		},
+	},
 	decorators: [
 		(Story) => (
 			<HostGameProvider
@@ -109,17 +114,85 @@ export const FewPlayers: Story = {
 			</HostGameProvider>
 		),
 	],
+
+	tags: [
+		'skip-test', // TODO: https://github.com/storybookjs/storybook/issues/29198
+	],
 	play: async ({ canvas, step }) => {
-		await step('Verify all players are displayed', async () => {
-			await expect(canvas.getByText('Alice')).toBeInTheDocument();
-			await expect(canvas.getByText('Bob')).toBeInTheDocument();
-			await expect(canvas.getByText('Charlie')).toBeInTheDocument();
-			await expect(canvas.getByText('Players (3)')).toBeInTheDocument();
+		await step('Verify desktop list is visible', async () => {
+			const desktopList = await canvas.findByRole('region', { name: /players list/i });
+			// wait for transition to complete
+			await waitFor(() => expect(desktopList).toBeVisible(), { timeout: 500 });
+
+			const mobileList = canvas.queryByRole('region', { name: /player summary/i });
+			await expect(mobileList).toBeNull();
+		});
+
+		await step('Verify players in desktop view', async () => {
+			const desktopList = await canvas.findByRole('region', { name: /players list/i });
+			const withinDesktop = within(desktopList);
+
+			await expect(withinDesktop.getByText('Alice')).toBeVisible();
+			await expect(withinDesktop.getByText('Bob')).toBeVisible();
+			await expect(withinDesktop.getByText('Charlie')).toBeVisible();
+
+			await expect(canvas.getByText('Players (3)')).toBeVisible();
 		});
 
 		await step('Verify copy link button exists', async () => {
 			const copyButton = canvas.getByRole('button', { name: /copy link/i });
 			await expect(copyButton).toBeInTheDocument();
+		});
+	},
+};
+
+export const FewPlayersMobile: Story = {
+	globals: {
+		viewport: {
+			value: 'mobile2',
+		},
+	},
+	decorators: [
+		(Story) => (
+			<HostGameProvider
+				gameState={{
+					...mockGameState,
+					players: [
+						{ id: '1', name: 'Alice' },
+						{ id: '2', name: 'Bob' },
+						{ id: '3', name: 'Charlie' },
+					],
+				}}
+				onStartGame={fn()}
+				onNextState={fn()}
+				onPlaySound={fn()}
+				onPlayCountdownTick={fn()}
+			>
+				<Story />
+			</HostGameProvider>
+		),
+	],
+	tags: [
+		'skip-test', // TODO: https://github.com/storybookjs/storybook/issues/29198
+	],
+	play: async ({ canvas, step }) => {
+		await step('Verify mobile list is visible', async () => {
+			const mobileList = await canvas.findByRole('region', { name: /player summary/i });
+			await expect(mobileList).toBeVisible();
+
+			const desktopList = canvas.queryByRole('region', { name: /players list/i });
+			await expect(desktopList).toBeNull();
+		});
+
+		await step('Verify players in mobile view', async () => {
+			const mobileList = await canvas.findByRole('region', { name: /player summary/i });
+
+			// Mobile view shows "3 players joined"
+			await expect(mobileList).toHaveTextContent('3 players joined');
+
+			await expect(mobileList).toHaveTextContent('Alice');
+			await expect(mobileList).toHaveTextContent('Bob');
+			await expect(mobileList).toHaveTextContent('Charlie');
 		});
 	},
 };

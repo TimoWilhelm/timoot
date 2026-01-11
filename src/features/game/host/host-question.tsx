@@ -160,8 +160,6 @@ export function HostQuestion() {
 	} = gameState;
 
 	const totalPlayers = players.length;
-	const onNext = onNextState; // Alias
-	const onCountdownTick = onPlayCountdownTick; // Alias
 	const onTimeUp = () => onPlaySound('timeUp');
 	const timeLimitSec = timeLimitMs / 1000;
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
@@ -175,13 +173,13 @@ export function HostQuestion() {
 	}
 
 	// Use refs for callbacks to prevent effect restart on parent re-renders
-	const onNextReference = useRef(onNext);
-	const onCountdownTickReference = useRef(onCountdownTick);
+	const onNextReference = useRef(onNextState);
+	const onCountdownTickReference = useRef(onPlayCountdownTick);
 	const onTimeUpReference = useRef(onTimeUp);
 
 	useEffect(() => {
-		onNextReference.current = onNext;
-		onCountdownTickReference.current = onCountdownTick;
+		onNextReference.current = onNextState;
+		onCountdownTickReference.current = onPlayCountdownTick;
 		onTimeUpReference.current = onTimeUp;
 	});
 

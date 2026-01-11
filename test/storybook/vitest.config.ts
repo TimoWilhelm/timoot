@@ -16,6 +16,9 @@ export default defineConfig({
 		storybookTest({
 			configDir: path.join(projectRoot, '.storybook'),
 			storybookScript: 'bun run storybook --ci',
+			tags: {
+				skip: ['skip-test'],
+			},
 		}),
 	],
 	resolve: {

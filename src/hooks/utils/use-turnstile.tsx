@@ -63,8 +63,8 @@ function useTurnstileDevelopment() {
  */
 function useTurnstileProduction() {
 	const [token, setToken] = useState<string | undefined>();
-	const widgetIdReference = useRef<string | undefined>();
-	const containerReference = useRef<HTMLDivElement | undefined>();
+	const widgetIdReference = useRef<string | undefined>(undefined);
+	const containerReference = useRef<HTMLDivElement | undefined>(undefined);
 
 	const resetToken = useCallback(() => {
 		setToken(undefined);

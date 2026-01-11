@@ -5,7 +5,7 @@ const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 test.describe('Quiz Editor Navigation', () => {
 	test('non-dirty form does not prompt confirmation on cancel', async ({ page }) => {
 		await page.goto('/edit');
-		await page.getByRole('button', { name: /cancel/i }).click();
+		await page.getByRole('link', { name: /cancel/i }).click();
 
 		const dialog = page.getByRole('alertdialog');
 		await expect(dialog).not.toBeVisible();
@@ -20,7 +20,7 @@ test.describe('Quiz Editor Navigation', () => {
 		await page.getByLabel('Quiz Title').fill('Dirty Quiz 1');
 
 		// 3. Try to navigate away via "Cancel" button
-		await page.getByRole('button', { name: /cancel/i }).click();
+		await page.getByRole('link', { name: /cancel/i }).click();
 
 		// 4. Expect Blocked Dialog
 		const dialog = page.getByRole('alertdialog');
@@ -33,7 +33,7 @@ test.describe('Quiz Editor Navigation', () => {
 		expect(page.url()).toContain('/edit');
 
 		// 6. Click "Leave"
-		await page.getByRole('button', { name: /cancel/i }).click();
+		await page.getByRole('link', { name: /cancel/i }).click();
 		await expect(dialog).toBeVisible();
 		await page.getByRole('button', { name: /leave/i }).click();
 		await expect(dialog).not.toBeVisible();

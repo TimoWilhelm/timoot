@@ -53,7 +53,7 @@ export function HomePage() {
 	const [codeCopied, setCodeCopied] = useState(false);
 	const [showSyncWarning, setShowSyncWarning] = useState(false);
 	const addSecret = useHostStore((s) => s.addSecret);
-	const generatingCardReference = useRef<HTMLDivElement>(null);
+	const generatingCardReference = useRef<HTMLDivElement | null>(null);
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
 	const { userId, setUserId } = useUserId();
 
@@ -314,7 +314,9 @@ export function HomePage() {
 							isGenerating={isGenerating}
 							generatingPrompt={generatingPrompt}
 							generationStatus={generationStatus}
-							generatingCardRef={generatingCardReference}
+							generatingCardRef={(element) => {
+								generatingCardReference.current = element;
+							}}
 							aiPrompt={aiPrompt}
 							isAiDialogOpen={isAiDialogOpen}
 							turnstileToken={turnstileToken}

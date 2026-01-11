@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { BookOpen, HelpCircle, Loader2, Pencil, Plus, Sparkles, Trash2, Wand2, Zap } from 'lucide-react';
-import { type RefObject } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
@@ -38,7 +37,7 @@ interface CustomQuizzesSectionProperties {
 	isGenerating: boolean;
 	generatingPrompt: string | undefined;
 	generationStatus: { stage: string; detail?: string } | undefined;
-	generatingCardRef: RefObject<HTMLDivElement>;
+	generatingCardRef: (element: HTMLDivElement | null) => void;
 	aiPrompt: string;
 	isAiDialogOpen: boolean;
 	turnstileToken: string | null | undefined;

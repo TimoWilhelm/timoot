@@ -7,10 +7,71 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card
 import { QRCode } from '@/features/game/host/components/qr-code';
 import { useHostGameContext } from '@/features/game/host/host-game-context';
 
+interface PlayerChipProperties {
+	name: string;
+	variant?: 'compact' | 'default';
+}
+
+function PlayerChip({ name, variant = 'default' }: PlayerChipProperties) {
+	const isCompact = variant === 'compact';
+	return (
+		<motion.div
+			layout
+			initial={{ opacity: 0, scale: 0.5 }}
+			animate={{ opacity: 1, scale: 1 }}
+			exit={{ opacity: 0, scale: 0.5 }}
+			transition={{
+				type: 'spring',
+				stiffness: 500,
+				damping: 30,
+				mass: 1,
+			}}
+			className={
+				isCompact
+					? `
+						mr-2 mb-2 rounded-md border-2 border-black bg-orange px-3 py-1 text-xs
+						font-bold text-black shadow-brutal-sm
+					`
+					: `
+						h-fit rounded-lg border-2 border-black bg-orange px-4 py-2 font-bold
+						shadow-brutal-sm
+					`
+			}
+		>
+			{name}
+		</motion.div>
+	);
+}
+
+interface PlayerListProperties {
+	players: { id: string; name: string }[];
+	variant?: 'compact' | 'default';
+	reversed?: boolean;
+}
+
+function PlayerList({ players, variant = 'default', reversed = false }: PlayerListProperties) {
+	const displayPlayers = reversed ? players.toReversed() : players;
+
+	if (players.length === 0) {
+		return variant === 'compact' ? (
+			<p className="text-xs font-bold text-muted-foreground/50 italic">Waiting for players...</p>
+		) : (
+			<p className="font-medium text-muted-foreground">Waiting for players to join...</p>
+		);
+	}
+
+	return (
+		<AnimatePresence mode={variant === 'compact' ? 'popLayout' : 'sync'}>
+			{displayPlayers.map((p) => (
+				<PlayerChip key={p.id} name={p.name} variant={variant} />
+			))}
+		</AnimatePresence>
+	);
+}
+
 export function HostLobby() {
 	const { gameState, onStartGame } = useHostGameContext();
 	const { players, gameId } = gameState;
-	const onStart = onStartGame; // Alias to match existing code usage
 	const joinUrl = `${globalThis.location.origin}/play?gameId=${gameId}`;
 	const [copied, setCopied] = useState(false);
 
@@ -83,6 +144,8 @@ export function HostLobby() {
 							</Button>
 							{/* Mobile-only: Compact player count & Recent list */}
 							<div
+								role="region"
+								aria-label="Player summary"
 								className={`
 									mt-4 flex flex-col gap-4 border-t-2 border-dashed border-black/30 pt-4
 									lg:hidden
@@ -100,43 +163,15 @@ export function HostLobby() {
 								</div>
 
 								<div className="relative h-20 w-full overflow-hidden px-1 pb-1">
-									{players.length === 0 ? (
-										<div className="absolute inset-0 flex items-center justify-center">
-											<p className="text-xs font-bold text-muted-foreground/50 italic">Waiting for players...</p>
+									<div
+										className="
+											size-full mask-[linear-gradient(to_bottom,black_50%,transparent)]
+										"
+									>
+										<div className="flex flex-wrap justify-center">
+											<PlayerList players={players} variant="compact" reversed />
 										</div>
-									) : (
-										<div
-											className="
-												size-full mask-[linear-gradient(to_bottom,black_50%,transparent)]
-											"
-										>
-											<div className="flex flex-wrap justify-center">
-												<AnimatePresence mode="popLayout">
-													{players.toReversed().map((p) => (
-														<motion.div
-															layout
-															key={p.id}
-															initial={{ opacity: 0, scale: 0.5 }}
-															animate={{ opacity: 1, scale: 1 }}
-															exit={{ opacity: 0, scale: 0.5 }}
-															transition={{
-																type: 'spring',
-																stiffness: 500,
-																damping: 30,
-																mass: 1,
-															}}
-															className={`
-																mr-2 mb-2 rounded-md border-2 border-black bg-orange px-3 py-1
-																text-xs font-bold text-black shadow-brutal-sm
-															`}
-														>
-															{p.name}
-														</motion.div>
-													))}
-												</AnimatePresence>
-											</div>
-										</div>
-									)}
+									</div>
 								</div>
 							</div>
 						</Card>
@@ -144,6 +179,8 @@ export function HostLobby() {
 
 					{/* Right: Players List - hidden on mobile, visible on lg */}
 					<motion.div
+						role="region"
+						aria-label="Players list"
 						initial={{ opacity: 0, scale: 0.95 }}
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.1 }}
@@ -167,27 +204,7 @@ export function HostLobby() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className={`flex grow flex-wrap content-start gap-2 p-4 pt-4`}>
-								<AnimatePresence>
-									{players.length === 0 ? (
-										<p className="font-medium text-muted-foreground">Waiting for players to join...</p>
-									) : (
-										players.map((p) => (
-											<motion.div
-												key={p.id}
-												initial={{ opacity: 0, scale: 0.5 }}
-												animate={{ opacity: 1, scale: 1 }}
-												exit={{ opacity: 0, scale: 0.5 }}
-												layout
-												className={`
-													h-fit rounded-lg border-2 border-black bg-orange px-4 py-2
-													font-bold shadow-brutal-sm
-												`}
-											>
-												{p.name}
-											</motion.div>
-										))
-									)}
-								</AnimatePresence>
+								<PlayerList players={players} />
 							</CardContent>
 						</Card>
 					</motion.div>
@@ -201,7 +218,7 @@ export function HostLobby() {
 					className="flex w-full justify-center"
 				>
 					<Button
-						onClick={onStart}
+						onClick={onStartGame}
 						variant="accent"
 						size="lg"
 						className={`
