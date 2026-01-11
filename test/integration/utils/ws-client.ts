@@ -1,4 +1,6 @@
-import type { ClientMessage, ClientRole, EmojiReaction, ServerMessage } from '@shared/types';
+import { parseServerMessage, serializeMessage, type ParsedServerMessage } from '@shared/ws-messages';
+
+import type { ClientMessage, ClientRole, EmojiReaction } from '@shared/types';
 
 export interface WsClientOptions {
 	baseUrl: string;
@@ -21,8 +23,8 @@ export interface ConnectedResult {
  */
 export class WsTestClient {
 	private ws: WebSocket | undefined;
-	private messageQueue: ServerMessage[] = [];
-	private messageHandlers: ((message: ServerMessage) => void)[] = [];
+	private messageQueue: ParsedServerMessage[] = [];
+	private messageHandlers: ((message: ParsedServerMessage) => void)[] = [];
 	private closePromise: Promise<{ code: number; reason: string }> | undefined;
 	private closeResolve: ((value: { code: number; reason: string }) => void) | undefined;
 
@@ -62,32 +64,33 @@ export class WsTestClient {
 				// Players must send connect message
 				if (role === 'player') {
 					const connectMessage: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
-					this.ws!.send(JSON.stringify(connectMessage));
+					this.ws!.send(serializeMessage(connectMessage));
 				}
 			});
 
 			this.ws.addEventListener('message', (event) => {
-				try {
-					const message = JSON.parse(event.data.toString()) as ServerMessage;
+				const parseResult = parseServerMessage(event.data.toString());
+				if (!parseResult.success) {
+					console.error('Failed to parse message:', parseResult.error);
+					return;
+				}
+				const message = parseResult.data;
 
-					// Handle initial connected message specially during connection phase
-					// Don't queue this one - it's handled by the connect() promise
-					if (message.type === 'connected' && !this.isConnected) {
-						clearTimeout(timeoutId);
-						this.isConnected = true;
-						this.playerId = message.playerId;
-						this.playerToken = message.playerToken;
-						resolve({ playerId: message.playerId, playerToken: message.playerToken });
-						return; // Don't queue initial connected message
-					}
+				// Handle initial connected message specially during connection phase
+				// Don't queue this one - it's handled by the connect() promise
+				if (message.type === 'connected' && !this.isConnected) {
+					clearTimeout(timeoutId);
+					this.isConnected = true;
+					this.playerId = message.playerId;
+					this.playerToken = message.playerToken;
+					resolve({ playerId: message.playerId, playerToken: message.playerToken });
+					return; // Don't queue initial connected message
+				}
 
-					// Queue message and notify handlers
-					this.messageQueue.push(message);
-					for (const handler of this.messageHandlers) {
-						handler(message);
-					}
-				} catch (error) {
-					console.error('Failed to parse message:', error);
+				// Queue message and notify handlers
+				this.messageQueue.push(message);
+				for (const handler of this.messageHandlers) {
+					handler(message);
 				}
 			});
 
@@ -115,21 +118,21 @@ export class WsTestClient {
 		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
 			throw new Error('WebSocket not connected');
 		}
-		this.ws.send(JSON.stringify(message));
+		this.ws.send(serializeMessage(message));
 	}
 
 	/**
 	 * Wait for a specific message type
 	 */
-	async waitForMessage<T extends ServerMessage['type']>(
+	async waitForMessage<T extends ParsedServerMessage['type']>(
 		type: T,
 		timeout = 30_000,
-		predicate?: (message: Extract<ServerMessage, { type: T }>) => boolean,
-	): Promise<Extract<ServerMessage, { type: T }>> {
+		predicate?: (message: Extract<ParsedServerMessage, { type: T }>) => boolean,
+	): Promise<Extract<ParsedServerMessage, { type: T }>> {
 		// Check existing queue first
 		const existing = this.messageQueue.find(
-			(m) => m.type === type && (!predicate || predicate(m as Extract<ServerMessage, { type: T }>)),
-		) as Extract<ServerMessage, { type: T }> | undefined;
+			(m) => m.type === type && (!predicate || predicate(m as Extract<ParsedServerMessage, { type: T }>)),
+		) as Extract<ParsedServerMessage, { type: T }> | undefined;
 		if (existing) {
 			return existing;
 		}
@@ -141,12 +144,12 @@ export class WsTestClient {
 				reject(new Error(`Timeout waiting for message type: ${type}`));
 			}, timeout);
 
-			const handler = (message: ServerMessage) => {
-				if (message.type === type && (!predicate || predicate(message as Extract<ServerMessage, { type: T }>))) {
+			const handler = (message: ParsedServerMessage) => {
+				if (message.type === type && (!predicate || predicate(message as Extract<ParsedServerMessage, { type: T }>))) {
 					clearTimeout(timeoutId);
 					const index = this.messageHandlers.indexOf(handler);
 					if (index !== -1) this.messageHandlers.splice(index, 1);
-					resolve(message as Extract<ServerMessage, { type: T }>);
+					resolve(message as Extract<ParsedServerMessage, { type: T }>);
 				}
 			};
 
@@ -157,15 +160,15 @@ export class WsTestClient {
 	/**
 	 * Get all received messages
 	 */
-	getMessages(): ServerMessage[] {
+	getMessages(): ParsedServerMessage[] {
 		return [...this.messageQueue];
 	}
 
 	/**
 	 * Get messages of a specific type
 	 */
-	getMessagesByType<T extends ServerMessage['type']>(type: T): Extract<ServerMessage, { type: T }>[] {
-		return this.messageQueue.filter((m) => m.type === type) as Extract<ServerMessage, { type: T }>[];
+	getMessagesByType<T extends ParsedServerMessage['type']>(type: T): Extract<ParsedServerMessage, { type: T }>[] {
+		return this.messageQueue.filter((m) => m.type === type) as Extract<ParsedServerMessage, { type: T }>[];
 	}
 
 	/**
@@ -217,7 +220,7 @@ export class WsTestClient {
 		} catch {
 			// If timeout, check if credentials arrived in queue anyway
 			const connectedMessage = this.messageQueue.find((m) => m.type === 'connected' && 'playerId' in m && m.playerId) as
-				| Extract<ServerMessage, { type: 'connected' }>
+				| Extract<ParsedServerMessage, { type: 'connected' }>
 				| undefined;
 
 			if (connectedMessage) {

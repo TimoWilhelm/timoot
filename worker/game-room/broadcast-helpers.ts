@@ -1,3 +1,5 @@
+import { serializeMessage } from '@shared/ws-messages';
+
 import {
 	buildGameEndMessage,
 	buildGetReadyMessage,
@@ -25,7 +27,7 @@ export interface BroadcastContext {
  */
 export function sendMessage(ws: WebSocket, message: ServerMessage): void {
 	try {
-		ws.send(JSON.stringify(message));
+		ws.send(serializeMessage(message));
 	} catch (error) {
 		console.error('Failed to send message:', error);
 	}

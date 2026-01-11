@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Sentry } from '@/lib/sentry';
+import { parseServerMessage, serializeMessage, type ParsedServerMessage } from '@shared/ws-messages';
 
 import type { ErrorCodeType } from '@shared/errors';
-import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier, ServerMessage } from '@shared/types';
+import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier } from '@shared/types';
 
 // Game state derived from WebSocket messages
 export interface LeaderboardEntry {
@@ -102,160 +103,164 @@ export function useGameWebSocket({
 
 	const handleMessage = useCallback(
 		(event: MessageEvent) => {
-			try {
-				const message = JSON.parse(event.data) as ServerMessage;
+			const parseResult = parseServerMessage(event.data);
+			if (!parseResult.success) {
+				console.error('Invalid server message:', parseResult.error);
+				Sentry.captureException(new Error('Invalid WebSocket message'), {
+					tags: { source: 'websocket' },
+					extra: { error: parseResult.error },
+				});
+				return;
+			}
+			const message: ParsedServerMessage = parseResult.data;
 
-				switch (message.type) {
-					case 'connected': {
-						setIsConnected(true);
-						setIsConnecting(false);
-						setError(undefined);
-						onConnected?.(message.playerId, message.playerToken);
-						break;
-					}
-
-					case 'error': {
-						setError(message.message);
-						onError?.(message.code, message.message);
-						break;
-					}
-
-					case 'lobbyUpdate': {
-						setGameState((previous) => ({
-							...previous,
-							phase: 'LOBBY',
-							gameId: message.gameId,
-							pin: message.pin,
-							players: message.players,
-						}));
-						break;
-					}
-
-					case 'getReady': {
-						setGameState((previous) => ({
-							...previous,
-							phase: 'GET_READY',
-							getReadyCountdownMs: message.countdownMs,
-							totalQuestions: message.totalQuestions,
-						}));
-						break;
-					}
-
-					case 'questionModifier': {
-						setGameState((previous) => ({
-							...previous,
-							phase: 'QUESTION_MODIFIER',
-							questionIndex: message.questionIndex,
-							totalQuestions: message.totalQuestions,
-							modifiers: message.modifiers,
-						}));
-						break;
-					}
-
-					case 'playerJoined': {
-						setGameState((previous) => ({
-							...previous,
-							players: [...previous.players, message.player],
-						}));
-						onPlayerJoined?.(message.player);
-						break;
-					}
-
-					case 'questionStart': {
-						setSubmittedAnswer(undefined);
-						setGameState((previous) => ({
-							...previous,
-							phase: 'QUESTION',
-							questionIndex: message.questionIndex,
-							totalQuestions: message.totalQuestions,
-							questionText: message.questionText,
-							options: message.options,
-							startTime: message.startTime,
-							timeLimitMs: message.timeLimitMs,
-							isDoublePoints: message.isDoublePoints ?? false,
-							backgroundImage: message.backgroundImage,
-							answeredCount: 0,
-							correctAnswerIndex: undefined,
-							playerResult: undefined,
-							answerCounts: [],
-						}));
-						break;
-					}
-
-					case 'answerReceived': {
-						setSubmittedAnswer(message.answerIndex);
-						break;
-					}
-
-					case 'playerAnswered': {
-						setGameState((previous) => ({
-							...previous,
-							answeredCount: message.answeredCount,
-						}));
-						break;
-					}
-
-					case 'reveal': {
-						setGameState((previous) => ({
-							...previous,
-							phase: 'REVEAL',
-							correctAnswerIndex: message.correctAnswerIndex,
-							playerResult: message.playerResult,
-							answerCounts: message.answerCounts,
-							questionText: message.questionText,
-							options: message.options,
-						}));
-						break;
-					}
-
-					case 'leaderboard': {
-						setGameState((previous) => {
-							// Build previous ranks from old leaderboard
-							const previousRanks = new Map<string, number>();
-							for (const [index, player] of previous.leaderboard.slice(0, 5).entries()) {
-								previousRanks.set(player.id, index + 1);
-							}
-
-							// Enrich leaderboard entries with previousRank
-							const enrichedLeaderboard: LeaderboardEntry[] = message.leaderboard.map((player) => ({
-								...player,
-								previousRank: previousRanks.get(player.id),
-							}));
-
-							return {
-								...previous,
-								phase: 'LEADERBOARD',
-								leaderboard: enrichedLeaderboard,
-								isLastQuestion: message.isLastQuestion,
-							};
-						});
-						break;
-					}
-
-					case 'gameEnd': {
-						setGameState((previous) => ({
-							...previous,
-							phase: message.revealed ? 'END_REVEALED' : 'END_INTRO',
-							leaderboard: message.finalLeaderboard,
-							endRevealed: message.revealed,
-						}));
-						break;
-					}
-
-					case 'kicked': {
-						setError(message.reason);
-						wsReference.current?.close();
-						break;
-					}
-
-					case 'emojiReceived': {
-						onEmojiReceived?.(message.emoji, message.playerId);
-						break;
-					}
+			switch (message.type) {
+				case 'connected': {
+					setIsConnected(true);
+					setIsConnecting(false);
+					setError(undefined);
+					onConnected?.(message.playerId, message.playerToken);
+					break;
 				}
-			} catch (error_) {
-				console.error('Failed to parse WebSocket message:', error_);
-				Sentry.captureException(error_, { tags: { source: 'websocket' } });
+
+				case 'error': {
+					setError(message.message);
+					onError?.(message.code, message.message);
+					break;
+				}
+
+				case 'lobbyUpdate': {
+					setGameState((previous) => ({
+						...previous,
+						phase: 'LOBBY',
+						gameId: message.gameId,
+						pin: message.pin,
+						players: message.players,
+					}));
+					break;
+				}
+
+				case 'getReady': {
+					setGameState((previous) => ({
+						...previous,
+						phase: 'GET_READY',
+						getReadyCountdownMs: message.countdownMs,
+						totalQuestions: message.totalQuestions,
+					}));
+					break;
+				}
+
+				case 'questionModifier': {
+					setGameState((previous) => ({
+						...previous,
+						phase: 'QUESTION_MODIFIER',
+						questionIndex: message.questionIndex,
+						totalQuestions: message.totalQuestions,
+						modifiers: message.modifiers,
+					}));
+					break;
+				}
+
+				case 'playerJoined': {
+					setGameState((previous) => ({
+						...previous,
+						players: [...previous.players, message.player],
+					}));
+					onPlayerJoined?.(message.player);
+					break;
+				}
+
+				case 'questionStart': {
+					setSubmittedAnswer(undefined);
+					setGameState((previous) => ({
+						...previous,
+						phase: 'QUESTION',
+						questionIndex: message.questionIndex,
+						totalQuestions: message.totalQuestions,
+						questionText: message.questionText,
+						options: message.options,
+						startTime: message.startTime,
+						timeLimitMs: message.timeLimitMs,
+						isDoublePoints: message.isDoublePoints ?? false,
+						backgroundImage: message.backgroundImage,
+						answeredCount: 0,
+						correctAnswerIndex: undefined,
+						playerResult: undefined,
+						answerCounts: [],
+					}));
+					break;
+				}
+
+				case 'answerReceived': {
+					setSubmittedAnswer(message.answerIndex);
+					break;
+				}
+
+				case 'playerAnswered': {
+					setGameState((previous) => ({
+						...previous,
+						answeredCount: message.answeredCount,
+					}));
+					break;
+				}
+
+				case 'reveal': {
+					setGameState((previous) => ({
+						...previous,
+						phase: 'REVEAL',
+						correctAnswerIndex: message.correctAnswerIndex,
+						playerResult: message.playerResult,
+						answerCounts: message.answerCounts,
+						questionText: message.questionText,
+						options: message.options,
+					}));
+					break;
+				}
+
+				case 'leaderboard': {
+					setGameState((previous) => {
+						// Build previous ranks from old leaderboard
+						const previousRanks = new Map<string, number>();
+						for (const [index, player] of previous.leaderboard.slice(0, 5).entries()) {
+							previousRanks.set(player.id, index + 1);
+						}
+
+						// Enrich leaderboard entries with previousRank
+						const enrichedLeaderboard: LeaderboardEntry[] = message.leaderboard.map((player) => ({
+							...player,
+							previousRank: previousRanks.get(player.id),
+						}));
+
+						return {
+							...previous,
+							phase: 'LEADERBOARD',
+							leaderboard: enrichedLeaderboard,
+							isLastQuestion: message.isLastQuestion,
+						};
+					});
+					break;
+				}
+
+				case 'gameEnd': {
+					setGameState((previous) => ({
+						...previous,
+						phase: message.revealed ? 'END_REVEALED' : 'END_INTRO',
+						leaderboard: message.finalLeaderboard,
+						endRevealed: message.revealed,
+					}));
+					break;
+				}
+
+				case 'kicked': {
+					setError(message.reason);
+					wsReference.current?.close();
+					break;
+				}
+
+				case 'emojiReceived': {
+					onEmojiReceived?.(message.emoji, message.playerId);
+					break;
+				}
 			}
 		},
 		[onConnected, onError, onPlayerJoined, onEmojiReceived],
@@ -289,7 +294,7 @@ export function useGameWebSocket({
 			// Players must send a connect message for authentication
 			if (role === 'player') {
 				const connectMessage: ClientMessage = { type: 'connect', role: 'player', gameId, playerId, playerToken };
-				ws.send(JSON.stringify(connectMessage));
+				ws.send(serializeMessage(connectMessage));
 			}
 		});
 
@@ -346,7 +351,7 @@ export function useGameWebSocket({
 	// Send message helper
 	const sendMessage = useCallback((message: ClientMessage) => {
 		if (wsReference.current?.readyState === WebSocket.OPEN) {
-			wsReference.current.send(JSON.stringify(message));
+			wsReference.current.send(serializeMessage(message));
 		}
 	}, []);
 

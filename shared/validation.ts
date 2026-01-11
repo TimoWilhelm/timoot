@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { ErrorCode } from './errors';
 import { EMOJI_REACTIONS } from './types';
 
 // ============ Validation Constants ============
@@ -218,6 +219,143 @@ export const wsClientMessageSchema = z.union([
 	wsSubmitAnswerSchema,
 	wsNextStateSchema,
 	wsSendEmojiSchema,
+]);
+
+// ============ Server -> Client Message Schemas ============
+
+const wsConnectedSchema = z.object({
+	type: z.literal('connected'),
+	role: z.enum(['host', 'player']),
+	playerId: z.string().optional(),
+	playerToken: z.string().optional(),
+});
+
+// ErrorCode values as a tuple for proper Zod type inference
+const ERROR_CODE_VALUES = Object.values(ErrorCode) as unknown as readonly [
+	(typeof ErrorCode)[keyof typeof ErrorCode],
+	...(typeof ErrorCode)[keyof typeof ErrorCode][],
+];
+
+const wsErrorSchema = z.object({
+	type: z.literal('error'),
+	code: z.enum(ERROR_CODE_VALUES),
+	message: z.string(),
+});
+
+const playerInfoSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+});
+
+const wsLobbyUpdateSchema = z.object({
+	type: z.literal('lobbyUpdate'),
+	players: z.array(playerInfoSchema),
+	pin: z.string(),
+	gameId: z.string(),
+});
+
+const wsGetReadySchema = z.object({
+	type: z.literal('getReady'),
+	countdownMs: z.number(),
+	totalQuestions: z.number(),
+});
+
+const wsQuestionModifierSchema = z.object({
+	type: z.literal('questionModifier'),
+	questionIndex: z.number(),
+	totalQuestions: z.number(),
+	modifiers: z.array(z.enum(['doublePoints'])),
+});
+
+const wsQuestionStartSchema = z.object({
+	type: z.literal('questionStart'),
+	questionIndex: z.number(),
+	totalQuestions: z.number(),
+	questionText: z.string(),
+	options: z.array(z.string()),
+	startTime: z.number(),
+	timeLimitMs: z.number(),
+	isDoublePoints: z.boolean().optional(),
+	backgroundImage: z.string().optional(),
+});
+
+const wsAnswerReceivedSchema = z.object({
+	type: z.literal('answerReceived'),
+	answerIndex: z.number(),
+});
+
+const wsPlayerAnsweredSchema = z.object({
+	type: z.literal('playerAnswered'),
+	playerId: z.string(),
+	answeredCount: z.number(),
+	totalPlayers: z.number(),
+});
+
+const wsRevealSchema = z.object({
+	type: z.literal('reveal'),
+	correctAnswerIndex: z.number(),
+	playerResult: z
+		.object({
+			isCorrect: z.boolean(),
+			score: z.number(),
+			answerIndex: z.number(),
+		})
+		.optional(),
+	answerCounts: z.array(z.number()),
+	questionText: z.string(),
+	options: z.array(z.string()),
+});
+
+const leaderboardEntrySchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	score: z.number(),
+	rank: z.number(),
+});
+
+const wsLeaderboardSchema = z.object({
+	type: z.literal('leaderboard'),
+	leaderboard: z.array(leaderboardEntrySchema),
+	isLastQuestion: z.boolean(),
+});
+
+const wsGameEndSchema = z.object({
+	type: z.literal('gameEnd'),
+	finalLeaderboard: z.array(leaderboardEntrySchema),
+	revealed: z.boolean(),
+});
+
+const wsPlayerJoinedSchema = z.object({
+	type: z.literal('playerJoined'),
+	player: playerInfoSchema,
+});
+
+const wsKickedSchema = z.object({
+	type: z.literal('kicked'),
+	reason: z.string(),
+});
+
+const wsEmojiReceivedSchema = z.object({
+	type: z.literal('emojiReceived'),
+	emoji: z.enum(EMOJI_REACTIONS),
+	playerId: z.string(),
+});
+
+export const wsServerMessageSchema = z.union([
+	wsConnectedSchema,
+	wsErrorSchema,
+	wsLobbyUpdateSchema,
+	wsGetReadySchema,
+	wsQuestionModifierSchema,
+	wsQuestionStartSchema,
+	wsAnswerReceivedSchema,
+	wsPlayerAnsweredSchema,
+	wsRevealSchema,
+	wsLeaderboardSchema,
+	wsGameEndSchema,
+	wsPlayerJoinedSchema,
+	wsKickedSchema,
+	wsEmojiReceivedSchema,
 ]);
 
 // ============ Type Exports ============

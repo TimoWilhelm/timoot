@@ -1,8 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
-import { z } from 'zod';
 
 import { ErrorCode, createError } from '@shared/errors';
-import { wsClientMessageSchema } from '@shared/validation';
+import { parseClientMessage } from '@shared/ws-messages';
 
 import { CLEANUP_DELAY_MS, END_REVEAL_DELAY_MS, QUESTION_MODIFIER_DURATION_MS, questionHasModifiers } from '../game';
 import {
@@ -127,10 +126,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		const getState = this.getFullGameState.bind(this);
 
 		try {
-			const rawData = JSON.parse(message.toString());
-			const parseResult = wsClientMessageSchema.safeParse(rawData);
+			const parseResult = parseClientMessage(message.toString());
 			if (!parseResult.success) {
-				sendMessage(ws, { type: 'error', ...createError(ErrorCode.VALIDATION_ERROR, z.prettifyError(parseResult.error)) });
+				sendMessage(ws, { type: 'error', ...createError(ErrorCode.VALIDATION_ERROR, parseResult.error) });
 				return;
 			}
 			const data = parseResult.data as ClientMessage;

@@ -107,5 +107,8 @@
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"devalue": "^5.6.1"
+	}
 }
