@@ -232,12 +232,11 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						render={({ field }) => (
 							<Button
 								type="button"
-								variant="subtle"
+								variant={field.value ? 'accent' : 'subtle'}
 								size="sm"
 								onClick={() => field.onChange(!field.value)}
-								className={cn(field.value && 'bg-orange text-white')}
+								aria-label="Double points"
 								aria-pressed={field.value}
-								aria-label={field.value ? 'Double points enabled, click to disable' : 'Double points disabled, click to enable'}
 							>
 								<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} aria-hidden="true" />
 								<span className="whitespace-nowrap" aria-hidden="true">

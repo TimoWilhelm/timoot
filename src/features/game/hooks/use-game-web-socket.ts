@@ -106,7 +106,7 @@ export function useGameWebSocket({
 	onEmojiReceived,
 }: UseGameWebSocketOptions) {
 	const wsReference = useRef<WebSocket | undefined>(undefined);
-	const reconnectTimeoutReference = useRef<NodeJS.Timeout | undefined>(undefined);
+	const reconnectTimeoutReference = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const [connectionState, setConnectionState] = useState<ConnectionState>(() => (gameId ? 'connecting' : 'idle'));
 	const [error, setError] = useState<string | undefined>();
 	const [gameState, setGameState] = useState<WebSocketGameState>(initialGameState);

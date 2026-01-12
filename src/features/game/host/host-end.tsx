@@ -158,7 +158,7 @@ export function HostEnd() {
 		// Fire confetti shortly after podium entries have animated in
 		let subtleIntervalId: ReturnType<typeof setInterval> | undefined;
 
-		const timeout = globalThis.setTimeout(() => {
+		const timeout = setTimeout(() => {
 			const colors = [
 				getThemeColor('--color-orange'),
 				getThemeColor('--color-gold'),
@@ -200,7 +200,7 @@ export function HostEnd() {
 			});
 
 			// Subtle continuous confetti while the podium is visible
-			subtleIntervalId = globalThis.setInterval(() => {
+			subtleIntervalId = setInterval(() => {
 				void confetti({
 					particleCount: 2,
 					angle: 60,
