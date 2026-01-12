@@ -17,7 +17,6 @@ import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
 import { Input } from '@/components/input/input';
 import { Label } from '@/components/label/label';
-import { RadioGroup, RadioGroupItem } from '@/components/radio-group/radio-group';
 import { OptionCharCount, QuestionCharCount } from '@/features/quiz-editor/components/char-counters';
 import { cn } from '@/lib/utilities';
 import { LIMITS, type QuizFormInput } from '@shared/validation';
@@ -53,6 +52,8 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 	});
 
 	const optionInputReferences = useRef<(HTMLInputElement | null)[]>([]);
+	const moveUpButtonReferences = useRef<(HTMLButtonElement | null)[]>([]);
+	const moveDownButtonReferences = useRef<(HTMLButtonElement | null)[]>([]);
 	const shouldFocusNewOptionReference = useRef(false);
 
 	const addOption = () => {
@@ -92,6 +93,34 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 
 		moveOptionInArray(oIndex, newIndex);
 		setValue(`questions.${index}.correctAnswerIndex`, String(newCorrect));
+
+		// Focus management: Follow the moved item to its new position
+		// Use requestAnimationFrame to ensure DOM has updated
+		requestAnimationFrame(() => {
+			// Check if the same direction button is still available at the new position
+			const isNowFirst = newIndex === 0;
+			const isNowLast = newIndex === optionFields.length - 1;
+
+			if (direction === 'up') {
+				// Was moving up, now at newIndex
+				if (isNowFirst) {
+					// Can't move up anymore, focus the down button
+					moveDownButtonReferences.current[newIndex]?.focus();
+				} else {
+					// Can still move up, focus the up button at new position
+					moveUpButtonReferences.current[newIndex]?.focus();
+				}
+			} else {
+				// Was moving down, now at newIndex
+				if (isNowLast) {
+					// Can't move down anymore, focus the up button
+					moveUpButtonReferences.current[newIndex]?.focus();
+				} else {
+					// Can still move down, focus the down button at new position
+					moveDownButtonReferences.current[newIndex]?.focus();
+				}
+			}
+		});
 	};
 
 	// Focus the newly added option input
@@ -102,6 +131,9 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 			shouldFocusNewOptionReference.current = false;
 		}
 	}, [optionFields.length]);
+
+	// Unique name for radio group - ensures proper grouping for accessibility
+	const radioGroupName = `questions.${index}.correctAnswerIndex`;
 
 	return (
 		<Card key={id}>
@@ -120,6 +152,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						onClick={() => move(index, index - 1)}
 						disabled={isFirst}
 						className="text-muted-foreground"
+						aria-label={`Move question ${index + 1} up`}
 					>
 						<ChevronUp className="size-5" />
 					</Button>
@@ -130,6 +163,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						onClick={() => move(index, index + 1)}
 						disabled={isLast}
 						className="text-muted-foreground"
+						aria-label={`Move question ${index + 1} down`}
 					>
 						<ChevronDown className="size-5" />
 					</Button>
@@ -143,6 +177,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 									text-red
 									hover:text-red
 								`}
+								aria-label={`Delete question ${index + 1}`}
 							>
 								<Trash2 />
 							</Button>
@@ -178,11 +213,14 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 								variant="subtle"
 								onClick={() => onOpenImageDialog(index)}
 								className="relative h-8 w-20 overflow-hidden p-0"
+								aria-label={
+									bgField.value ? `Change background image for question ${index + 1}` : `Add background image for question ${index + 1}`
+								}
 							>
 								{bgField.value ? (
-									<img src={bgField.value} alt="" className={`absolute inset-0 size-full object-cover`} />
+									<img src={bgField.value} alt="Background image preview" className={`absolute inset-0 size-full object-cover`} />
 								) : (
-									<span className="flex items-center gap-1.5">
+									<span className="flex items-center gap-1.5" aria-hidden="true">
 										<ImageIcon className="size-4" />
 										Image
 									</span>
@@ -200,9 +238,13 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 								size="sm"
 								onClick={() => field.onChange(!field.value)}
 								className={cn(field.value && 'bg-orange text-white')}
+								aria-pressed={field.value}
+								aria-label={field.value ? 'Double points enabled, click to disable' : 'Double points disabled, click to enable'}
 							>
-								<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} />
-								<span className="whitespace-nowrap">2× Points</span>
+								<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} aria-hidden="true" />
+								<span className="whitespace-nowrap" aria-hidden="true">
+									2× Points
+								</span>
 							</Button>
 						)}
 					/>
@@ -210,50 +252,112 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div>
-					<Label>Question Text</Label>
+					<Label htmlFor={`q${index}-text`}>Question Text</Label>
 					<div className="relative">
 						<Input
 							{...register(`questions.${index}.text`)}
+							id={`q${index}-text`}
 							placeholder="What is...?"
 							maxLength={LIMITS.QUESTION_TEXT_MAX}
 							className="pr-16"
+							aria-describedby={errors.questions?.[index]?.text ? `q${index}-text-error` : undefined}
 						/>
 						<QuestionCharCount control={control} qIndex={index} />
 					</div>
-					{errors.questions?.[index]?.text && <p className="mt-1 text-sm text-red">{errors.questions[index]?.text?.message}</p>}
+					{errors.questions?.[index]?.text && (
+						<p id={`q${index}-text-error`} className="mt-1 text-sm text-red" role="alert">
+							{errors.questions[index]?.text?.message}
+						</p>
+					)}
 				</div>
-				<div>
-					<Label>Answers</Label>
+				<fieldset
+					aria-describedby={
+						errors.questions?.[index]?.options || errors.questions?.[index]?.correctAnswerIndex ? `q${index}-answers-error` : undefined
+					}
+				>
+					<Label asChild>
+						<legend id={`q${index}-answers-label`}>Answers</legend>
+					</Label>
+					{/*
+						Using native HTML radio inputs instead of Radix RadioGroup.
+						Benefits:
+						- Native radio inputs with same `name` form an accessible group automatically
+						- Screen readers announce "radio button X of Y"
+						- No roving tabindex - each radio is independently tabbable
+						- No focus trap issues with other focusable elements in the same row
+					*/}
 					<Controller
 						control={control}
 						name={`questions.${index}.correctAnswerIndex`}
 						render={({ field: { onChange, value } }) => (
-							<RadioGroup onValueChange={onChange} value={String(value)} className={`mt-2 space-y-2`}>
+							<div className="mt-2 space-y-2" role="radiogroup" aria-labelledby={`q${index}-answers-label`}>
 								{optionFields.map((field, oIndex) => (
-									<div key={field.id} className={`flex items-center gap-2`}>
+									<div key={field.id} className="flex items-center gap-2">
+										{/* Move buttons */}
 										<div className="flex flex-col">
 											<Button
+												ref={(element) => {
+													moveUpButtonReferences.current[oIndex] = element;
+												}}
 												type="button"
 												variant="ghost"
 												size="icon"
 												className="size-5 text-muted-foreground"
 												onClick={() => handleMoveOption(oIndex, 'up')}
 												disabled={oIndex === 0}
+												aria-label={`Move option ${oIndex + 1} up`}
 											>
 												<ChevronUp className="size-3" />
 											</Button>
 											<Button
+												ref={(element) => {
+													moveDownButtonReferences.current[oIndex] = element;
+												}}
 												type="button"
 												variant="ghost"
 												size="icon"
 												className="size-5 text-muted-foreground"
 												onClick={() => handleMoveOption(oIndex, 'down')}
 												disabled={oIndex === optionFields.length - 1}
+												aria-label={`Move option ${oIndex + 1} down`}
 											>
 												<ChevronDown className="size-3" />
 											</Button>
 										</div>
-										<RadioGroupItem value={String(oIndex)} id={`q${index}o${oIndex}`} />
+										{/* Native HTML radio input - no roving tabindex issues */}
+										<label className="flex cursor-pointer items-center">
+											<input
+												type="radio"
+												name={radioGroupName}
+												value={String(oIndex)}
+												checked={String(value) === String(oIndex)}
+												onChange={(event) => onChange(event.target.value)}
+												className={cn(
+													`
+														size-4 shrink-0 cursor-pointer appearance-none rounded-full border
+														border-primary
+													`,
+													'checked:border-primary checked:bg-primary',
+													`
+														focus-visible:ring-1 focus-visible:ring-ring
+														focus-visible:outline-hidden
+													`,
+													'relative',
+													// Checkmark using pseudo-element via Tailwind arbitrary variant
+													`
+														checked:after:absolute checked:after:inset-0 checked:after:flex
+														checked:after:items-center checked:after:justify-center
+													`,
+													`
+														checked:after:text-[10px] checked:after:font-bold
+														checked:after:text-primary-foreground checked:after:content-['✓']
+													`,
+												)}
+												aria-describedby={`q${index}o${oIndex}-input`}
+											/>
+											<span className="sr-only">Mark option {oIndex + 1} as correct</span>
+										</label>
+										{/* Input field */}
 										<div className="relative grow">
 											<Input
 												{...(() => {
@@ -266,36 +370,44 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 														},
 													};
 												})()}
+												id={`q${index}o${oIndex}-input`}
 												placeholder={`Option ${oIndex + 1}`}
 												maxLength={LIMITS.OPTION_TEXT_MAX}
 												className="pr-14"
+												aria-label={`Answer option ${oIndex + 1} text`}
 											/>
 											<OptionCharCount control={control} qIndex={index} oIndex={oIndex} />
 										</div>
+										{/* Delete button */}
 										{optionFields.length > LIMITS.OPTIONS_MIN && (
 											<Button
 												type="button"
 												variant="ghost"
 												size="icon"
 												onClick={() => handleRemoveOption(oIndex)}
-												className={`
+												className="
 													text-muted-foreground
 													hover:text-destructive
-												`}
+												"
+												aria-label={`Delete option ${oIndex + 1}`}
 											>
 												<Trash2 className="size-4" />
 											</Button>
 										)}
 									</div>
 								))}
-							</RadioGroup>
+							</div>
 						)}
 					/>
-					{errors.questions?.[index]?.options && <p className={`mt-1 text-sm text-red`}>Each option must have text.</p>}
-					{errors.questions?.[index]?.correctAnswerIndex && (
-						<p className="mt-1 text-sm text-red">{errors.questions[index]?.correctAnswerIndex?.message}</p>
+					{(errors.questions?.[index]?.options || errors.questions?.[index]?.correctAnswerIndex) && (
+						<div id={`q${index}-answers-error`} role="alert" className="mt-1 space-y-1">
+							{errors.questions?.[index]?.options && <p className="text-sm text-red">Each option must have text.</p>}
+							{errors.questions?.[index]?.correctAnswerIndex && (
+								<p className="text-sm text-red">{errors.questions[index]?.correctAnswerIndex?.message}</p>
+							)}
+						</div>
 					)}
-				</div>
+				</fieldset>
 				<div className="flex w-full justify-center">
 					{optionFields.length < LIMITS.OPTIONS_MAX && (
 						<Button type="button" variant="subtle" onClick={addOption}>
