@@ -305,7 +305,13 @@ export function CustomQuizzesSection({
 									<Zap className="size-6" fill="currentColor" />
 								</div>
 							</div>
-							<h3 className="line-clamp-2 font-display text-xl/tight font-bold">{quiz.title}</h3>
+							<h3
+								className="
+									line-clamp-2 font-display text-xl/tight font-bold whitespace-normal
+								"
+							>
+								{quiz.title}
+							</h3>
 
 							<div className="flex w-full justify-between">
 								<div

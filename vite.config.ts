@@ -36,12 +36,6 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 				'@shared': path.resolve(__dirname, './shared'),
 			},
 		},
-		optimizeDeps: {
-			// This is still crucial for reducing the time from when `bun run dev`
-			// is executed to when the server is actually ready.
-			include: ['react', 'react-dom', 'react-router-dom'],
-			force: true,
-		},
 		cacheDir: 'node_modules/.vite',
 	});
 }
