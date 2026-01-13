@@ -12,7 +12,7 @@ interface AlertDialogProperties extends React.ComponentPropsWithoutRef<typeof Al
 	children?: React.ReactNode;
 }
 
-function AlertDialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...properties }: AlertDialogProperties) {
+export function AlertDialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...properties }: AlertDialogProperties) {
 	const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false);
 
 	const isControlled = controlledOpen !== undefined;
@@ -37,14 +37,14 @@ function AlertDialog({ children, open: controlledOpen, defaultOpen, onOpenChange
 	);
 }
 
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
+export const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-const AlertDialogContent = React.forwardRef<
+export const AlertDialogContent = React.forwardRef<
 	React.ComponentRef<typeof AlertDialogPrimitive.Content>,
 	React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...properties }, reference) => {
+>(({ className, children, ...properties }, reference) => {
 	const { open } = React.useContext(AlertDialogContext);
 
 	return (
@@ -78,7 +78,9 @@ const AlertDialogContent = React.forwardRef<
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.95 }}
 								transition={{ duration: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
-							/>
+							>
+								{children}
+							</motion.div>
 						</AlertDialogPrimitive.Content>
 					</div>
 				</AlertDialogPortal>
@@ -88,7 +90,7 @@ const AlertDialogContent = React.forwardRef<
 });
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
-const AlertDialogHeader = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
+export const AlertDialogHeader = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
 		className={cn(
 			`
@@ -102,7 +104,7 @@ const AlertDialogHeader = ({ className, ...properties }: React.HTMLAttributes<HT
 );
 AlertDialogHeader.displayName = 'AlertDialogHeader';
 
-const AlertDialogFooter = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
+export const AlertDialogFooter = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
 		className={cn(
 			`
@@ -116,7 +118,7 @@ const AlertDialogFooter = ({ className, ...properties }: React.HTMLAttributes<HT
 );
 AlertDialogFooter.displayName = 'AlertDialogFooter';
 
-const AlertDialogTitle = React.forwardRef<
+export const AlertDialogTitle = React.forwardRef<
 	React.ComponentRef<typeof AlertDialogPrimitive.Title>,
 	React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
 >(({ className, ...properties }, reference) => (
@@ -124,7 +126,7 @@ const AlertDialogTitle = React.forwardRef<
 ));
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
 
-const AlertDialogDescription = React.forwardRef<
+export const AlertDialogDescription = React.forwardRef<
 	React.ComponentRef<typeof AlertDialogPrimitive.Description>,
 	React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
 >(({ className, ...properties }, reference) => (
@@ -132,7 +134,7 @@ const AlertDialogDescription = React.forwardRef<
 ));
 AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName;
 
-const AlertDialogAction = React.forwardRef<
+export const AlertDialogAction = React.forwardRef<
 	React.ComponentRef<typeof AlertDialogPrimitive.Action>,
 	React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & VariantProps<typeof buttonVariants>
 >(({ className, variant, size, ...properties }, reference) => (
@@ -140,7 +142,7 @@ const AlertDialogAction = React.forwardRef<
 ));
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
-const AlertDialogCancel = React.forwardRef<
+export const AlertDialogCancel = React.forwardRef<
 	React.ComponentRef<typeof AlertDialogPrimitive.Cancel>,
 	React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
 >(({ className, ...properties }, reference) => (
@@ -158,15 +160,3 @@ const AlertDialogCancel = React.forwardRef<
 	/>
 ));
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName;
-
-export {
-	AlertDialog,
-	AlertDialogTrigger,
-	AlertDialogContent,
-	AlertDialogHeader,
-	AlertDialogFooter,
-	AlertDialogTitle,
-	AlertDialogDescription,
-	AlertDialogAction,
-	AlertDialogCancel,
-};

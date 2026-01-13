@@ -12,7 +12,7 @@ interface DialogProperties extends React.ComponentPropsWithoutRef<typeof DialogP
 	children?: React.ReactNode;
 }
 
-function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...properties }: DialogProperties) {
+export function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...properties }: DialogProperties) {
 	const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false);
 
 	const isControlled = controlledOpen !== undefined;
@@ -37,11 +37,12 @@ function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...
 	);
 }
 
-const DialogTrigger = DialogPrimitive.Trigger;
+/** @lintignore */
+export const DialogTrigger = DialogPrimitive.Trigger;
 
 const DialogPortal = DialogPrimitive.Portal;
 
-const DialogContent = React.forwardRef<
+export const DialogContent = React.forwardRef<
 	React.ComponentRef<typeof DialogPrimitive.Content>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...properties }, reference) => {
@@ -90,7 +91,7 @@ const DialogContent = React.forwardRef<
 });
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-const DialogHeader = ({ className, children, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
+export const DialogHeader = ({ className, children, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div className={cn('flex flex-row items-start justify-between gap-4', className)} {...properties}>
 		<div
 			className="
@@ -108,7 +109,7 @@ const DialogHeader = ({ className, children, ...properties }: React.HTMLAttribut
 );
 DialogHeader.displayName = 'DialogHeader';
 
-const DialogFooter = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
+export const DialogFooter = ({ className, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
 		className={cn(
 			`
@@ -122,7 +123,7 @@ const DialogFooter = ({ className, ...properties }: React.HTMLAttributes<HTMLDiv
 );
 DialogFooter.displayName = 'DialogFooter';
 
-const DialogTitle = React.forwardRef<
+export const DialogTitle = React.forwardRef<
 	React.ComponentRef<typeof DialogPrimitive.Title>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...properties }, reference) => (
@@ -134,12 +135,10 @@ const DialogTitle = React.forwardRef<
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-const DialogDescription = React.forwardRef<
+export const DialogDescription = React.forwardRef<
 	React.ComponentRef<typeof DialogPrimitive.Description>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...properties }, reference) => (
 	<DialogPrimitive.Description ref={reference} className={cn(`text-sm text-muted-foreground`, className)} {...properties} />
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
-
-export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription };

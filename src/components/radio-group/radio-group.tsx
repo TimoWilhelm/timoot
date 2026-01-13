@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utilities';
 
-const RadioGroup = React.forwardRef<
+export const RadioGroup = React.forwardRef<
 	React.ComponentRef<typeof RadioGroupPrimitive.Root>,
 	React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
 >(({ className, ...properties }, reference) => {
@@ -12,7 +12,7 @@ const RadioGroup = React.forwardRef<
 });
 RadioGroup.displayName = RadioGroupPrimitive.Root.displayName;
 
-const RadioGroupItem = React.forwardRef<
+export const RadioGroupItem = React.forwardRef<
 	React.ComponentRef<typeof RadioGroupPrimitive.Item>,
 	React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...properties }, reference) => {
@@ -39,5 +39,3 @@ const RadioGroupItem = React.forwardRef<
 	);
 });
 RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;
-
-export { RadioGroup, RadioGroupItem };

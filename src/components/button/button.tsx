@@ -10,12 +10,10 @@ export interface ButtonProperties extends React.ButtonHTMLAttributes<HTMLButtonE
 	asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProperties>(
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProperties>(
 	({ className, variant, size, asChild = false, ...properties }, reference) => {
 		const Comp = asChild ? SlotPrimitive.Root : 'button';
 		return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={reference} {...properties} />;
 	},
 );
 Button.displayName = 'Button';
-
-export { Button };

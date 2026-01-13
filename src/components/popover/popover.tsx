@@ -3,11 +3,11 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utilities';
 
-const Popover = PopoverPrimitive.Root;
+export const Popover = PopoverPrimitive.Root;
 
-const PopoverAnchor = PopoverPrimitive.Anchor;
+export const PopoverAnchor = PopoverPrimitive.Anchor;
 
-const PopoverContent = React.forwardRef<
+export const PopoverContent = React.forwardRef<
 	React.ComponentRef<typeof PopoverPrimitive.Content>,
 	React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = 'center', sideOffset = 4, ...properties }, reference) => (
@@ -34,5 +34,3 @@ const PopoverContent = React.forwardRef<
 	</PopoverPrimitive.Portal>
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
-
-export { Popover, PopoverContent, PopoverAnchor };
