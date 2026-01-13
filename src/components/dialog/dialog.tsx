@@ -1,63 +1,93 @@
 import { X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 import { buttonVariants } from '@/components/button/button-variants';
 import { cn } from '@/lib/utilities';
 
-const Dialog = DialogPrimitive.Root;
+const DialogContext = React.createContext<{ open: boolean }>({ open: false });
 
-const DialogOverlay = React.forwardRef<
-	React.ComponentRef<typeof DialogPrimitive.Overlay>,
-	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...properties }, reference) => (
-	<DialogPrimitive.Overlay
-		ref={reference}
-		className={cn(
-			`
-				fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-xs
-				data-[state=closed]:animate-overlay-out
-				data-[state=open]:animate-overlay-in
-			`,
-			className,
-		)}
-		{...properties}
-	/>
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+interface DialogProperties extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
+	children?: React.ReactNode;
+}
+
+function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...properties }: DialogProperties) {
+	const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false);
+
+	const isControlled = controlledOpen !== undefined;
+	const open = isControlled ? controlledOpen : uncontrolledOpen;
+
+	const handleOpenChange = React.useCallback(
+		(nextOpen: boolean) => {
+			if (!isControlled) {
+				setUncontrolledOpen(nextOpen);
+			}
+			onOpenChange?.(nextOpen);
+		},
+		[isControlled, onOpenChange],
+	);
+
+	return (
+		<DialogContext.Provider value={{ open }}>
+			<DialogPrimitive.Root open={open} onOpenChange={handleOpenChange} {...properties}>
+				{children}
+			</DialogPrimitive.Root>
+		</DialogContext.Provider>
+	);
+}
+
+const DialogTrigger = DialogPrimitive.Trigger;
+
+const DialogPortal = DialogPrimitive.Portal;
 
 const DialogContent = React.forwardRef<
 	React.ComponentRef<typeof DialogPrimitive.Content>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...properties }, reference) => (
-	<DialogPrimitive.Portal>
-		<DialogOverlay>
-			<div
-				className={`
-					flex h-dvh items-center justify-center overflow-y-auto p-4
-					transition-[height] duration-150 ease-out
-				`}
-			>
-				<DialogPrimitive.Content
-					ref={reference}
-					className={cn(
-						`
-							relative z-50 grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl
-							border-4 border-black bg-white p-0 duration-150
-							data-[state=closed]:animate-modal-out
-							data-[state=open]:animate-modal-in
-							sm:max-w-lg
-						`,
-						className,
-					)}
-					{...properties}
-				>
-					{children}
-				</DialogPrimitive.Content>
-			</div>
-		</DialogOverlay>
-	</DialogPrimitive.Portal>
-));
+>(({ className, children, ...properties }, reference) => {
+	const { open } = React.useContext(DialogContext);
+
+	return (
+		<AnimatePresence>
+			{open && (
+				<DialogPortal forceMount>
+					<DialogPrimitive.Overlay
+						forceMount
+						className={`
+							fixed inset-0 z-50 bg-black/50 backdrop-blur-xs
+							data-[state=closed]:animate-overlay-out
+							data-[state=open]:animate-overlay-in
+						`}
+					/>
+					<div
+						className={`
+							fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4
+						`}
+					>
+						<DialogPrimitive.Content ref={reference} forceMount asChild {...properties}>
+							<motion.div
+								className={cn(
+									`
+										relative grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl
+										border-4 border-black bg-white p-0
+										sm:max-w-lg
+									`,
+									className,
+								)}
+								initial={{ opacity: 0, scale: 0.9 }}
+								animate={{ opacity: 1, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.95 }}
+								transition={{ duration: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
+							>
+								{children}
+							</motion.div>
+						</DialogPrimitive.Content>
+					</div>
+				</DialogPortal>
+			)}
+		</AnimatePresence>
+	);
+});
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, children, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -112,4 +142,4 @@ const DialogDescription = React.forwardRef<
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
-export { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription };
+export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription };
