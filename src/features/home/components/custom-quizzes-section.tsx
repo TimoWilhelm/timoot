@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import { BookOpen, HelpCircle, Loader2, Pencil, Plus, Sparkles, Trash2, Wand2, Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
@@ -177,7 +177,7 @@ export function CustomQuizzesSection({
 								</div>
 							</div>
 							<div className="relative z-10 w-full">
-								<h3 className="line-clamp-2 font-display text-xl leading-tight font-bold">Generating: {generatingPrompt ?? '...'}</h3>
+								<h3 className="line-clamp-2 font-display text-xl/tight font-bold">Generating: {generatingPrompt ?? '...'}</h3>
 								<p className="mt-1 font-mono text-sm text-muted-foreground">{getStatusMessage(generationStatus)}</p>
 							</div>
 						</div>
@@ -305,7 +305,7 @@ export function CustomQuizzesSection({
 									<Zap className="size-6" fill="currentColor" />
 								</div>
 							</div>
-							<h3 className="line-clamp-2 font-display text-xl leading-tight font-bold">{quiz.title}</h3>
+							<h3 className="line-clamp-2 font-display text-xl/tight font-bold">{quiz.title}</h3>
 
 							<div className="flex w-full justify-between">
 								<div

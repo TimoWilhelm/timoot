@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import { AnimatedNumber } from '@/components/animated-number/animated-number';
 import { EmojiPicker } from '@/features/game/player/components/emoji-picker';

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 import { EMOJI_REACTIONS, type EmojiReaction } from '@shared/types';
 

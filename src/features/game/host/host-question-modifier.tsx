@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { useHostGameContext } from '@/features/game/host/host-game-context';
 

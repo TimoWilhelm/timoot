@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 
 import type { EmojiReaction } from '@shared/types';

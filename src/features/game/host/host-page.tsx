@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, ShieldAlert } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { toast } from 'sonner';

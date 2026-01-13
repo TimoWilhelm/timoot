@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import { Gamepad2 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { Button } from '@/components/button';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';

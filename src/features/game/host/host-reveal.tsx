@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { Button } from '@/components/button';
 import { useHostGameContext } from '@/features/game/host/host-game-context';

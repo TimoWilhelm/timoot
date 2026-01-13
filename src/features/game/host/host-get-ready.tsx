@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Trophy, Zap } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useHostGameContext } from '@/features/game/host/host-game-context';

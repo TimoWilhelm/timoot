@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useHostGameContext } from '@/features/game/host/host-game-context';
@@ -305,8 +305,7 @@ export function HostQuestion() {
 							viewBox="0 0 24 24"
 							className={`
 								mr-4 size-8 fill-current stroke-black/35 stroke-3 text-white
-								drop-shadow-lg
-								[paint-order:stroke]
+								drop-shadow-lg [paint-order:stroke]
 								sm:size-12
 							`}
 						>

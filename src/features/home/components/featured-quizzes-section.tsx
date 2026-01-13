@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import { HelpCircle, Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { Button } from '@/components/button';
 import { cn } from '@/lib/utilities';
@@ -78,7 +78,7 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 									<Zap className="size-6 text-black" fill="currentColor" />
 								</div>
 							</div>
-							<h3 className="mb-2 font-display text-2xl leading-tight font-bold">{quiz.title}</h3>
+							<h3 className="mb-2 font-display text-2xl/tight font-bold">{quiz.title}</h3>
 							<div
 								className="
 									flex items-center gap-2 text-sm font-bold text-muted-foreground

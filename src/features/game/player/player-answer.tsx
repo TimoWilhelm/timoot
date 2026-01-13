@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
@@ -160,8 +160,7 @@ export function PlayerAnswer() {
 							viewBox="0 0 24 24"
 							className={`
 								size-1/2 fill-current stroke-black/35 stroke-[1.5] text-white
-								drop-shadow-lg
-								[paint-order:stroke]
+								drop-shadow-lg [paint-order:stroke]
 							`}
 							animate={
 								isSelected

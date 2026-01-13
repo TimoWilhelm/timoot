@@ -1,6 +1,6 @@
 import confetti from 'canvas-confetti';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/button';

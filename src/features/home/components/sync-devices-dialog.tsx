@@ -1,4 +1,5 @@
 import { Check, Copy, RefreshCw } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog/dialog';
@@ -55,7 +56,12 @@ export function SyncDevicesDialog({
 					<div className="space-y-2">
 						<h4 className="font-bold uppercase">Share from here</h4>
 						{syncCode ? (
-							<div className="flex items-center gap-2">
+							<motion.div
+								className="flex items-center gap-2"
+								initial={{ opacity: 0, y: 8 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+							>
 								<div
 									className="
 										flex-1 rounded-xl border-2 border-black bg-muted p-3 text-center
@@ -67,7 +73,7 @@ export function SyncDevicesDialog({
 								<Button onClick={onCopyCode} size="icon" className="size-14 shrink-0 rounded-xl">
 									{codeCopied ? <Check className="size-6" /> : <Copy className="size-6" />}
 								</Button>
-							</div>
+							</motion.div>
 						) : (
 							<Button
 								onClick={onGenerateSyncCode}

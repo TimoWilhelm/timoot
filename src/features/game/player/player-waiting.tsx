@@ -1,6 +1,6 @@
 import confetti from 'canvas-confetti';
-import { motion } from 'framer-motion';
 import { CheckCircle, Gamepad2, Home, Loader2, Star, Trophy, XCircle } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 

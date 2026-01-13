@@ -1,5 +1,5 @@
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Crown, Trophy } from 'lucide-react';
+import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/button';
