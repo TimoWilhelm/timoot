@@ -1,5 +1,5 @@
-import { Slot } from '@radix-ui/react-slot';
 import { type VariantProps } from 'class-variance-authority';
+import { Slot as SlotPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 import { cn } from '@/lib/utilities';
@@ -12,7 +12,7 @@ export interface ButtonProperties extends React.ButtonHTMLAttributes<HTMLButtonE
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProperties>(
 	({ className, variant, size, asChild = false, ...properties }, reference) => {
-		const Comp = asChild ? Slot : 'button';
+		const Comp = asChild ? SlotPrimitive.Root : 'button';
 		return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={reference} {...properties} />;
 	},
 );
