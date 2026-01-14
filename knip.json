@@ -4,6 +4,7 @@
 		"interface": true,
 		"type": true
 	},
+	"ignoreIssues": { "src/components/**": ["exports"] },
 	"tags": ["-lintignore"],
 	"entry": ["src/main.tsx", "worker/index.ts"],
 	"ignoreDependencies": ["cloudflare", "@server/*"],

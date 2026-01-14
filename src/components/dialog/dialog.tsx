@@ -37,7 +37,6 @@ export function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChan
 	);
 }
 
-/** @lintignore */
 export const DialogTrigger = DialogPrimitive.Trigger;
 
 const DialogPortal = DialogPrimitive.Portal;

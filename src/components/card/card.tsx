@@ -31,7 +31,7 @@ export const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
 );
 CardTitle.displayName = 'CardTitle';
 
-const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+export const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
 	({ className, ...properties }, reference) => (
 		<div ref={reference} className={cn('text-sm font-medium text-muted-foreground', className)} {...properties} />
 	),
@@ -43,7 +43,9 @@ export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes
 );
 CardContent.displayName = 'CardContent';
 
-const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...properties }, reference) => (
-	<div ref={reference} className={cn('flex items-center p-6 pt-0', className)} {...properties} />
-));
+export const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+	({ className, ...properties }, reference) => (
+		<div ref={reference} className={cn('flex items-center p-6 pt-0', className)} {...properties} />
+	),
+);
 CardFooter.displayName = 'CardFooter';
