@@ -1,7 +1,7 @@
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/button';
-import { Card, CardContent } from '@/components/card/card';
+import { Card, CardContent } from '@/components/card';
 
 export interface ErrorFallbackProperties {
 	title?: string;

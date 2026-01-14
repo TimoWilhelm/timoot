@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 
-import { AnimatedNumber } from '@/components/animated-number/animated-number';
+import { AnimatedNumber } from '@/components/animated-number';
 import { EmojiPicker } from '@/features/game/player/components/emoji-picker';
 import { PlayerAnswer } from '@/features/game/player/player-answer';
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';

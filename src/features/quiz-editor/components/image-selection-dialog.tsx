@@ -3,8 +3,8 @@ import { Suspense, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog/dialog';
-import { Input } from '@/components/input/input';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Input } from '@/components/input';
 import { useGenerateImage } from '@/hooks/use-api';
 import { useTurnstile } from '@/hooks/utils/use-turnstile';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';

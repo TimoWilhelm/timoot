@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import * as React from 'react';
 
-import { buttonVariants } from '@/components/button/button-variants';
+import { buttonVariants } from '@/components/button';
 import { cn } from '@/lib/utilities';
 
 const DialogContext = React.createContext<{ open: boolean }>({ open: false });

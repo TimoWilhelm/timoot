@@ -2,7 +2,7 @@ import { QueryClientProvider, QueryErrorResetBoundary } from '@tanstack/react-qu
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
-import { RootLayout } from '@/components/layout/root-layout';
+import { RootLayout } from '@/components/layout';
 import { ErrorBoundary, RouteErrorBoundary } from '@/features/error';
 import { HostPage } from '@/features/game/host/host-page';
 import { PlayerPage } from '@/features/game/player/player-page';

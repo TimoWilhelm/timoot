@@ -3,9 +3,9 @@ import { motion } from 'motion/react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog/dialog';
-import { Input } from '@/components/input/input';
-import { Label } from '@/components/label/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { LIMITS } from '@shared/validation';
 

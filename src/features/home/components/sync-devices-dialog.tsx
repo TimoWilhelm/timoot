@@ -2,8 +2,8 @@ import { Check, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 
 import { Button } from '@/components/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog/dialog';
-import { Input } from '@/components/input/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Input } from '@/components/input';
 
 interface SyncDevicesDialogProperties {
 	open: boolean;

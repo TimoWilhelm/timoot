@@ -7,7 +7,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from '@/components/alert-dialog/alert-dialog';
+} from '@/components/alert-dialog';
 
 interface DeleteQuizDialogProperties {
 	open: boolean;

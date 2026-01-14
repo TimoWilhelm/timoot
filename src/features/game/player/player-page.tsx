@@ -12,7 +12,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from '@/components/alert-dialog/alert-dialog';
+} from '@/components/alert-dialog';
 import { Button } from '@/components/button';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerError } from '@/features/game/player/player-error';

@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
 import { QRCode } from '@/features/game/host/components/qr-code';
 import { useHostGameContext } from '@/features/game/host/host-game-context';
 

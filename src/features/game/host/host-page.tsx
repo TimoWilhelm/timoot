@@ -13,9 +13,9 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from '@/components/alert-dialog/alert-dialog';
+} from '@/components/alert-dialog';
 import { Button } from '@/components/button';
-import { SoundToggle } from '@/components/sound-toggle/sound-toggle';
+import { SoundToggle } from '@/components/sound-toggle';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/host/components/floating-emojis';

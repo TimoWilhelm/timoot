@@ -4,8 +4,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
-import { Input } from '@/components/input/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
+import { Input } from '@/components/input';
 import { LIMITS, nicknameSchema } from '@shared/validation';
 
 const formSchema = z.object({

@@ -3,7 +3,7 @@ import { Suspense, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { GridBackground } from '@/components/grid-background/grid-background';
+import { GridBackground } from '@/components/grid-background';
 import { LoadingFallback } from '@/components/loading-fallback';
 import {
 	DeleteQuizDialog,

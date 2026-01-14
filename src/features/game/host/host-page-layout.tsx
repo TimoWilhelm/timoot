@@ -1,4 +1,4 @@
-import { GridBackground } from '@/components/grid-background/grid-background';
+import { GridBackground } from '@/components/grid-background';
 import { cn } from '@/lib/utilities';
 
 interface HostPageLayoutProperties {

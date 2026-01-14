@@ -1,7 +1,7 @@
 import { Gamepad2, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
 
 import type { Quiz } from '@shared/types';
 

@@ -3,7 +3,7 @@ import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/button';
-import { Card, CardContent } from '@/components/card/card';
+import { Card, CardContent } from '@/components/card';
 import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { cn } from '@/lib/utilities';
 

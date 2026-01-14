@@ -1,8 +1,8 @@
 import { AlertCircle, ArrowRight, Check, Gamepad2 } from 'lucide-react';
 
 import { Button } from '@/components/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/popover/popover';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/popover';
 import { useGameCode } from '@/features/game/hooks/use-game-code';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { cn } from '@/lib/utilities';

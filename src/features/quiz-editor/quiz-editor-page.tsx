@@ -13,12 +13,12 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from '@/components/alert-dialog/alert-dialog';
+} from '@/components/alert-dialog';
 import { Button } from '@/components/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/card/card';
-import { GridBackground } from '@/components/grid-background/grid-background';
-import { Input } from '@/components/input/input';
-import { Label } from '@/components/label/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
+import { GridBackground } from '@/components/grid-background';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
 import { LoadingFallback } from '@/components/loading-fallback';
 import { TitleCharCount } from '@/features/quiz-editor/components/char-counters';
 import { ImageSelectionDialog } from '@/features/quiz-editor/components/image-selection-dialog';
