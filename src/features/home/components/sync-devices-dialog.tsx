@@ -1,43 +1,98 @@
 import { Check, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
-import { Input } from '@/components/input';
+import { OneTimePasswordField } from '@/components/otp-field';
+import { useGenerateSyncCode, useRedeemSyncCode } from '@/hooks/use-api';
 
 interface SyncDevicesDialogProperties {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	syncCode: string | undefined;
-	syncCodeInput: string;
-	codeCopied: boolean;
-	showSyncWarning: boolean;
-	isGeneratingSyncCode: boolean;
-	isRedeemingSyncCode: boolean;
-	onSyncCodeInputChange: (value: string) => void;
-	onGenerateSyncCode: () => void;
-	onRedeemSyncCode: (confirmed: boolean) => void;
-	onCopyCode: () => void;
-	onCancelWarning: () => void;
+	userId: string;
+	customQuizCount: number;
+	onSyncSuccess: (newUserId: string) => void;
 }
 
-export function SyncDevicesDialog({
-	open,
-	onOpenChange,
-	syncCode,
-	syncCodeInput,
-	codeCopied,
-	showSyncWarning,
-	isGeneratingSyncCode,
-	isRedeemingSyncCode,
-	onSyncCodeInputChange,
-	onGenerateSyncCode,
-	onRedeemSyncCode,
-	onCopyCode,
-	onCancelWarning,
-}: SyncDevicesDialogProperties) {
+export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount, onSyncSuccess }: SyncDevicesDialogProperties) {
+	const [syncCode, setSyncCode] = useState<string | undefined>();
+	const [codeCopied, setCodeCopied] = useState(false);
+	const [showSyncWarning, setShowSyncWarning] = useState(false);
+	const [inputSyncCode, setInputSyncCode] = useState('');
+
+	const generateSyncCodeMutation = useGenerateSyncCode();
+	const redeemSyncCodeMutation = useRedeemSyncCode();
+
+	const isGeneratingSyncCode = generateSyncCodeMutation.isPending;
+	const isRedeemingSyncCode = redeemSyncCodeMutation.isPending;
+
+	// Reset state when dialog opens/closes
+	const handleOpenChange = (newOpen: boolean) => {
+		if (!newOpen) {
+			// Reset state when closing
+			setSyncCode(undefined);
+			setCodeCopied(false);
+			setShowSyncWarning(false);
+			setInputSyncCode('');
+		}
+		onOpenChange(newOpen);
+	};
+
+	const handleGenerateSyncCode = () => {
+		generateSyncCodeMutation.mutate(
+			{ header: { 'x-user-id': userId } },
+			{
+				onSuccess: (data) => {
+					setSyncCode(data.code);
+				},
+				onError: (error) => {
+					toast.error(error.message || 'Failed to generate sync code');
+				},
+			},
+		);
+	};
+
+	const handleRedeemSyncCode = (confirmed = false) => {
+		const code = inputSyncCode;
+		if (code.length !== 6) {
+			toast.error('Please enter a 6-character code');
+			return;
+		}
+		// Warn if user has existing custom quizzes
+		if (!confirmed && customQuizCount > 0) {
+			setShowSyncWarning(true);
+			return;
+		}
+		setShowSyncWarning(false);
+		redeemSyncCodeMutation.mutate(
+			{ header: { 'x-user-id': userId }, json: { code: code.toUpperCase() } },
+			{
+				onSuccess: (data) => {
+					onSyncSuccess(data.userId);
+					toast.success('Device synced! Refreshing...');
+					handleOpenChange(false);
+					// Reload to fetch data with new userId
+					globalThis.setTimeout(() => globalThis.location.reload(), 500);
+				},
+				onError: (error) => {
+					toast.error(error.message || 'Failed to redeem sync code');
+				},
+			},
+		);
+	};
+
+	const copyCodeToClipboard = () => {
+		if (syncCode) {
+			void navigator.clipboard.writeText(syncCode);
+			setCodeCopied(true);
+			globalThis.setTimeout(() => setCodeCopied(false), 2000);
+		}
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 				<div className="bg-blue p-6">
 					<DialogHeader>
@@ -56,30 +111,26 @@ export function SyncDevicesDialog({
 					<div className="space-y-2">
 						<h4 className="font-bold uppercase">Share from here</h4>
 						{syncCode ? (
-							<motion.div
-								className="flex items-center gap-2"
+							<motion.button
+								className="
+									relative w-full rounded-xl border-2 border-black bg-muted py-6
+									text-center font-mono text-4xl font-bold tracking-[0.25em]
+									transition-colors
+									hover:bg-black/5
+									active:translate-y-0.5 active:shadow-brutal-inset
+								"
+								onClick={copyCodeToClipboard}
 								initial={{ opacity: 0, y: 8 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
 							>
-								<div
-									className="
-										flex-1 rounded-xl border-2 border-black bg-muted p-3 text-center
-										font-mono text-2xl font-bold tracking-widest
-									"
-								>
-									{syncCode}
+								{syncCode}
+								<div className="absolute top-1/2 right-4 -translate-y-1/2 p-2">
+									{codeCopied ? <Check className="size-5" /> : <Copy className="size-5 text-muted-foreground" />}
 								</div>
-								<Button onClick={onCopyCode} size="icon" className="size-14 shrink-0 rounded-xl">
-									{codeCopied ? <Check className="size-6" /> : <Copy className="size-6" />}
-								</Button>
-							</motion.div>
+							</motion.button>
 						) : (
-							<Button
-								onClick={onGenerateSyncCode}
-								disabled={isGeneratingSyncCode}
-								className="w-full border-2 border-black font-bold shadow-brutal"
-							>
+							<Button onClick={handleGenerateSyncCode} disabled={isGeneratingSyncCode} className="w-full">
 								Generate Code
 							</Button>
 						)}
@@ -106,29 +157,30 @@ export function SyncDevicesDialog({
 								<p className="mb-2 text-sm font-bold text-black">Warning: Existing Data</p>
 								<p className="mb-4 text-xs">Syncing will replace your current quizzes. Are you sure?</p>
 								<div className="flex gap-2">
-									<Button size="sm" variant="subtle" onClick={onCancelWarning} className="border-black bg-white">
+									<Button size="sm" variant="subtle" onClick={() => setShowSyncWarning(false)} className="border-black bg-white">
 										Cancel
 									</Button>
-									<Button size="sm" onClick={() => onRedeemSyncCode(true)} className="border-black bg-yellow text-black">
+									<Button size="sm" onClick={() => handleRedeemSyncCode(true)} className="border-black bg-yellow text-black">
 										Overwrite & Sync
 									</Button>
 								</div>
 							</div>
 						) : (
-							<div className="flex gap-2">
-								<Input
-									placeholder="ENTER CODE"
-									value={syncCodeInput}
-									onChange={(event) => onSyncCodeInputChange(event.target.value.toUpperCase())}
-									className={`
-										flex-1 rounded-lg border-2 border-black bg-white px-4 py-2 text-center
-										font-mono font-medium tracking-widest uppercase shadow-brutal-inset
-										focus:ring-2 focus:ring-black focus:ring-offset-2 focus:outline-hidden
-									`}
-									maxLength={6}
-								/>
-								<Button onClick={() => onRedeemSyncCode(false)} disabled={isRedeemingSyncCode || syncCodeInput.length !== 6}>
-									<Check className="size-5" />
+							<div className="flex flex-col items-center gap-4">
+								<OneTimePasswordField.Root
+									length={6}
+									onValueChange={(value) => {
+										setInputSyncCode(value);
+									}}
+									disabled={isRedeemingSyncCode}
+								>
+									{Array.from({ length: 6 }).map((_, index) => (
+										<OneTimePasswordField.Input key={index} index={index} />
+									))}
+									<OneTimePasswordField.HiddenInput name="syncCode" />
+								</OneTimePasswordField.Root>
+								<Button onClick={() => handleRedeemSyncCode(false)} disabled={isRedeemingSyncCode || inputSyncCode.length !== 6}>
+									Sync Device
 								</Button>
 							</div>
 						)}

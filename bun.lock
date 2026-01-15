@@ -5,8 +5,8 @@
     "": {
       "name": "timoot",
       "devDependencies": {
-        "@ai-sdk/mcp": "^1.0.0",
-        "@ai-sdk/openai-compatible": "^2.0.0",
+        "@ai-sdk/mcp": "^1.0.2",
+        "@ai-sdk/openai-compatible": "^2.0.2",
         "@chromatic-com/storybook": "^4.1.3",
         "@cloudflare/vite-plugin": "^1.19.0",
         "@cloudflare/vitest-pool-workers": "^0.10.15",
@@ -31,7 +31,7 @@
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.2",
         "@vitest/browser": "3.2.4",
-        "ai": "^6.0.1",
+        "ai": "^6.0.5",
         "canvas-confetti": "^1.9.4",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",

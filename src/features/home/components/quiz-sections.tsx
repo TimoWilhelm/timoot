@@ -8,17 +8,10 @@ interface QuizSectionsProperties {
 	predefinedQuizQuery: { promise: Promise<Quiz[]> };
 	customQuizQuery: { promise: Promise<Quiz[]> };
 	startingQuizId: string | undefined;
-	isGenerating: boolean;
-	generatingPrompt: string | undefined;
-	generationStatus: { stage: string; detail?: string } | undefined;
-	generatingCardRef: (element: HTMLDivElement | null) => void;
-	aiPrompt: string;
-	isAiDialogOpen: boolean;
+	userId: string;
 	turnstileToken: string | null | undefined;
 	TurnstileWidget: React.ComponentType<{ className?: string }>;
-	onAiPromptChange: (value: string) => void;
-	onAiDialogOpenChange: (open: boolean) => void;
-	onGenerateAiQuiz: () => void;
+	onResetTurnstile: () => void;
 	onSelectQuiz: (quiz: Quiz) => void;
 	onEditQuiz: (quizId: string) => void;
 	onDeleteQuiz: (quizId: string) => void;
@@ -32,17 +25,10 @@ export function QuizSections({
 	predefinedQuizQuery,
 	customQuizQuery,
 	startingQuizId,
-	isGenerating,
-	generatingPrompt,
-	generationStatus,
-	generatingCardRef,
-	aiPrompt,
-	isAiDialogOpen,
+	userId,
 	turnstileToken,
 	TurnstileWidget,
-	onAiPromptChange,
-	onAiDialogOpenChange,
-	onGenerateAiQuiz,
+	onResetTurnstile,
 	onSelectQuiz,
 	onEditQuiz,
 	onDeleteQuiz,
@@ -56,17 +42,10 @@ export function QuizSections({
 
 			<CustomQuizzesSection
 				quizzes={customQuizzes}
-				isGenerating={isGenerating}
-				generatingPrompt={generatingPrompt}
-				generationStatus={generationStatus}
-				generatingCardRef={generatingCardRef}
-				aiPrompt={aiPrompt}
-				isAiDialogOpen={isAiDialogOpen}
+				userId={userId}
 				turnstileToken={turnstileToken}
 				TurnstileWidget={TurnstileWidget}
-				onAiPromptChange={onAiPromptChange}
-				onAiDialogOpenChange={onAiDialogOpenChange}
-				onGenerateAiQuiz={onGenerateAiQuiz}
+				onResetTurnstile={onResetTurnstile}
 				onSelectQuiz={onSelectQuiz}
 				onEditQuiz={onEditQuiz}
 				onDeleteQuiz={onDeleteQuiz}

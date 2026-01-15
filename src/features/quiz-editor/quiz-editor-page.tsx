@@ -1,6 +1,6 @@
 import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
 import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
-import { FormProvider, SubmitHandler } from 'react-hook-form';
+import { FormProvider, SubmitHandler, useWatch } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -119,6 +119,11 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 	const { fields, append, remove, move } = fieldArray;
 
 	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
+
+	const selectedImage = useWatch({
+		control,
+		name: `questions.${openImagePopover ?? 0}.backgroundImage`,
+	});
 
 	// React Query hooks
 	const { data: customQuizzes = [] } = useCustomQuizzes(userId);
@@ -343,7 +348,7 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 						onOpenChange={(open) => {
 							if (!open) setOpenImagePopover(undefined);
 						}}
-						selectedImage={openImagePopover === undefined ? undefined : getValues(`questions.${openImagePopover}.backgroundImage`)}
+						selectedImage={openImagePopover === undefined ? undefined : selectedImage}
 						onSelectImage={(path) => {
 							if (openImagePopover !== undefined) {
 								setValue(`questions.${openImagePopover}.backgroundImage`, path, { shouldDirty: true });

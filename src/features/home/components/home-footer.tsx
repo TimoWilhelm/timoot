@@ -19,7 +19,7 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 				<Button
 					asChild
 					className="
-						bg-muted text-sm uppercase shadow-brutal-sm transition-colors duration-75
+						bg-muted text-sm uppercase transition-colors duration-75
 						hover:bg-yellow
 					"
 				>
@@ -32,7 +32,7 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 					type="button"
 					onClick={onMusicCreditsClick}
 					className="
-						bg-muted text-sm uppercase shadow-brutal-sm transition-colors duration-75
+						bg-muted text-sm uppercase transition-colors duration-75
 						hover:bg-orange
 					"
 				>
@@ -43,7 +43,7 @@ export function HomeFooter({ onMusicCreditsClick, onSyncDevicesClick }: HomeFoot
 					type="button"
 					onClick={onSyncDevicesClick}
 					className="
-						bg-muted text-sm uppercase shadow-brutal-sm transition-colors duration-75
+						bg-muted text-sm uppercase transition-colors duration-75
 						hover:bg-blue
 					"
 				>

@@ -1,13 +1,19 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { BookOpen, HelpCircle, Loader2, Pencil, Plus, Sparkles, Trash2, Wand2, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { z } from 'zod';
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
-import { LIMITS } from '@shared/validation';
+import { queryKeys } from '@/hooks/use-api';
+import { hcWithType } from '@/lib/clients/api-client';
+import { consumeSSEStream } from '@/lib/clients/sse-client';
+import { aiPromptSchema, LIMITS, quizGenerateSSEEventSchema } from '@shared/validation';
 
 import type { Quiz } from '@shared/types';
 
@@ -34,17 +40,10 @@ function getStatusMessage(status: { stage: string; detail?: string } | undefined
 
 interface CustomQuizzesSectionProperties {
 	quizzes: Quiz[];
-	isGenerating: boolean;
-	generatingPrompt: string | undefined;
-	generationStatus: { stage: string; detail?: string } | undefined;
-	generatingCardRef: (element: HTMLDivElement | null) => void;
-	aiPrompt: string;
-	isAiDialogOpen: boolean;
+	userId: string;
 	turnstileToken: string | null | undefined;
 	TurnstileWidget: React.ComponentType<{ className?: string }>;
-	onAiPromptChange: (value: string) => void;
-	onAiDialogOpenChange: (open: boolean) => void;
-	onGenerateAiQuiz: () => void;
+	onResetTurnstile: () => void;
 	onSelectQuiz: (quiz: Quiz) => void;
 	onEditQuiz: (quizId: string) => void;
 	onDeleteQuiz: (quizId: string) => void;
@@ -52,22 +51,25 @@ interface CustomQuizzesSectionProperties {
 
 export function CustomQuizzesSection({
 	quizzes,
-	isGenerating,
-	generatingPrompt,
-	generationStatus,
-	generatingCardRef,
-	aiPrompt,
-	isAiDialogOpen,
+	userId,
 	turnstileToken,
 	TurnstileWidget,
-	onAiPromptChange,
-	onAiDialogOpenChange,
-	onGenerateAiQuiz,
+	onResetTurnstile,
 	onSelectQuiz,
 	onEditQuiz,
 	onDeleteQuiz,
 }: CustomQuizzesSectionProperties) {
 	const navigate = useViewTransitionNavigate();
+	const queryClient = useQueryClient();
+
+	// AI generation state - all managed internally
+	const [aiPrompt, setAiPrompt] = useState('');
+	const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
+	const [isGenerating, setIsGenerating] = useState(false);
+	const [generationStatus, setGenerationStatus] = useState<{ stage: string; detail?: string } | undefined>();
+	const [generatingPrompt, setGeneratingPrompt] = useState<string | undefined>();
+	const generatingCardReference = useRef<HTMLDivElement | null>(null);
+
 	const isLimitReached = quizzes.length >= LIMITS.MAX_QUIZZES_PER_USER;
 
 	const handleCreateClick = () => {
@@ -83,7 +85,79 @@ export function CustomQuizzesSection({
 			toast.error(`You've reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes. Delete some to create more.`);
 			return;
 		}
-		onAiDialogOpenChange(true);
+		setIsAiDialogOpen(true);
+	};
+
+	const handleGenerateAiQuiz = async () => {
+		if (quizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
+			toast.error(`You have reached the limit of ${LIMITS.MAX_QUIZZES_PER_USER} quizzes.`);
+			return;
+		}
+
+		const result = aiPromptSchema.safeParse(aiPrompt);
+		if (!result.success) {
+			toast.error(z.prettifyError(result.error));
+			return;
+		}
+
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
+
+		const prompt = aiPrompt.trim();
+		setGeneratingPrompt(prompt);
+		setIsGenerating(true);
+		setGenerationStatus(undefined);
+		setAiPrompt('');
+		setIsAiDialogOpen(false);
+
+		// Scroll to generating card after state updates
+		globalThis.setTimeout(() => {
+			generatingCardReference.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}, 100);
+
+		const client = hcWithType('/');
+		try {
+			const response = await client.api.quizzes.generate.$post({
+				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
+				json: { prompt, numQuestions: 5 },
+			});
+
+			await consumeSSEStream(response, quizGenerateSSEEventSchema, {
+				onEvent: (event) => {
+					switch (event.event) {
+						case 'status': {
+							setGenerationStatus(event.data);
+							break;
+						}
+						case 'complete': {
+							if (event.data.success && event.data.data) {
+								toast.success(`Quiz "${event.data.data.title}" generated successfully!`);
+								void queryClient.invalidateQueries({ queryKey: queryKeys.quizzes.custom(userId) });
+							}
+							break;
+						}
+						case 'error': {
+							toast.error(event.data.error || 'Failed to generate quiz');
+							break;
+						}
+					}
+				},
+				onError: (error) => {
+					console.error(error);
+					toast.error(error.message);
+				},
+			});
+		} catch (error) {
+			console.error(error);
+			toast.error(error instanceof Error ? error.message : 'Could not generate quiz. Please try again.');
+			onResetTurnstile();
+		} finally {
+			setIsGenerating(false);
+			setGenerationStatus(undefined);
+			setGeneratingPrompt(undefined);
+		}
 	};
 
 	return (
@@ -119,14 +193,11 @@ export function CustomQuizzesSection({
 				<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
 					<Button
 						type="button"
-						variant="ghost"
 						onClick={handleCreateClick}
 						className={`
 							group relative size-full flex-col items-center justify-center gap-4
-							overflow-hidden rounded-xl border-2 border-black p-6 text-center
-							shadow-brutal-sm transition-all duration-75
-							hover:-translate-y-0.5 hover:bg-blue/10 hover:shadow-brutal
-							active:translate-y-0.5 active:shadow-brutal-inset
+							overflow-hidden rounded-xl p-6 text-center transition-all duration-75
+							hover:bg-blue/10
 							${isLimitReached ? 'opacity-50 grayscale' : ''}
 						`}
 					>
@@ -146,7 +217,7 @@ export function CustomQuizzesSection({
 				</motion.div>
 
 				{isGenerating ? (
-					<motion.div ref={generatingCardRef} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+					<motion.div ref={generatingCardReference} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
 						<div
 							className={`
 								relative flex size-full flex-col items-start justify-between
@@ -186,14 +257,11 @@ export function CustomQuizzesSection({
 					<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
 						<Button
 							type="button"
-							variant="ghost"
 							onClick={handleMagicQuizClick}
 							className={`
 								group relative size-full flex-col items-center justify-center gap-4
-								overflow-hidden rounded-xl border-2 border-black p-6 text-center
-								shadow-brutal-sm transition-all duration-75
-								hover:-translate-y-0.5 hover:bg-purple/10 hover:shadow-brutal
-								active:translate-y-0.5 active:shadow-brutal-inset
+								overflow-hidden rounded-xl p-6 text-center transition-all duration-75
+								hover:bg-purple/10
 								${isLimitReached ? 'opacity-50 grayscale' : ''}
 							`}
 						>
@@ -211,7 +279,7 @@ export function CustomQuizzesSection({
 							<h3 className="font-display text-2xl font-bold">Magic Quiz</h3>
 						</Button>
 
-						<Dialog open={isAiDialogOpen} onOpenChange={onAiDialogOpenChange}>
+						<Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
 							<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 								<div className="bg-purple p-6">
 									<DialogHeader>
@@ -236,8 +304,12 @@ export function CustomQuizzesSection({
 											id="ai-prompt"
 											placeholder="e.g. 90s Pop Music, Quantum Physics, Cat Breeds..."
 											value={aiPrompt}
-											onChange={(event) => onAiPromptChange(event.target.value)}
-											onKeyDown={(event) => event.key === 'Enter' && onGenerateAiQuiz()}
+											onChange={(event) => setAiPrompt(event.target.value)}
+											onKeyDown={(event) => {
+												if (event.key === 'Enter') {
+													void handleGenerateAiQuiz();
+												}
+											}}
 											className={`
 												rounded-lg border-2 border-black bg-white px-4 py-2 font-medium
 												shadow-brutal-inset
@@ -252,7 +324,7 @@ export function CustomQuizzesSection({
 									</div>
 									<TurnstileWidget className="flex justify-center" />
 									<Button
-										onClick={onGenerateAiQuiz}
+										onClick={() => void handleGenerateAiQuiz()}
 										disabled={aiPrompt.trim().length < LIMITS.AI_PROMPT_MIN || !turnstileToken}
 										variant="accent"
 										className="w-full rounded-xl py-6 text-lg"
@@ -280,14 +352,20 @@ export function CustomQuizzesSection({
 						transition={{ delay: index * 0.05 }}
 						className="bg-white"
 					>
-						<Button
-							type="button"
-							variant="ghost"
+						<div
+							role="button"
+							tabIndex={0}
 							onClick={() => onSelectQuiz(quiz)}
+							onKeyDown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									onSelectQuiz(quiz);
+								}
+							}}
 							className={`
-								group relative size-full flex-col items-start justify-between
-								overflow-hidden rounded-xl border-2 border-black p-6 shadow-brutal-sm
-								transition-all duration-75
+								group relative flex size-full cursor-pointer flex-col items-start
+								justify-between overflow-hidden rounded-xl border-2 border-black p-6
+								shadow-brutal-sm transition-all duration-75
 								hover:-translate-y-0.5 hover:bg-pink/10 hover:shadow-brutal
 								active:translate-y-0.5 active:shadow-brutal-inset
 							`}
@@ -355,7 +433,7 @@ export function CustomQuizzesSection({
 									</Button>
 								</div>
 							</div>
-						</Button>
+						</div>
 					</motion.div>
 				))}
 			</div>
