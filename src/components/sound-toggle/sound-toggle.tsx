@@ -1,6 +1,7 @@
 import { Volume2, VolumeOff, VolumeX } from 'lucide-react';
 
 import { Button } from '@/components/button';
+import { Toggle } from '@/components/toggle';
 import { useSoundStore } from '@/lib/stores/sound-store';
 import { cn } from '@/lib/utilities';
 
@@ -11,13 +12,6 @@ interface SoundToggleProperties {
 
 export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 	const { isMuted, isBlocked, toggleMute } = useSoundStore();
-
-	const handleClick = () => {
-		if (!isBlocked) {
-			toggleMute();
-		}
-		onToggle?.();
-	};
 
 	const getIcon = () => {
 		if (isBlocked) {
@@ -31,27 +25,36 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 
 	const getAriaLabel = () => {
 		if (isBlocked) return 'Enable sounds';
-		if (isMuted) return 'Unmute sounds';
 		return 'Mute sounds';
 	};
 
 	return (
-		<Button
-			type="button"
-			variant="ghost"
-			size="icon"
-			onClick={handleClick}
-			className={cn(
-				`
-					rounded-full border border-slate bg-muted shadow-md backdrop-blur-xs
-					hover:scale-105
-				`,
-				isBlocked && 'animate-pulse ring-2 ring-red',
-				className,
-			)}
-			aria-label={getAriaLabel()}
+		<Toggle
+			asChild
+			pressed={isMuted}
+			onPressedChange={() => {
+				if (!isBlocked) {
+					toggleMute();
+				}
+				onToggle?.();
+			}}
+			aria-pressed={isBlocked ? undefined : isMuted}
 		>
-			{getIcon()}
-		</Button>
+			<Button
+				variant="ghost"
+				size="icon"
+				className={cn(
+					`
+						rounded-full border border-slate bg-muted shadow-md backdrop-blur-xs
+						hover:scale-105
+					`,
+					isBlocked && 'animate-pulse ring-2 ring-red',
+					className,
+				)}
+				aria-label={getAriaLabel()}
+			>
+				{getIcon()}
+			</Button>
+		</Toggle>
 	);
 }

@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { RadioGroup, RadioGroupItem } from '@/components/radio-group';
+import { Toggle } from '@/components/toggle';
 import { OptionCharCount, QuestionCharCount } from '@/features/quiz-editor/components/char-counters';
 import { cn } from '@/lib/utilities';
 import { LIMITS, type QuizFormInput } from '@shared/validation';
@@ -230,19 +231,14 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						control={control}
 						name={`questions.${index}.isDoublePoints`}
 						render={({ field }) => (
-							<Button
-								type="button"
-								variant={field.value ? 'accent' : 'subtle'}
-								size="sm"
-								onClick={() => field.onChange(!field.value)}
-								aria-label="Double points"
-								aria-pressed={field.value}
-							>
-								<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} aria-hidden="true" />
-								<span className="whitespace-nowrap" aria-hidden="true">
-									2× Points
-								</span>
-							</Button>
+							<Toggle asChild pressed={field.value} onPressedChange={field.onChange}>
+								<Button variant={field.value ? 'accent' : 'subtle'} size="sm" aria-label="Double points">
+									<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} aria-hidden="true" />
+									<span className="whitespace-nowrap" aria-hidden="true">
+										2× Points
+									</span>
+								</Button>
+							</Toggle>
 						)}
 					/>
 				</div>
