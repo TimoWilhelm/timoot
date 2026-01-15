@@ -20,9 +20,11 @@ export const Toggle = React.forwardRef<
 				}),
 			!asChild &&
 				`
-					data-[state=on]:bg-orange data-[state=on]:text-black
-					data-[state=on]:shadow-brutal-sm
-					data-[state=on]:hover:bg-orange/90
+					data-[state=on]:border-black data-[state=on]:bg-orange
+					data-[state=on]:text-black data-[state=on]:shadow-brutal-inset
+					data-[state=on]:hover:translate-y-0 data-[state=on]:hover:bg-orange/90
+					data-[state=on]:hover:shadow-brutal-inset
+					data-[state=on]:active:translate-y-0.5
 				`,
 			className,
 		)}

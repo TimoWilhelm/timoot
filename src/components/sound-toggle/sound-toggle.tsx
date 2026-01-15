@@ -47,6 +47,7 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 					`
 						rounded-full border border-slate bg-muted shadow-md backdrop-blur-xs
 						hover:scale-105
+						active:scale-95
 					`,
 					isBlocked && 'animate-pulse ring-2 ring-red',
 					className,

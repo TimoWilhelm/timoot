@@ -35,6 +35,7 @@ export const buttonVariants = cva(
 				ghost: `
 					border-transparent
 					hover:border-black hover:bg-muted
+					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				link: `
 					border-transparent underline-slide text-primary transition-none

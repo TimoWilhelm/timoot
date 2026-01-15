@@ -231,13 +231,11 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						control={control}
 						name={`questions.${index}.isDoublePoints`}
 						render={({ field }) => (
-							<Toggle asChild pressed={field.value} onPressedChange={field.onChange}>
-								<Button variant={field.value ? 'accent' : 'subtle'} size="sm" aria-label="Double points">
-									<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} aria-hidden="true" />
-									<span className="whitespace-nowrap" aria-hidden="true">
-										2× Points
-									</span>
-								</Button>
+							<Toggle pressed={field.value} onPressedChange={field.onChange} variant="subtle" size="sm" aria-label="Double points">
+								<Zap className={cn('size-4 shrink-0', field.value && 'fill-current')} aria-hidden="true" />
+								<span className="whitespace-nowrap" aria-hidden="true">
+									2× Points
+								</span>
 							</Toggle>
 						)}
 					/>
