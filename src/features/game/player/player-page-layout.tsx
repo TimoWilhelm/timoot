@@ -13,7 +13,7 @@ const variantStyles = {
 
 export function PlayerPageLayout({ children, variant = 'center' }: PlayerPageLayoutProperties) {
 	return (
-		<div className={cn('fixed inset-0 isolate w-full text-white', variantStyles[variant])}>
+		<div className={cn('fixed inset-0 isolate w-full text-white', variantStyles[variant])} data-player-mode="true">
 			<div className="fixed inset-0 -z-20 bg-black" aria-hidden="true" />
 			<GridBackground variant="dark" className="fixed -z-10" />
 			{children}

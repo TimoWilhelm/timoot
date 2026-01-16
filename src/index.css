@@ -205,6 +205,11 @@
 		text-rendering: optimizeLegibility;
 		overscroll-behavior: none;
 	}
+
+	html:has([data-player-mode='true']),
+	body:has([data-player-mode='true']) {
+		background-color: black;
+	}
 }
 
 @utility shadow-brutal {
