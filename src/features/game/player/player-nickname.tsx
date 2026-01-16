@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
 import { Input } from '@/components/input';
+import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { LIMITS, nicknameSchema } from '@shared/validation';
 
 const formSchema = z.object({
@@ -19,6 +20,7 @@ interface PlayerNicknameProperties {
 }
 
 export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) {
+	const navigate = useViewTransitionNavigate();
 	const formReference = useRef<HTMLFormElement>(null);
 	const {
 		register,
@@ -65,6 +67,17 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 					</div>
 					<Button type="submit" variant="dark-accent" size="xl" className="w-full" disabled={isLoading || !isValid || !nickname?.trim()}>
 						{isLoading ? 'Joining...' : 'Join Game'}
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						onClick={() => navigate('/')}
+						className={`
+							w-full text-muted-foreground
+							hover:bg-slate/50 hover:text-white
+						`}
+					>
+						Back to Home
 					</Button>
 				</form>
 			</CardContent>

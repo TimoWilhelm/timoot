@@ -205,6 +205,7 @@ export function PlayerJoinGame() {
 						<ArrowRight className="ml-2 size-5" />
 					</Button>
 					<Button
+						type="button"
 						variant="ghost"
 						onClick={handleGoHome}
 						className={`

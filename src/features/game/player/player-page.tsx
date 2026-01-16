@@ -289,7 +289,7 @@ export function PlayerPage() {
 					title="Game Already In Progress"
 					description="Sorry, this game has already started. You can wait for the next round or join a different game."
 				>
-					<Button variant="dark-accent" onClick={() => navigate('/')}>
+					<Button variant="dark-subtle" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
 				</PlayerError>
@@ -303,7 +303,7 @@ export function PlayerPage() {
 					title="Game Not Found"
 					description="We couldn't find a game with that code. It may have ended or the link might be incorrect."
 				>
-					<Button variant="dark-accent" onClick={() => navigate('/')}>
+					<Button variant="dark-subtle" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
 				</PlayerError>
@@ -336,7 +336,7 @@ export function PlayerPage() {
 					title="Game is Full"
 					description="Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round."
 				>
-					<Button variant="dark-accent" onClick={() => navigate('/')}>
+					<Button variant="dark-subtle" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
 				</PlayerError>
