@@ -17,9 +17,9 @@ export function PlayerActiveGame() {
 					bg-slate/50 px-4 py-2 text-xl font-bold
 				`}
 			>
-				<div className="flex w-full max-w-2xl justify-between">
-					<span className="font-display">{nickname}</span>
-					<span className="font-mono">
+				<div className="flex w-full max-w-2xl items-center justify-between gap-4">
+					<span className="min-w-0 truncate font-display">{nickname}</span>
+					<span className="shrink-0 font-mono whitespace-nowrap">
 						Score: <AnimatedNumber value={score} instant={!hasInitialScoreSync} />
 					</span>
 				</div>
