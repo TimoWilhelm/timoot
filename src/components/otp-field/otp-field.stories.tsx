@@ -18,47 +18,43 @@ export const Default: Story = {
 	args: {
 		length: 6,
 		validationMode: 'alphanumeric',
-		children: (
-			<>
-				<Input index={0} />
-				<Input index={1} />
-				<Input index={2} />
-				<Input index={3} />
-				<Input index={4} />
-				<Input index={5} />
-			</>
-		),
+		children: undefined,
 	},
+	render: (arguments_) => (
+		<Root {...arguments_}>
+			{Array.from({ length: arguments_.length ?? 6 }).map((_, index) => (
+				<Input key={index} index={index} />
+			))}
+		</Root>
+	),
 };
 
 export const Numeric: Story = {
 	args: {
 		length: 4,
 		validationMode: 'numeric',
-		children: (
-			<>
-				<Input index={0} />
-				<Input index={1} />
-				<Input index={2} />
-				<Input index={3} />
-			</>
-		),
+		children: undefined,
 	},
+	render: (arguments_) => (
+		<Root {...arguments_}>
+			{Array.from({ length: arguments_.length ?? 4 }).map((_, index) => (
+				<Input key={index} index={index} />
+			))}
+		</Root>
+	),
 };
 
 export const Disabled: Story = {
 	args: {
 		length: 6,
 		disabled: true,
-		children: (
-			<>
-				<Input index={0} />
-				<Input index={1} />
-				<Input index={2} />
-				<Input index={3} />
-				<Input index={4} />
-				<Input index={5} />
-			</>
-		),
+		children: undefined,
 	},
+	render: (arguments_) => (
+		<Root {...arguments_}>
+			{Array.from({ length: arguments_.length ?? 6 }).map((_, index) => (
+				<Input key={index} index={index} />
+			))}
+		</Root>
+	),
 };

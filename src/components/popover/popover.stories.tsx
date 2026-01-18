@@ -2,7 +2,7 @@ import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -21,9 +21,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
 	render: () => (
 		<Popover>
-			<PopoverTrigger asChild>
-				<Button variant="subtle">Open Popover</Button>
-			</PopoverTrigger>
+			<PopoverAnchor className="inline-block">
+				<PopoverTrigger asChild>
+					<Button variant="subtle">Open Popover</Button>
+				</PopoverTrigger>
+			</PopoverAnchor>
 			<PopoverContent className="w-80">
 				<div className="grid gap-4">
 					<div className="space-y-2">
