@@ -43,7 +43,8 @@ export const buttonVariants = cva(
 				ghost: `
 					border-transparent
 					hover:border-black hover:bg-muted
-					active:translate-y-0.5 active:shadow-brutal-inset
+					active:translate-y-0.5 active:border-black active:bg-muted
+					active:shadow-brutal-inset
 				`,
 				link: `
 					border-transparent underline-slide text-primary transition-none
@@ -51,7 +52,7 @@ export const buttonVariants = cva(
 				`,
 				// Dark variants for use on dark backgrounds (player pages)
 				'dark-default': `
-					border-slate bg-white text-black shadow-brutal-sm-slate
+					border-slate bg-black text-white shadow-brutal-sm-slate
 					hover:-translate-y-0.5 hover:shadow-brutal-slate
 					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
@@ -63,14 +64,16 @@ export const buttonVariants = cva(
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 				'dark-subtle': `
-					border-slate bg-slate/50 text-white shadow-brutal-sm-slate
-					hover:-translate-y-0.5 hover:bg-slate/80 hover:shadow-brutal-slate
+					border-slate bg-black text-white
+					hover:-translate-y-0.5 hover:bg-slate/80 hover:shadow-brutal-sm-slate
 					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				'dark-ghost': `
 					border-transparent text-white
-					hover:border-slate hover:bg-slate/30
+					hover:border-slate hover:bg-slate/80
+					active:translate-y-0.5 active:border-slate active:bg-slate/80
+					active:shadow-brutal-inset
 				`,
 			},
 			size: {

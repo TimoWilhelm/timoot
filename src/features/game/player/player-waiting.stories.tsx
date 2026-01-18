@@ -70,6 +70,7 @@ const meta = {
 	component: PlayerWaitingWrapper,
 	parameters: {
 		layout: 'fullscreen',
+		backgrounds: { default: 'dark' },
 	},
 	decorators: [
 		(Story) => (

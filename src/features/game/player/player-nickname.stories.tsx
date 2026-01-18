@@ -10,6 +10,7 @@ const meta = {
 	component: PlayerNickname,
 	parameters: {
 		layout: 'fullscreen',
+		backgrounds: { default: 'dark' },
 	},
 	args: {
 		onJoin: fn(),

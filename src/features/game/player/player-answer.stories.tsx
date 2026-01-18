@@ -71,6 +71,7 @@ const meta = {
 	component: PlayerAnswerWrapper,
 	parameters: {
 		layout: 'fullscreen',
+		backgrounds: { default: 'dark' },
 	},
 	args: {
 		onAnswer: fn(),

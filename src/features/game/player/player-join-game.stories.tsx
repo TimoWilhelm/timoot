@@ -8,6 +8,7 @@ const meta = {
 	component: PlayerJoinGame,
 	parameters: {
 		layout: 'fullscreen',
+		backgrounds: { default: 'dark' },
 	},
 	decorators: [
 		(Story) => (

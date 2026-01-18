@@ -114,13 +114,6 @@ export const DarkDefault: Story = {
 	parameters: {
 		backgrounds: { default: 'dark' },
 	},
-	decorators: [
-		(Story) => (
-			<div className="rounded-lg bg-black p-8">
-				<Story />
-			</div>
-		),
-	],
 };
 
 export const DarkAccent: Story = {
@@ -128,13 +121,9 @@ export const DarkAccent: Story = {
 		children: 'Submit Answer',
 		variant: 'dark-accent',
 	},
-	decorators: [
-		(Story) => (
-			<div className="rounded-lg bg-black p-8">
-				<Story />
-			</div>
-		),
-	],
+	parameters: {
+		backgrounds: { default: 'dark' },
+	},
 };
 
 export const DarkSubtle: Story = {
@@ -142,13 +131,9 @@ export const DarkSubtle: Story = {
 		children: 'Skip',
 		variant: 'dark-subtle',
 	},
-	decorators: [
-		(Story) => (
-			<div className="rounded-lg bg-black p-8">
-				<Story />
-			</div>
-		),
-	],
+	parameters: {
+		backgrounds: { default: 'dark' },
+	},
 };
 
 export const DarkGhost: Story = {
@@ -156,13 +141,9 @@ export const DarkGhost: Story = {
 		children: 'Cancel',
 		variant: 'dark-ghost',
 	},
-	decorators: [
-		(Story) => (
-			<div className="rounded-lg bg-black p-8">
-				<Story />
-			</div>
-		),
-	],
+	parameters: {
+		backgrounds: { default: 'dark' },
+	},
 };
 
 export const AllVariants: Story = {
