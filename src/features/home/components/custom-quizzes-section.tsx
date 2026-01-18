@@ -285,8 +285,9 @@ export function CustomQuizzesSection({
 									<DialogHeader>
 										<DialogTitle
 											className="
-												flex items-center gap-3 font-display text-3xl font-bold text-black
-												uppercase
+												flex items-center justify-center gap-3 font-display text-3xl
+												font-bold whitespace-nowrap text-black uppercase
+												sm:justify-start
 											"
 										>
 											<Wand2 className="size-8" />

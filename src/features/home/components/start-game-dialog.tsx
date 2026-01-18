@@ -31,7 +31,8 @@ export function StartGameDialog({
 					<DialogHeader>
 						<DialogTitle
 							className="
-								font-display text-3xl font-black tracking-tight text-black uppercase
+								font-display text-3xl font-black tracking-tight whitespace-nowrap
+								text-black uppercase
 							"
 						>
 							Start Game?

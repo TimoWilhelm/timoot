@@ -11,12 +11,14 @@ interface MusicCreditsDialogProperties {
 export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogProperties) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-[500px]">
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-125">
 				<div className="bg-orange p-6">
 					<DialogHeader>
 						<DialogTitle
 							className="
-								flex items-center gap-2 font-display text-2xl font-bold uppercase
+								flex items-center justify-center gap-2 font-display text-2xl font-bold
+								whitespace-nowrap uppercase
+								sm:justify-start
 							"
 						>
 							<Music className="size-6" />
@@ -24,7 +26,7 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 						</DialogTitle>
 					</DialogHeader>
 				</div>
-				<div className="max-h-[400px] space-y-4 overflow-y-auto p-6">
+				<div className="max-h-100 space-y-4 overflow-y-auto p-6">
 					{musicCredits.map((credit) => (
 						<div
 							key={credit.title}

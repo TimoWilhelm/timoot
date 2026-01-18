@@ -87,8 +87,8 @@ export function PlayerJoinGame() {
 										'h-14 w-full rounded-xl px-4 text-center font-mono text-xl',
 										'border-2 border-slate bg-slate/50',
 										`
-											text-white
-											placeholder:text-muted-foreground/50
+											overflow-hidden text-ellipsis text-white
+											placeholder:text-ellipsis placeholder:text-muted-foreground/50
 										`,
 										'focus:outline-none',
 										'transition-all duration-200',
@@ -144,7 +144,7 @@ export function PlayerJoinGame() {
 					</Popover>
 
 					{/* Validation hints */}
-					<div className="flex justify-center gap-2 text-xs">
+					<div className="flex justify-center gap-2 text-xs select-none">
 						<span
 							className={cn(
 								'rounded-sm px-2 py-1',

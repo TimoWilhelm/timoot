@@ -29,7 +29,10 @@ export function useGameCode() {
 	const parts = value.split('-');
 	const currentPart = parts.at(-1) || '';
 	const wordInfo = getWordListForPosition(parts);
-	const suggestions = useMemo(() => (wordInfo ? findMatches(currentPart, wordInfo.list).slice(0, 8) : []), [currentPart, wordInfo]);
+	const suggestions = useMemo(
+		() => (wordInfo && currentPart ? findMatches(currentPart, wordInfo.list).slice(0, 8) : []),
+		[currentPart, wordInfo],
+	);
 
 	const isComplete = isValidGameId(value);
 

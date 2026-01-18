@@ -70,7 +70,7 @@ export function ImageSelectionDialog({ open, onOpenChange, selectedImage, onSele
 		>
 			<DialogContent className="flex max-h-[90dvh] max-w-md flex-col overflow-hidden p-0">
 				<DialogHeader className="shrink-0 border-b px-4 pt-4 pb-3">
-					<DialogTitle>Background Image</DialogTitle>
+					<DialogTitle className="whitespace-nowrap">Background Image</DialogTitle>
 				</DialogHeader>
 				<div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
 					{/* Default Images */}

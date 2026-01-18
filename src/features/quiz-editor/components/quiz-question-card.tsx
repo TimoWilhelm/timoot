@@ -183,7 +183,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						</AlertDialogTrigger>
 						<AlertDialogContent>
 							<AlertDialogHeader>
-								<AlertDialogTitle>Delete Question {index + 1}?</AlertDialogTitle>
+								<AlertDialogTitle className="whitespace-nowrap">Delete Question {index + 1}?</AlertDialogTitle>
 								<AlertDialogDescription>
 									You have unsaved changes. Are you sure you want to delete this question? Your changes will be lost.
 								</AlertDialogDescription>

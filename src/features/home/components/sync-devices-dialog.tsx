@@ -98,7 +98,9 @@ export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount,
 					<DialogHeader>
 						<DialogTitle
 							className="
-								flex items-center gap-2 font-display text-2xl font-bold uppercase
+								flex items-center justify-center gap-2 font-display text-2xl font-bold
+								whitespace-nowrap uppercase
+								sm:justify-start
 							"
 						>
 							<RefreshCw className="size-6" />

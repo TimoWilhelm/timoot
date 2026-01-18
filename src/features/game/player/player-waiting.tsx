@@ -175,7 +175,7 @@ export function PlayerWaiting() {
 						<p className="mt-2 font-medium text-muted-foreground">See your name on the big screen.</p>
 						<Button variant="dark-ghost" asChild className="mt-8 text-muted-foreground hover:text-white">
 							<Link to="/" viewTransition>
-								Leave Game
+								Back to Home
 							</Link>
 						</Button>
 					</div>

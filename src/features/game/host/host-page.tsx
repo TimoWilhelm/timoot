@@ -319,7 +319,7 @@ export function HostPage() {
 			<AlertDialog open={blocker.state === 'blocked'}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle className="text-red">Leave Game?</AlertDialogTitle>
+						<AlertDialogTitle className="whitespace-nowrap text-red">Leave Game?</AlertDialogTitle>
 						<AlertDialogDescription>Are you sure you want to leave the game?</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
