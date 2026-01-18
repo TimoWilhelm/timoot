@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { shapeColors, shapePaths } from '@/features/game/shared/shapes';
+import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
 
 interface CountdownTimerProperties {
@@ -249,7 +250,12 @@ export function HostQuestion() {
 				<div className="absolute inset-0 bg-white" />
 				{/* Background image layer (layered on top, hidden if error) */}
 				{backgroundImage && !imageError && (
-					<img src={backgroundImage} alt="" className={`absolute inset-0 size-full object-cover`} onError={() => setImageError(true)} />
+					<img
+						src={getOptimizedImageUrl(backgroundImage, { width: 1920 })}
+						alt=""
+						className={`absolute inset-0 size-full object-cover`}
+						onError={() => setImageError(true)}
+					/>
 				)}
 
 				{/* Content layer */}

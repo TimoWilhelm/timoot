@@ -20,6 +20,7 @@ import { Label } from '@/components/label';
 import { RadioGroup, RadioGroupItem } from '@/components/radio-group';
 import { Toggle } from '@/components/toggle';
 import { OptionCharCount, QuestionCharCount } from '@/features/quiz-editor/components/char-counters';
+import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
 import { LIMITS, type QuizFormInput } from '@shared/validation';
 
@@ -217,7 +218,11 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 								}
 							>
 								{bgField.value ? (
-									<img src={bgField.value} alt="Background image preview" className={`absolute inset-0 size-full object-cover`} />
+									<img
+										src={getOptimizedImageUrl(bgField.value, { width: 80, height: 32 })}
+										alt="Background image preview"
+										className={`absolute inset-0 size-full object-cover`}
+									/>
 								) : (
 									<span className="flex items-center gap-1.5" aria-hidden="true">
 										<ImageIcon className="size-4" />

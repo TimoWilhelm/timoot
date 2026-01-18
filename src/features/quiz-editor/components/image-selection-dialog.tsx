@@ -8,6 +8,7 @@ import { Input } from '@/components/input';
 import { useGenerateImage } from '@/hooks/use-api';
 import { useTurnstile } from '@/hooks/utils/use-turnstile';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
+import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
 import { LIMITS } from '@shared/validation';
 
@@ -104,7 +105,7 @@ export function ImageSelectionDialog({ open, onOpenChange, selectedImage, onSele
 											: 'bg-muted text-muted-foreground',
 									)}
 								>
-									<img src={img.path} alt={img.name} className="size-full object-cover" />
+									<img src={getOptimizedImageUrl(img.path, { width: 400 })} alt={img.name} className="size-full object-cover" />
 								</Button>
 							))}
 						</div>

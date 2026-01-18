@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
 import { useDeleteImage, useImages, useLoadMoreImages } from '@/hooks/use-api';
+import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
 
 interface UserImagesListProperties {
@@ -60,7 +61,7 @@ export function UserImagesList({ userId, selectedImage, onSelectImage }: UserIma
 							)}
 							title={img.prompt}
 						>
-							<img src={img.path} alt={img.name} className="size-full object-cover" />
+							<img src={getOptimizedImageUrl(img.path, { width: 400 })} alt={img.name} className="size-full object-cover" />
 						</Button>
 						<Button
 							type="button"

@@ -118,7 +118,9 @@ export function PlayerJoinGame() {
 							</div>
 						</PopoverAnchor>
 						<PopoverContent
-							className={`w-(--radix-popover-trigger-width) border-slate bg-black p-0`}
+							className={`
+								w-(--radix-popover-trigger-width) border-slate-light bg-black p-0
+							`}
 							align="start"
 							onOpenAutoFocus={(event) => event.preventDefault()}
 						>
