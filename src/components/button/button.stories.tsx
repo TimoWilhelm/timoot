@@ -116,7 +116,7 @@ export const DarkDefault: Story = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="rounded-lg bg-slate p-8">
+			<div className="rounded-lg bg-black p-8">
 				<Story />
 			</div>
 		),
@@ -130,7 +130,7 @@ export const DarkAccent: Story = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="rounded-lg bg-slate p-8">
+			<div className="rounded-lg bg-black p-8">
 				<Story />
 			</div>
 		),
@@ -144,7 +144,7 @@ export const DarkSubtle: Story = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="rounded-lg bg-slate p-8">
+			<div className="rounded-lg bg-black p-8">
 				<Story />
 			</div>
 		),
@@ -158,7 +158,7 @@ export const DarkGhost: Story = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="rounded-lg bg-slate p-8">
+			<div className="rounded-lg bg-black p-8">
 				<Story />
 			</div>
 		),
@@ -176,7 +176,7 @@ export const AllVariants: Story = {
 				<Button variant="ghost">Ghost</Button>
 				<Button variant="link">Link</Button>
 			</div>
-			<div className="flex flex-wrap gap-2 rounded-lg bg-slate p-4">
+			<div className="flex flex-wrap gap-2 rounded-lg bg-black p-4">
 				<Button variant="dark-default">Dark Default</Button>
 				<Button variant="dark-accent">Dark Accent</Button>
 				<Button variant="dark-subtle">Dark Subtle</Button>

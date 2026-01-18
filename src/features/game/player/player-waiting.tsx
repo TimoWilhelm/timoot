@@ -172,7 +172,7 @@ export function PlayerWaiting() {
 				return (
 					<div className="text-center">
 						<h2 className="font-display text-4xl font-bold text-white">You're in!</h2>
-						<p className="mt-2 font-medium text-muted-foreground">See your name on the big screen.</p>
+						<p className="mt-2 font-medium text-muted-foreground">Waiting for the game to start…</p>
 						<Button variant="dark-ghost" asChild className="mt-8 text-muted-foreground hover:text-white">
 							<Link to="/" viewTransition>
 								Back to Home

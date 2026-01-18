@@ -2,11 +2,15 @@ import { cva } from 'class-variance-authority';
 
 export const buttonVariants = cva(
 	`
-		inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg
-		border-2 border-black text-sm font-bold whitespace-nowrap transition-all
-		duration-50
+		relative isolate inline-flex cursor-pointer items-center justify-center gap-2
+		rounded-lg border-2 border-black text-sm font-bold whitespace-nowrap
+		transition-all duration-75 ease-linear
+		after:absolute after:inset-0 after:-bottom-1 after:z-[-1]
+		after:transition-transform after:duration-75 after:ease-linear
+		after:content-['']
 		focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2
 		focus-visible:outline-hidden
+		active:duration-50
 		disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none
 	`,
 	{
@@ -15,21 +19,25 @@ export const buttonVariants = cva(
 				default: `
 					bg-primary-foreground text-primary shadow-brutal-sm
 					hover:-translate-y-0.5 hover:shadow-brutal
+					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				accent: `
 					bg-orange text-primary shadow-brutal-sm
 					hover:-translate-y-0.5 hover:bg-orange/90 hover:shadow-brutal
+					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				danger: `
 					bg-red text-primary shadow-brutal-sm
 					hover:-translate-y-0.5 hover:bg-red/90 hover:shadow-brutal
+					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				subtle: `
 					bg-primary-foreground text-primary
 					hover:-translate-y-0.5 hover:bg-muted hover:shadow-brutal-sm
+					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				ghost: `
@@ -45,16 +53,19 @@ export const buttonVariants = cva(
 				'dark-default': `
 					border-slate bg-white text-black shadow-brutal-sm-slate
 					hover:-translate-y-0.5 hover:shadow-brutal-slate
+					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				'dark-accent': `
 					border-4 border-orange-dark bg-orange text-white shadow-brutal-slate
 					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 				'dark-subtle': `
 					border-slate bg-slate/50 text-white shadow-brutal-sm-slate
 					hover:-translate-y-0.5 hover:bg-slate/80 hover:shadow-brutal-slate
+					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				'dark-ghost': `
@@ -77,6 +88,7 @@ export const buttonVariants = cva(
 				class: `
 					shadow-brutal
 					hover:-translate-y-1 hover:shadow-brutal-lg
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -85,6 +97,7 @@ export const buttonVariants = cva(
 				size: 'lg',
 				class: `
 					hover:-translate-y-1 hover:shadow-brutal
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -94,6 +107,7 @@ export const buttonVariants = cva(
 				class: `
 					shadow-brutal-slate
 					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -103,6 +117,7 @@ export const buttonVariants = cva(
 				class: `
 					shadow-brutal-slate
 					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -112,6 +127,7 @@ export const buttonVariants = cva(
 				class: `
 					shadow-brutal
 					hover:-translate-y-1 hover:shadow-brutal-lg
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -120,6 +136,7 @@ export const buttonVariants = cva(
 				size: 'xl',
 				class: `
 					hover:-translate-y-1 hover:shadow-brutal
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -129,6 +146,7 @@ export const buttonVariants = cva(
 				class: `
 					shadow-brutal-slate
 					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},
@@ -138,6 +156,7 @@ export const buttonVariants = cva(
 				class: `
 					shadow-brutal-slate
 					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 			},

@@ -18,7 +18,7 @@ Every game runs on its own Durable Object, keeping state synced across all playe
 
 ## Features
 
-- **AI-Powered Quiz Generation** — Describe your topic, get a quiz instantly via Cloudflare AI Gateway
+- **AI-Powered Quiz Generation** — Describe your topic, get a quiz instantly
 - **Real-time Multiplayer** — WebSocket-powered gameplay with sub-second updates
 - **Two-Screen Experience** — Big screen for the host, phones for players
 - **Instant Join** — PIN code or QR scan, no app download needed

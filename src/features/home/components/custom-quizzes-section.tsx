@@ -293,7 +293,7 @@ export function CustomQuizzesSection({
 											<Wand2 className="size-8" />
 											Magic Quiz
 										</DialogTitle>
-										<DialogDescription className="text-black/70">Describe your topic and let AI do the heavy lifting.</DialogDescription>
+										<DialogDescription className="text-black/70">Generate a quiz from any topic.</DialogDescription>
 									</DialogHeader>
 								</div>
 								<div className="space-y-6 p-6">
