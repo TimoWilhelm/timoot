@@ -152,6 +152,44 @@ export function Root({
 
 	const handleChange = useCallback(
 		(index: number, inputValue: string) => {
+			const sanitized = sanitizeValue(inputValue, validationMode);
+
+			// Handle paste/autofill (multiple characters)
+			if (sanitized.length > 1) {
+				const oldValue = value[index] || '';
+				// Detect single char addition to existing value (Overwrite behavior)
+				const isOverwrite = oldValue && sanitized.length === 2 && sanitized.includes(oldValue);
+
+				if (!isOverwrite) {
+					// Paste/Distribution behavior
+					const chars = [...value];
+					const sanitizedChars = [...sanitized];
+
+					for (const [offset, char] of sanitizedChars.entries()) {
+						if (index + offset < length) {
+							chars[index + offset] = char;
+						}
+					}
+
+					const newValue = chars.join('').slice(0, length);
+					updateValue(newValue);
+
+					// Update all inputs manually to ensure sync
+					for (let inputIndex = 0; inputIndex < length; inputIndex++) {
+						const input = inputReferences.current[inputIndex];
+						if (input) {
+							input.value = newValue[inputIndex] || '';
+						}
+					}
+
+					// Focus appropriate input
+					const nextIndex = Math.min(index + sanitized.length, length - 1);
+					inputReferences.current[nextIndex]?.focus();
+					return;
+				}
+			}
+
+			// Single character behavior (Type/Overwrite)
 			const char = inputValue.slice(-1);
 
 			if (char && !validateChar(char, validationMode)) {
@@ -354,7 +392,7 @@ export function Input({ index, className }: InputProperties) {
 			ref={(element) => registerInput(index, element ?? undefined)}
 			type="text"
 			inputMode={validationMode === 'numeric' ? 'numeric' : 'text'}
-			maxLength={2}
+			maxLength={length}
 			disabled={disabled}
 			defaultValue={charValue}
 			aria-label={`Character ${index + 1} of ${length}`}
