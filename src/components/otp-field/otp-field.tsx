@@ -98,7 +98,8 @@ function sanitizeValue(value: string, mode: ValidationMode): string {
 const inputClassName = `
 	aspect-square size-12 grow rounded-lg border-2 border-black bg-white
 	text-center font-mono text-xl font-bold uppercase shadow-brutal-inset
-	transition-all duration-75 ease-out
+	ring-0 ring-transparent ring-offset-0
+	transition-all duration-300 ease-spring
 	placeholder:text-muted-foreground/50
 	focus:ring-2 focus:ring-black focus:ring-offset-2 focus:outline-hidden
 	disabled:cursor-not-allowed disabled:opacity-50

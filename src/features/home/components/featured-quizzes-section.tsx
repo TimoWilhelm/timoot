@@ -57,9 +57,8 @@ export function FeaturedQuizzesSection({ quizzes, startingQuizId, onSelectQuiz }
 							onClick={() => onSelectQuiz(quiz)}
 							className={cn(
 								`
-									group relative size-full flex-col items-start overflow-hidden
-									rounded-xl border-2 border-black p-6 text-left shadow-brutal-sm
-									transition-all duration-75
+									group relative size-full flex-col items-start rounded-xl border-2
+									border-black p-6 text-left shadow-brutal-sm transition-all duration-75
 									hover:-translate-y-0.5 hover:bg-yellow/10 hover:shadow-brutal
 									active:translate-y-0.5 active:shadow-brutal-inset
 								`,

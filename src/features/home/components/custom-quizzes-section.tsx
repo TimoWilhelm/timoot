@@ -196,7 +196,7 @@ export function CustomQuizzesSection({
 						onClick={handleCreateClick}
 						className={`
 							group relative size-full flex-col items-center justify-center gap-4
-							overflow-hidden rounded-xl p-6 text-center transition-all duration-75
+							rounded-xl p-6 text-center transition-all duration-75
 							hover:bg-blue/10
 							${isLimitReached ? 'opacity-50 grayscale' : ''}
 						`}
@@ -260,7 +260,7 @@ export function CustomQuizzesSection({
 							onClick={handleMagicQuizClick}
 							className={`
 								group relative size-full flex-col items-center justify-center gap-4
-								overflow-hidden rounded-xl p-6 text-center transition-all duration-75
+								rounded-xl p-6 text-center transition-all duration-75
 								hover:bg-purple/10
 								${isLimitReached ? 'opacity-50 grayscale' : ''}
 							`}
@@ -364,9 +364,9 @@ export function CustomQuizzesSection({
 								}
 							}}
 							className={`
-								group relative flex size-full cursor-pointer flex-col items-start
-								justify-between overflow-hidden rounded-xl border-2 border-black p-6
-								shadow-brutal-sm transition-all duration-75
+								group neo-focus-ring relative flex size-full cursor-pointer flex-col
+								items-start justify-between rounded-xl border-2 border-black p-6
+								shadow-brutal-sm outline-hidden transition-all duration-75
 								hover:-translate-y-0.5 hover:bg-pink/10 hover:shadow-brutal
 								active:translate-y-0.5 active:shadow-brutal-inset
 							`}

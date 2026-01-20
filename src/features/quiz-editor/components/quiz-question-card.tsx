@@ -212,7 +212,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 								type="button"
 								variant="subtle"
 								onClick={() => onOpenImageDialog(index)}
-								className="relative h-8 w-20 overflow-hidden p-0"
+								className="relative h-8 w-20 p-0"
 								aria-label={
 									bgField.value ? `Change background image for question ${index + 1}` : `Add background image for question ${index + 1}`
 								}
@@ -221,7 +221,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 									<img
 										src={getOptimizedImageUrl(bgField.value, { width: 80, height: 32 })}
 										alt="Background image preview"
-										className={`absolute inset-0 size-full object-cover`}
+										className={`absolute inset-0 size-full rounded-md object-cover`}
 									/>
 								) : (
 									<span className="flex items-center gap-1.5" aria-hidden="true">
