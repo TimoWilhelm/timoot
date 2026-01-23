@@ -45,9 +45,11 @@ export function DialogContent({
 	className,
 	children,
 	ref,
+	onAnimationEnd,
 	...properties
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
 	ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Content>>;
+	onAnimationEnd?: () => void;
 }) {
 	const { open } = React.useContext(DialogContext);
 
@@ -82,6 +84,7 @@ export function DialogContent({
 								animate={{ opacity: 1, scale: 1 }}
 								exit={{ opacity: 0, scale: 0.95 }}
 								transition={{ duration: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
+								onAnimationComplete={() => !open && onAnimationEnd?.()}
 							>
 								{children}
 							</motion.div>

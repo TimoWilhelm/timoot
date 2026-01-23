@@ -1,22 +1,22 @@
 import { Check, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { OneTimePasswordField } from '@/components/otp-field';
 import { useGenerateSyncCode, useRedeemSyncCode } from '@/hooks/use-api';
 
-interface SyncDevicesDialogProperties {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
+type SyncDevicesDialogProperties = {
 	userId: string;
 	customQuizCount: number;
 	onSyncSuccess: (newUserId: string) => void;
-}
+};
 
-export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount, onSyncSuccess }: SyncDevicesDialogProperties) {
+export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties>(({ userId, customQuizCount, onSyncSuccess }) => {
+	const modal = useModal();
 	const [syncCode, setSyncCode] = useState<string | undefined>();
 	const [codeCopied, setCodeCopied] = useState(false);
 	const [showSyncWarning, setShowSyncWarning] = useState(false);
@@ -27,18 +27,6 @@ export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount,
 
 	const isGeneratingSyncCode = generateSyncCodeMutation.isPending;
 	const isRedeemingSyncCode = redeemSyncCodeMutation.isPending;
-
-	// Reset state when dialog opens/closes
-	const handleOpenChange = (newOpen: boolean) => {
-		if (!newOpen) {
-			// Reset state when closing
-			setSyncCode(undefined);
-			setCodeCopied(false);
-			setShowSyncWarning(false);
-			setInputSyncCode('');
-		}
-		onOpenChange(newOpen);
-	};
 
 	const handleGenerateSyncCode = () => {
 		generateSyncCodeMutation.mutate(
@@ -72,7 +60,7 @@ export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount,
 				onSuccess: (data) => {
 					onSyncSuccess(data.userId);
 					toast.success('Device synced! Refreshing...');
-					handleOpenChange(false);
+					modal.close();
 					// Reload to fetch data with new userId
 					globalThis.setTimeout(() => globalThis.location.reload(), 500);
 				},
@@ -92,8 +80,8 @@ export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount,
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
+		<Dialog {...shadcnUiDialog(modal)}>
+			<DialogContent {...shadcnUiDialogContent(modal)} className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 				<div className="bg-blue p-6">
 					<DialogHeader>
 						<DialogTitle
@@ -106,6 +94,7 @@ export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount,
 							<RefreshCw className="size-6" />
 							Sync Devices
 						</DialogTitle>
+						<DialogDescription className="sr-only">Generate or enter a code to sync your game data across devices.</DialogDescription>
 					</DialogHeader>
 				</div>
 				<div className="space-y-6 p-6">
@@ -191,4 +180,4 @@ export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount,
 			</DialogContent>
 		</Dialog>
 	);
-}
+});

@@ -1,32 +1,82 @@
 import { Gamepad2, Loader2 } from 'lucide-react';
+import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
+import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
+import { useCreateGame } from '@/hooks/use-api';
+import { useUserId } from '@/hooks/use-user-id';
+import { useTurnstile } from '@/hooks/utils/use-turnstile';
+import { useHostStore } from '@/lib/stores/host-store';
 
 import type { Quiz } from '@shared/types';
 
-interface StartGameDialogProperties {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-	selectedQuiz: Quiz | undefined;
-	isGameStarting: boolean;
-	turnstileToken: string | null | undefined;
-	TurnstileWidget: React.ComponentType<{ className?: string }>;
-	onStartGame: () => void;
-}
+type StartGameDialogProperties = {
+	selectedQuiz: Quiz;
+};
 
-export function StartGameDialog({
-	open,
-	onOpenChange,
-	selectedQuiz,
-	isGameStarting,
-	turnstileToken,
-	TurnstileWidget,
-	onStartGame,
-}: StartGameDialogProperties) {
+export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({ selectedQuiz }) => {
+	const modal = useModal();
+	const navigate = useViewTransitionNavigate();
+	const addSecret = useHostStore((s) => s.addSecret);
+	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
+	const { userId } = useUserId();
+
+	const createGameMutation = useCreateGame();
+	const isGameStarting = createGameMutation.isPending;
+
+	const handleStartGame = async () => {
+		if (isGameStarting) return;
+		if (!turnstileToken) {
+			toast.error('Please complete the captcha verification first');
+			return;
+		}
+
+		createGameMutation.mutate(
+			{
+				header: { 'x-user-id': userId, 'x-turnstile-token': turnstileToken },
+				json: { quizId: selectedQuiz.id },
+			},
+			{
+				onSuccess: (result) => {
+					if (result.success && result.data) {
+						if ('error' in result.data && typeof result.data.error === 'string') {
+							toast.error(result.data.error);
+							return;
+						}
+						if (result.data.id && result.data.hostSecret) {
+							addSecret(result.data.id, result.data.hostSecret);
+							modal.close();
+							navigate(`/host/${result.data.id}`);
+						} else {
+							toast.error('Game created, but missing ID or secret.');
+						}
+					} else {
+						toast.error('error' in result ? String(result.error) : 'Failed to create game');
+					}
+				},
+				onError: (error) => {
+					console.error(error);
+					toast.error(error.message || 'Could not start a new game. Please try again.');
+					resetToken();
+				},
+			},
+		);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={(o) => !isGameStarting && onOpenChange(o)}>
-			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
+		<Dialog {...shadcnUiDialog(modal)}>
+			<DialogContent
+				{...shadcnUiDialogContent(modal)}
+				onInteractOutside={(event) => {
+					if (isGameStarting) event.preventDefault();
+				}}
+				className="
+					overflow-hidden border-4 border-black p-0
+					sm:max-w-106.25
+				"
+			>
 				<div className="bg-yellow p-6">
 					<DialogHeader>
 						<DialogTitle
@@ -37,6 +87,9 @@ export function StartGameDialog({
 						>
 							Start Game?
 						</DialogTitle>
+						<DialogDescription className="sr-only">
+							Start a new game with the selected quiz. You will be redirected to the host screen.
+						</DialogDescription>
 					</DialogHeader>
 				</div>
 				<div className="p-6">
@@ -60,7 +113,7 @@ export function StartGameDialog({
 					<TurnstileWidget className="mb-4 flex justify-center" />
 					<div className="flex gap-3">
 						<Button
-							onClick={onStartGame}
+							onClick={handleStartGame}
 							disabled={isGameStarting || !turnstileToken}
 							variant="accent"
 							className="w-full rounded-xl py-6 text-lg"
@@ -73,4 +126,4 @@ export function StartGameDialog({
 			</DialogContent>
 		</Dialog>
 	);
-}
+});

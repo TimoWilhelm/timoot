@@ -1,17 +1,15 @@
 import { Music } from 'lucide-react';
+import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { musicCredits } from '@/lib/music-credits';
 
-interface MusicCreditsDialogProperties {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-}
+export const MusicCreditsDialog = ModalManager.create(() => {
+	const modal = useModal();
 
-export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogProperties) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-125">
+		<Dialog {...shadcnUiDialog(modal)}>
+			<DialogContent {...shadcnUiDialogContent(modal)} className="overflow-hidden border-4 border-black p-0 sm:max-w-125">
 				<div className="bg-orange p-6">
 					<DialogHeader>
 						<DialogTitle
@@ -24,6 +22,7 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 							<Music className="size-6" />
 							Music Credits
 						</DialogTitle>
+						<DialogDescription className="sr-only">List of music tracks and their licenses used in the game.</DialogDescription>
 					</DialogHeader>
 				</div>
 				<div className="max-h-100 space-y-4 overflow-y-auto p-6">
@@ -71,4 +70,4 @@ export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogPro
 			</DialogContent>
 		</Dialog>
 	);
-}
+});

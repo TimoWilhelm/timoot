@@ -1,7 +1,8 @@
 import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
-import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
-import { FormProvider, SubmitHandler, useWatch } from 'react-hook-form';
+import { Suspense, use, useEffect, useMemo, useRef } from 'react';
+import { FormProvider, SubmitHandler } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
+import { ModalManager } from 'shadcn-modal-manager';
 import { toast } from 'sonner';
 
 import {
@@ -117,13 +118,6 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 		formState: { errors, isSubmitting, isDirty },
 	} = methods;
 	const { fields, append, remove, move } = fieldArray;
-
-	const [openImagePopover, setOpenImagePopover] = useState<number | undefined>();
-
-	const selectedImage = useWatch({
-		control,
-		name: `questions.${openImagePopover ?? 0}.backgroundImage`,
-	});
 
 	// React Query hooks
 	const { data: customQuizzes = [] } = useCustomQuizzes(userId);
@@ -292,7 +286,18 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 								remove={remove}
 								isFirst={index === 0}
 								isLast={index === fields.length - 1}
-								onOpenImageDialog={setOpenImagePopover}
+								onOpenImageDialog={(index) => {
+									const currentImage = getValues(`questions.${index}.backgroundImage`);
+									ModalManager.open(ImageSelectionDialog, {
+										data: {
+											selectedImage: currentImage,
+											userId,
+											onSelectImage: (path: string) => {
+												setValue(`questions.${index}.backgroundImage`, path, { shouldDirty: true });
+											},
+										},
+									});
+								}}
 							/>
 						))}
 
@@ -342,20 +347,6 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 							</Button>
 						</div>
 					</form>
-
-					<ImageSelectionDialog
-						open={openImagePopover !== undefined}
-						onOpenChange={(open) => {
-							if (!open) setOpenImagePopover(undefined);
-						}}
-						selectedImage={openImagePopover === undefined ? undefined : selectedImage}
-						onSelectImage={(path) => {
-							if (openImagePopover !== undefined) {
-								setValue(`questions.${openImagePopover}.backgroundImage`, path, { shouldDirty: true });
-							}
-						}}
-						userId={userId}
-					/>
 				</FormProvider>
 			</div>
 
