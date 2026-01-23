@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useBlocker, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -14,7 +15,6 @@ import {
 	AlertDialogTitle,
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
-import { Head } from '@/components/meta/head';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerError } from '@/features/game/player/player-error';
 import { PlayerGameProvider } from '@/features/game/player/player-game-provider';
@@ -374,7 +374,9 @@ export function PlayerPage() {
 
 	return (
 		<PlayerPageLayout variant={view === 'GAME' && !isSpinnerVisible ? 'game' : 'center'}>
-			<Head title="Play - Timoot" />
+			<Helmet>
+				<title>Play - Timoot</title>
+			</Helmet>
 			{renderContent()}
 
 			{/* Leave game confirmation dialog */}

@@ -11,6 +11,22 @@ import { VitePWA } from 'vite-plugin-pwa';
 // https://vite.dev/config/
 export default function defineViteConfig({ mode }: { mode: string }): UserConfig {
 	const environment = loadEnv(mode, process.cwd(), '');
+	// SEO Constants
+	const title = 'Timoot';
+	const description = 'A fun multiplayer quiz game';
+	const themeColor = '#f48120';
+	const origin = 'https://timoot.com';
+	const image = new URL('/og-image.png', origin).href;
+	const logo = new URL('/favicon/timoot.svg', origin).href;
+	const jsonLd = {
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: title,
+		url: `${origin}/`,
+		description: description,
+		image: image,
+	};
+
 	return defineConfig({
 		plugins: [
 			devtoolsJson(),
@@ -24,20 +40,19 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 				telemetry: false,
 			}),
 			VitePWA({
-				includeAssets: ['favicon/timoot.svg'],
 				registerType: 'autoUpdate',
 				manifest: {
 					id: 'a4b945bd-512a-4819-b8aa-f8cc393b5c10',
-					name: 'Timoot',
-					short_name: 'Timoot',
-					description: 'A fun multiplayer quiz game',
+					name: title,
+					short_name: title,
+					description,
 					orientation: 'natural',
 					start_url: '/',
 					scope: '/',
 					display: 'standalone',
 					display_override: ['window-controls-overlay'],
 					background_color: '#ffffff',
-					theme_color: '#f48120',
+					theme_color: themeColor,
 					icons: [
 						{
 							src: '/favicon/timoot.svg',
@@ -55,6 +70,39 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 					enabled: true,
 				},
 			}),
+			{
+				name: 'vite-plugin-seo-inject',
+				transformIndexHtml() {
+					return [
+						// Basic Defaults
+						{ tag: 'title', children: title },
+						{ tag: 'meta', attrs: { name: 'description', content: description } },
+						{ tag: 'meta', attrs: { name: 'theme-color', content: themeColor } },
+
+						// OpenGraph
+						{ tag: 'meta', attrs: { property: 'og:title', content: title } },
+						{ tag: 'meta', attrs: { property: 'og:description', content: description } },
+						{ tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
+						{ tag: 'meta', attrs: { property: 'og:site_name', content: 'Timoot' } },
+						{ tag: 'meta', attrs: { property: 'og:url', content: `${origin}/` } },
+						{ tag: 'meta', attrs: { property: 'og:image', content: image } },
+						{ tag: 'meta', attrs: { property: 'og:logo', content: logo } },
+
+						// Twitter
+						{ tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+						{ tag: 'meta', attrs: { name: 'twitter:title', content: title } },
+						{ tag: 'meta', attrs: { name: 'twitter:description', content: description } },
+						{ tag: 'meta', attrs: { name: 'twitter:image', content: image } },
+
+						// JSON-LD
+						{
+							tag: 'script',
+							attrs: { type: 'application/ld+json' },
+							children: JSON.stringify(jsonLd),
+						},
+					];
+				},
+			},
 		],
 		build: {
 			sourcemap: true,

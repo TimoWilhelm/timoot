@@ -1,6 +1,7 @@
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -15,7 +16,6 @@ import {
 	AlertDialogTitle,
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
-import { Head } from '@/components/meta/head';
 import { SoundToggle } from '@/components/sound-toggle';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
@@ -271,7 +271,9 @@ export function HostPage() {
 
 	return (
 		<HostPageLayout>
-			<Head title="Host Game - Timoot" />
+			<Helmet>
+				<title>Host Game - Timoot</title>
+			</Helmet>
 			{/* Sound toggle button - fixed position, responsive spacing */}
 			<div
 				className="

@@ -1,5 +1,6 @@
 import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
 import { Suspense, use, useEffect, useMemo, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { FormProvider, SubmitHandler } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
 import { ModalManager } from 'shadcn-modal-manager';
@@ -21,7 +22,6 @@ import { GridBackground } from '@/components/grid-background';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { LoadingFallback } from '@/components/loading-fallback';
-import { Head } from '@/components/meta/head';
 import { TitleCharCount } from '@/features/quiz-editor/components/char-counters';
 import { ImageSelectionDialog } from '@/features/quiz-editor/components/image-selection-dialog';
 import { QuizQuestionCard } from '@/features/quiz-editor/components/quiz-question-card';
@@ -46,7 +46,9 @@ export function QuizEditorPage() {
 
 	return (
 		<div className="relative isolate min-h-screen bg-muted/50">
-			<Head title={quizId ? 'Edit Quiz - Timoot' : 'Create Quiz - Timoot'} />
+			<Helmet>
+				<title>{quizId ? 'Edit Quiz - Timoot' : 'Create Quiz - Timoot'}</title>
+			</Helmet>
 			<GridBackground className="-z-10" />
 			{quizId ? (
 				<Suspense fallback={<LoadingFallback message="Loading quiz..." />}>
