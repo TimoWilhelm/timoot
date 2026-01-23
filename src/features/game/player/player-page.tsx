@@ -14,6 +14,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
+import { Head } from '@/components/meta/head';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerError } from '@/features/game/player/player-error';
 import { PlayerGameProvider } from '@/features/game/player/player-game-provider';
@@ -373,6 +374,7 @@ export function PlayerPage() {
 
 	return (
 		<PlayerPageLayout variant={view === 'GAME' && !isSpinnerVisible ? 'game' : 'center'}>
+			<Head title="Play - Timoot" />
 			{renderContent()}
 
 			{/* Leave game confirmation dialog */}

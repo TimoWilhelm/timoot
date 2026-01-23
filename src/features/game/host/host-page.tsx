@@ -15,6 +15,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
+import { Head } from '@/components/meta/head';
 import { SoundToggle } from '@/components/sound-toggle';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
@@ -270,6 +271,7 @@ export function HostPage() {
 
 	return (
 		<HostPageLayout>
+			<Head title="Host Game - Timoot" />
 			{/* Sound toggle button - fixed position, responsive spacing */}
 			<div
 				className="

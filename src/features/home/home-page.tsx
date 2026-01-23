@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { GridBackground } from '@/components/grid-background';
 import { LoadingFallback } from '@/components/loading-fallback';
+import { Head } from '@/components/meta/head';
 import {
 	DeleteQuizDialog,
 	HeroSection,
@@ -58,6 +59,25 @@ export function HomePage() {
 			"
 		>
 			<GridBackground className="-z-10" />
+			<Head
+				title="Timoot - The Ultimate Multiplayer Quiz Game"
+				description="Join or host exciting quizzes with your friends! Create your own questions or choose from our curated list. Fast, fun, and free."
+				jsonLd={[
+					{
+						'@context': 'https://schema.org',
+						'@type': 'WebSite',
+						name: 'Timoot',
+						url: globalThis.window === undefined ? 'https://timoot.com' : globalThis.location.origin,
+					},
+					{
+						'@context': 'https://schema.org',
+						'@type': 'SoftwareApplication',
+						name: 'Timoot',
+						applicationCategory: 'Game',
+						operatingSystem: 'Any',
+					},
+				]}
+			/>
 			<main
 				className="
 					relative mx-auto max-w-7xl px-4 py-8
