@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, UserConfig } from 'vite';
 import devtoolsJson from 'vite-plugin-devtools-json';
+import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default function defineViteConfig({ mode }: { mode: string }): UserConfig {
@@ -21,6 +22,38 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 				org: 'daxo',
 				project: 'timoot',
 				telemetry: false,
+			}),
+			VitePWA({
+				includeAssets: ['favicon/timoot.svg'],
+				registerType: 'autoUpdate',
+				manifest: {
+					id: 'a4b945bd-512a-4819-b8aa-f8cc393b5c10',
+					name: 'Timoot',
+					short_name: 'Timoot',
+					description: 'A fun multiplayer quiz game',
+					orientation: 'natural',
+					start_url: '/',
+					scope: '/',
+					display: 'standalone',
+					display_override: ['window-controls-overlay'],
+					background_color: '#ffffff',
+					theme_color: '#f48120',
+					icons: [
+						{
+							src: '/favicon/timoot.svg',
+							sizes: 'any',
+							type: 'image/svg+xml',
+							purpose: 'any',
+						},
+					],
+				},
+				workbox: {
+					navigateFallback: '/index.html',
+					globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+				},
+				devOptions: {
+					enabled: true,
+				},
 			}),
 		],
 		build: {
