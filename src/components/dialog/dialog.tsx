@@ -41,10 +41,14 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 
 const DialogPortal = DialogPrimitive.Portal;
 
-export const DialogContent = React.forwardRef<
-	React.ComponentRef<typeof DialogPrimitive.Content>,
-	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...properties }, reference) => {
+export function DialogContent({
+	className,
+	children,
+	ref,
+	...properties
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+	ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Content>>;
+}) {
 	const { open } = React.useContext(DialogContext);
 
 	return (
@@ -64,7 +68,7 @@ export const DialogContent = React.forwardRef<
 							fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4
 						`}
 					>
-						<DialogPrimitive.Content ref={reference} forceMount asChild {...properties}>
+						<DialogPrimitive.Content ref={ref} forceMount asChild {...properties}>
 							<motion.div
 								className={cn(
 									`
@@ -87,7 +91,7 @@ export const DialogContent = React.forwardRef<
 			)}
 		</AnimatePresence>
 	);
-});
+}
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 export const DialogHeader = ({ className, children, ...properties }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -122,22 +126,30 @@ export const DialogFooter = ({ className, ...properties }: React.HTMLAttributes<
 );
 DialogFooter.displayName = 'DialogFooter';
 
-export const DialogTitle = React.forwardRef<
-	React.ComponentRef<typeof DialogPrimitive.Title>,
-	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...properties }, reference) => (
-	<DialogPrimitive.Title
-		ref={reference}
-		className={cn(`font-display text-2xl leading-none font-bold tracking-tight`, className)}
-		{...properties}
-	/>
-));
+export function DialogTitle({
+	className,
+	ref,
+	...properties
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> & {
+	ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Title>>;
+}) {
+	return (
+		<DialogPrimitive.Title
+			ref={ref}
+			className={cn(`font-display text-2xl leading-none font-bold tracking-tight`, className)}
+			{...properties}
+		/>
+	);
+}
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-export const DialogDescription = React.forwardRef<
-	React.ComponentRef<typeof DialogPrimitive.Description>,
-	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...properties }, reference) => (
-	<DialogPrimitive.Description ref={reference} className={cn(`text-sm text-muted-foreground`, className)} {...properties} />
-));
+export function DialogDescription({
+	className,
+	ref,
+	...properties
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description> & {
+	ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Description>>;
+}) {
+	return <DialogPrimitive.Description ref={ref} className={cn(`text-sm text-muted-foreground`, className)} {...properties} />;
+}
 DialogDescription.displayName = DialogPrimitive.Description.displayName;

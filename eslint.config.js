@@ -41,6 +41,17 @@ export default defineConfig(
 	reactHooks.configs.flat.recommended,
 	reactRefresh.configs.vite,
 	reactCompiler.configs.recommended,
+	{
+		rules: {
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector: "CallExpression[callee.property.name='forwardRef'], CallExpression[callee.name='forwardRef']",
+					message: 'forwardRef is deprecated in React 19. Use ref as a prop instead.',
+				},
+			],
+		},
+	},
 
 	importX.flatConfigs.recommended,
 	{

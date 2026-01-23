@@ -9,10 +9,14 @@ const labelVariants = cva(`
 	peer-disabled:cursor-not-allowed peer-disabled:opacity-70
 `);
 
-export const Label = React.forwardRef<
-	React.ComponentRef<typeof LabelPrimitive.Root>,
-	React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>
->(({ className, ...properties }, reference) => (
-	<LabelPrimitive.Root ref={reference} className={cn(labelVariants(), className)} {...properties} />
-));
+export function Label({
+	className,
+	ref,
+	...properties
+}: React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
+	VariantProps<typeof labelVariants> & {
+		ref?: React.Ref<React.ComponentRef<typeof LabelPrimitive.Root>>;
+	}) {
+	return <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...properties} />;
+}
 Label.displayName = LabelPrimitive.Root.displayName;

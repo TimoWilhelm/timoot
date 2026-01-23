@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
+import { useCallback, useImperativeHandle, useState } from 'react';
 
 import type { EmojiReaction } from '@shared/types';
 
@@ -15,7 +15,7 @@ export interface FloatingEmojisHandle {
 	clearAll: () => void;
 }
 
-export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function FloatingEmojis(_, reference) {
+export function FloatingEmojis({ ref }: { ref?: React.Ref<FloatingEmojisHandle> }) {
 	const [emojis, setEmojis] = useState<FloatingEmoji[]>([]);
 	const [clearing, setClearing] = useState(false);
 
@@ -41,7 +41,7 @@ export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function Floating
 		}, 300);
 	}, []);
 
-	useImperativeHandle(reference, () => ({
+	useImperativeHandle(ref, () => ({
 		addEmoji,
 		clearAll,
 	}));
@@ -74,4 +74,4 @@ export const FloatingEmojis = forwardRef<FloatingEmojisHandle>(function Floating
 			</AnimatePresence>
 		</div>
 	);
-});
+}
