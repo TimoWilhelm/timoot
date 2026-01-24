@@ -189,6 +189,7 @@ export function ImageSelectionDialog({
 								onClick={generateImage}
 								disabled={isGeneratingImage || !imagePrompt.trim() || !turnstileToken}
 								className="shrink-0"
+								aria-label="Generate image"
 							>
 								{isGeneratingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
 							</Button>

@@ -417,6 +417,7 @@ export function CustomQuizzesSection({
 											onEditQuiz(quiz.id);
 										}}
 										className="size-10"
+										aria-label={`Edit ${quiz.title}`}
 									>
 										<Pencil className="size-5.5" />
 									</Button>
@@ -429,6 +430,7 @@ export function CustomQuizzesSection({
 											onDeleteQuiz(quiz.id);
 										}}
 										className="size-10 text-red"
+										aria-label={`Delete ${quiz.title}`}
 									>
 										<Trash2 className="size-5.5" />
 									</Button>

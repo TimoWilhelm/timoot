@@ -253,7 +253,7 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 				<FormProvider {...methods}>
 					<form onSubmit={(event) => handleSubmit(onSubmit)(event)} className={`space-y-8`}>
 						<div className="flex items-center gap-4">
-							<Button variant="subtle" size="icon" className="size-12" asChild>
+							<Button variant="subtle" size="icon" className="size-12" asChild aria-label="Back">
 								<Link to="/" viewTransition>
 									<ArrowLeft className="size-5" />
 								</Link>

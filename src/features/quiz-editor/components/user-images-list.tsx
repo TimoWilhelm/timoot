@@ -77,7 +77,7 @@ export function UserImagesList({ userId, selectedImage, onSelectImage }: UserIma
 								hover:bg-red
 								group-hover-always:opacity-100
 							`}
-							title="Delete image"
+							aria-label="Delete image"
 						>
 							<X className="size-3" />
 						</Button>
