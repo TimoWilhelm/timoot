@@ -160,6 +160,7 @@ export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties
 							<div className="flex flex-col items-center gap-4">
 								<OneTimePasswordField.Root
 									length={6}
+									name="syncCode"
 									onValueChange={(value) => {
 										setInputSyncCode(value);
 									}}
@@ -168,7 +169,6 @@ export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties
 									{Array.from({ length: 6 }).map((_, index) => (
 										<OneTimePasswordField.Input key={index} index={index} />
 									))}
-									<OneTimePasswordField.HiddenInput name="syncCode" />
 								</OneTimePasswordField.Root>
 								<Button onClick={() => handleRedeemSyncCode(false)} disabled={isRedeemingSyncCode || inputSyncCode.length !== 6}>
 									Sync Device

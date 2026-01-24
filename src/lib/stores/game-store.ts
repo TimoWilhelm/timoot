@@ -2,16 +2,34 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { GameState } from '@shared/types';
-interface GameStoreState {
-	gameState: GameState | undefined;
-	gameId: string | undefined;
-	playerId: string | undefined;
-	playerToken: string | undefined;
-	nickname: string | undefined;
-	setGameState: (state: GameState) => void;
-	setSession: (session: { gameId: string; playerId: string; playerToken: string; nickname: string }) => void;
-	clearSession: () => void;
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface SessionData {
+	readonly gameId: string;
+	readonly playerId: string;
+	readonly playerToken: string;
+	readonly nickname: string;
 }
+
+interface GameStoreState {
+	readonly gameState: GameState | undefined;
+	readonly gameId: string | undefined;
+	readonly playerId: string | undefined;
+	readonly playerToken: string | undefined;
+	readonly nickname: string | undefined;
+	readonly setGameState: (state: GameState) => void;
+	readonly setSession: (session: SessionData) => void;
+	readonly clearSession: () => void;
+}
+
+// ============================================================================
+// Store
+// ============================================================================
+
+/** Persisted store for player game session data. */
 export const useGameStore = create<GameStoreState>()(
 	persist(
 		(set) => ({
@@ -20,7 +38,9 @@ export const useGameStore = create<GameStoreState>()(
 			playerId: undefined,
 			playerToken: undefined,
 			nickname: undefined,
+
 			setGameState: (state) => set({ gameState: state }),
+
 			setSession: (session) =>
 				set({
 					gameId: session.gameId,
@@ -28,6 +48,7 @@ export const useGameStore = create<GameStoreState>()(
 					playerToken: session.playerToken,
 					nickname: session.nickname,
 				}),
+
 			clearSession: () =>
 				set({
 					gameId: undefined,
@@ -39,7 +60,7 @@ export const useGameStore = create<GameStoreState>()(
 		}),
 		{
 			name: 'timoot-player-session',
-			storage: createJSONStorage(() => localStorage), // Use localStorage for persistence
+			storage: createJSONStorage(() => localStorage),
 		},
 	),
 );

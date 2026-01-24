@@ -5,41 +5,42 @@ import { Toggle } from '@/components/toggle';
 import { useSoundStore } from '@/lib/stores/sound-store';
 import { cn } from '@/lib/utilities';
 
+// ============================================================================
+// Types
+// ============================================================================
+
 interface SoundToggleProperties {
-	className?: string;
-	onToggle?: () => void;
+	readonly className?: string;
+	readonly onToggle?: () => void;
 }
 
+// ============================================================================
+// Component
+// ============================================================================
+
+/** Sound mute/unmute toggle button with visual feedback for blocked audio state. */
 export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 	const { isMuted, isBlocked, toggleMute } = useSoundStore();
 
-	const getIcon = () => {
-		if (isBlocked) {
-			return <VolumeOff className="size-5 text-red" />;
-		}
-		if (isMuted) {
-			return <VolumeX className="size-5 text-black" />;
-		}
-		return <Volume2 className="size-5 text-black" />;
-	};
+	const icon = isBlocked ? (
+		<VolumeOff className="size-5 text-red" />
+	) : isMuted ? (
+		<VolumeX className="size-5 text-black" />
+	) : (
+		<Volume2 className="size-5 text-black" />
+	);
 
-	const getAriaLabel = () => {
-		if (isBlocked) return 'Enable sounds';
-		return 'Mute sounds';
+	const ariaLabel = isBlocked ? 'Enable sounds' : 'Mute sounds';
+
+	const handlePressedChange = () => {
+		if (!isBlocked) {
+			toggleMute();
+		}
+		onToggle?.();
 	};
 
 	return (
-		<Toggle
-			asChild
-			pressed={isMuted}
-			onPressedChange={() => {
-				if (!isBlocked) {
-					toggleMute();
-				}
-				onToggle?.();
-			}}
-			aria-pressed={isBlocked ? undefined : isMuted}
-		>
+		<Toggle asChild pressed={isMuted} onPressedChange={handlePressedChange} aria-pressed={isBlocked ? undefined : isMuted}>
 			<Button
 				variant="ghost"
 				size="icon"
@@ -52,9 +53,9 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 					isBlocked && 'animate-pulse ring-2 ring-red',
 					className,
 				)}
-				aria-label={getAriaLabel()}
+				aria-label={ariaLabel}
 			>
-				{getIcon()}
+				{icon}
 			</Button>
 		</Toggle>
 	);
