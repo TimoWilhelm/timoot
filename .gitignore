@@ -2,6 +2,7 @@ node_modules
 .wrangler
 .turbo
 dist
+dev-dist
 .env.*
 !.env.example
 tsconfig.tsbuildinfo

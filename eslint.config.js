@@ -14,7 +14,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-	{ ignores: ['dist', '.wrangler', 'worker-configuration.d.ts', '.storybook'] },
+	{ ignores: ['dist', 'dev-dist', '.wrangler', 'worker-configuration.d.ts', '.storybook'] },
 
 	js.configs.recommended,
 
