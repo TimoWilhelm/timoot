@@ -51,7 +51,7 @@ export function ErrorFallback({
 				"
 			>
 				{/* Error card */}
-				<Card>
+				<Card className="w-full">
 					<CardContent className="space-y-6 p-8">
 						{/* Icon and title */}
 						<div className="space-y-4 text-center">
@@ -107,7 +107,11 @@ export function ErrorFallback({
 								>
 									Error details (Development only)
 								</summary>
-								<pre className="mt-3 max-h-40 overflow-auto text-xs text-muted-foreground">
+								<pre
+									className="
+										mt-3 w-full overflow-auto text-start text-xs text-muted-foreground
+									"
+								>
 									{error.message || error.toString()}
 									{error.stack && '\n\n' + error.stack}
 									{error.componentStack && '\n\n' + error.componentStack}

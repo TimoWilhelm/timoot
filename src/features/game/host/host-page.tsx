@@ -1,4 +1,4 @@
-import { Loader2, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -17,6 +17,7 @@ import {
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
 import { SoundToggle } from '@/components/sound-toggle';
+import { Spinner } from '@/components/spinner/spinner';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/host/components/floating-emojis';
@@ -263,7 +264,7 @@ export function HostPage() {
 		return (
 			<HostPageLayout variant="center">
 				<div className="relative flex items-center justify-center">
-					<Loader2 className="size-12 animate-spin text-orange" />
+					<Spinner />
 				</div>
 			</HostPageLayout>
 		);
@@ -306,7 +307,7 @@ export function HostPage() {
 						<Suspense
 							fallback={
 								<div className="flex grow items-center justify-center">
-									<Loader2 className="size-12 animate-spin text-orange" />
+									<Spinner />
 								</div>
 							}
 						>

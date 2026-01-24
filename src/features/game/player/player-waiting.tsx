@@ -1,10 +1,11 @@
 import confetti from 'canvas-confetti';
-import { CheckCircle, Gamepad2, Home, Loader2, Star, Trophy, XCircle } from 'lucide-react';
+import { CheckCircle, Gamepad2, Home, Star, Trophy, XCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/button';
+import { Spinner } from '@/components/spinner/spinner';
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { cn, getThemeColor } from '@/lib/utilities';
 
@@ -208,7 +209,7 @@ export function PlayerWaiting() {
 				// Fallback for unknown modifiers
 				return (
 					<div className="flex flex-col items-center text-center">
-						<Loader2 className="mb-4 size-12 animate-spin" />
+						<Spinner className="mb-4" />
 						<h2 className="text-4xl font-bold">Special Round!</h2>
 					</div>
 				);
@@ -343,7 +344,7 @@ export function PlayerWaiting() {
 			default: {
 				return (
 					<div className="flex flex-col items-center text-center">
-						<Loader2 className="mb-4 size-12 animate-spin text-orange" />
+						<Spinner className="mb-4" />
 						<h2 className="font-display text-4xl font-bold text-white">Waiting...</h2>
 					</div>
 				);

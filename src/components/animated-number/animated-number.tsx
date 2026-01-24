@@ -9,7 +9,7 @@ interface AnimatedNumberProperties {
 }
 
 /**
- * Animated number component that tweens between values using Framer Motion
+ * Animated number component that tweens between values using motion
  */
 export function AnimatedNumber({ value, className, duration = 0.6, instant = false }: AnimatedNumberProperties) {
 	const motionValue = useMotionValue(value);

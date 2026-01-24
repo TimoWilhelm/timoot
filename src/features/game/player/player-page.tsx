@@ -1,4 +1,3 @@
-import { Loader2 } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useBlocker, useSearchParams } from 'react-router-dom';
@@ -15,6 +14,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
+import { Spinner } from '@/components/spinner/spinner';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerError } from '@/features/game/player/player-error';
 import { PlayerGameProvider } from '@/features/game/player/player-game-provider';
@@ -286,8 +286,8 @@ export function PlayerPage() {
 
 		if (isSpinnerVisible) {
 			return (
-				<div className="relative flex items-center justify-center">
-					<Loader2 className="size-12 animate-spin text-orange" />
+				<div className="flex size-full items-center justify-center">
+					<Spinner />
 				</div>
 			);
 		}
@@ -378,8 +378,8 @@ export function PlayerPage() {
 			>
 				<Suspense
 					fallback={
-						<div className="flex items-center justify-center">
-							<Loader2 className="size-12 animate-spin text-orange" />
+						<div className="flex size-full items-center justify-center">
+							<Spinner />
 						</div>
 					}
 				>

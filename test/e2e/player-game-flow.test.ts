@@ -138,7 +138,7 @@ test.describe('Player Game Flow E2E', () => {
 			await gameCodeInput.fill(game.gameId);
 
 			// Should see the checkmark indicating valid code
-			await expect(page.locator('.text-green')).toBeVisible({ timeout: 5000 });
+			await expect(page.locator('svg.text-green')).toBeVisible({ timeout: 5000 });
 
 			// Click "Join Game" button
 			await page.getByRole('button', { name: /join game/i }).click();
