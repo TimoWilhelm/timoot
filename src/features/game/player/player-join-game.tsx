@@ -92,7 +92,7 @@ export function PlayerJoinGame() {
 										`,
 										'focus:outline-none',
 										'transition-all duration-200',
-										isComplete && 'border-green bg-green/10',
+										isComplete && 'border-green bg-green/10 pr-12',
 										autoCompleteFlash && 'border-orange bg-orange/20',
 										showInvalidTooltip && 'border-red bg-red/10',
 									)}

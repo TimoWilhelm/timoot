@@ -122,4 +122,67 @@ test.describe('Player Game Flow E2E', () => {
 			}
 		});
 	});
+
+	test.describe('Game Code Entry', () => {
+		test('player can enter game code and proceed to nickname screen', async ({ page }) => {
+			const game = await createGame(BASE_URL);
+
+			// Navigate to /play without gameId - shows game code entry form
+			await page.goto('/play');
+
+			// Should see the game code input (has placeholder like "happy-blue-panda")
+			const gameCodeInput = page.locator('input[type="text"]').first();
+			await expect(gameCodeInput).toBeVisible({ timeout: 5000 });
+
+			// Enter the game code
+			await gameCodeInput.fill(game.gameId);
+
+			// Should see the checkmark indicating valid code
+			await expect(page.locator('.text-green')).toBeVisible({ timeout: 5000 });
+
+			// Click "Join Game" button
+			await page.getByRole('button', { name: /join game/i }).click();
+
+			// Should now see the nickname input - this is the key assertion
+			// If the bug exists, we'd still see the game code input instead
+			await expect(page.getByPlaceholder('Your cool name')).toBeVisible({ timeout: 5000 });
+		});
+
+		test('player can complete full flow: enter code → nickname → lobby', async ({ page }) => {
+			const game = await createGame(BASE_URL);
+
+			const host = new WsTestClient({
+				baseUrl: BASE_URL,
+				gameId: game.gameId,
+				role: 'host',
+				hostSecret: game.hostSecret,
+			});
+
+			try {
+				await host.connect();
+				await host.waitForMessage('lobbyUpdate');
+
+				// Navigate to /play without gameId
+				await page.goto('/play');
+
+				// Enter game code
+				const gameCodeInput = page.locator('input[type="text"]').first();
+				await gameCodeInput.fill(game.gameId);
+				await page.getByRole('button', { name: /join game/i }).click();
+
+				// Enter nickname
+				await page.getByPlaceholder('Your cool name').fill('FullFlowPlayer');
+				await page.getByRole('button', { name: /join/i }).click();
+
+				// Wait for server to confirm player joined
+				await host.waitForMessage('lobbyUpdate', 10_000, (m) => m.players.length === 1);
+
+				// Player should see their name and score in the lobby
+				await expect(page.getByText('FullFlowPlayer', { exact: true })).toBeVisible({ timeout: 10_000 });
+				await expect(page.getByText(/score:/i)).toBeVisible();
+			} finally {
+				host.close();
+			}
+		});
+	});
 });

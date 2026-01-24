@@ -33,7 +33,15 @@ const PlayerActiveGame = lazy(() => import('@/features/game/player/player-active
 
 // Player view state machine
 type PlayerView = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
-type PlayerViewEvent = 'CONNECTED' | 'JOINED' | 'GAME_STARTED' | 'GAME_NOT_FOUND' | 'SESSION_INVALID' | 'GAME_FULL' | 'RETRY';
+type PlayerViewEvent =
+	| 'CONNECTED'
+	| 'JOINED'
+	| 'GAME_STARTED'
+	| 'GAME_NOT_FOUND'
+	| 'SESSION_INVALID'
+	| 'GAME_FULL'
+	| 'RETRY'
+	| 'GAME_CODE_ENTERED';
 
 const playerViewMachine = createMachine<PlayerView, PlayerViewEvent>({
 	LOADING: {
@@ -44,7 +52,7 @@ const playerViewMachine = createMachine<PlayerView, PlayerViewEvent>({
 		SESSION_INVALID: 'SESSION_EXPIRED',
 		GAME_FULL: 'GAME_FULL',
 	},
-	JOIN_GAME: {}, // Terminal - user navigates away
+	JOIN_GAME: { GAME_CODE_ENTERED: 'LOADING' },
 	NICKNAME: {
 		JOINED: 'GAME',
 		GAME_STARTED: 'GAME_IN_PROGRESS',
@@ -109,6 +117,15 @@ export function PlayerPage() {
 			clearSession();
 		}
 	}, [isDifferentGame, clearSession]);
+
+	// Handle navigation from JOIN_GAME to game with a gameId (URL param change)
+	useEffect(() => {
+		if (view === 'JOIN_GAME' && urlGameId) {
+			// User entered a game code - transition to loading
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: syncing view state with URL parameter change
+			transitionView('GAME_CODE_ENTERED');
+		}
+	}, [view, urlGameId, transitionView]);
 
 	const handleConnected = useCallback(
 		(playerId?: string, playerToken?: string) => {
