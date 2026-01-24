@@ -64,7 +64,6 @@
 		"react-helmet-async": "^2.0.5",
 		"react-hook-form": "^7.69.0",
 		"react-router-dom": "^7.12.0",
-		"shadcn-modal-manager": "^1.0.0",
 		"sonner": "^2.0.7",
 		"storybook": "^10.1.10",
 		"tailwind-merge": "^3.4.0",

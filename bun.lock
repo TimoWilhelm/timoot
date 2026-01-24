@@ -67,7 +67,6 @@
         "react-helmet-async": "^2.0.5",
         "react-hook-form": "^7.69.0",
         "react-router-dom": "^7.12.0",
-        "shadcn-modal-manager": "^1.0.0",
         "sonner": "^2.0.7",
         "storybook": "^10.1.10",
         "tailwind-merge": "^3.4.0",
@@ -1903,8 +1902,6 @@
     "set-proto": ["set-proto@1.0.0", "", { "dependencies": { "dunder-proto": "^1.0.1", "es-errors": "^1.3.0", "es-object-atoms": "^1.0.0" } }, "sha512-RJRdvCo6IAnPdsvP/7m6bsQqNnn1FCBX5ZNtFL98MmFF/4xAIJTIg1YbHW5DC2W5SKZanrC6i4HsJqlajw/dZw=="],
 
     "setprototypeof": ["setprototypeof@1.2.0", "", {}, "sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw=="],
-
-    "shadcn-modal-manager": ["shadcn-modal-manager@1.0.0", "", { "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-FzLC66IN4U/Yy/Ph7d4/L4uRqTUoe6AUekfiJJnw3dns6QkfU+RoxTj+Q0a7FCVE5r+zb2O9RfKbHsJCIRiCKQ=="],
 
     "shallowequal": ["shallowequal@1.1.0", "", {}, "sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ=="],
 

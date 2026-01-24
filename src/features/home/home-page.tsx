@@ -1,6 +1,5 @@
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ModalManager } from 'shadcn-modal-manager';
 import { toast } from 'sonner';
 
 import { GridBackground } from '@/components/grid-background';
@@ -21,10 +20,6 @@ import { useTurnstile } from '@/hooks/utils/use-turnstile';
 
 import type { Quiz } from '@shared/types';
 
-const handleSelectQuiz = (quiz: Quiz) => {
-	ModalManager.open(StartGameDialog, { data: { selectedQuiz: quiz } });
-};
-
 export function HomePage() {
 	const navigate = useViewTransitionNavigate();
 
@@ -36,6 +31,16 @@ export function HomePage() {
 	const customQuizQuery = useCustomQuizzes(userId);
 
 	const deleteQuizMutation = useDeleteQuiz();
+
+	// Dialog states
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [quizToDelete, setQuizToDelete] = useState<string | undefined>();
+
+	const [startGameOpen, setStartGameOpen] = useState(false);
+	const [selectedQuizForGame, setSelectedQuizForGame] = useState<Quiz | undefined>();
+
+	const [musicCreditsOpen, setMusicCreditsOpen] = useState(false);
+	const [syncDevicesOpen, setSyncDevicesOpen] = useState(false);
 
 	const handleDeleteQuiz = (quizId: string) => {
 		deleteQuizMutation.mutate(
@@ -49,6 +54,23 @@ export function HomePage() {
 				},
 			},
 		);
+	};
+
+	const handleOpenDeleteDialog = (quizId: string) => {
+		setQuizToDelete(quizId);
+		setDeleteDialogOpen(true);
+	};
+
+	const handleConfirmDelete = () => {
+		if (quizToDelete) {
+			handleDeleteQuiz(quizToDelete);
+			setQuizToDelete(undefined);
+		}
+	};
+
+	const handleSelectQuiz = (quiz: Quiz) => {
+		setSelectedQuizForGame(quiz);
+		setStartGameOpen(true);
 	};
 
 	return (
@@ -101,27 +123,22 @@ export function HomePage() {
 						onResetTurnstile={resetToken}
 						onSelectQuiz={handleSelectQuiz}
 						onEditQuiz={(quizId) => navigate(`/edit/${quizId}`)}
-						onDeleteQuiz={async (quizId) => {
-							const shouldDelete = await ModalManager.open(DeleteQuizDialog).afterClosed();
-							if (shouldDelete) {
-								handleDeleteQuiz(quizId);
-							}
-						}}
+						onDeleteQuiz={handleOpenDeleteDialog}
 					/>
 				</Suspense>
 			</main>
 
-			<HomeFooter
-				onMusicCreditsClick={() => ModalManager.open(MusicCreditsDialog)}
-				onSyncDevicesClick={() =>
-					ModalManager.open(SyncDevicesDialog, {
-						data: {
-							userId,
-							customQuizCount: customQuizQuery.data?.length ?? 0,
-							onSyncSuccess: setUserId,
-						},
-					})
-				}
+			<HomeFooter onMusicCreditsClick={() => setMusicCreditsOpen(true)} onSyncDevicesClick={() => setSyncDevicesOpen(true)} />
+
+			<DeleteQuizDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={handleConfirmDelete} />
+			<StartGameDialog open={startGameOpen} onOpenChange={setStartGameOpen} selectedQuiz={selectedQuizForGame} />
+			<MusicCreditsDialog open={musicCreditsOpen} onOpenChange={setMusicCreditsOpen} />
+			<SyncDevicesDialog
+				open={syncDevicesOpen}
+				onOpenChange={setSyncDevicesOpen}
+				userId={userId}
+				customQuizCount={customQuizQuery.data?.length ?? 0}
+				onSyncSuccess={setUserId}
 			/>
 		</div>
 	);

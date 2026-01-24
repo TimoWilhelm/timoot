@@ -1,9 +1,8 @@
 import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
-import { Suspense, use, useEffect, useMemo, useRef } from 'react';
+import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FormProvider, SubmitHandler } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
-import { ModalManager } from 'shadcn-modal-manager';
 import { toast } from 'sonner';
 
 import {
@@ -235,6 +234,13 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 		);
 	};
 
+	// Image selection state
+	const [imageSelectionState, setImageSelectionState] = useState<{
+		isOpen: boolean;
+		questionIndex: number | undefined;
+		currentImage: string | undefined;
+	}>({ isOpen: false, questionIndex: undefined, currentImage: undefined });
+
 	return (
 		<>
 			<div
@@ -290,17 +296,9 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 								remove={remove}
 								isFirst={index === 0}
 								isLast={index === fields.length - 1}
-								onOpenImageDialog={(index) => {
-									const currentImage = getValues(`questions.${index}.backgroundImage`);
-									ModalManager.open(ImageSelectionDialog, {
-										data: {
-											selectedImage: currentImage,
-											userId,
-											onSelectImage: (path: string) => {
-												setValue(`questions.${index}.backgroundImage`, path, { shouldDirty: true });
-											},
-										},
-									});
+								onOpenImageDialog={(index_) => {
+									const currentImage = getValues(`questions.${index_}.backgroundImage`);
+									setImageSelectionState({ isOpen: true, questionIndex: index_, currentImage });
 								}}
 							/>
 						))}
@@ -383,6 +381,23 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{imageSelectionState.isOpen && (
+				<ImageSelectionDialog
+					open={imageSelectionState.isOpen}
+					onOpenChange={(open) => setImageSelectionState((previous) => ({ ...previous, isOpen: open }))}
+					selectedImage={imageSelectionState.currentImage}
+					onSelectImage={(path) => {
+						const index = imageSelectionState.questionIndex;
+						if (index !== undefined && index !== null) {
+							setValue(`questions.${index}.backgroundImage`, path, { shouldDirty: true });
+							// Update local state to reflect change immediately if dialog stays open
+							setImageSelectionState((previous) => ({ ...previous, currentImage: path }));
+						}
+					}}
+					userId={userId}
+				/>
+			)}
 		</>
 	);
 }

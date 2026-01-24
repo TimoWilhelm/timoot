@@ -1,5 +1,4 @@
 import { Gamepad2, Loader2 } from 'lucide-react';
-import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
@@ -13,11 +12,12 @@ import { useHostStore } from '@/lib/stores/host-store';
 import type { Quiz } from '@shared/types';
 
 type StartGameDialogProperties = {
-	selectedQuiz: Quiz;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	selectedQuiz: Quiz | undefined;
 };
 
-export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({ selectedQuiz }) => {
-	const modal = useModal();
+export function StartGameDialog({ open, onOpenChange, selectedQuiz }: StartGameDialogProperties) {
 	const navigate = useViewTransitionNavigate();
 	const addSecret = useHostStore((s) => s.addSecret);
 	const { token: turnstileToken, resetToken, TurnstileWidget } = useTurnstile();
@@ -26,8 +26,12 @@ export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({
 	const createGameMutation = useCreateGame();
 	const isGameStarting = createGameMutation.isPending;
 
+	const handleClose = () => {
+		onOpenChange(false);
+	};
+
 	const handleStartGame = async () => {
-		if (isGameStarting) return;
+		if (isGameStarting || !selectedQuiz) return;
 		if (!turnstileToken) {
 			toast.error('Please complete the captcha verification first');
 			return;
@@ -47,7 +51,7 @@ export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({
 						}
 						if (result.data.id && result.data.hostSecret) {
 							addSecret(result.data.id, result.data.hostSecret);
-							modal.close();
+							handleClose();
 							navigate(`/host/${result.data.id}`);
 						} else {
 							toast.error('Game created, but missing ID or secret.');
@@ -65,10 +69,11 @@ export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({
 		);
 	};
 
+	if (!selectedQuiz) return;
+
 	return (
-		<Dialog {...shadcnUiDialog(modal)}>
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
-				{...shadcnUiDialogContent(modal)}
 				onInteractOutside={(event) => {
 					if (isGameStarting) event.preventDefault();
 				}}
@@ -105,9 +110,9 @@ export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({
 						>
 							Selected Quiz
 						</h4>
-						<p className="font-display text-xl font-bold">{selectedQuiz?.title}</p>
+						<p className="font-display text-xl font-bold">{selectedQuiz.title}</p>
 						<div className="mt-2 flex items-center gap-2 font-mono text-sm">
-							<span className="rounded-sm bg-black px-2 py-0.5 text-white">{selectedQuiz?.questions.length} Qs</span>
+							<span className="rounded-sm bg-black px-2 py-0.5 text-white">{selectedQuiz.questions.length} Qs</span>
 						</div>
 					</div>
 					<TurnstileWidget className="mb-4 flex justify-center" />
@@ -126,4 +131,4 @@ export const StartGameDialog = ModalManager.create<StartGameDialogProperties>(({
 			</DialogContent>
 		</Dialog>
 	);
-});
+}

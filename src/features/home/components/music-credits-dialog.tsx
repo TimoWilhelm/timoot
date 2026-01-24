@@ -1,15 +1,17 @@
 import { Music } from 'lucide-react';
-import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { musicCredits } from '@/lib/music-credits';
 
-export const MusicCreditsDialog = ModalManager.create(() => {
-	const modal = useModal();
+type MusicCreditsDialogProperties = {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+};
 
+export function MusicCreditsDialog({ open, onOpenChange }: MusicCreditsDialogProperties) {
 	return (
-		<Dialog {...shadcnUiDialog(modal)}>
-			<DialogContent {...shadcnUiDialogContent(modal)} className="overflow-hidden border-4 border-black p-0 sm:max-w-125">
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-125">
 				<div className="bg-orange p-6">
 					<DialogHeader>
 						<DialogTitle
@@ -70,4 +72,4 @@ export const MusicCreditsDialog = ModalManager.create(() => {
 			</DialogContent>
 		</Dialog>
 	);
-});
+}

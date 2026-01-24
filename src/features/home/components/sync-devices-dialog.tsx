@@ -1,7 +1,6 @@
 import { Check, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
@@ -10,13 +9,14 @@ import { OneTimePasswordField } from '@/components/otp-field';
 import { useGenerateSyncCode, useRedeemSyncCode } from '@/hooks/use-api';
 
 type SyncDevicesDialogProperties = {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
 	userId: string;
 	customQuizCount: number;
 	onSyncSuccess: (newUserId: string) => void;
 };
 
-export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties>(({ userId, customQuizCount, onSyncSuccess }) => {
-	const modal = useModal();
+export function SyncDevicesDialog({ open, onOpenChange, userId, customQuizCount, onSyncSuccess }: SyncDevicesDialogProperties) {
 	const [syncCode, setSyncCode] = useState<string | undefined>();
 	const [codeCopied, setCodeCopied] = useState(false);
 	const [showSyncWarning, setShowSyncWarning] = useState(false);
@@ -60,7 +60,7 @@ export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties
 				onSuccess: (data) => {
 					onSyncSuccess(data.userId);
 					toast.success('Device synced! Refreshing...');
-					modal.close();
+					onOpenChange(false);
 					// Reload to fetch data with new userId
 					globalThis.setTimeout(() => globalThis.location.reload(), 500);
 				},
@@ -80,8 +80,8 @@ export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties
 	};
 
 	return (
-		<Dialog {...shadcnUiDialog(modal)}>
-			<DialogContent {...shadcnUiDialogContent(modal)} className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="overflow-hidden border-4 border-black p-0 sm:max-w-106.25">
 				<div className="bg-blue p-6">
 					<DialogHeader>
 						<DialogTitle
@@ -180,4 +180,4 @@ export const SyncDevicesDialog = ModalManager.create<SyncDevicesDialogProperties
 			</DialogContent>
 		</Dialog>
 	);
-});
+}

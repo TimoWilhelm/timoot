@@ -1,5 +1,3 @@
-import { ModalManager, shadcnUiDialog, shadcnUiDialogContent, useModal } from 'shadcn-modal-manager';
-
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,16 +9,21 @@ import {
 	AlertDialogTitle,
 } from '@/components/alert-dialog';
 
-export const DeleteQuizDialog = ModalManager.create(() => {
-	const modal = useModal();
+type DeleteQuizDialogProperties = {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	onConfirm: () => void;
+};
 
+export function DeleteQuizDialog({ open, onOpenChange, onConfirm }: DeleteQuizDialogProperties) {
 	const handleConfirm = () => {
-		modal.close(true);
+		onConfirm();
+		onOpenChange(false);
 	};
 
 	return (
-		<AlertDialog {...shadcnUiDialog(modal)}>
-			<AlertDialogContent {...shadcnUiDialogContent(modal)}>
+		<AlertDialog open={open} onOpenChange={onOpenChange}>
+			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle
 						className="
@@ -34,9 +37,7 @@ export const DeleteQuizDialog = ModalManager.create(() => {
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel onClick={modal.dismiss} className="border-2 border-black font-bold">
-						Cancel
-					</AlertDialogCancel>
+					<AlertDialogCancel className="border-2 border-black font-bold">Cancel</AlertDialogCancel>
 					<AlertDialogAction onClick={handleConfirm} variant="danger">
 						Yes, Delete it
 					</AlertDialogAction>
@@ -44,4 +45,4 @@ export const DeleteQuizDialog = ModalManager.create(() => {
 			</AlertDialogContent>
 		</AlertDialog>
 	);
-});
+}
