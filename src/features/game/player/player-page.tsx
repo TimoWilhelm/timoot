@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useBlocker, useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
+
 
 import {
 	AlertDialog,
@@ -15,6 +15,7 @@ import {
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
 import { Spinner } from '@/components/spinner/spinner';
+import { toast } from '@/components/toast';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { PlayerError } from '@/features/game/player/player-error';
 import { PlayerGameProvider } from '@/features/game/player/player-game-provider';

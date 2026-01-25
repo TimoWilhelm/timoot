@@ -1,8 +1,9 @@
 import { Gamepad2, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
+import { toast } from '@/components/toast';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { useCreateGame } from '@/hooks/use-api';
 import { useUserId } from '@/hooks/use-user-id';

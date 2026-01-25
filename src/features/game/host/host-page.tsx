@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useBlocker, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
+
 
 import {
 	AlertDialog,
@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/button';
 import { SoundToggle } from '@/components/sound-toggle';
 import { Spinner } from '@/components/spinner/spinner';
+import { toast } from '@/components/toast';
 import { useGameWebSocket } from '@/features/game/hooks/use-game-web-socket';
 import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-sound';
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/host/components/floating-emojis';

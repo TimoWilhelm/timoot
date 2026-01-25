@@ -4,11 +4,10 @@ export const buttonVariants = cva(
 	`
 		neo-focus-ring relative isolate inline-flex cursor-pointer items-center
 		justify-center gap-2 rounded-lg border-2 border-black text-sm font-bold
-		whitespace-nowrap outline-hidden transition-all duration-75 ease-linear
+		whitespace-nowrap outline-hidden transition-all duration-25 ease-linear
 		after:absolute after:inset-0 after:-bottom-1 after:z-[-1]
-		after:transition-transform after:duration-75 after:ease-linear
+		after:transition-transform after:duration-25 after:ease-linear
 		after:content-['']
-		active:duration-50
 		disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none
 	`,
 	{

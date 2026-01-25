@@ -1,10 +1,11 @@
 import { ImageOff, Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { Suspense, useRef, useState } from 'react';
-import { toast } from 'sonner';
+
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog';
 import { Input } from '@/components/input';
+import { toast } from '@/components/toast';
 import { useGenerateImage } from '@/hooks/use-api';
 import { useTurnstile } from '@/hooks/utils/use-turnstile';
 import { DEFAULT_BACKGROUND_IMAGES } from '@/lib/background-images';
@@ -118,6 +119,7 @@ export function ImageSelectionDialog({
 											? `ring-3 ring-orange ring-offset-2 ring-offset-background`
 											: 'bg-muted text-muted-foreground',
 									)}
+									aria-label={img.name}
 								>
 									<img src={getOptimizedImageUrl(img.path, { width: 400 })} alt={img.name} className="size-full object-cover" />
 								</Button>

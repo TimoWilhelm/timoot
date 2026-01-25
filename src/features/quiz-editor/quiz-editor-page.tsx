@@ -3,7 +3,7 @@ import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FormProvider, SubmitHandler } from 'react-hook-form';
 import { Link, useBlocker, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
+
 
 import {
 	AlertDialog,
@@ -21,6 +21,7 @@ import { GridBackground } from '@/components/grid-background';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { LoadingFallback } from '@/components/loading-fallback';
+import { toast } from '@/components/toast';
 import { TitleCharCount } from '@/features/quiz-editor/components/char-counters';
 import { ImageSelectionDialog } from '@/features/quiz-editor/components/image-selection-dialog';
 import { QuizQuestionCard } from '@/features/quiz-editor/components/quiz-question-card';

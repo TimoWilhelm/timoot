@@ -2,13 +2,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { BookOpen, HelpCircle, Loader2, Pencil, Plus, Sparkles, Trash2, Wand2, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
+import { toast } from '@/components/toast';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { queryKeys } from '@/hooks/use-api';
 import { hcWithType } from '@/lib/clients/api-client';

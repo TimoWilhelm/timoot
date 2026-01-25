@@ -1,11 +1,12 @@
 import { Check, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+
 
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { OneTimePasswordField } from '@/components/otp-field';
+import { toast } from '@/components/toast';
 import { useGenerateSyncCode, useRedeemSyncCode } from '@/hooks/use-api';
 
 type SyncDevicesDialogProperties = {

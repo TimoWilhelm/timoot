@@ -1,9 +1,10 @@
 import { Suspense, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { toast } from 'sonner';
+
 
 import { GridBackground } from '@/components/grid-background';
 import { LoadingFallback } from '@/components/loading-fallback';
+import { toast } from '@/components/toast';
 import {
 	DeleteQuizDialog,
 	HeroSection,

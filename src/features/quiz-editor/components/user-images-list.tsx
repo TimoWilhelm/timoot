@@ -1,8 +1,8 @@
 import { Loader2, X } from 'lucide-react';
 import { use } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
+import { toast } from '@/components/toast';
 import { useDeleteImage, useImages, useLoadMoreImages } from '@/hooks/use-api';
 import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
@@ -59,7 +59,7 @@ export function UserImagesList({ userId, selectedImage, onSelectImage }: UserIma
 								`aspect-video h-auto w-full overflow-hidden p-0`,
 								selectedImage === img.path ? `ring-3 ring-orange ring-offset-2 ring-offset-background` : 'bg-muted text-muted-foreground',
 							)}
-							title={img.prompt}
+							aria-label={img.name}
 						>
 							<img src={getOptimizedImageUrl(img.path, { width: 400 })} alt={img.name} className="size-full object-cover" />
 						</Button>
