@@ -1,7 +1,6 @@
 import { ImageOff, Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { Suspense, useRef, useState } from 'react';
 
-
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog';
 import { Input } from '@/components/input';
@@ -98,7 +97,13 @@ export function ImageSelectionDialog({
 								variant="subtle"
 								onClick={() => handleSelectImage('')}
 								className={cn(
-									`aspect-video h-auto bg-muted text-muted-foreground`,
+									`
+										aspect-video h-auto bg-muted text-muted-foreground ring-0
+										ring-transparent ring-offset-0 transition-all duration-300 ease-spring
+										hover:translate-y-0 hover:shadow-none
+										hover:after:translate-y-0
+										active:translate-y-0 active:shadow-none
+									`,
 									!selectedImage && `ring-3 ring-orange ring-offset-2 ring-offset-background`,
 								)}
 							>
@@ -114,7 +119,13 @@ export function ImageSelectionDialog({
 									variant="subtle"
 									onClick={() => handleSelectImage(img.path)}
 									className={cn(
-										`aspect-video h-auto overflow-hidden p-0`,
+										`
+											aspect-video h-auto overflow-hidden p-0 ring-0 ring-transparent
+											ring-offset-0 transition-all duration-300 ease-spring
+											hover:translate-y-0 hover:shadow-none
+											hover:after:translate-y-0
+											active:translate-y-0 active:shadow-none
+										`,
 										selectedImage === img.path
 											? `ring-3 ring-orange ring-offset-2 ring-offset-background`
 											: 'bg-muted text-muted-foreground',

@@ -1,7 +1,6 @@
 import { Suspense, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-
 import { GridBackground } from '@/components/grid-background';
 import { LoadingFallback } from '@/components/loading-fallback';
 import { toast } from '@/components/toast';

@@ -2,7 +2,6 @@ import { Check, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 
-
 import { Button } from '@/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/dialog';
 import { OneTimePasswordField } from '@/components/otp-field';

@@ -2,7 +2,6 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async';
 import { useBlocker, useSearchParams } from 'react-router-dom';
 
-
 import {
 	AlertDialog,
 	AlertDialogAction,
