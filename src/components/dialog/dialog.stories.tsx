@@ -30,10 +30,10 @@ export const Default: Story = {
 							<DialogTitle>Dialog Title</DialogTitle>
 							<DialogDescription>This is a description of what this dialog is for.</DialogDescription>
 						</DialogHeader>
-						<div className="p-6 pt-0">
+						<div>
 							<p>Dialog content goes here.</p>
 						</div>
-						<DialogFooter className="p-6 pt-0">
+						<DialogFooter>
 							<Button variant="subtle" onClick={() => setOpen(false)}>
 								Cancel
 							</Button>
@@ -64,7 +64,7 @@ export const ConfirmDelete: Story = {
 								This action cannot be undone. This will permanently delete your quiz and all associated data.
 							</DialogDescription>
 						</DialogHeader>
-						<DialogFooter className="p-6 pt-0">
+						<DialogFooter>
 							<Button variant="subtle" onClick={() => setOpen(false)}>
 								Cancel
 							</Button>
@@ -91,7 +91,7 @@ export const UnsavedChanges: Story = {
 							<DialogTitle>Unsaved Changes</DialogTitle>
 							<DialogDescription>You have unsaved changes. Are you sure you want to leave?</DialogDescription>
 						</DialogHeader>
-						<DialogFooter className="p-6 pt-0">
+						<DialogFooter>
 							<Button variant="subtle" onClick={() => setOpen(false)}>
 								Stay
 							</Button>
@@ -120,7 +120,7 @@ export const FormDialog: Story = {
 							<DialogTitle>Create New Quiz</DialogTitle>
 							<DialogDescription>Give your quiz a name to get started.</DialogDescription>
 						</DialogHeader>
-						<div className="p-6 pt-0">
+						<div>
 							<div className="flex flex-col gap-2">
 								<label htmlFor="quiz-name" className="text-sm font-medium">
 									Quiz Name
@@ -136,7 +136,7 @@ export const FormDialog: Story = {
 								/>
 							</div>
 						</div>
-						<DialogFooter className="p-6 pt-0">
+						<DialogFooter>
 							<Button variant="subtle" onClick={() => setOpen(false)}>
 								Cancel
 							</Button>
@@ -162,7 +162,7 @@ export const OpenByDefault: Story = {
 					<DialogTitle>Welcome!</DialogTitle>
 					<DialogDescription>This dialog is open by default for demonstration purposes.</DialogDescription>
 				</DialogHeader>
-				<DialogFooter className="p-6 pt-0">
+				<DialogFooter>
 					<Button variant="accent">Got it!</Button>
 				</DialogFooter>
 			</DialogContent>

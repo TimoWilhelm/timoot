@@ -9,12 +9,16 @@ export function GridBackground({ className, variant = 'default' }: GridBackgroun
 	return (
 		<div
 			className={cn(
-				`
-					pointer-events-none absolute inset-0
-					bg-[radial-gradient(var(--color-slate)_1px,transparent_1px)]
-					bg-size-[20px_20px]
-				`,
-				variant === 'dark' ? 'opacity-40' : 'opacity-20',
+				`pointer-events-none absolute inset-0 bg-size-[20px_20px]`,
+				variant === 'dark'
+					? `
+						bg-[radial-gradient(var(--color-zinc-light)_1px,transparent_1px)]
+						opacity-10
+					`
+					: `
+						bg-[radial-gradient(var(--color-zinc-dark)_1px,transparent_1px)]
+						opacity-15
+					`,
 				className,
 			)}
 			aria-hidden="true"

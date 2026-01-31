@@ -99,7 +99,7 @@ export function HomePage() {
 					"
 				>
 					<div aria-hidden="true" className="absolute inset-0 flex items-center">
-						<div className="w-full border-t-2 border-slate" />
+						<div className="w-full border-t-2 border-black" />
 					</div>
 					<div className="relative bg-white px-6">
 						<span

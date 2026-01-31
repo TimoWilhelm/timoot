@@ -53,7 +53,7 @@
 	/* Base Colors */
 	--color-orange: #f48120;
 	--color-gold: #faad3f;
-	--color-slate: #404041;
+	--color-zinc: #232426;
 	--color-coral: #ff6b4a;
 	--color-blue: #60a5fa;
 	--color-purple: #c084fc;
@@ -65,7 +65,7 @@
 	/* Light Variants (20% opacity on white) */
 	--color-orange-light: color-mix(in srgb, var(--color-orange) 20%, white);
 	--color-gold-light: color-mix(in srgb, var(--color-gold) 20%, white);
-	--color-slate-light: color-mix(in srgb, var(--color-slate) 20%, white);
+	--color-zinc-light: color-mix(in srgb, var(--color-zinc) 20%, white);
 	--color-coral-light: color-mix(in srgb, var(--color-coral) 20%, white);
 	--color-blue-light: color-mix(in srgb, var(--color-blue) 20%, white);
 	--color-purple-light: color-mix(in srgb, var(--color-purple) 20%, white);
@@ -77,7 +77,7 @@
 	/* Dark Variants */
 	--color-orange-dark: color-mix(in srgb, var(--color-orange) 80%, black);
 	--color-gold-dark: color-mix(in srgb, var(--color-gold) 80%, black);
-	--color-slate-dark: color-mix(in srgb, var(--color-slate) 80%, black);
+	--color-zinc-dark: color-mix(in srgb, var(--color-zinc) 80%, black);
 	--color-coral-dark: color-mix(in srgb, var(--color-coral) 80%, black);
 	--color-blue-dark: color-mix(in srgb, var(--color-blue) 80%, black);
 	--color-purple-dark: color-mix(in srgb, var(--color-purple) 80%, black);

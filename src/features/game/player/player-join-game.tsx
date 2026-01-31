@@ -40,15 +40,15 @@ export function PlayerJoinGame() {
 	return (
 		<Card
 			className={`
-				relative w-full max-w-md border-4 border-slate bg-black shadow-brutal-slate
+				relative w-full max-w-md border-4 border-black bg-zinc shadow-brutal
 			`}
 		>
-			<CardHeader className="border-b-2 border-slate text-center">
+			<CardHeader className="border-b-2 border-black text-center">
 				<div className="flex justify-center">
 					<div
 						className={`
-							flex size-16 items-center justify-center rounded-xl border-4
-							border-orange-dark bg-orange shadow-brutal-slate
+							flex size-16 items-center justify-center rounded-xl border-4 border-black
+							bg-orange shadow-brutal
 						`}
 					>
 						<Gamepad2 className="size-8 text-white" />
@@ -61,8 +61,8 @@ export function PlayerJoinGame() {
 				{/* Game Code Input */}
 				<div
 					className={`
-						space-y-4 rounded-2xl border border-slate bg-slate/50 p-6
-						focus-within:outline-2 focus-within:outline-white
+						space-y-4 rounded-2xl border border-black bg-black/20 p-6
+						focus-within:outline-2 focus-within:outline-black
 					`}
 				>
 					<Popover open={showSuggestions && suggestions.length > 0 && !isComplete && currentPart.length > 0}>
@@ -85,7 +85,7 @@ export function PlayerJoinGame() {
 									spellCheck={false}
 									className={cn(
 										'h-14 w-full rounded-xl px-4 text-center font-mono text-xl',
-										'border-2 border-slate bg-slate/50',
+										'border-2 border-black bg-black',
 										`
 											overflow-hidden text-ellipsis text-white
 											placeholder:text-ellipsis placeholder:text-muted-foreground/50
@@ -93,7 +93,7 @@ export function PlayerJoinGame() {
 										'focus:outline-none',
 										'transition-all duration-200',
 										isComplete && 'border-green bg-green/10 pr-12',
-										autoCompleteFlash && 'border-orange bg-orange/20',
+										autoCompleteFlash && 'border-black bg-orange/20',
 										showInvalidTooltip && 'border-red bg-red/10',
 									)}
 								/>
@@ -119,7 +119,7 @@ export function PlayerJoinGame() {
 						</PopoverAnchor>
 						<PopoverContent
 							className={`
-								w-(--radix-popover-trigger-width) border-slate-light bg-black p-0
+								w-(--radix-popover-trigger-width) border-black bg-zinc-dark p-0
 							`}
 							align="start"
 							onOpenAutoFocus={(event) => event.preventDefault()}
@@ -135,7 +135,7 @@ export function PlayerJoinGame() {
 												mx-1 cursor-pointer rounded-xs px-2 py-1.5 font-mono text-sm
 												text-white
 											`,
-											index === selectedIndex ? 'bg-slate' : 'hover:bg-slate/50',
+											index === selectedIndex ? 'bg-zinc' : 'hover:bg-zinc/50',
 										)}
 									>
 										{word.toLowerCase()}
@@ -154,7 +154,7 @@ export function PlayerJoinGame() {
 									? 'bg-green/20 text-green'
 									: partValidation.adjective === false
 										? 'bg-red/20 text-red'
-										: 'bg-slate text-muted-foreground',
+										: 'bg-zinc text-muted-foreground',
 							)}
 						>
 							adjective
@@ -167,7 +167,7 @@ export function PlayerJoinGame() {
 									? 'bg-green/20 text-green'
 									: partValidation.color === false
 										? 'bg-red/20 text-red'
-										: 'bg-slate text-muted-foreground',
+										: 'bg-zinc text-muted-foreground',
 							)}
 						>
 							color
@@ -180,7 +180,7 @@ export function PlayerJoinGame() {
 									? 'bg-green/20 text-green'
 									: partValidation.animal === false
 										? 'bg-red/20 text-red'
-										: 'bg-slate text-muted-foreground',
+										: 'bg-zinc text-muted-foreground',
 							)}
 						>
 							animal
@@ -197,10 +197,10 @@ export function PlayerJoinGame() {
 							'h-14 w-full rounded-xl text-lg font-semibold transition-all',
 							isComplete && !isValidating && !gameNotFound
 								? `
-									border-orange-dark bg-orange text-white shadow-brutal-slate
-									hover:shadow-brutal-lg-slate
+									border-black bg-orange text-white shadow-brutal
+									hover:shadow-brutal-lg
 								`
-								: 'cursor-not-allowed bg-slate text-muted-foreground',
+								: 'cursor-not-allowed bg-zinc text-zinc-light',
 						)}
 					>
 						Join Game
@@ -212,7 +212,7 @@ export function PlayerJoinGame() {
 						onClick={handleGoHome}
 						className={`
 							w-full text-muted-foreground
-							hover:bg-slate/50 hover:text-white
+							hover:bg-zinc/50 hover:text-white
 						`}
 					>
 						Back to Home

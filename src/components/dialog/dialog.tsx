@@ -18,7 +18,7 @@ const OVERLAY_CLASS_NAME = `
 
 const CONTENT_CLASS_NAME = `
 	relative grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl
-	border-4 border-black bg-white p-0
+	border-4 border-black bg-white p-6
 	sm:max-w-lg
 `;
 

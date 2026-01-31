@@ -49,27 +49,27 @@ export const buttonVariants = cva(
 				`,
 				// Dark variants for use on dark backgrounds (player pages)
 				'dark-default': `
-					border-slate bg-black text-white shadow-brutal-sm-slate
-					hover:-translate-y-0.5 hover:shadow-brutal-slate
+					border-black bg-black text-white shadow-brutal-sm
+					hover:-translate-y-0.5 hover:shadow-brutal
 					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				'dark-accent': `
-					border-4 border-orange-dark bg-orange text-white shadow-brutal-slate
-					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					border-4 border-black bg-orange text-white shadow-brutal
+					hover:-translate-y-1 hover:shadow-brutal-lg
 					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
 				'dark-subtle': `
-					border-slate bg-black text-white
-					hover:-translate-y-0.5 hover:bg-slate/80 hover:shadow-brutal-sm-slate
+					border-black bg-black text-white
+					hover:-translate-y-0.5 hover:bg-zinc/80 hover:shadow-brutal-sm
 					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset
 				`,
 				'dark-ghost': `
 					border-transparent text-white
-					hover:border-slate hover:bg-slate/80
-					active:translate-y-0.5 active:border-slate active:bg-slate/80
+					hover:border-black hover:bg-zinc/80
+					active:translate-y-0.5 active:border-black active:bg-zinc/80
 					active:shadow-brutal-inset
 				`,
 			},
@@ -105,8 +105,8 @@ export const buttonVariants = cva(
 				variant: 'dark-default',
 				size: 'lg',
 				class: `
-					shadow-brutal-slate
-					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					shadow-brutal
+					hover:-translate-y-1 hover:shadow-brutal-lg
 					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
@@ -115,8 +115,8 @@ export const buttonVariants = cva(
 				variant: 'dark-accent',
 				size: 'lg',
 				class: `
-					shadow-brutal-slate
-					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					shadow-brutal
+					hover:-translate-y-1 hover:shadow-brutal-lg
 					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
@@ -144,8 +144,8 @@ export const buttonVariants = cva(
 				variant: 'dark-default',
 				size: 'xl',
 				class: `
-					shadow-brutal-slate
-					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					shadow-brutal
+					hover:-translate-y-1 hover:shadow-brutal-lg
 					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,
@@ -154,8 +154,8 @@ export const buttonVariants = cva(
 				variant: 'dark-accent',
 				size: 'xl',
 				class: `
-					shadow-brutal-slate
-					hover:-translate-y-1 hover:shadow-brutal-lg-slate
+					shadow-brutal
+					hover:-translate-y-1 hover:shadow-brutal-lg
 					hover:after:translate-y-1
 					active:translate-y-1 active:shadow-brutal-inset
 				`,

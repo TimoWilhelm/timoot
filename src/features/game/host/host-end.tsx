@@ -162,7 +162,7 @@ export function HostEnd() {
 			const colors = [
 				getThemeColor('--color-orange'),
 				getThemeColor('--color-gold'),
-				getThemeColor('--color-slate'),
+				getThemeColor('--color-zinc'),
 				getThemeColor('--color-coral'),
 			];
 			const count = 220;

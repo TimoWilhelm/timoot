@@ -126,8 +126,10 @@ export function useGameCode() {
 			const autoCompleteResult = tryAutoComplete(newValue);
 			if (autoCompleteResult) {
 				setValue(autoCompleteResult);
-				setAutoCompleteFlash(true);
-				setTimeout(() => setAutoCompleteFlash(false), 300);
+				if (!isValidGameId(autoCompleteResult)) {
+					setAutoCompleteFlash(true);
+					setTimeout(() => setAutoCompleteFlash(false), 300);
+				}
 			} else {
 				setValue(newValue);
 			}
@@ -146,16 +148,15 @@ export function useGameCode() {
 			const newParts = [...parts];
 			newParts[newParts.length - 1] = suggestion.toLowerCase();
 
-			// Add hyphen if not at the last part (animal)
-			if (newParts.length < 3) {
-				setValue(newParts.join('-') + '-');
-			} else {
-				setValue(newParts.join('-'));
-			}
+			// Add hyphen if not at the last part
+			const newValue = newParts.length < 3 ? newParts.join('-') + '-' : newParts.join('-');
+			setValue(newValue);
 
 			// Trigger flash animation
-			setAutoCompleteFlash(true);
-			setTimeout(() => setAutoCompleteFlash(false), 300);
+			if (!isValidGameId(newValue)) {
+				setAutoCompleteFlash(true);
+				setTimeout(() => setAutoCompleteFlash(false), 300);
+			}
 
 			setShowSuggestions(true);
 			inputReference.current?.focus();

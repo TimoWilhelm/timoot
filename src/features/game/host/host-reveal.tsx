@@ -57,7 +57,7 @@ export function HostReveal() {
 							)}
 						>
 							<motion.div
-								className={cn('absolute top-0 left-0 h-full', isCorrect ? `bg-green/20` : `bg-slate/20`)}
+								className={cn('absolute top-0 left-0 h-full', isCorrect ? `bg-green/20` : `bg-zinc/20`)}
 								initial={{ width: 0 }}
 								animate={{ width: `${percentage}%` }}
 								transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}

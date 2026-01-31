@@ -13,8 +13,8 @@ export function PlayerActiveGame() {
 		<>
 			<header
 				className={`
-					relative flex items-center justify-center rounded-lg border-2 border-slate
-					bg-slate/50 px-4 py-2 text-xl font-bold
+					relative flex items-center justify-center rounded-lg border-2 border-black
+					bg-zinc px-4 py-2 text-xl font-bold
 				`}
 			>
 				<div className="flex w-full max-w-2xl items-center justify-between gap-4">

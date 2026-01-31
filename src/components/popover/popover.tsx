@@ -17,7 +17,7 @@ const POPOVER_CONTENT_CLASS_NAME = `
 	data-[side=top]:[--tw-enter-translate-y:0.5rem]
 	data-[state=closed]:animate-popover-out
 	data-[state=open]:animate-popover-in
-	dark:border-slate dark:shadow-brutal-slate
+	dark:border-black dark:shadow-brutal
 `;
 
 // ============================================================================

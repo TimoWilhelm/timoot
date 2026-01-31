@@ -46,7 +46,7 @@ export function SoundToggle({ className, onToggle }: SoundToggleProperties) {
 				size="icon"
 				className={cn(
 					`
-						rounded-full border border-slate bg-muted shadow-md backdrop-blur-xs
+						rounded-full border border-black bg-muted shadow-md backdrop-blur-xs
 						hover:scale-105
 						active:scale-95
 					`,

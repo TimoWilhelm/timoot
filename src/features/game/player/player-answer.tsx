@@ -1,5 +1,4 @@
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
 
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { shapeColors, shapePaths } from '@/features/game/shared/shapes';
@@ -17,17 +16,7 @@ function getPosition(displayIndex: number) {
 export function PlayerAnswer() {
 	const { onAnswer, submittedAnswer, gameState } = usePlayerGameContext();
 	const optionIndices = Array.from({ length: gameState.options.length }, (_, index) => index);
-	const [showPulse, setShowPulse] = useState(false);
-
-	// Trigger pulse animation after selection
-	useEffect(() => {
-		if (submittedAnswer !== undefined) {
-			const timer = setTimeout(() => setShowPulse(true), 600);
-			return () => clearTimeout(timer);
-		}
-		// No need to setShowPulse(false) - state is initialized as false,
-		// and render guards (isSelected && showPulse) prevent showing pulse when submittedAnswer is null
-	}, [submittedAnswer]);
+	// No pulse state needed for immediate reaction
 
 	const canAnswer = submittedAnswer === undefined;
 
@@ -93,8 +82,8 @@ export function PlayerAnswer() {
 							isSelected
 								? {
 										type: 'spring',
-										stiffness: 180,
-										damping: 22,
+										stiffness: 400,
+										damping: 25,
 										mass: 1,
 									}
 								: isOther
@@ -138,24 +127,10 @@ export function PlayerAnswer() {
 								absolute inset-0 rounded-xl bg-linear-to-t from-transparent
 								via-transparent to-white/10
 							`}
-							animate={isSelected && showPulse ? { opacity: [0.1, 0.3, 0.1] } : {}}
+							animate={isSelected ? { opacity: [0.1, 0.3, 0.1] } : {}}
 							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
 						/>
 
-						{/* Selection ring effect - fades out after initial pop */}
-						{isSelected && (
-							<motion.div
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: [0, 1, 0], scale: [0.8, 1, 1.05] }}
-								transition={{ duration: 1, ease: 'easeOut', times: [0, 0.4, 1] }}
-								className={`
-									absolute inset-0 rounded-xl ring-4 ring-white/50 ring-offset-4
-									ring-offset-transparent
-								`}
-							/>
-						)}
-
-						{/* Shape icon */}
 						<motion.svg
 							viewBox="0 0 24 24"
 							className={`
@@ -165,17 +140,17 @@ export function PlayerAnswer() {
 							animate={
 								isSelected
 									? {
-											scale: [1, 1.1, 1],
-											rotate: [0, 5, -5, 0],
+											scale: [1, 1.25, 1],
+											rotate: [0, 10, -10, 0],
 										}
 									: {}
 							}
 							transition={
 								isSelected
 									? {
-											duration: 0.6,
-											delay: 0.4,
-											ease: 'easeInOut',
+											duration: 0.4,
+											delay: 0.2, // Wait for button to pop
+											ease: 'backOut',
 										}
 									: {}
 							}
@@ -195,31 +170,37 @@ export function PlayerAnswer() {
 							/>
 						)}
 
-						{/* Sparkle particles for selected */}
-						{isSelected && showPulse && (
+						{/* Confetti particles - Neo-Brutal Shapes */}
+						{isSelected && (
 							<>
-								{Array.from({ length: 6 }).map((_, index) => (
-									<motion.div
+								{Array.from({ length: 8 }).map((_, index) => (
+									<motion.svg
 										key={index}
-										className="absolute size-2 rounded-full bg-white"
+										viewBox="0 0 24 24"
+										className="absolute -z-10 size-4 fill-white stroke-black stroke-[3px]"
+										style={{ filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,1))' }}
 										initial={{
 											x: 0,
 											y: 0,
 											opacity: 1,
 											scale: 0,
+											rotate: 0,
 										}}
 										animate={{
-											x: Math.cos((index * Math.PI * 2) / 6) * 100,
-											y: Math.sin((index * Math.PI * 2) / 6) * 100,
-											opacity: [1, 0],
-											scale: [0, 1, 0],
+											x: Math.cos((index * Math.PI * 2) / 8) * 220, // Increased distance
+											y: Math.sin((index * Math.PI * 2) / 8) * 220,
+											opacity: [1, 1, 0],
+											scale: [0, 1.2, 0],
+											rotate: [0, 180],
 										}}
 										transition={{
-											duration: 1,
-											delay: 0.6 + index * 0.1,
-											ease: 'easeOut',
+											duration: 0.8,
+											delay: 0,
+											ease: 'circOut',
 										}}
-									/>
+									>
+										<path d={shapePaths[originalIndex]} />
+									</motion.svg>
 								))}
 							</>
 						)}

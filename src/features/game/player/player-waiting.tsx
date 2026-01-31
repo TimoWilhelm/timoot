@@ -23,7 +23,7 @@ function PlayerDoublePointsAnimation() {
 			{Array.from({ length: 3 }).map((_, index) => (
 				<motion.div
 					key={index}
-					className="absolute rounded-full border-2 border-slate"
+					className="absolute rounded-full border-2 border-zinc"
 					initial={{ width: 50, height: 50, opacity: 0.8 }}
 					animate={{
 						width: [50, 300],
@@ -94,7 +94,7 @@ function PodiumRankDisplay({ rank }: { rank: number }) {
 				className={cn(
 					`
 						mb-4 flex size-24 items-center justify-center rounded-xl border-4
-						border-slate text-4xl font-black shadow-brutal-slate
+						border-black text-4xl font-black shadow-brutal
 					`,
 					config.bgColor,
 					config.textColor,
@@ -128,7 +128,7 @@ export function PlayerWaiting() {
 			const colors = [
 				getThemeColor('--color-orange'),
 				getThemeColor('--color-gold'),
-				getThemeColor('--color-slate'),
+				getThemeColor('--color-zinc'),
 				getThemeColor('--color-coral'),
 			];
 			const count = 200;
@@ -190,7 +190,7 @@ export function PlayerWaiting() {
 							transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
 							className={`
 								mb-4 flex size-20 items-center justify-center rounded-xl border-4
-								border-orange-dark bg-orange shadow-brutal-slate
+								border-black bg-orange shadow-brutal
 							`}
 						>
 							<Gamepad2 className="size-10 text-white" strokeWidth={2.5} />
@@ -258,7 +258,7 @@ export function PlayerWaiting() {
 									key={player.id}
 									className={`
 										mx-auto flex w-64 items-center justify-between rounded-lg border-2
-										border-slate bg-slate/50 px-4 py-2
+										border-black bg-zinc px-4 py-2
 									`}
 								>
 									<span className="flex items-center font-bold text-white">
@@ -286,7 +286,7 @@ export function PlayerWaiting() {
 								transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
 								className={`
 									flex size-20 items-center justify-center rounded-xl border-4
-									border-yellow-dark bg-yellow shadow-brutal-slate
+									border-yellow-dark bg-yellow shadow-brutal
 								`}
 							>
 								<Trophy className="size-10 text-black" strokeWidth={2.5} />
@@ -311,7 +311,7 @@ export function PlayerWaiting() {
 								<div
 									className={`
 										mb-4 flex size-16 items-center justify-center rounded-xl border-4
-										border-purple-dark bg-purple shadow-brutal-slate
+										border-purple-dark bg-purple shadow-brutal
 									`}
 								>
 									<Star className="size-8 fill-white text-white" />

@@ -42,10 +42,10 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 	return (
 		<Card
 			className={`
-				relative w-full max-w-md border-4 border-slate bg-black shadow-brutal-slate
+				relative w-full max-w-md border-4 border-black bg-zinc shadow-brutal
 			`}
 		>
-			<CardHeader className="border-b-2 border-slate text-center">
+			<CardHeader className="border-b-2 border-black text-center">
 				<CardTitle className="font-display text-4xl text-white">Enter a Nickname</CardTitle>
 			</CardHeader>
 			<CardContent className="pt-6">
@@ -55,9 +55,9 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 							{...register('nickname')}
 							placeholder="Your cool name"
 							className={`
-								h-16 border-white bg-black text-center text-2xl font-bold text-white
+								h-16 border-black bg-black text-center text-2xl font-bold text-white
 								placeholder:text-muted-foreground
-								focus:border-orange focus:ring-offset-0
+								focus:border-black focus:ring-offset-0
 							`}
 							disabled={isLoading}
 							maxLength={LIMITS.NICKNAME_MAX}
@@ -74,7 +74,7 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 						onClick={() => navigate('/')}
 						className={`
 							w-full text-muted-foreground
-							hover:bg-slate/50 hover:text-white
+							hover:bg-zinc/50 hover:text-white
 						`}
 					>
 						Back to Home
