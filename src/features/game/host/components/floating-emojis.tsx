@@ -21,8 +21,8 @@ export function FloatingEmojis({ ref }: { ref?: React.Ref<FloatingEmojisHandle> 
 
 	const addEmoji = useCallback((emoji: EmojiReaction) => {
 		const id = `${Date.now()}-${Math.random()}`;
-		const x = 5 + Math.random() * 90; // Random position 5-95%
-		const duration = 2 + Math.random() * 2; // Random 2-4 seconds
+		const x = 10 + Math.random() * 80; // Random position 10-90%
+		const duration = 3 + Math.random() * 1.5; // Random 3-4.5 seconds
 
 		setEmojis((previous) => [...previous, { id, emoji, x, duration }]);
 
@@ -54,8 +54,8 @@ export function FloatingEmojis({ ref }: { ref?: React.Ref<FloatingEmojisHandle> 
 						key={id}
 						initial={{ y: 0, opacity: 1, scale: 0.5 }}
 						animate={{
-							y: clearing ? 100 : '-75vh', // Apex at 3/4 up the screen
-							opacity: clearing ? 0 : [1, 1, 0], // Fade: full until 50%, then fade to 0 at 100%
+							y: clearing ? 100 : '-100vh', // Float up past the top of the screen
+							opacity: clearing ? 0 : [1, 1, 0, 0], // Fade: full until 50%, fade to 0 at 75%, stay at 0
 							scale: clearing ? 0.5 : [1, 1.3, 1],
 						}}
 						exit={{ opacity: 0 }}
@@ -63,7 +63,11 @@ export function FloatingEmojis({ ref }: { ref?: React.Ref<FloatingEmojisHandle> 
 							duration: clearing ? 0.3 : duration,
 							ease: 'easeOut',
 							scale: { duration: 0.2 },
-							opacity: { duration: clearing ? 0.3 : duration, times: [0, 0.5, 1] },
+							opacity: {
+								duration: clearing ? 0.3 : duration,
+								times: [0, 0.1, 0.3, 1],
+								ease: 'linear',
+							},
 						}}
 						style={{ left: `${x}%` }}
 						className="absolute bottom-4 text-5xl"
