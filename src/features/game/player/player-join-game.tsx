@@ -88,7 +88,7 @@ export function PlayerJoinGame() {
 										'border-2 border-black bg-black',
 										`
 											overflow-hidden text-ellipsis text-white
-											placeholder:text-ellipsis placeholder:text-muted-foreground/50
+											placeholder:text-ellipsis placeholder:text-muted-foreground/75
 										`,
 										'focus:outline-none',
 										'transition-all duration-200',
@@ -208,7 +208,7 @@ export function PlayerJoinGame() {
 					</Button>
 					<Button
 						type="button"
-						variant="ghost"
+						variant="dark-ghost"
 						onClick={handleGoHome}
 						className={`
 							w-full text-muted-foreground

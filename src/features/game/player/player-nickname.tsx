@@ -70,7 +70,7 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 					</Button>
 					<Button
 						type="button"
-						variant="ghost"
+						variant="dark-ghost"
 						onClick={() => navigate('/')}
 						className={`
 							w-full text-muted-foreground
