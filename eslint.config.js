@@ -79,7 +79,7 @@ export default defineConfig(
 			'import-x/no-unresolved': [
 				'error',
 				{
-					ignore: ['cloudflare:workers'],
+					ignore: ['cloudflare:*'],
 				},
 			],
 		},
