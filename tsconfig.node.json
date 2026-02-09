@@ -8,6 +8,7 @@
 		"skipLibCheck": true,
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
+		"allowJs": true,
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
@@ -27,5 +28,5 @@
 			"@shared/*": ["./shared/*"]
 		}
 	},
-	"include": ["vite.config.ts", "tailwind.config.ts", "playwright.config.ts", "test", ".storybook"]
+	"include": ["vite.config.ts", "playwright.config.ts", "eslint.config.js", "lint-staged.config.js", "test", ".storybook"]
 }
