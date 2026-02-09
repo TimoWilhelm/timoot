@@ -3,5 +3,5 @@
 	"compilerOptions": {
 		"types": ["../../worker-configuration.d.ts", "vitest/globals", "@cloudflare/vitest-pool-workers"]
 	},
-	"include": ["**/*.ts"]
+	"include": ["**/*.ts", "../../worker/**/*.test.ts", "../../shared/**/*.test.ts"]
 }
