@@ -16,6 +16,7 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
 	id: 'test-game-id',
 	pin: '1234',
 	phase: 'LOBBY',
+	phaseVersion: 0,
 	players: [
 		{ id: 'p1', name: 'Alice', score: 100, answered: false },
 		{ id: 'p2', name: 'Bob', score: 50, answered: false },
@@ -303,6 +304,48 @@ describe('messageBuilders.ts', () => {
 
 			if (message.type === 'leaderboard') {
 				expect(message.isLastQuestion).toBe(false);
+			}
+		});
+	});
+
+	describe('phaseVersion in messages', () => {
+		it('includes phaseVersion in lobbyUpdate message', () => {
+			const state = createMockState({ phaseVersion: 3 });
+			const message = buildLobbyMessage(state);
+			if (message.type === 'lobbyUpdate') {
+				expect(message.phaseVersion).toBe(3);
+			}
+		});
+
+		it('includes phaseVersion in questionStart message', () => {
+			const state = createMockState({ phaseVersion: 5 });
+			const message = buildQuestionMessage(state);
+			if (message.type === 'questionStart') {
+				expect(message.phaseVersion).toBe(5);
+			}
+		});
+
+		it('includes phaseVersion in reveal message', () => {
+			const state = createMockState({ phaseVersion: 7 });
+			const message = buildRevealMessage(state);
+			if (message.type === 'reveal') {
+				expect(message.phaseVersion).toBe(7);
+			}
+		});
+
+		it('includes phaseVersion in leaderboard message', () => {
+			const state = createMockState({ phaseVersion: 9 });
+			const message = buildLeaderboardMessage(state);
+			if (message.type === 'leaderboard') {
+				expect(message.phaseVersion).toBe(9);
+			}
+		});
+
+		it('includes phaseVersion in gameEnd message', () => {
+			const state = createMockState({ phaseVersion: 11 });
+			const message = buildGameEndMessage(state, true);
+			if (message.type === 'gameEnd') {
+				expect(message.phaseVersion).toBe(11);
 			}
 		});
 	});

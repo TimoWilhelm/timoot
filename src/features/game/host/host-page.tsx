@@ -66,7 +66,7 @@ export function HostPage() {
 		floatingEmojisReference.current?.addEmoji(emoji);
 	}, []);
 
-	const { connectionState, error, gameState, startGame, nextState } = useGameWebSocket({
+	const { connectionState, error, gameState, startGame, nextState, isAdvancing } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
@@ -115,6 +115,9 @@ export function HostPage() {
 			if (connectionState !== 'connected') return;
 			if (!phaseAllowsManualAdvance[gameState.phase]) return;
 
+			// Prevent advancing if already waiting for the server to respond
+			if (isAdvancing) return;
+
 			// Prevent advancing too quickly after phase change
 			if (Date.now() < keyboardNavEnabledAtReference.current) return;
 
@@ -129,7 +132,7 @@ export function HostPage() {
 
 		globalThis.addEventListener('keydown', handleKeyDown);
 		return () => globalThis.removeEventListener('keydown', handleKeyDown);
-	}, [connectionState, gameState.phase, nextState]);
+	}, [connectionState, gameState.phase, isAdvancing, nextState]);
 
 	// Play sounds on game phase changes or reconnection
 	useEffect(() => {
@@ -296,6 +299,7 @@ export function HostPage() {
 				>
 					<HostGameProvider
 						gameState={gameState}
+						isAdvancing={isAdvancing}
 						onStartGame={() => {
 							handleAudioInit();
 							startGame();

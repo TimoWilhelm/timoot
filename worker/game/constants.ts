@@ -1,6 +1,11 @@
 /** Time limit for answering each question */
 export const QUESTION_TIME_LIMIT_MS = 20_000;
 
+/** Safety buffer added to the question time limit for the server-side timeout alarm.
+ * This ensures the server alarm fires after the host client timer, acting as a fallback
+ * in case the host disconnects or the client timer fails. */
+export const QUESTION_TIMEOUT_BUFFER_MS = 3000;
+
 /** Delay before advancing to reveal when all players have answered */
 export const ALL_ANSWERED_DELAY_MS = 1500;
 

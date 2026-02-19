@@ -12,6 +12,7 @@ export function buildLobbyMessage(state: GameState): ServerMessage {
 		players: state.players.map((p) => ({ id: p.id, name: p.name })),
 		pin: state.pin,
 		gameId: state.id,
+		phaseVersion: state.phaseVersion,
 	};
 }
 
@@ -23,6 +24,7 @@ export function buildGetReadyMessage(state: GameState, countdownMs: number): Ser
 		type: 'getReady',
 		countdownMs,
 		totalQuestions: state.questions.length,
+		phaseVersion: state.phaseVersion,
 	};
 }
 
@@ -40,6 +42,7 @@ export function buildQuestionModifierMessage(state: GameState): ServerMessage {
 		questionIndex: state.currentQuestionIndex,
 		totalQuestions: state.questions.length,
 		modifiers,
+		phaseVersion: state.phaseVersion,
 	};
 }
 
@@ -66,6 +69,7 @@ export function buildQuestionMessage(state: GameState): ServerMessage {
 		timeLimitMs: QUESTION_TIME_LIMIT_MS,
 		isDoublePoints: question.isDoublePoints,
 		backgroundImage: question.backgroundImage,
+		phaseVersion: state.phaseVersion,
 	};
 }
 
@@ -104,6 +108,7 @@ export function buildRevealMessage(state: GameState, playerId?: string): ServerM
 		answerCounts,
 		questionText: question.text,
 		options: question.options,
+		phaseVersion: state.phaseVersion,
 	};
 }
 
@@ -115,6 +120,7 @@ export function buildLeaderboardMessage(state: GameState): ServerMessage {
 		type: 'leaderboard',
 		leaderboard: buildLeaderboard(state.players),
 		isLastQuestion: state.currentQuestionIndex >= state.questions.length - 1,
+		phaseVersion: state.phaseVersion,
 	};
 }
 
@@ -127,5 +133,6 @@ export function buildGameEndMessage(state: GameState, revealed: boolean): Server
 		type: 'gameEnd',
 		finalLeaderboard: buildLeaderboard(state.players),
 		revealed,
+		phaseVersion: state.phaseVersion,
 	};
 }

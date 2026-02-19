@@ -5,11 +5,23 @@ import { Hono } from 'hono';
 import { createGameRequestSchema } from '@shared/validation';
 
 import { GENERAL_KNOWLEDGE_QUIZ, PREDEFINED_QUIZZES } from '../lib/quizzes';
+import { withRetry } from '../lib/retry-proxy';
 import { checkRateLimit } from '../lib/utilities';
 import { protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
 import { generateGameId } from '../lib/words';
 
+import type { GameRoomDurableObject } from '../durable/game-room';
+import type { UserStoreDurableObject } from '../durable/user-store';
 import type { ApiResponse, GameState } from '@shared/types';
+
+let _gameRoom: DurableObjectNamespace<GameRoomDurableObject>;
+let _userStore: DurableObjectNamespace<UserStoreDurableObject>;
+function GameRoom() {
+	return (_gameRoom ??= withRetry(exports.GameRoomDurableObject));
+}
+function UserStore() {
+	return (_userStore ??= withRetry(exports.UserStoreDurableObject));
+}
 
 /**
  * Game routes with RPC-compatible chained methods.
@@ -31,7 +43,7 @@ export const gameRoutes = new Hono<{ Bindings: never }>()
 		}
 
 		// Get the GameRoom DO instance and validate the token
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+		const gameRoomStub = GameRoom().getByName(gameId);
 		const isValid = await gameRoomStub.validateHostSecret(token);
 
 		if (!isValid) {
@@ -58,7 +70,7 @@ export const gameRoutes = new Hono<{ Bindings: never }>()
 		}
 
 		// Get the GameRoom DO instance by game ID
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+		const gameRoomStub = GameRoom().getByName(gameId);
 
 		// Forward the WebSocket upgrade request to the Durable Object
 		const url = new URL(c.req.url);
@@ -74,7 +86,7 @@ export const gameRoutes = new Hono<{ Bindings: never }>()
 	// Check if a game exists
 	.get('/api/games/:gameId/exists', async (c) => {
 		const { gameId } = c.req.param();
-		const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+		const gameRoomStub = GameRoom().getByName(gameId);
 		const state = await gameRoomStub.getFullGameState();
 
 		if (!state) {
@@ -101,7 +113,7 @@ export const gameRoutes = new Hono<{ Bindings: never }>()
 			let questions = GENERAL_KNOWLEDGE_QUIZ;
 			if (quizId) {
 				const userId = getUserId(c);
-				const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+				const quizStoreStub = UserStore().getByName(`user:${userId}`);
 				const customQuiz = await quizStoreStub.getCustomQuizById(quizId);
 				if (customQuiz) {
 					questions = customQuiz.questions;
@@ -115,7 +127,7 @@ export const gameRoutes = new Hono<{ Bindings: never }>()
 
 			// Generate a unique game ID for the room (adjective-color-animal format)
 			const gameId = generateGameId();
-			const gameRoomStub = exports.GameRoomDurableObject.getByName(gameId);
+			const gameRoomStub = GameRoom().getByName(gameId);
 
 			// Create game with the resolved questions (copied into game state)
 			const data = await gameRoomStub.createGame(gameId, questions);

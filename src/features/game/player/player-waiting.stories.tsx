@@ -10,6 +10,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockGameState: WebSocketGameState = {
 	phase: 'LOBBY',
+	phaseVersion: 0,
 	gameId: 'ABC123',
 	pin: 'ABC123',
 	players: [],

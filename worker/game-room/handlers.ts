@@ -9,6 +9,7 @@ import {
 	END_REVEAL_DELAY_MS,
 	MAX_PLAYERS,
 	QUESTION_MODIFIER_DURATION_MS,
+	QUESTION_TIMEOUT_BUFFER_MS,
 	QUESTION_TIME_LIMIT_MS,
 	processAnswersAndUpdateScores,
 	questionHasModifiers,
@@ -193,6 +194,7 @@ export async function handleStartGame(
 
 	// Transition to GET_READY phase with countdown before first question
 	state.phase = gamePhaseMachine.transition(state.phase, 'START_GAME');
+	state.phaseVersion++;
 	await context.storage.put('game_state', state);
 
 	// Broadcast get ready message to all clients
@@ -300,6 +302,7 @@ export async function handleSendEmoji(
 export async function advanceToReveal(context: HandlerContext, state: GameState): Promise<void> {
 	processAnswersAndUpdateScores(state);
 	state.phase = gamePhaseMachine.transition(state.phase, 'ALL_ANSWERED');
+	state.phaseVersion++;
 	await context.storage.put('game_state', state);
 
 	// Broadcast reveal with appropriate data for each role
@@ -308,11 +311,14 @@ export async function advanceToReveal(context: HandlerContext, state: GameState)
 
 /**
  * Handle host advancing to the next game state.
+ * The phaseVersion parameter ensures the host is advancing from the phase they are currently seeing.
+ * If the server's phaseVersion doesn't match, the request is stale (e.g. duplicate click) and is rejected.
  */
 export async function handleNextState(
 	context: HandlerContext,
 	ws: WebSocket,
 	attachment: WebSocketAttachment,
+	phaseVersion: number,
 	getFullGameState: () => Promise<GameState | undefined>,
 ): Promise<void> {
 	if (attachment.role !== 'host') {
@@ -323,6 +329,13 @@ export async function handleNextState(
 	const state = await getFullGameState();
 	if (!state) {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_FOUND) });
+		return;
+	}
+
+	// Reject stale nextState requests: the host's phaseVersion must match the server's.
+	// This prevents double-clicks or delayed messages from skipping phases.
+	if (state.phaseVersion !== phaseVersion) {
+		sendMessage(ws, { type: 'error', ...createError(ErrorCode.STALE_STATE_TRANSITION) });
 		return;
 	}
 
@@ -337,6 +350,7 @@ export async function handleNextState(
 			const isLastQuestion = state.currentQuestionIndex >= state.questions.length - 1;
 			const event: GamePhaseEvent = isLastQuestion ? 'REVEAL_FINAL' : 'REVEAL_NEXT';
 			state.phase = gamePhaseMachine.transition(state.phase, event);
+			state.phaseVersion++;
 			state.players.sort((a, b) => b.score - a.score);
 			await context.storage.put('game_state', state);
 			if (isLastQuestion) {
@@ -359,18 +373,23 @@ export async function handleNextState(
 					// Note: FSM transitions to QUESTION, but we go to QUESTION_MODIFIER first
 					// This is an intermediate state before FSM's NEXT_QUESTION completes
 					state.phase = 'QUESTION_MODIFIER';
+					state.phaseVersion++;
 					await context.storage.put('game_state', state);
 					broadcastQuestionModifier(context, state);
 					// Schedule automatic transition to QUESTION after modifier display
 					await context.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 				} else {
 					state.phase = gamePhaseMachine.transition(state.phase, 'NEXT_QUESTION');
+					state.phaseVersion++;
 					state.questionStartTime = Date.now();
 					await context.storage.put('game_state', state);
 					broadcastQuestionStart(context, state);
+					// Schedule server-side question timeout as safety net
+					await context.setAlarm(Date.now() + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 				}
 			} else {
 				state.phase = gamePhaseMachine.transition(state.phase, 'LEADERBOARD_FINAL');
+				state.phaseVersion++;
 				await context.storage.put('game_state', state);
 				broadcastGameEnd(context, state, false);
 				// Schedule transition to END_REVEALED after intro animation

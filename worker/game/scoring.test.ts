@@ -10,6 +10,7 @@ function createMockState(players: Player[], answers: Answer[], questions: Questi
 		id: 'test-game',
 		pin: '1234',
 		phase: 'REVEAL',
+		phaseVersion: 0,
 		players,
 		questions,
 		currentQuestionIndex: 0,
@@ -128,6 +129,40 @@ describe('scoring.ts', () => {
 			// Verify double points are applied
 			const normalScore = calculateAnswerScore(answers[0], 0, false).score;
 			expect(state.players[0].score).toBe(normalScore * 2);
+		});
+
+		it('is idempotent - does not double-count scores when called twice', () => {
+			const players: Player[] = [{ id: 'p1', name: 'Player 1', score: 0, answered: true }];
+			const answers: Answer[] = [{ playerId: 'p1', answerIndex: 0, time: 1000 }];
+			const questions: Question[] = [{ text: 'Q1', options: ['A', 'B', 'C', 'D'], correctAnswerIndex: 0 }];
+
+			const state = createMockState(players, answers, questions);
+			processAnswersAndUpdateScores(state);
+			const scoreAfterFirst = state.players[0].score;
+			expect(scoreAfterFirst).toBeGreaterThan(0);
+
+			// Call again - should not change scores
+			processAnswersAndUpdateScores(state);
+			expect(state.players[0].score).toBe(scoreAfterFirst);
+		});
+
+		it('skips already-scored answers but processes new ones', () => {
+			const players: Player[] = [{ id: 'p1', name: 'Player 1', score: 0, answered: true }];
+			const answers: Answer[] = [{ playerId: 'p1', answerIndex: 0, time: 1000 }];
+			const questions: Question[] = [{ text: 'Q1', options: ['A', 'B', 'C', 'D'], correctAnswerIndex: 0 }];
+
+			const state = createMockState(players, answers, questions);
+			processAnswersAndUpdateScores(state);
+			const scoreAfterFirst = state.players[0].score;
+
+			// Add a new answer (simulating a new player answering after processing)
+			state.players.push({ id: 'p2', name: 'Player 2', score: 0, answered: true });
+			state.answers.push({ playerId: 'p2', answerIndex: 0, time: 2000 });
+			processAnswersAndUpdateScores(state);
+
+			// p1's score should not change, p2 should have new score
+			expect(state.players[0].score).toBe(scoreAfterFirst);
+			expect(state.players[1].score).toBeGreaterThan(0);
 		});
 
 		it('ignores answers from non-existent players', () => {

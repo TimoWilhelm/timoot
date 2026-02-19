@@ -10,6 +10,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockGameState: WebSocketGameState = {
 	phase: 'QUESTION',
+	phaseVersion: 0,
 	gameId: 'ABC123',
 	pin: 'ABC123',
 	players: Array.from({ length: 8 }).map((_, index) => ({ id: `${index}`, name: `Player ${index}` })),
@@ -58,6 +59,7 @@ const mbDateNow = () => Date.now();
 // Helper to render story with context
 const renderStory = (arguments_: Partial<WebSocketGameState>, loaded: { startTime?: number }) => (
 	<HostGameProvider
+		isAdvancing={false}
 		gameState={{
 			...mockGameState,
 			...arguments_,

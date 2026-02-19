@@ -365,8 +365,23 @@ describe('validation.ts', () => {
 
 		describe('nextState message', () => {
 			it('accepts valid nextState message', () => {
-				const result = wsClientMessageSchema.safeParse({ type: 'nextState' });
+				const result = wsClientMessageSchema.safeParse({ type: 'nextState', phaseVersion: 0 });
 				expect(result.success).toBe(true);
+			});
+
+			it('accepts nextState with higher phaseVersion', () => {
+				const result = wsClientMessageSchema.safeParse({ type: 'nextState', phaseVersion: 5 });
+				expect(result.success).toBe(true);
+			});
+
+			it('rejects nextState without phaseVersion', () => {
+				const result = wsClientMessageSchema.safeParse({ type: 'nextState' });
+				expect(result.success).toBe(false);
+			});
+
+			it('rejects nextState with negative phaseVersion', () => {
+				const result = wsClientMessageSchema.safeParse({ type: 'nextState', phaseVersion: -1 });
+				expect(result.success).toBe(false);
 			});
 		});
 

@@ -43,6 +43,7 @@ export class WsTestClient {
 	public playerId?: string;
 	public playerToken?: string;
 	public isConnected = false;
+	public phaseVersion = 0;
 
 	constructor(private options: WsClientOptions) {}
 
@@ -87,6 +88,11 @@ export class WsTestClient {
 					return;
 				}
 				const message = parseResult.data;
+
+				// Track phaseVersion from messages that carry it
+				if ('phaseVersion' in message && typeof message.phaseVersion === 'number') {
+					this.phaseVersion = message.phaseVersion;
+				}
 
 				// Handle initial connected message specially during connection phase
 				// Don't queue this one - it's handled by the connect() promise
@@ -271,10 +277,10 @@ export class WsTestClient {
 	}
 
 	/**
-	 * Advance to next state
+	 * Advance to next state (sends current phaseVersion for server-side validation)
 	 */
 	nextState(): void {
-		this.send({ type: 'nextState' });
+		this.send({ type: 'nextState', phaseVersion: this.phaseVersion });
 	}
 }
 

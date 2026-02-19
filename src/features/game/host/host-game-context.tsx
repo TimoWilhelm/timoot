@@ -5,6 +5,7 @@ import type { SoundType } from '@/features/game/hooks/use-host-sound';
 
 export interface HostGameContextProperties {
 	gameState: WebSocketGameState;
+	isAdvancing: boolean;
 	onStartGame: () => void;
 	onNextState: () => void;
 	onPlaySound: (sound: SoundType) => void;

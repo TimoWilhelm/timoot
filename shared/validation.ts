@@ -244,7 +244,7 @@ const wsSubmitAnswerSchema = z.object({
 });
 
 const wsStartGameSchema = z.object({ type: z.literal('startGame') });
-const wsNextStateSchema = z.object({ type: z.literal('nextState') });
+const wsNextStateSchema = z.object({ type: z.literal('nextState'), phaseVersion: z.number().int().min(0) });
 
 const wsSendEmojiSchema = z.object({
 	type: z.literal('sendEmoji'),
@@ -288,12 +288,14 @@ const wsLobbyUpdateSchema = z.object({
 	players: z.array(playerInfoSchema),
 	pin: z.string(),
 	gameId: z.string(),
+	phaseVersion: z.number(),
 });
 
 const wsGetReadySchema = z.object({
 	type: z.literal('getReady'),
 	countdownMs: z.number(),
 	totalQuestions: z.number(),
+	phaseVersion: z.number(),
 });
 
 const wsQuestionModifierSchema = z.object({
@@ -301,6 +303,7 @@ const wsQuestionModifierSchema = z.object({
 	questionIndex: z.number(),
 	totalQuestions: z.number(),
 	modifiers: z.array(z.enum(['doublePoints'])),
+	phaseVersion: z.number(),
 });
 
 const wsQuestionStartSchema = z.object({
@@ -313,6 +316,7 @@ const wsQuestionStartSchema = z.object({
 	timeLimitMs: z.number(),
 	isDoublePoints: z.boolean().optional(),
 	backgroundImage: z.string().optional(),
+	phaseVersion: z.number(),
 });
 
 const wsAnswerReceivedSchema = z.object({
@@ -340,6 +344,7 @@ const wsRevealSchema = z.object({
 	answerCounts: z.array(z.number()),
 	questionText: z.string(),
 	options: z.array(z.string()),
+	phaseVersion: z.number(),
 });
 
 const leaderboardEntrySchema = z.object({
@@ -353,12 +358,14 @@ const wsLeaderboardSchema = z.object({
 	type: z.literal('leaderboard'),
 	leaderboard: z.array(leaderboardEntrySchema),
 	isLastQuestion: z.boolean(),
+	phaseVersion: z.number(),
 });
 
 const wsGameEndSchema = z.object({
 	type: z.literal('gameEnd'),
 	finalLeaderboard: z.array(leaderboardEntrySchema),
 	revealed: z.boolean(),
+	phaseVersion: z.number(),
 });
 
 const wsPlayerJoinedSchema = z.object({

@@ -7,11 +7,18 @@ import { z } from 'zod';
 import { LIMITS, aiGenerateRequestSchema, quizSchema } from '@shared/validation';
 
 import { PREDEFINED_QUIZZES } from '../lib/quizzes';
+import { withRetry } from '../lib/retry-proxy';
 import { checkRateLimit } from '../lib/utilities';
 import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
 import { type GeneratedQuestion, generateQuizFromPrompt, generateSingleQuestion } from '../services/ai';
 
+import type { UserStoreDurableObject } from '../durable/user-store';
 import type { ApiResponse, GenerationStatus, Quiz, QuizGenerateSSEEvent } from '@shared/types';
+
+let _userStore: DurableObjectNamespace<UserStoreDurableObject>;
+function UserStore() {
+	return (_userStore ??= withRetry(exports.UserStoreDurableObject));
+}
 
 /**
  * Quiz routes with RPC-compatible chained methods.
@@ -28,7 +35,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 	// Get custom quizzes for user
 	.get('/api/quizzes/custom', zValidator('header', userIdHeaderSchema), async (c) => {
 		const userId = getUserId(c);
-		const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+		const quizStoreStub = UserStore().getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizzes();
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
@@ -39,7 +46,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 	.get('/api/quizzes/custom/:id', zValidator('header', userIdHeaderSchema), async (c) => {
 		const { id } = c.req.param();
 		const userId = getUserId(c);
-		const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+		const quizStoreStub = UserStore().getByName(`user:${userId}`);
 		const data = await quizStoreStub.getCustomQuizById(id);
 		if (!data) {
 			return c.json({ success: false, error: 'Quiz not found' }, 404);
@@ -51,7 +58,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 	.post('/api/quizzes/custom', zValidator('header', userIdHeaderSchema), zValidator('json', quizSchema), async (c) => {
 		const quiz = c.req.valid('json');
 		const userId = getUserId(c);
-		const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+		const quizStoreStub = UserStore().getByName(`user:${userId}`);
 		const existingQuizzes = await quizStoreStub.getCustomQuizzes();
 		if (existingQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
 			return c.json(
@@ -73,7 +80,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 			return c.json({ success: false, error: 'ID mismatch' }, 400);
 		}
 		const userId = getUserId(c);
-		const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+		const quizStoreStub = UserStore().getByName(`user:${userId}`);
 		const data = await quizStoreStub.saveCustomQuiz(quiz);
 		// Update last activity (non-blocking)
 		waitUntil(quizStoreStub.touchLastAccess(userId));
@@ -84,7 +91,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 	.delete('/api/quizzes/custom/:id', zValidator('header', userIdHeaderSchema), async (c) => {
 		const { id } = c.req.param();
 		const userId = getUserId(c);
-		const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+		const quizStoreStub = UserStore().getByName(`user:${userId}`);
 		const data = await quizStoreStub.deleteCustomQuiz(id);
 		if (!data.success) {
 			return c.json({ success: false, error: 'Quiz not found' }, 404);
@@ -107,7 +114,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 			const { prompt, numQuestions } = c.req.valid('json');
 
 			const userId = getUserId(c);
-			const quizStoreStub = exports.UserStoreDurableObject.getByName(`user:${userId}`);
+			const quizStoreStub = UserStore().getByName(`user:${userId}`);
 			const existingQuizzes = await quizStoreStub.getCustomQuizzes();
 
 			if (existingQuizzes.length >= LIMITS.MAX_QUIZZES_PER_USER) {
