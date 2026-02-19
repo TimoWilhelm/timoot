@@ -31,7 +31,8 @@ test.describe('Quiz Management', () => {
 
 		await expect(page).toHaveURL('/');
 		await expect(page.getByText(/quiz "e2e lifecycle quiz" saved/i)).toBeVisible();
-		await expect(page.getByRole('heading', { name: 'E2E Lifecycle Quiz' })).toBeVisible();
+		// Scope to quiz card heading to avoid matching the toast heading
+		await expect(page.locator('div[role="button"] h3', { hasText: 'E2E Lifecycle Quiz' })).toBeVisible();
 
 		// --- 2. Edit Quiz ---
 		const quizCard = page
@@ -51,7 +52,8 @@ test.describe('Quiz Management', () => {
 		await page.getByRole('button', { name: /save quiz/i }).click();
 
 		await expect(page).toHaveURL('/');
-		await expect(page.getByRole('heading', { name: 'E2E Lifecycle Quiz Updated' })).toBeVisible();
+		// Scope to quiz card heading to avoid matching the toast heading
+		await expect(page.locator('div[role="button"] h3', { hasText: 'E2E Lifecycle Quiz Updated' })).toBeVisible();
 
 		// --- 3. Delete Quiz ---
 		const updatedQuizCard = page

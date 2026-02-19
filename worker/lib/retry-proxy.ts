@@ -60,7 +60,7 @@ function jitterBackoff(attempt: number, baseDelayMs: number, maxDelayMs: number)
 
 type StubGetter<T extends Rpc.DurableObjectBranded> = () => DurableObjectStub<T>;
 
-type ResolvedRetryOptions = Required<Omit<RetryOptions, 'isRetryable'>> & { isRetryable?: (error: unknown) => boolean };
+type ResolvedRetryOptions = Required<RetryOptions>;
 
 /**
  * Creates a proxy around a DurableObjectStub that retries failed RPC calls.
@@ -92,41 +92,25 @@ function createStubProxy<T extends Rpc.DurableObjectBranded>(getStub: StubGetter
 			return async (...arguments_: unknown[]) => {
 				let attempt = 1;
 				let lastError: unknown;
-				let currentStub = target;
 
 				while (attempt <= options.maxAttempts) {
 					try {
-						// On the first attempt, we use the initial stub (target).
-						// On subsequent attempts, currentStub is updated to a fresh stub.
-						const rpcMethod: unknown = Reflect.get(currentStub, property, currentStub);
-						if (typeof rpcMethod !== 'function') {
-							return rpcMethod;
-						}
-						return await rpcMethod(...arguments_);
+						// Get a fresh stub for each attempt (critical for broken stub recovery)
+						const currentStub = attempt === 1 ? target : getStub();
+						// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Direct property access avoids DataCloneError from Reflect.get + .call() on DO stubs
+						return await (currentStub as Record<string, (...a: unknown[]) => unknown>)[property](...arguments_);
 					} catch (error) {
 						lastError = error;
 
 						// Check if we should retry
-						// 1. Always retry infrastructure errors (unless overloaded)
-						if (isErrorRetryable(error)) {
-							// continue to retry logic
-						}
-						// 2. Check custom predicate if provided
-						else if (options.isRetryable?.(error)) {
-							// continue to retry logic
-						} else {
+						if (!options.isRetryable(error)) {
 							throw error;
 						}
 
 						// Check if we've exhausted attempts
 						if (attempt >= options.maxAttempts) {
-							break;
+							throw error;
 						}
-
-						// Always create a fresh stub for the next attempt.
-						// Many exceptions leave the stub in a "broken" state.
-						// Even for application errors (.remote = true), it is safer and cheap to recreate.
-						currentStub = getStub();
 
 						// Calculate backoff and wait
 						const delay = jitterBackoff(attempt, options.baseDelayMs, options.maxDelayMs);
@@ -160,15 +144,16 @@ export function withRetry<T extends Rpc.DurableObjectBranded>(
 	namespace: DurableObjectNamespace<T>,
 	options?: RetryOptions,
 ): DurableObjectNamespace<T> {
+	const customIsRetryable = options?.isRetryable;
 	const resolvedOptions: ResolvedRetryOptions = {
 		...DEFAULT_OPTIONS,
 		...options,
-		isRetryable: options?.isRetryable,
+		isRetryable: (error: unknown) => isErrorRetryable(error) || (customIsRetryable?.(error) ?? false),
 	};
 
 	return new Proxy(namespace, {
-		get(target, property, receiver) {
-			const value = Reflect.get(target, property, receiver);
+		get(target, property) {
+			const value = Reflect.get(target, property, target);
 
 			if (typeof value !== 'function') {
 				return value;
@@ -184,15 +169,8 @@ export function withRetry<T extends Rpc.DurableObjectBranded>(
 
 			// Handle getByName (convenience method that creates stub by name)
 			if (property === 'getByName') {
-				return (name: string, getOptions?: DurableObjectGetOptions) => {
-					const getStub = () => {
-						const getByNameFunction: unknown = Reflect.get(target, 'getByName', target);
-						if (typeof getByNameFunction !== 'function') {
-							throw new TypeError('getByName is not available on this namespace');
-						}
-						// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Reflect.get returns unknown, safe cast after typeof check
-						return getByNameFunction(name, getOptions) as DurableObjectStub<T>;
-					};
+				return (name: string, getOptions?: DurableObjectNamespaceGetDurableObjectOptions) => {
+					const getStub = () => target.getByName(name, getOptions);
 					return createStubProxy(getStub, resolvedOptions);
 				};
 			}
