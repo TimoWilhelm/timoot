@@ -59,11 +59,14 @@ export function broadcastToRole(context: BroadcastContext, role: ClientRole, mes
 	}
 }
 
+const DEFAULT_GET_READY_COUNTDOWN_MS = 6000;
+
 /**
  * Get the GET_READY countdown duration from environment.
  */
 export function getReadyCountdownMs(environment: Env): number {
-	return Number.parseInt(environment.GET_READY_COUNTDOWN_MS, 10);
+	const parsed = Number.parseInt(environment.GET_READY_COUNTDOWN_MS, 10);
+	return Number.isNaN(parsed) ? DEFAULT_GET_READY_COUNTDOWN_MS : parsed;
 }
 
 /**
