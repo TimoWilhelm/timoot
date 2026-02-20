@@ -5,8 +5,15 @@
  * with exponential backoff and jitter. Creates a fresh stub on each retry
  * since exceptions can leave stubs in a "broken" state.
  *
+ * IMPORTANT — workerd illegal-invocation constraint:
+ * workerd uses C++-backed proxy objects for namespaces and stubs. Extracting a
+ * method into a variable (via Reflect.get, destructuring, or assignment) detaches
+ * the internal `this` binding and throws "Illegal invocation" when called.
+ * The ONLY safe pattern is a single expression where property access and call
+ * happen together: `obj[key](...args)`.  Never `const fn = obj[key]; fn(...)`.
+ *
  * @see https://developers.cloudflare.com/durable-objects/best-practices/error-handling/
- * @see https://github.com/TimoWilhelm/do-retry-proxy
+ * @see https://developers.cloudflare.com/workers/observability/errors/#illegal-invocation-errors
  */
 
 export interface RetryOptions {
@@ -26,13 +33,12 @@ const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'isRetryable'>> = {
 	maxDelayMs: 3000,
 };
 
-interface DurableObjectError {
-	retryable?: boolean;
-	overloaded?: boolean;
-}
-
-function isDurableObjectError(error: unknown): error is DurableObjectError {
-	return typeof error === 'object' && error !== null;
+/**
+ * Type guard for objects that may have retryable/overloaded properties
+ * set by the Durable Objects runtime.
+ */
+function isObjectWithProperties(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
 }
 
 /**
@@ -41,7 +47,7 @@ function isDurableObjectError(error: unknown): error is DurableObjectError {
  * - `.overloaded` must NOT be true (retrying would worsen the overload)
  */
 function isErrorRetryable(error: unknown): boolean {
-	if (!isDurableObjectError(error)) {
+	if (!isObjectWithProperties(error)) {
 		return false;
 	}
 	const message = String(error);
@@ -58,52 +64,69 @@ function jitterBackoff(attempt: number, baseDelayMs: number, maxDelayMs: number)
 	return Math.floor(Math.random() * attemptUpperBoundMs);
 }
 
+/**
+ * Invoke a method on a workerd proxy object by property name in a single expression.
+ * This preserves the internal `this` binding that workerd requires.
+ * The property access and call MUST happen on the same object reference in one
+ * expression — storing the method in a variable first causes "Illegal invocation".
+ */
+function callMethod(object: object, property: string | symbol, arguments_: unknown[]): unknown {
+	// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Required: workerd proxy objects need bracket-notation property access + call in a single expression to preserve the C++ `this` binding.
+	return (object as Record<string | symbol, (...a: unknown[]) => unknown>)[property](...arguments_);
+}
+
 type StubGetter<T extends Rpc.DurableObjectBranded> = () => DurableObjectStub<T>;
 
-type ResolvedRetryOptions = Required<RetryOptions>;
+type ResolvedOptions = Required<Omit<RetryOptions, 'isRetryable'>> & {
+	isRetryable?: (error: unknown) => boolean;
+};
+
+/** Non-function properties on DurableObjectStub read directly (no wrapping). */
+const STUB_VALUE_PROPERTIES = new Set(['id', 'name']);
 
 /**
  * Creates a proxy around a DurableObjectStub that retries failed RPC calls.
  * On each retry, a fresh stub is obtained via the getter function.
  */
-function createStubProxy<T extends Rpc.DurableObjectBranded>(getStub: StubGetter<T>, options: ResolvedRetryOptions): DurableObjectStub<T> {
+function createStubProxy<T extends Rpc.DurableObjectBranded>(getStub: StubGetter<T>, options: ResolvedOptions): DurableObjectStub<T> {
 	const stub = getStub();
 
 	return new Proxy(stub, {
 		get(target, property) {
-			const value = Reflect.get(target, property, target);
-
-			// Only intercept function calls (RPC methods)
-			if (typeof value !== 'function') {
-				return value;
-			}
-
-			// Don't wrap internal properties
+			// Pass through symbol-keyed properties (e.g. Symbol.toPrimitive, Symbol.toStringTag)
 			if (typeof property === 'symbol') {
-				return value;
+				// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Reading a symbol property from workerd proxy via bracket notation.
+				return (target as unknown as Record<symbol, unknown>)[property];
 			}
 
-			// Don't wrap fetch() — it's used for WebSocket upgrades (101 Switching Protocols)
-			// which are not idempotent and must never be retried.
+			// Pass through non-function value properties directly.
+			if (STUB_VALUE_PROPERTIES.has(property)) {
+				// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Reading a non-function property from workerd proxy via bracket notation.
+				return (target as Record<string, unknown>)[property];
+			}
+
+			// Don't wrap .fetch() — it's used for WebSocket upgrades and HTTP
+			// forwarding where retry semantics are inappropriate. Return a wrapper
+			// that preserves `this` by calling through the target inline.
 			if (property === 'fetch') {
-				return value.bind(target);
+				return (...arguments_: unknown[]) => callMethod(target, property, arguments_);
 			}
 
+			// Wrap everything else as a retryable RPC call.
 			return async (...arguments_: unknown[]) => {
 				let attempt = 1;
-				let lastError: unknown;
 
 				while (attempt <= options.maxAttempts) {
 					try {
-						// Get a fresh stub for each attempt (critical for broken stub recovery)
+						// Get a fresh stub for each retry attempt (critical for broken stub recovery).
+						// On the first attempt use the original target; on retries create a new one.
 						const currentStub = attempt === 1 ? target : getStub();
-						// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Direct property access avoids DataCloneError from Reflect.get + .call() on DO stubs
-						return await (currentStub as Record<string, (...a: unknown[]) => unknown>)[property](...arguments_);
+						return await callMethod(currentStub, property, arguments_);
 					} catch (error) {
-						lastError = error;
-
-						// Check if we should retry
-						if (!options.isRetryable(error)) {
+						// Check if we should retry:
+						// 1. Always retry infrastructure errors (unless overloaded)
+						// 2. Check custom predicate if provided
+						if (!isErrorRetryable(error) && !options.isRetryable?.(error)) {
 							throw error;
 						}
 
@@ -119,8 +142,6 @@ function createStubProxy<T extends Rpc.DurableObjectBranded>(getStub: StubGetter
 						attempt++;
 					}
 				}
-
-				throw lastError;
 			};
 		},
 	});
@@ -129,14 +150,14 @@ function createStubProxy<T extends Rpc.DurableObjectBranded>(getStub: StubGetter
 /**
  * Wraps a DurableObjectNamespace with automatic retry capabilities.
  *
- * The returned namespace is fully transparent - use it exactly like the original.
+ * The returned namespace is fully transparent — use it exactly like the original.
  * All RPC method calls on stubs obtained from this namespace will automatically
  * retry on transient failures with exponential backoff.
  *
  * @example
  * ```ts
  * const namespace = withRetry(exports.MyDurableObject);
- * const stub = namespace.getByName('foo');
+ * const stub = namespace.get(id);
  * const result = await stub.someMethod(); // Automatically retries on failure
  * ```
  */
@@ -144,22 +165,21 @@ export function withRetry<T extends Rpc.DurableObjectBranded>(
 	namespace: DurableObjectNamespace<T>,
 	options?: RetryOptions,
 ): DurableObjectNamespace<T> {
-	const customIsRetryable = options?.isRetryable;
-	const resolvedOptions: ResolvedRetryOptions = {
+	const resolvedOptions: ResolvedOptions = {
 		...DEFAULT_OPTIONS,
 		...options,
-		isRetryable: (error: unknown) => isErrorRetryable(error) || (customIsRetryable?.(error) ?? false),
+		maxAttempts: Math.max(1, options?.maxAttempts ?? DEFAULT_OPTIONS.maxAttempts),
 	};
 
 	return new Proxy(namespace, {
 		get(target, property) {
-			const value = Reflect.get(target, property, target);
-
-			if (typeof value !== 'function') {
-				return value;
+			// Pass through non-string properties via inline bracket notation to preserve `this`.
+			if (typeof property !== 'string') {
+				// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Reading a symbol property from workerd proxy via bracket notation.
+				return (target as unknown as Record<symbol, unknown>)[property];
 			}
 
-			// Intercept methods that return a stub
+			// Intercept .get() — returns a retry-wrapped stub
 			if (property === 'get') {
 				return (id: DurableObjectId) => {
 					const getStub = () => target.get(id);
@@ -167,15 +187,16 @@ export function withRetry<T extends Rpc.DurableObjectBranded>(
 				};
 			}
 
-			// Handle getByName (convenience method that creates stub by name)
+			// Intercept .getByName() — convenience method that creates stub by name
 			if (property === 'getByName') {
-				return (name: string, getOptions?: DurableObjectNamespaceGetDurableObjectOptions) => {
-					const getStub = () => target.getByName(name, getOptions);
+				return (name: string, getOptions?: DurableObjectGetOptions) => {
+					// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- getByName exists at runtime but not in TS type; must use bracket-notation call in single expression.
+					const getStub = () => callMethod(target, 'getByName', getOptions ? [name, getOptions] : [name]) as DurableObjectStub<T>;
 					return createStubProxy(getStub, resolvedOptions);
 				};
 			}
 
-			// For jurisdiction-specific namespace
+			// Intercept .jurisdiction() — returns a retry-wrapped sub-namespace
 			if (property === 'jurisdiction') {
 				return (jurisdiction: DurableObjectJurisdiction) => {
 					const jurisdictionNamespace = target.jurisdiction(jurisdiction);
@@ -183,8 +204,9 @@ export function withRetry<T extends Rpc.DurableObjectBranded>(
 				};
 			}
 
-			// Return other methods as-is (idFromName, idFromString, newUniqueId)
-			return value.bind(target);
+			// For all other properties (idFromName, idFromString, newUniqueId, etc.)
+			// return a wrapper that calls through to the target inline to preserve `this`.
+			return (...arguments_: unknown[]) => callMethod(target, property, arguments_);
 		},
 	});
 }
