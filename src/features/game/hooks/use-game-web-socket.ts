@@ -29,6 +29,8 @@ export interface LeaderboardEntry {
 
 export interface WebSocketGameState {
 	phase: GamePhase;
+	/** Monotonically increasing version number from the server. Sent back with nextState to prevent stale transitions. */
+	phaseVersion: number;
 	gameId: string;
 	pin: string;
 	players: { id: string; name: string }[];
@@ -72,6 +74,7 @@ interface UseGameWebSocketOptions {
 
 const initialGameState: WebSocketGameState = {
 	phase: 'LOBBY',
+	phaseVersion: 0,
 	gameId: '',
 	pin: '',
 	players: [],
@@ -111,6 +114,7 @@ export function useGameWebSocket({
 	const [error, setError] = useState<string | undefined>();
 	const [gameState, setGameState] = useState<WebSocketGameState>(initialGameState);
 	const [submittedAnswer, setSubmittedAnswer] = useState<number | undefined>();
+	const [isAdvancing, setIsAdvancing] = useState(false);
 
 	const handleMessage = useCallback(
 		(event: MessageEvent) => {
@@ -135,6 +139,7 @@ export function useGameWebSocket({
 
 				case 'error': {
 					setError(message.message);
+					setIsAdvancing(false);
 					onError?.(message.code, message.message);
 					break;
 				}
@@ -143,10 +148,12 @@ export function useGameWebSocket({
 					setGameState((previous) => ({
 						...previous,
 						phase: 'LOBBY',
+						phaseVersion: message.phaseVersion,
 						gameId: message.gameId,
 						pin: message.pin,
 						players: message.players,
 					}));
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -154,9 +161,11 @@ export function useGameWebSocket({
 					setGameState((previous) => ({
 						...previous,
 						phase: 'GET_READY',
+						phaseVersion: message.phaseVersion,
 						getReadyCountdownMs: message.countdownMs,
 						totalQuestions: message.totalQuestions,
 					}));
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -164,10 +173,12 @@ export function useGameWebSocket({
 					setGameState((previous) => ({
 						...previous,
 						phase: 'QUESTION_MODIFIER',
+						phaseVersion: message.phaseVersion,
 						questionIndex: message.questionIndex,
 						totalQuestions: message.totalQuestions,
 						modifiers: message.modifiers,
 					}));
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -185,6 +196,7 @@ export function useGameWebSocket({
 					setGameState((previous) => ({
 						...previous,
 						phase: 'QUESTION',
+						phaseVersion: message.phaseVersion,
 						questionIndex: message.questionIndex,
 						totalQuestions: message.totalQuestions,
 						questionText: message.questionText,
@@ -198,6 +210,7 @@ export function useGameWebSocket({
 						playerResult: undefined,
 						answerCounts: [],
 					}));
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -218,12 +231,14 @@ export function useGameWebSocket({
 					setGameState((previous) => ({
 						...previous,
 						phase: 'REVEAL',
+						phaseVersion: message.phaseVersion,
 						correctAnswerIndex: message.correctAnswerIndex,
 						playerResult: message.playerResult,
 						answerCounts: message.answerCounts,
 						questionText: message.questionText,
 						options: message.options,
 					}));
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -244,10 +259,12 @@ export function useGameWebSocket({
 						return {
 							...previous,
 							phase: 'LEADERBOARD',
+							phaseVersion: message.phaseVersion,
 							leaderboard: enrichedLeaderboard,
 							isLastQuestion: message.isLastQuestion,
 						};
 					});
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -255,9 +272,11 @@ export function useGameWebSocket({
 					setGameState((previous) => ({
 						...previous,
 						phase: message.revealed ? 'END_REVEALED' : 'END_INTRO',
+						phaseVersion: message.phaseVersion,
 						leaderboard: message.finalLeaderboard,
 						endRevealed: message.revealed,
 					}));
+					setIsAdvancing(false);
 					break;
 				}
 
@@ -389,8 +408,10 @@ export function useGameWebSocket({
 	}, [sendMessage]);
 
 	const nextState = useCallback(() => {
-		sendMessage({ type: 'nextState' });
-	}, [sendMessage]);
+		if (isAdvancing) return; // Prevent duplicate sends while waiting for server response
+		setIsAdvancing(true);
+		sendMessage({ type: 'nextState', phaseVersion: gameState.phaseVersion });
+	}, [sendMessage, gameState.phaseVersion, isAdvancing]);
 
 	// Player emoji action
 	const sendEmoji = useCallback(
@@ -405,6 +426,7 @@ export function useGameWebSocket({
 		error,
 		gameState,
 		submittedAnswer,
+		isAdvancing,
 		// Player actions
 		join,
 		submitAnswer,

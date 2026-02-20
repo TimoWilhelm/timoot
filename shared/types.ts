@@ -47,6 +47,8 @@ export interface GameState {
 	id: string;
 	pin: string;
 	phase: GamePhase;
+	/** Monotonically increasing version number, incremented on every phase change. Used to reject stale nextState requests. */
+	phaseVersion: number;
 	players: Player[];
 	questions: Question[];
 	currentQuestionIndex: number;
@@ -76,20 +78,21 @@ export type ClientMessage =
 	| { type: 'join'; nickname: string }
 	| { type: 'startGame' }
 	| { type: 'submitAnswer'; answerIndex: number }
-	| { type: 'nextState' }
+	| { type: 'nextState'; phaseVersion: number }
 	| { type: 'sendEmoji'; emoji: EmojiReaction };
 
 // Server -> Client Messages
 export type ServerMessage =
 	| { type: 'connected'; role: ClientRole; playerId?: string; playerToken?: string }
 	| { type: 'error'; code: ErrorCodeType; message: string }
-	| { type: 'lobbyUpdate'; players: { id: string; name: string }[]; pin: string; gameId: string }
-	| { type: 'getReady'; countdownMs: number; totalQuestions: number }
+	| { type: 'lobbyUpdate'; players: { id: string; name: string }[]; pin: string; gameId: string; phaseVersion: number }
+	| { type: 'getReady'; countdownMs: number; totalQuestions: number; phaseVersion: number }
 	| {
 			type: 'questionModifier';
 			questionIndex: number;
 			totalQuestions: number;
 			modifiers: QuestionModifier[];
+			phaseVersion: number;
 	  }
 	| {
 			type: 'questionStart';
@@ -101,6 +104,7 @@ export type ServerMessage =
 			timeLimitMs: number;
 			isDoublePoints?: boolean;
 			backgroundImage?: string;
+			phaseVersion: number;
 	  }
 	| { type: 'answerReceived'; answerIndex: number }
 	| { type: 'playerAnswered'; playerId: string; answeredCount: number; totalPlayers: number }
@@ -111,16 +115,19 @@ export type ServerMessage =
 			answerCounts: number[]; // count per option for host display
 			questionText: string;
 			options: string[];
+			phaseVersion: number;
 	  }
 	| {
 			type: 'leaderboard';
 			leaderboard: { id: string; name: string; score: number; rank: number }[];
 			isLastQuestion: boolean;
+			phaseVersion: number;
 	  }
 	| {
 			type: 'gameEnd';
 			finalLeaderboard: { id: string; name: string; score: number; rank: number }[];
 			revealed: boolean;
+			phaseVersion: number;
 	  }
 	| { type: 'playerJoined'; player: { id: string; name: string } }
 	| { type: 'kicked'; reason: string }

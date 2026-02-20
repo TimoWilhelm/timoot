@@ -10,6 +10,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockGameState: WebSocketGameState = {
 	phase: 'QUESTION_MODIFIER',
+	phaseVersion: 0,
 	gameId: 'ABC123',
 	pin: 'ABC123',
 	players: [],
@@ -41,6 +42,7 @@ const meta = {
 	decorators: [
 		(Story, { args }) => (
 			<HostGameProvider
+				isAdvancing={false}
 				gameState={{
 					...mockGameState,
 					...args,

@@ -43,6 +43,9 @@ export function processAnswersAndUpdateScores(state: GameState): void {
 	const currentQuestion = state.questions[state.currentQuestionIndex];
 
 	for (const answer of state.answers) {
+		// Skip answers that have already been scored (idempotency guard)
+		if (answer.score !== undefined) continue;
+
 		const player = state.players.find((p: Player) => p.id === answer.playerId);
 		if (player) {
 			const result = calculateAnswerScore(answer, currentQuestion.correctAnswerIndex, currentQuestion.isDoublePoints);

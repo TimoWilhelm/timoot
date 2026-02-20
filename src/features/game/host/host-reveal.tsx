@@ -6,7 +6,7 @@ import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { cn } from '@/lib/utilities';
 
 export function HostReveal() {
-	const { gameState, onNextState: onNext } = useHostGameContext();
+	const { gameState, isAdvancing, onNextState: onNext } = useHostGameContext();
 	const { questionText, options, correctAnswerIndex, answerCounts } = gameState;
 	const totalAnswers = answerCounts.reduce((a, b) => a + b, 0);
 	return (
@@ -89,6 +89,7 @@ export function HostReveal() {
 				<Button
 					data-host-next-button
 					onClick={onNext}
+					disabled={isAdvancing}
 					variant="accent"
 					size="lg"
 					className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"

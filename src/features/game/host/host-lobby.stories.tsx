@@ -10,6 +10,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockGameState: WebSocketGameState = {
 	phase: 'LOBBY',
+	phaseVersion: 0,
 	gameId: 'ABC123',
 	pin: 'ABC123',
 	players: [],
@@ -53,7 +54,14 @@ type Story = StoryObj<typeof meta>;
 export const Empty: Story = {
 	decorators: [
 		(Story) => (
-			<HostGameProvider gameState={mockGameState} onStartGame={fn()} onNextState={fn()} onPlaySound={fn()} onPlayCountdownTick={fn()}>
+			<HostGameProvider
+				isAdvancing={false}
+				gameState={mockGameState}
+				onStartGame={fn()}
+				onNextState={fn()}
+				onPlaySound={fn()}
+				onPlayCountdownTick={fn()}
+			>
 				<Story />
 			</HostGameProvider>
 		),
@@ -68,6 +76,7 @@ export const OnePlayer: Story = {
 	decorators: [
 		(Story) => (
 			<HostGameProvider
+				isAdvancing={false}
 				gameState={{
 					...mockGameState,
 					players: [{ id: '1', name: 'Alice' }],
@@ -97,6 +106,7 @@ export const FewPlayersDesktop: Story = {
 	decorators: [
 		(Story) => (
 			<HostGameProvider
+				isAdvancing={false}
 				gameState={{
 					...mockGameState,
 					players: [
@@ -155,6 +165,7 @@ export const FewPlayersMobile: Story = {
 	decorators: [
 		(Story) => (
 			<HostGameProvider
+				isAdvancing={false}
 				gameState={{
 					...mockGameState,
 					players: [
@@ -201,6 +212,7 @@ export const ManyPlayers: Story = {
 	decorators: [
 		(Story) => (
 			<HostGameProvider
+				isAdvancing={false}
 				gameState={{
 					...mockGameState,
 					players: [
@@ -233,6 +245,7 @@ export const LongNames: Story = {
 	decorators: [
 		(Story) => (
 			<HostGameProvider
+				isAdvancing={false}
 				gameState={{
 					...mockGameState,
 					players: [

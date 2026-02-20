@@ -12,6 +12,7 @@ export const ErrorCode = Object.freeze({
 	GAME_ALREADY_STARTED: 'GAME_ALREADY_STARTED',
 	GAME_NOT_IN_LOBBY: 'GAME_NOT_IN_LOBBY',
 	INVALID_STATE_TRANSITION: 'INVALID_STATE_TRANSITION',
+	STALE_STATE_TRANSITION: 'STALE_STATE_TRANSITION',
 	// Authentication errors
 	INVALID_SESSION_TOKEN: 'INVALID_SESSION_TOKEN',
 	HOST_ALREADY_AUTHENTICATED: 'HOST_ALREADY_AUTHENTICATED',
@@ -58,6 +59,7 @@ const ErrorMessages: Record<ErrorCodeType, string> = {
 	[ErrorCode.GAME_ALREADY_STARTED]: 'Game has already started',
 	[ErrorCode.GAME_NOT_IN_LOBBY]: 'Cannot join - game not in lobby',
 	[ErrorCode.INVALID_STATE_TRANSITION]: 'Invalid state transition',
+	[ErrorCode.STALE_STATE_TRANSITION]: 'State already changed — ignoring duplicate advance',
 
 	[ErrorCode.INVALID_SESSION_TOKEN]: 'Your session could not be restored',
 	[ErrorCode.HOST_ALREADY_AUTHENTICATED]: 'Host already authenticated',

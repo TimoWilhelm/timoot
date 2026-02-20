@@ -4,7 +4,14 @@ import { ErrorCode, createError } from '@shared/errors';
 import { gamePhaseMachine } from '@shared/phase-rules';
 import { parseClientMessage } from '@shared/ws-messages';
 
-import { CLEANUP_DELAY_MS, END_REVEAL_DELAY_MS, QUESTION_MODIFIER_DURATION_MS, questionHasModifiers } from '../game';
+import {
+	CLEANUP_DELAY_MS,
+	END_REVEAL_DELAY_MS,
+	QUESTION_MODIFIER_DURATION_MS,
+	QUESTION_TIMEOUT_BUFFER_MS,
+	QUESTION_TIME_LIMIT_MS,
+	questionHasModifiers,
+} from '../game';
 import {
 	type HandlerContext,
 	type WebSocketAttachment,
@@ -168,7 +175,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 					break;
 				}
 				case 'nextState': {
-					await handleNextState(context, ws, attachment, getState);
+					await handleNextState(context, ws, attachment, data.phaseVersion, getState);
 					break;
 				}
 				case 'sendEmoji': {
@@ -219,15 +226,19 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		if (state?.phase === 'GET_READY') {
 			if (questionHasModifiers(state)) {
 				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_WITH_MODIFIER');
+				state.phaseVersion++;
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionModifier(context, state);
 				// Schedule transition to QUESTION after modifier display
 				await this.ctx.storage.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 			} else {
 				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_NO_MODIFIER');
+				state.phaseVersion++;
 				state.questionStartTime = Date.now();
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionStart(context, state);
+				// Schedule server-side question timeout as safety net
+				await this.ctx.storage.setAlarm(Date.now() + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 			}
 			return;
 		}
@@ -235,14 +246,17 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		// Handle QUESTION_MODIFIER -> QUESTION transition
 		if (state?.phase === 'QUESTION_MODIFIER') {
 			state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_MODIFIER_DONE');
+			state.phaseVersion++;
 			state.questionStartTime = Date.now();
 			await this.ctx.storage.put('game_state', state);
 			broadcastQuestionStart(context, state);
+			// Schedule server-side question timeout as safety net
+			await this.ctx.storage.setAlarm(Date.now() + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 			return;
 		}
 
-		// Handle QUESTION -> REVEAL transition (when all players answered or time expired)
-		if (state?.phase === 'QUESTION' && state.answers.length === state.players.length) {
+		// Handle QUESTION -> REVEAL transition (all players answered or server-side timeout)
+		if (state?.phase === 'QUESTION') {
 			await advanceToReveal(context, state);
 			return;
 		}
@@ -250,6 +264,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		// Handle END_INTRO -> END_REVEALED transition
 		if (state?.phase === 'END_INTRO') {
 			state.phase = gamePhaseMachine.transition(state.phase, 'REVEAL_WINNER');
+			state.phaseVersion++;
 			await this.ctx.storage.put('game_state', state);
 			broadcastGameEnd(context, state, true);
 			return;
@@ -288,6 +303,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			id: gameId,
 			pin,
 			phase: 'LOBBY',
+			phaseVersion: 0,
 			players: [],
 			questions: questions, // Store full questions data
 			currentQuestionIndex: 0,

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utilities';
 import type { LeaderboardEntry } from '@/features/game/hooks/use-game-web-socket';
 
 export function HostLeaderboard() {
-	const { gameState, onNextState: onNext } = useHostGameContext();
+	const { gameState, isAdvancing, onNextState: onNext } = useHostGameContext();
 	const { leaderboard, isLastQuestion } = gameState;
 	const top5 = leaderboard.slice(0, 5);
 	const [animationPhase, setAnimationPhase] = useState<'intro' | 'reorder' | 'done'>('intro');
@@ -205,6 +205,7 @@ export function HostLeaderboard() {
 				<Button
 					data-host-next-button
 					onClick={onNext}
+					disabled={isAdvancing}
 					variant="accent"
 					size="lg"
 					className="rounded-xl border-4 px-12 py-8 text-2xl font-black uppercase"
