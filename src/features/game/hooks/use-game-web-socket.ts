@@ -70,6 +70,7 @@ interface UseGameWebSocketOptions {
 	onConnected?: (playerId?: string, playerToken?: string) => void;
 	onPlayerJoined?: (player: { id: string; name: string }) => void;
 	onEmojiReceived?: (emoji: EmojiReaction, playerId: string) => void;
+	onKicked?: (reason: string) => void;
 }
 
 const initialGameState: WebSocketGameState = {
@@ -107,6 +108,7 @@ export function useGameWebSocket({
 	onConnected,
 	onPlayerJoined,
 	onEmojiReceived,
+	onKicked,
 }: UseGameWebSocketOptions) {
 	const wsReference = useRef<WebSocket | undefined>(undefined);
 	const reconnectTimeoutReference = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -282,6 +284,7 @@ export function useGameWebSocket({
 
 				case 'kicked': {
 					setError(message.reason);
+					onKicked?.(message.reason);
 					wsReference.current?.close();
 					break;
 				}
@@ -292,7 +295,7 @@ export function useGameWebSocket({
 				}
 			}
 		},
-		[onConnected, onError, onPlayerJoined, onEmojiReceived],
+		[onConnected, onError, onPlayerJoined, onEmojiReceived, onKicked],
 	);
 
 	// Store connect in a ref to enable self-reference for reconnection
@@ -421,6 +424,14 @@ export function useGameWebSocket({
 		[sendMessage],
 	);
 
+	// Host action: remove player from lobby
+	const removePlayer = useCallback(
+		(playerId: string) => {
+			sendMessage({ type: 'removePlayer', playerId });
+		},
+		[sendMessage],
+	);
+
 	return {
 		connectionState,
 		error,
@@ -434,5 +445,6 @@ export function useGameWebSocket({
 		// Host actions
 		startGame,
 		nextState,
+		removePlayer,
 	};
 }

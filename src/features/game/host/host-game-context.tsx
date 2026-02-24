@@ -8,6 +8,7 @@ export interface HostGameContextProperties {
 	isAdvancing: boolean;
 	onStartGame: () => void;
 	onNextState: () => void;
+	onRemovePlayer: (playerId: string) => void;
 	onPlaySound: (sound: SoundType) => void;
 	onPlayCountdownTick: (timeLeft: number) => void;
 }

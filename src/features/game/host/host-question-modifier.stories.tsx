@@ -49,6 +49,7 @@ const meta = {
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>

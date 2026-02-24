@@ -251,6 +251,11 @@ const wsSendEmojiSchema = z.object({
 	emoji: z.enum(EMOJI_REACTIONS),
 });
 
+const wsRemovePlayerSchema = z.object({
+	type: z.literal('removePlayer'),
+	playerId: z.uuid(),
+});
+
 // Use union for all messages - discriminatedUnion doesn't support duplicate discriminator values
 export const wsClientMessageSchema = z.union([
 	wsConnectSchema,
@@ -259,6 +264,7 @@ export const wsClientMessageSchema = z.union([
 	wsSubmitAnswerSchema,
 	wsNextStateSchema,
 	wsSendEmojiSchema,
+	wsRemovePlayerSchema,
 ]);
 
 // ============ Server -> Client Message Schemas ============

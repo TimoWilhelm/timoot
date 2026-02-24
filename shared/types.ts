@@ -79,7 +79,8 @@ export type ClientMessage =
 	| { type: 'startGame' }
 	| { type: 'submitAnswer'; answerIndex: number }
 	| { type: 'nextState'; phaseVersion: number }
-	| { type: 'sendEmoji'; emoji: EmojiReaction };
+	| { type: 'sendEmoji'; emoji: EmojiReaction }
+	| { type: 'removePlayer'; playerId: string };
 
 // Server -> Client Messages
 export type ServerMessage =

@@ -49,7 +49,7 @@ export const buttonVariants = cva(
 				`,
 				// Dark variants for use on dark backgrounds (player pages)
 				'dark-default': `
-					border-black bg-black text-white shadow-brutal-sm
+					border-black bg-zinc text-white shadow-brutal-sm
 					hover:-translate-y-0.5 hover:shadow-brutal
 					hover:after:translate-y-0.5
 					active:translate-y-0.5 active:shadow-brutal-inset

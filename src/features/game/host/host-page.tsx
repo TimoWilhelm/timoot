@@ -66,7 +66,7 @@ export function HostPage() {
 		floatingEmojisReference.current?.addEmoji(emoji);
 	}, []);
 
-	const { connectionState, error, gameState, startGame, nextState, isAdvancing } = useGameWebSocket({
+	const { connectionState, error, gameState, startGame, nextState, removePlayer, isAdvancing } = useGameWebSocket({
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
@@ -305,6 +305,7 @@ export function HostPage() {
 							startGame();
 						}}
 						onNextState={nextState}
+						onRemovePlayer={removePlayer}
 						onPlaySound={playSound}
 						onPlayCountdownTick={playCountdownTick}
 					>

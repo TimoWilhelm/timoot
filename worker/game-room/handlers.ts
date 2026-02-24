@@ -28,7 +28,7 @@ import {
 	sendMessage,
 } from './broadcast-helpers';
 import { sendCurrentStateToPlayer } from './state-sync';
-import { type WebSocketAttachment } from './types';
+import { type WebSocketAttachment, getAttachment } from './types';
 
 import type { Answer, ClientMessage, EmojiReaction, GameState, Player } from '@shared/types';
 
@@ -265,6 +265,51 @@ export async function handleSubmitAnswer(
 		const delay = Math.min(ALL_ANSWERED_DELAY_MS, Math.max(0, remainingTime));
 		await context.setAlarm(Date.now() + delay);
 	}
+}
+
+/**
+ * Handle host removing a player from the lobby.
+ */
+export async function handleRemovePlayer(
+	context: HandlerContext,
+	ws: WebSocket,
+	attachment: WebSocketAttachment,
+	playerId: string,
+	getFullGameState: () => Promise<GameState | undefined>,
+): Promise<void> {
+	if (attachment.role !== 'host') {
+		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ONLY_HOST_CAN_REMOVE) });
+		return;
+	}
+
+	const state = await getFullGameState();
+	if (!state || state.phase !== 'LOBBY') {
+		sendMessage(ws, { type: 'error', ...createError(ErrorCode.GAME_NOT_IN_LOBBY) });
+		return;
+	}
+
+	const playerIndex = state.players.findIndex((p) => p.id === playerId);
+	if (playerIndex === -1) {
+		sendMessage(ws, { type: 'error', ...createError(ErrorCode.PLAYER_NOT_FOUND) });
+		return;
+	}
+
+	// Remove player from state
+	state.players.splice(playerIndex, 1);
+	await context.storage.put('game_state', state);
+
+	// Send kicked message to the removed player's WebSocket and close it
+	const sockets = context.getWebSockets();
+	for (const socket of sockets) {
+		const socketAttachment = getAttachment(socket);
+		if (socketAttachment?.role === 'player' && socketAttachment.playerId === playerId) {
+			sendMessage(socket, { type: 'kicked', reason: 'You have been removed from the game' });
+			socket.close(4000, 'Removed by host');
+		}
+	}
+
+	// Broadcast updated lobby to remaining clients
+	broadcastLobbyUpdate(context, state);
 }
 
 /**

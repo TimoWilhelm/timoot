@@ -1,19 +1,34 @@
-import { Check, Copy, Users } from 'lucide-react';
+import { Check, Copy, Users, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/alert-dialog';
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
 import { QRCode } from '@/features/game/host/components/qr-code';
 import { useHostGameContext } from '@/features/game/host/host-game-context';
+import { cn } from '@/lib/utilities';
 
 interface PlayerChipProperties {
 	name: string;
 	variant?: 'compact' | 'default';
+	onRemove?: () => void;
 }
 
-function PlayerChip({ name, variant = 'default' }: PlayerChipProperties) {
+function PlayerChip({ name, variant = 'default', onRemove }: PlayerChipProperties) {
 	const isCompact = variant === 'compact';
+	const isRemovable = !!onRemove;
+	const [isHovered, setIsHovered] = useState(false);
+
 	return (
 		<motion.div
 			layout
@@ -26,7 +41,8 @@ function PlayerChip({ name, variant = 'default' }: PlayerChipProperties) {
 				damping: 30,
 				mass: 1,
 			}}
-			className={
+			className={cn(
+				'relative',
 				isCompact
 					? `
 						mr-2 mb-2 rounded-md border-2 border-black bg-orange px-3 py-1 text-xs
@@ -35,10 +51,57 @@ function PlayerChip({ name, variant = 'default' }: PlayerChipProperties) {
 					: `
 						h-fit rounded-lg border-2 border-black bg-orange px-4 py-2 font-bold
 						shadow-brutal-sm
+					`,
+				isRemovable &&
 					`
+						cursor-pointer transition-transform select-none
+						hover:scale-105
+						active:scale-95
+					`,
+			)}
+			onClick={onRemove}
+			onHoverStart={() => setIsHovered(true)}
+			onHoverEnd={() => setIsHovered(false)}
+			role={isRemovable ? 'button' : undefined}
+			tabIndex={isRemovable ? 0 : undefined}
+			aria-label={isRemovable ? `Remove ${name}` : undefined}
+			onKeyDown={
+				isRemovable
+					? (event: React.KeyboardEvent) => {
+							if (event.key === 'Enter' || event.key === ' ') {
+								event.preventDefault();
+								onRemove?.();
+							}
+						}
+					: undefined
 			}
 		>
 			{name}
+			{isRemovable && (
+				<AnimatePresence>
+					{isHovered && (
+						<motion.span
+							initial={{ opacity: 0, scale: 0 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0 }}
+							transition={{
+								type: 'spring',
+								stiffness: 500,
+								damping: 25,
+							}}
+							className={cn(
+								`
+									pointer-events-none absolute flex items-center justify-center
+									rounded-full border-2 border-black bg-red text-white shadow-brutal-sm
+								`,
+								isCompact ? '-top-1.5 -right-1.5 size-5' : '-top-2 -right-2 size-6',
+							)}
+						>
+							<X className={isCompact ? 'size-3' : 'size-3.5'} strokeWidth={3} />
+						</motion.span>
+					)}
+				</AnimatePresence>
+			)}
 		</motion.div>
 	);
 }
@@ -47,9 +110,10 @@ interface PlayerListProperties {
 	players: { id: string; name: string }[];
 	variant?: 'compact' | 'default';
 	reversed?: boolean;
+	onRemovePlayer?: (player: { id: string; name: string }) => void;
 }
 
-function PlayerList({ players, variant = 'default', reversed = false }: PlayerListProperties) {
+function PlayerList({ players, variant = 'default', reversed = false, onRemovePlayer }: PlayerListProperties) {
 	const displayPlayers = reversed ? players.toReversed() : players;
 
 	if (players.length === 0) {
@@ -63,22 +127,30 @@ function PlayerList({ players, variant = 'default', reversed = false }: PlayerLi
 	return (
 		<AnimatePresence mode={variant === 'compact' ? 'popLayout' : 'sync'}>
 			{displayPlayers.map((p) => (
-				<PlayerChip key={p.id} name={p.name} variant={variant} />
+				<PlayerChip key={p.id} name={p.name} variant={variant} onRemove={onRemovePlayer ? () => onRemovePlayer(p) : undefined} />
 			))}
 		</AnimatePresence>
 	);
 }
 
 export function HostLobby() {
-	const { gameState, onStartGame } = useHostGameContext();
+	const { gameState, onStartGame, onRemovePlayer } = useHostGameContext();
 	const { players, gameId } = gameState;
 	const joinUrl = `${globalThis.location.origin}/play?gameId=${gameId}`;
 	const [copied, setCopied] = useState(false);
+	const [playerToRemove, setPlayerToRemove] = useState<{ id: string; name: string } | undefined>();
 
 	const copyToClipboard = async () => {
 		await navigator.clipboard.writeText(joinUrl);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
+	};
+
+	const handleConfirmRemove = () => {
+		if (playerToRemove) {
+			onRemovePlayer(playerToRemove.id);
+			setPlayerToRemove(undefined);
+		}
 	};
 
 	return (
@@ -162,15 +234,9 @@ export function HostLobby() {
 									</span>
 								</div>
 
-								<div className="relative h-20 w-full overflow-hidden px-1 pb-1">
-									<div
-										className="
-											size-full mask-[linear-gradient(to_bottom,black_50%,transparent)]
-										"
-									>
-										<div className="flex flex-wrap justify-center">
-											<PlayerList players={players} variant="compact" reversed />
-										</div>
+								<div className="relative max-h-40 w-full overflow-y-auto overscroll-contain">
+									<div className="flex flex-wrap justify-center px-2 pt-2 pb-1">
+										<PlayerList players={players} variant="compact" reversed onRemovePlayer={setPlayerToRemove} />
 									</div>
 								</div>
 							</div>
@@ -203,8 +269,8 @@ export function HostLobby() {
 									Players ({players.length})
 								</CardTitle>
 							</CardHeader>
-							<CardContent className={`flex grow flex-wrap content-start gap-2 p-4 pt-4`}>
-								<PlayerList players={players} />
+							<CardContent className={`flex grow flex-wrap content-start gap-2 p-5 pt-5`}>
+								<PlayerList players={players} onRemovePlayer={setPlayerToRemove} />
 							</CardContent>
 						</Card>
 					</motion.div>
@@ -231,6 +297,30 @@ export function HostLobby() {
 					</Button>
 				</motion.div>
 			</div>
+
+			{/* Remove player confirmation dialog */}
+			<AlertDialog open={playerToRemove !== undefined} onOpenChange={(open) => !open && setPlayerToRemove(undefined)}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle
+							className="
+								font-display text-2xl font-bold whitespace-nowrap text-red uppercase
+							"
+						>
+							Remove Player?
+						</AlertDialogTitle>
+						<AlertDialogDescription className="text-base font-medium text-black">
+							Are you sure you want to remove <span className="font-bold">{playerToRemove?.name}</span> from the game?
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={handleConfirmRemove} variant="danger">
+							Remove
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

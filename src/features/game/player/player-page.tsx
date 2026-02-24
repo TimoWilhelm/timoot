@@ -32,7 +32,16 @@ import { isGamePhaseActive } from '@shared/phase-rules';
 const PlayerActiveGame = lazy(() => import('@/features/game/player/player-active-game').then((m) => ({ default: m.PlayerActiveGame })));
 
 // Player view state machine
-type PlayerView = 'LOADING' | 'JOIN_GAME' | 'NICKNAME' | 'GAME' | 'GAME_IN_PROGRESS' | 'ROOM_NOT_FOUND' | 'SESSION_EXPIRED' | 'GAME_FULL';
+type PlayerView =
+	| 'LOADING'
+	| 'JOIN_GAME'
+	| 'NICKNAME'
+	| 'GAME'
+	| 'GAME_IN_PROGRESS'
+	| 'ROOM_NOT_FOUND'
+	| 'SESSION_EXPIRED'
+	| 'GAME_FULL'
+	| 'REMOVED';
 type PlayerViewEvent =
 	| 'CONNECTED'
 	| 'JOINED'
@@ -40,6 +49,7 @@ type PlayerViewEvent =
 	| 'GAME_NOT_FOUND'
 	| 'SESSION_INVALID'
 	| 'GAME_FULL'
+	| 'KICKED'
 	| 'RETRY'
 	| 'GAME_CODE_ENTERED';
 
@@ -51,6 +61,7 @@ const playerViewMachine = createMachine<PlayerView, PlayerViewEvent>({
 		GAME_NOT_FOUND: 'ROOM_NOT_FOUND',
 		SESSION_INVALID: 'SESSION_EXPIRED',
 		GAME_FULL: 'GAME_FULL',
+		KICKED: 'REMOVED',
 	},
 	JOIN_GAME: { GAME_CODE_ENTERED: 'LOADING' },
 	NICKNAME: {
@@ -59,12 +70,14 @@ const playerViewMachine = createMachine<PlayerView, PlayerViewEvent>({
 		GAME_NOT_FOUND: 'ROOM_NOT_FOUND',
 		SESSION_INVALID: 'SESSION_EXPIRED',
 		GAME_FULL: 'GAME_FULL',
+		KICKED: 'REMOVED',
 	},
-	GAME: {}, // Terminal - game in progress
+	GAME: { KICKED: 'REMOVED' },
 	GAME_IN_PROGRESS: { RETRY: 'NICKNAME' },
 	ROOM_NOT_FOUND: {}, // Terminal - error
 	SESSION_EXPIRED: { RETRY: 'NICKNAME' },
 	GAME_FULL: {}, // Terminal - error
+	REMOVED: {}, // Terminal - removed by host
 });
 
 export function PlayerPage() {
@@ -157,6 +170,11 @@ export function PlayerPage() {
 		[urlGameId, setSession, storedPlayerId, clearSession, transitionView],
 	);
 
+	const handleKicked = useCallback(() => {
+		clearSession();
+		transitionView('KICKED');
+	}, [clearSession, transitionView]);
+
 	const handleError = useCallback(
 		(code: string, message: string) => {
 			switch (code) {
@@ -197,6 +215,7 @@ export function PlayerPage() {
 		playerToken: currentPlayerToken,
 		onError: handleError,
 		onConnected: handleConnected,
+		onKicked: handleKicked,
 	});
 
 	// Derive answerResult from gameState.playerResult (no state needed)
@@ -355,6 +374,16 @@ export function PlayerPage() {
 					description="Sorry, this game has reached the maximum of 100 players. Please try joining a different game or wait for the next round."
 				>
 					<Button variant="dark-subtle" onClick={() => navigate('/')}>
+						Back to Home
+					</Button>
+				</PlayerError>
+			);
+		}
+
+		if (view === 'REMOVED') {
+			return (
+				<PlayerError emoji="❌" title="Removed from Game" description="You have been removed from the game.">
+					<Button variant="dark-default" onClick={() => navigate('/')}>
 						Back to Home
 					</Button>
 				</PlayerError>

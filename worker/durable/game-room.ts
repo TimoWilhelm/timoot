@@ -23,6 +23,7 @@ import {
 	handleJoin,
 	handleNextState,
 	handlePlayerConnect,
+	handleRemovePlayer,
 	handleSendEmoji,
 	handleStartGame,
 	handleSubmitAnswer,
@@ -180,6 +181,10 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				}
 				case 'sendEmoji': {
 					await handleSendEmoji(context, ws, attachment, data.emoji, getState);
+					break;
+				}
+				case 'removePlayer': {
+					await handleRemovePlayer(context, ws, attachment, data.playerId, getState);
 					break;
 				}
 				default: {

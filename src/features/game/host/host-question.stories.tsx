@@ -67,6 +67,7 @@ const renderStory = (arguments_: Partial<WebSocketGameState>, loaded: { startTim
 		}}
 		onStartGame={fn()}
 		onNextState={fn()}
+		onRemovePlayer={fn()}
 		onPlaySound={fn()}
 		onPlayCountdownTick={fn()}
 	>

@@ -59,6 +59,7 @@ export const Empty: Story = {
 				gameState={mockGameState}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>
@@ -83,6 +84,7 @@ export const OnePlayer: Story = {
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>
@@ -117,6 +119,7 @@ export const FewPlayersDesktop: Story = {
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>
@@ -176,6 +179,7 @@ export const FewPlayersMobile: Story = {
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>
@@ -232,6 +236,7 @@ export const ManyPlayers: Story = {
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>
@@ -257,6 +262,7 @@ export const LongNames: Story = {
 				}}
 				onStartGame={fn()}
 				onNextState={fn()}
+				onRemovePlayer={fn()}
 				onPlaySound={fn()}
 				onPlayCountdownTick={fn()}
 			>
