@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Sentry } from '@/lib/sentry';
+import { SILENT_ERROR_CODES, type ErrorCodeType } from '@shared/errors';
 import { createMachine } from '@shared/fsm';
 import { parseServerMessage, serializeMessage, type ParsedServerMessage } from '@shared/ws-messages';
 
-import type { ErrorCodeType } from '@shared/errors';
 import type { ClientMessage, ClientRole, EmojiReaction, GamePhase, QuestionModifier } from '@shared/types';
 
 // Connection state machine
@@ -140,8 +140,10 @@ export function useGameWebSocket({
 				}
 
 				case 'error': {
-					setError(message.message);
 					setIsAdvancing(false);
+					// Only surface unexpected errors — silent errors are harmless race conditions
+					if (SILENT_ERROR_CODES.has(message.code)) break;
+					setError(message.message);
 					onError?.(message.code, message.message);
 					break;
 				}

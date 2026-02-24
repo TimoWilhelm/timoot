@@ -90,6 +90,18 @@ const ErrorMessages: Record<ErrorCodeType, string> = {
 };
 
 /**
+ * Error codes that are expected during normal gameplay and should not be surfaced to the user.
+ * These are harmless race conditions (e.g. alarm-triggered auto-advance vs host click,
+ * duplicate answer submissions, answers arriving after time expires).
+ */
+export const SILENT_ERROR_CODES: ReadonlySet<ErrorCodeType> = new Set([
+	ErrorCode.STALE_STATE_TRANSITION,
+	ErrorCode.ALREADY_ANSWERED,
+	ErrorCode.TIME_EXPIRED,
+	ErrorCode.NOT_IN_QUESTION_PHASE,
+]);
+
+/**
  * Helper to create an error response with both code and message.
  */
 export function createError(code: ErrorCodeType, customMessage?: string): { code: ErrorCodeType; message: string } {
