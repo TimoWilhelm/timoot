@@ -345,7 +345,7 @@ export function PlayerWaiting() {
 				return (
 					<div className="flex flex-col items-center text-center">
 						<Spinner className="mb-4" />
-						<h2 className="font-display text-4xl font-bold text-white">Waiting...</h2>
+						<p className="text-lg font-medium text-muted-foreground">Look at the main screen</p>
 					</div>
 				);
 			}

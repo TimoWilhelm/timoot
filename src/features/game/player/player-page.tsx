@@ -72,7 +72,7 @@ const playerViewMachine = createMachine<PlayerView, PlayerViewEvent>({
 		GAME_FULL: 'GAME_FULL',
 		KICKED: 'REMOVED',
 	},
-	GAME: { KICKED: 'REMOVED' },
+	GAME: { KICKED: 'REMOVED', CONNECTED: 'NICKNAME', SESSION_INVALID: 'SESSION_EXPIRED' },
 	GAME_IN_PROGRESS: { RETRY: 'NICKNAME' },
 	ROOM_NOT_FOUND: {}, // Terminal - error
 	SESSION_EXPIRED: { RETRY: 'NICKNAME' },
@@ -99,7 +99,6 @@ export function PlayerPage() {
 
 	const [view, setView] = useState<PlayerView>(() => {
 		if (!urlGameId) return 'JOIN_GAME';
-		if (isReconnecting) return 'GAME';
 		return 'LOADING';
 	});
 

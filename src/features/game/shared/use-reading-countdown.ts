@@ -10,7 +10,6 @@ export function useReadingCountdown(startTime: number, readingDurationMs: number
 	const remainingMs = Math.max(0, startTime - now);
 	const isReading = remainingMs > 0 && readingDurationMs > 0;
 	const progress = readingDurationMs > 0 ? remainingMs / readingDurationMs : 0;
-	const secondsLeft = Math.ceil(remainingMs / 1000);
 
 	useEffect(() => {
 		if (!isReading) return;
@@ -26,5 +25,5 @@ export function useReadingCountdown(startTime: number, readingDurationMs: number
 		return () => clearInterval(timer);
 	}, [startTime, isReading]);
 
-	return { isReading, progress, secondsLeft };
+	return { isReading, progress };
 }

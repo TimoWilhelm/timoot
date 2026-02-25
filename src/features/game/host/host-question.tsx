@@ -170,7 +170,7 @@ export function HostQuestion() {
 	const [imageError, setImageError] = useState(false);
 	const [previousBackgroundImage, setPreviousBackgroundImage] = useState(backgroundImage);
 
-	const { isReading, progress: readingProgress, secondsLeft: readingSecondsLeft } = useReadingCountdown(startTime, readingDurationMs);
+	const { isReading, progress: readingProgress } = useReadingCountdown(startTime, readingDurationMs);
 
 	// Reset image error state when backgroundImage changes (adjusting state during render)
 	if (backgroundImage !== previousBackgroundImage) {
@@ -292,53 +292,70 @@ export function HostQuestion() {
 					</div>
 				</div>
 			</div>
-			<AnimatePresence mode="wait" initial={false}>
-				{isReading ? (
-					<motion.div key="reading" className="flex items-center justify-center py-4">
-						<ReadingCountdownBar progress={readingProgress} secondsLeft={readingSecondsLeft} variant="host" />
-					</motion.div>
-				) : (
-					<motion.div
-						key="options"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						className={`
-							grid grid-cols-1 gap-2
-							sm:gap-4
-							md:grid-cols-2
-						`}
-					>
-						{options.map((option, index) => (
-							<motion.div
-								key={index}
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: index * 0.1 }}
-								className={cn(
-									`
-										flex items-center rounded-xl border-4 border-black p-4 text-xl
-										font-bold shadow-brutal-sm
-										sm:p-6 sm:text-3xl
-									`,
-									shapeColors[index],
-								)}
-							>
-								<svg
-									viewBox="0 0 24 24"
-									className={`
-										mr-4 size-8 fill-current stroke-black/35 stroke-3 text-white
-										drop-shadow-lg [paint-order:stroke]
-										sm:size-12
-									`}
+			<motion.div layout transition={{ layout: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] } }} className="overflow-hidden">
+				<AnimatePresence mode="popLayout" initial={false}>
+					{isReading ? (
+						<motion.div
+							key="reading"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: 0.12 }}
+							className="
+								flex items-center justify-center py-12
+								sm:py-16
+							"
+						>
+							<ReadingCountdownBar progress={readingProgress} variant="host" />
+						</motion.div>
+					) : (
+						<motion.div
+							key="options"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ duration: 0.15 }}
+							className={`
+								grid grid-cols-1 gap-2
+								sm:gap-4
+								md:grid-cols-2
+							`}
+						>
+							{options.map((option, index) => (
+								<motion.div
+									key={index}
+									initial={{ opacity: 0, scale: 0.92 }}
+									animate={{ opacity: 1, scale: 1 }}
+									transition={{
+										duration: 0.25,
+										delay: index * 0.06,
+										ease: 'backOut',
+									}}
+									className={cn(
+										`
+											flex items-center rounded-xl border-4 border-black p-4 text-xl
+											font-bold shadow-brutal-sm
+											sm:p-6 sm:text-3xl
+										`,
+										shapeColors[index],
+									)}
 								>
-									<path d={shapePaths[index]} />
-								</svg>
-								<span>{option}</span>
-							</motion.div>
-						))}
-					</motion.div>
-				)}
-			</AnimatePresence>
+									<svg
+										viewBox="0 0 24 24"
+										className={`
+											mr-4 size-8 fill-current stroke-black/35 stroke-3 text-white
+											drop-shadow-lg [paint-order:stroke]
+											sm:size-12
+										`}
+									>
+										<path d={shapePaths[index]} />
+									</svg>
+									<span>{option}</span>
+								</motion.div>
+							))}
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</motion.div>
 		</div>
 	);
 }

@@ -41,6 +41,8 @@ function PlayerChip({ name, variant = 'default', onRemove }: PlayerChipPropertie
 				damping: 30,
 				mass: 1,
 			}}
+			whileHover={isRemovable ? { scale: 1.05 } : undefined}
+			whileTap={isRemovable ? { scale: 0.95 } : undefined}
 			className={cn(
 				'relative',
 				isCompact
@@ -52,12 +54,7 @@ function PlayerChip({ name, variant = 'default', onRemove }: PlayerChipPropertie
 						h-fit rounded-lg border-2 border-black bg-orange px-4 py-2 font-bold
 						shadow-brutal-sm
 					`,
-				isRemovable &&
-					`
-						cursor-pointer transition-transform select-none
-						hover:scale-105
-						active:scale-95
-					`,
+				isRemovable && 'cursor-pointer select-none',
 			)}
 			onClick={onRemove}
 			onHoverStart={() => setIsHovered(true)}

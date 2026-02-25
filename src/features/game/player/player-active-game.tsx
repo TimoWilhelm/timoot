@@ -1,36 +1,37 @@
 import { AnimatePresence, motion } from 'motion/react';
 
 import { AnimatedNumber } from '@/components/animated-number';
+import { Spinner } from '@/components/spinner/spinner';
 import { EmojiPicker } from '@/features/game/player/components/emoji-picker';
 import { PlayerAnswer } from '@/features/game/player/player-answer';
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { PlayerWaiting } from '@/features/game/player/player-waiting';
-import { ReadingCountdownBar } from '@/features/game/shared/reading-countdown-bar';
 import { useReadingCountdown } from '@/features/game/shared/use-reading-countdown';
 import { phaseAllowsEmoji } from '@shared/phase-rules';
 
 export function PlayerActiveGame() {
 	const { gameState, nickname, score, hasInitialScoreSync, onSendEmoji } = usePlayerGameContext();
-	const { isReading, progress, secondsLeft } = useReadingCountdown(gameState.startTime, gameState.readingDurationMs);
+	const { isReading } = useReadingCountdown(gameState.startTime, gameState.readingDurationMs);
 
-	const isQuestionPhase = gameState.phase === 'QUESTION' && gameState.options.length > 0;
+	const isQuestionPhase = gameState.phase === 'QUESTION';
 
 	const renderMain = () => {
-		if (isQuestionPhase && isReading) {
+		if (isQuestionPhase && (isReading || gameState.options.length === 0)) {
 			return (
 				<motion.div
 					key="reading"
-					initial={{ opacity: 0, scale: 0.8 }}
-					animate={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.8 }}
-					className="flex size-full flex-col items-center justify-center gap-6 px-4"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.15 }}
+					className="flex size-full flex-col items-center justify-center gap-4"
 				>
-					<h2 className="font-display text-3xl font-black text-white uppercase">Look at the screen!</h2>
-					<ReadingCountdownBar progress={progress} secondsLeft={secondsLeft} variant="player" />
+					<Spinner size="lg" />
+					<p className="text-lg font-medium text-muted-foreground">Look at the main screen</p>
 				</motion.div>
 			);
 		}
-		if (isQuestionPhase && !isReading) {
+		if (isQuestionPhase) {
 			return <PlayerAnswer />;
 		}
 		return <PlayerWaiting />;
