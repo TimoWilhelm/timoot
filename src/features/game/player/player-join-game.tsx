@@ -191,17 +191,11 @@ export function PlayerJoinGame() {
 				{/* Actions */}
 				<div className="space-y-3">
 					<Button
+						variant="dark-accent"
+						size="xl"
+						className="w-full"
 						onClick={handleJoin}
 						disabled={!isComplete || isValidating || gameNotFound}
-						className={cn(
-							'h-14 w-full rounded-xl text-lg font-semibold transition-all',
-							isComplete && !isValidating && !gameNotFound
-								? `
-									border-black bg-orange text-white shadow-brutal
-									hover:shadow-brutal-lg
-								`
-								: 'cursor-not-allowed bg-zinc text-zinc-light',
-						)}
 					>
 						Join Game
 						<ArrowRight className="ml-2 size-5" />

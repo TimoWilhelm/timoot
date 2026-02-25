@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight } from 'lucide-react';
 import { useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
@@ -58,7 +58,7 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 							placeholder="Your cool name"
 							className={cn(
 								'h-16 w-full rounded-xl px-4 text-center text-2xl font-bold',
-								'border-2 border-black bg-black',
+								'border-2 border-zinc bg-black',
 								`
 									text-white
 									placeholder:text-muted-foreground
@@ -86,7 +86,14 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 						</div>
 					</div>
 					<Button type="submit" variant="dark-accent" size="xl" className="w-full" disabled={isLoading || !isValid || !nickname?.trim()}>
-						{isLoading ? 'Joining...' : 'Join Game'}
+						{isLoading ? (
+							'Joining...'
+						) : (
+							<>
+								Join Game
+								<ArrowRight className="ml-2 size-5" />
+							</>
+						)}
 					</Button>
 					<Button
 						type="button"
