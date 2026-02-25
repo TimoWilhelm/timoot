@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle } from 'lucide-react';
 import { useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
-import { Input } from '@/components/input';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
+import { cn } from '@/lib/utilities';
 import { LIMITS, nicknameSchema } from '@shared/validation';
 
 const formSchema = z.object({
@@ -50,20 +51,39 @@ export function PlayerNickname({ onJoin, isLoading }: PlayerNicknameProperties) 
 			</CardHeader>
 			<CardContent className="pt-6">
 				<form ref={formReference} onSubmit={handleSubmit(onSubmit)} className={`space-y-6`}>
-					<div>
-						<Input
+					<div className="relative">
+						<input
 							{...register('nickname')}
+							type="text"
 							placeholder="Your cool name"
-							className={`
-								h-16 border-black bg-black text-center text-2xl font-bold text-white
-								placeholder:text-muted-foreground
-								focus:border-black focus:ring-offset-0
-							`}
+							className={cn(
+								'h-16 w-full rounded-xl px-4 text-center text-2xl font-bold',
+								'border-2 border-black bg-black',
+								`
+									text-white
+									placeholder:text-muted-foreground
+								`,
+								'focus:outline-none',
+								'transition-all duration-200',
+								errors.nickname && 'border-red bg-red/10',
+							)}
 							disabled={isLoading}
 							maxLength={LIMITS.NICKNAME_MAX}
 							autoComplete="off"
 						/>
-						{errors.nickname && <p className="mt-2 text-center text-sm font-bold text-red">{errors.nickname.message}</p>}
+						{/* Invalid input tooltip - positioned above */}
+						<div
+							className={cn(
+								'absolute -top-12 left-1/2 -translate-x-1/2 rounded-lg px-3 py-2',
+								'border border-red bg-red/90 text-sm text-white',
+								'flex items-center gap-2 whitespace-nowrap',
+								'transition-all duration-200',
+								errors.nickname ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-2 opacity-0',
+							)}
+						>
+							<AlertCircle className="size-4" />
+							{errors.nickname?.message}
+						</div>
 					</div>
 					<Button type="submit" variant="dark-accent" size="xl" className="w-full" disabled={isLoading || !isValid || !nickname?.trim()}>
 						{isLoading ? 'Joining...' : 'Join Game'}
