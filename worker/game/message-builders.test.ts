@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { QUESTION_TIME_LIMIT_MS } from './constants';
+import { QUESTION_READING_MS, QUESTION_TIME_LIMIT_MS } from './constants';
 import {
 	buildAnswerCounts,
 	buildGameEndMessage,
@@ -99,6 +99,7 @@ describe('messageBuilders.ts', () => {
 			if (message.type === 'questionStart') {
 				expect(message.startTime).toBe(1_700_000_000_000);
 				expect(message.timeLimitMs).toBe(QUESTION_TIME_LIMIT_MS);
+				expect(message.readingDurationMs).toBe(QUESTION_READING_MS);
 			}
 		});
 

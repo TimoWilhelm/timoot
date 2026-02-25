@@ -103,6 +103,7 @@ export type ServerMessage =
 			options: string[];
 			startTime: number;
 			timeLimitMs: number;
+			readingDurationMs: number;
 			isDoublePoints?: boolean;
 			backgroundImage?: string;
 			phaseVersion: number;

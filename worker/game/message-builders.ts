@@ -1,4 +1,4 @@
-import { QUESTION_TIME_LIMIT_MS } from './constants';
+import { QUESTION_READING_MS, QUESTION_TIME_LIMIT_MS } from './constants';
 import { buildLeaderboard } from './scoring';
 
 import type { GameState, QuestionModifier, ServerMessage } from '@shared/types';
@@ -67,6 +67,7 @@ export function buildQuestionMessage(state: GameState): ServerMessage {
 		options: question.options,
 		startTime: state.questionStartTime,
 		timeLimitMs: QUESTION_TIME_LIMIT_MS,
+		readingDurationMs: QUESTION_READING_MS,
 		isDoublePoints: question.isDoublePoints,
 		backgroundImage: question.backgroundImage,
 		phaseVersion: state.phaseVersion,

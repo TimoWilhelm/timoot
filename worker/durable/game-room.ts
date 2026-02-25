@@ -8,6 +8,7 @@ import {
 	CLEANUP_DELAY_MS,
 	END_REVEAL_DELAY_MS,
 	QUESTION_MODIFIER_DURATION_MS,
+	QUESTION_READING_MS,
 	QUESTION_TIMEOUT_BUFFER_MS,
 	QUESTION_TIME_LIMIT_MS,
 	questionHasModifiers,
@@ -239,11 +240,11 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			} else {
 				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_NO_MODIFIER');
 				state.phaseVersion++;
-				state.questionStartTime = Date.now();
+				state.questionStartTime = Date.now() + QUESTION_READING_MS;
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionStart(context, state);
 				// Schedule server-side question timeout as safety net
-				await this.ctx.storage.setAlarm(Date.now() + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
+				await this.ctx.storage.setAlarm(state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 			}
 			return;
 		}
@@ -252,11 +253,11 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		if (state?.phase === 'QUESTION_MODIFIER') {
 			state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_MODIFIER_DONE');
 			state.phaseVersion++;
-			state.questionStartTime = Date.now();
+			state.questionStartTime = Date.now() + QUESTION_READING_MS;
 			await this.ctx.storage.put('game_state', state);
 			broadcastQuestionStart(context, state);
 			// Schedule server-side question timeout as safety net
-			await this.ctx.storage.setAlarm(Date.now() + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
+			await this.ctx.storage.setAlarm(state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 			return;
 		}
 

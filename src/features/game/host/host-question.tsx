@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useHostGameContext } from '@/features/game/host/host-game-context';
+import { ReadingCountdownBar } from '@/features/game/shared/reading-countdown-bar';
 import { shapeColors, shapePaths } from '@/features/game/shared/shapes';
+import { useReadingCountdown } from '@/features/game/shared/use-reading-countdown';
 import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
 
@@ -154,6 +156,7 @@ export function HostQuestion() {
 		totalQuestions,
 		startTime,
 		timeLimitMs,
+		readingDurationMs,
 		answeredCount,
 		players,
 		isDoublePoints,
@@ -166,6 +169,8 @@ export function HostQuestion() {
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
 	const [imageError, setImageError] = useState(false);
 	const [previousBackgroundImage, setPreviousBackgroundImage] = useState(backgroundImage);
+
+	const { isReading, progress: readingProgress, secondsLeft: readingSecondsLeft } = useReadingCountdown(startTime, readingDurationMs);
 
 	// Reset image error state when backgroundImage changes (adjusting state during render)
 	if (backgroundImage !== previousBackgroundImage) {
@@ -185,6 +190,8 @@ export function HostQuestion() {
 	});
 
 	useEffect(() => {
+		if (isReading) return;
+
 		let lastTickedSecond = -1;
 		const timer = setInterval(() => {
 			const elapsedMs = Date.now() - startTime;
@@ -205,7 +212,7 @@ export function HostQuestion() {
 			}
 		}, 100);
 		return () => clearInterval(timer);
-	}, [startTime, timeLimitSec, timeLimitMs]);
+	}, [startTime, timeLimitSec, timeLimitMs, isReading]);
 
 	return (
 		<div
@@ -235,7 +242,7 @@ export function HostQuestion() {
 				</div>
 				<div className="flex items-center gap-4">
 					{isDoublePoints && <DoublePointsBadge />}
-					<CountdownTimer timeLeft={timeLeft} totalTime={timeLimitSec} />
+					<CountdownTimer timeLeft={isReading ? timeLimitSec : timeLeft} totalTime={timeLimitSec} />
 				</div>
 			</div>
 			<div
@@ -285,42 +292,53 @@ export function HostQuestion() {
 					</div>
 				</div>
 			</div>
-			<div
-				className={`
-					grid grid-cols-1 gap-2
-					sm:gap-4
-					md:grid-cols-2
-				`}
-			>
-				{options.map((option, index) => (
-					<motion.div
-						key={index}
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: index * 0.1 }}
-						className={cn(
-							`
-								flex items-center rounded-xl border-4 border-black p-4 text-xl font-bold
-								shadow-brutal-sm
-								sm:p-6 sm:text-3xl
-							`,
-							shapeColors[index],
-						)}
-					>
-						<svg
-							viewBox="0 0 24 24"
-							className={`
-								mr-4 size-8 fill-current stroke-black/35 stroke-3 text-white
-								drop-shadow-lg [paint-order:stroke]
-								sm:size-12
-							`}
-						>
-							<path d={shapePaths[index]} />
-						</svg>
-						<span>{option}</span>
+			<AnimatePresence mode="wait" initial={false}>
+				{isReading ? (
+					<motion.div key="reading" className="flex items-center justify-center py-4">
+						<ReadingCountdownBar progress={readingProgress} secondsLeft={readingSecondsLeft} variant="host" />
 					</motion.div>
-				))}
-			</div>
+				) : (
+					<motion.div
+						key="options"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						className={`
+							grid grid-cols-1 gap-2
+							sm:gap-4
+							md:grid-cols-2
+						`}
+					>
+						{options.map((option, index) => (
+							<motion.div
+								key={index}
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: index * 0.1 }}
+								className={cn(
+									`
+										flex items-center rounded-xl border-4 border-black p-4 text-xl
+										font-bold shadow-brutal-sm
+										sm:p-6 sm:text-3xl
+									`,
+									shapeColors[index],
+								)}
+							>
+								<svg
+									viewBox="0 0 24 24"
+									className={`
+										mr-4 size-8 fill-current stroke-black/35 stroke-3 text-white
+										drop-shadow-lg [paint-order:stroke]
+										sm:size-12
+									`}
+								>
+									<path d={shapePaths[index]} />
+								</svg>
+								<span>{option}</span>
+							</motion.div>
+						))}
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }

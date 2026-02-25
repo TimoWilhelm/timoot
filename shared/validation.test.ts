@@ -70,6 +70,17 @@ describe('validation.ts', () => {
 				expect(result.data).toBe('Player1');
 			}
 		});
+
+		it('rejects nicknames containing profanity', () => {
+			expect(nicknameSchema.safeParse('fuck').success).toBe(false);
+			expect(nicknameSchema.safeParse('shithead').success).toBe(false);
+		});
+
+		it('accepts clean nicknames that are not false positives', () => {
+			expect(nicknameSchema.safeParse('class').success).toBe(true);
+			expect(nicknameSchema.safeParse('assume').success).toBe(true);
+			expect(nicknameSchema.safeParse('pass').success).toBe(true);
+		});
 	});
 
 	describe('aiPromptSchema', () => {

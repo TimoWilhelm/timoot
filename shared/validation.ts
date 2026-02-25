@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ERROR_CODE_VALUES } from './errors';
+import { containsProfanity } from './profanity';
 import { EMOJI_REACTIONS } from './types';
 
 // ============ Validation Constants ============
@@ -36,7 +37,8 @@ export const nicknameSchema = z
 	.trim()
 	.min(LIMITS.NICKNAME_MIN, 'Nickname is required')
 	.max(LIMITS.NICKNAME_MAX, `Nickname must be at most ${LIMITS.NICKNAME_MAX} characters`)
-	.regex(/^[a-zA-Z0-9\s_-]+$/, 'Nickname can only contain letters, numbers, spaces, underscores and hyphens');
+	.regex(/^[a-zA-Z0-9\s_-]+$/, 'Nickname can only contain letters, numbers, spaces, underscores and hyphens')
+	.refine((value) => !containsProfanity(value), 'Nickname contains inappropriate language');
 
 /**
  * Quiz title validation
@@ -320,6 +322,7 @@ const wsQuestionStartSchema = z.object({
 	options: z.array(z.string()),
 	startTime: z.number(),
 	timeLimitMs: z.number(),
+	readingDurationMs: z.number(),
 	isDoublePoints: z.boolean().optional(),
 	backgroundImage: z.string().optional(),
 	phaseVersion: z.number(),

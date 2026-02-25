@@ -9,6 +9,9 @@ export const QUESTION_TIMEOUT_BUFFER_MS = 3000;
 /** Delay before advancing to reveal when all players have answered */
 export const ALL_ANSWERED_DELAY_MS = 1500;
 
+/** Duration for the reading countdown before answer options are revealed */
+export const QUESTION_READING_MS = 3000;
+
 /** Duration for QUESTION_MODIFIER phase animation */
 export const QUESTION_MODIFIER_DURATION_MS = 2500;
 

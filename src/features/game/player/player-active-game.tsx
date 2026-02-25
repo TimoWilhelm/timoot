@@ -5,10 +5,37 @@ import { EmojiPicker } from '@/features/game/player/components/emoji-picker';
 import { PlayerAnswer } from '@/features/game/player/player-answer';
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { PlayerWaiting } from '@/features/game/player/player-waiting';
+import { ReadingCountdownBar } from '@/features/game/shared/reading-countdown-bar';
+import { useReadingCountdown } from '@/features/game/shared/use-reading-countdown';
 import { phaseAllowsEmoji } from '@shared/phase-rules';
 
 export function PlayerActiveGame() {
 	const { gameState, nickname, score, hasInitialScoreSync, onSendEmoji } = usePlayerGameContext();
+	const { isReading, progress, secondsLeft } = useReadingCountdown(gameState.startTime, gameState.readingDurationMs);
+
+	const isQuestionPhase = gameState.phase === 'QUESTION' && gameState.options.length > 0;
+
+	const renderMain = () => {
+		if (isQuestionPhase && isReading) {
+			return (
+				<motion.div
+					key="reading"
+					initial={{ opacity: 0, scale: 0.8 }}
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0.8 }}
+					className="flex size-full flex-col items-center justify-center gap-6 px-4"
+				>
+					<h2 className="font-display text-3xl font-black text-white uppercase">Look at the screen!</h2>
+					<ReadingCountdownBar progress={progress} secondsLeft={secondsLeft} variant="player" />
+				</motion.div>
+			);
+		}
+		if (isQuestionPhase && !isReading) {
+			return <PlayerAnswer />;
+		}
+		return <PlayerWaiting />;
+	};
+
 	return (
 		<>
 			<header
@@ -25,9 +52,7 @@ export function PlayerActiveGame() {
 				</div>
 			</header>
 			<main className="relative flex grow items-center justify-center">
-				<AnimatePresence mode="wait">
-					{gameState.phase === 'QUESTION' && gameState.options.length > 0 ? <PlayerAnswer /> : <PlayerWaiting />}
-				</AnimatePresence>
+				<AnimatePresence mode="wait">{renderMain()}</AnimatePresence>
 			</main>
 			<AnimatePresence>
 				{phaseAllowsEmoji[gameState.phase] && (

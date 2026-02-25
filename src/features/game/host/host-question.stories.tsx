@@ -22,6 +22,7 @@ const mockGameState: WebSocketGameState = {
 	options: ['London', 'Paris', 'Berlin', 'Madrid'],
 	startTime: 0, // Will be overridden
 	timeLimitMs: 20_000,
+	readingDurationMs: 0,
 	isDoublePoints: false,
 	backgroundImage: undefined,
 	answeredCount: 0,

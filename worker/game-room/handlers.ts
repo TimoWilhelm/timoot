@@ -9,6 +9,7 @@ import {
 	END_REVEAL_DELAY_MS,
 	MAX_PLAYERS,
 	QUESTION_MODIFIER_DURATION_MS,
+	QUESTION_READING_MS,
 	QUESTION_TIMEOUT_BUFFER_MS,
 	QUESTION_TIME_LIMIT_MS,
 	processAnswersAndUpdateScores,
@@ -237,7 +238,14 @@ export async function handleSubmitAnswer(
 		return;
 	}
 
-	const timeTaken = Date.now() - state.questionStartTime;
+	// Reject answers during reading countdown
+	if (Date.now() < state.questionStartTime) {
+		sendMessage(ws, { type: 'error', ...createError(ErrorCode.NOT_IN_QUESTION_PHASE) });
+		return;
+	}
+
+	// Defense-in-depth: clamp to non-negative to prevent score inflation from timing edge cases
+	const timeTaken = Math.max(0, Date.now() - state.questionStartTime);
 	if (timeTaken > QUESTION_TIME_LIMIT_MS) {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.TIME_EXPIRED) });
 		return;
@@ -426,11 +434,11 @@ export async function handleNextState(
 				} else {
 					state.phase = gamePhaseMachine.transition(state.phase, 'NEXT_QUESTION');
 					state.phaseVersion++;
-					state.questionStartTime = Date.now();
+					state.questionStartTime = Date.now() + QUESTION_READING_MS;
 					await context.storage.put('game_state', state);
 					broadcastQuestionStart(context, state);
 					// Schedule server-side question timeout as safety net
-					await context.setAlarm(Date.now() + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
+					await context.setAlarm(state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 				}
 			} else {
 				state.phase = gamePhaseMachine.transition(state.phase, 'LEADERBOARD_FINAL');

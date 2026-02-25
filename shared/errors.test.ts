@@ -32,6 +32,7 @@ describe('errors.ts', () => {
 			expect(ErrorCode.GAME_FULL).toBe('GAME_FULL');
 			expect(ErrorCode.ALREADY_JOINED).toBe('ALREADY_JOINED');
 			expect(ErrorCode.NICKNAME_TAKEN).toBe('NICKNAME_TAKEN');
+			expect(ErrorCode.NICKNAME_INAPPROPRIATE).toBe('NICKNAME_INAPPROPRIATE');
 			expect(ErrorCode.ALREADY_ANSWERED).toBe('ALREADY_ANSWERED');
 			expect(ErrorCode.TIME_EXPIRED).toBe('TIME_EXPIRED');
 			expect(ErrorCode.INVALID_ANSWER_INDEX).toBe('INVALID_ANSWER_INDEX');

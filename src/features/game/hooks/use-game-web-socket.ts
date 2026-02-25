@@ -45,6 +45,7 @@ export interface WebSocketGameState {
 	options: string[];
 	startTime: number;
 	timeLimitMs: number;
+	readingDurationMs: number;
 	isDoublePoints: boolean;
 	backgroundImage: string | undefined;
 	// Answer tracking (for host)
@@ -87,6 +88,7 @@ const initialGameState: WebSocketGameState = {
 	options: [],
 	startTime: 0,
 	timeLimitMs: 20_000,
+	readingDurationMs: 0,
 	isDoublePoints: false,
 	backgroundImage: undefined,
 	answeredCount: 0,
@@ -207,6 +209,7 @@ export function useGameWebSocket({
 						options: message.options,
 						startTime: message.startTime,
 						timeLimitMs: message.timeLimitMs,
+						readingDurationMs: message.readingDurationMs,
 						isDoublePoints: message.isDoublePoints ?? false,
 						backgroundImage: message.backgroundImage,
 						answeredCount: 0,

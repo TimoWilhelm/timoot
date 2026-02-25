@@ -55,6 +55,7 @@
 		"lint-staged": "^16.2.7",
 		"lucide-react": "^0.525.0",
 		"motion": "^12.26.1",
+		"obscenity": "^0.4.6",
 		"playwright": "^1.57.0",
 		"prettier": "^3.7.4",
 		"qrcode.react": "^4.2.0",

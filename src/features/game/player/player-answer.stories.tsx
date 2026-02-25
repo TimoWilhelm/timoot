@@ -23,6 +23,7 @@ const mockGameState: WebSocketGameState = {
 	options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
 	startTime: Date.now(),
 	timeLimitMs: 20_000,
+	readingDurationMs: 0,
 	isDoublePoints: false,
 	backgroundImage: undefined,
 	answeredCount: 0,

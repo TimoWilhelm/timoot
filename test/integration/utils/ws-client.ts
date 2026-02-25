@@ -251,10 +251,19 @@ export class WsTestClient {
 		}
 	}
 
-	/**
-	 * Submit an answer
-	 */
+	/** Wait for the reading countdown to end before answering. */
+	async waitForAnsweringPhase(): Promise<void> {
+		const questionMessage = this.getMessagesByType('questionStart').at(-1);
+		if (!questionMessage) return;
+		const waitMs = questionMessage.startTime - Date.now();
+		if (waitMs > 0) {
+			await new Promise((resolve) => setTimeout(resolve, waitMs + 50));
+		}
+	}
+
+	/** Submit an answer. Waits for the reading countdown to finish first. */
 	async submitAnswer(answerIndex: number): Promise<void> {
+		await this.waitForAnsweringPhase();
 		this.send({ type: 'submitAnswer', answerIndex });
 		await this.waitForMessage('answerReceived');
 	}

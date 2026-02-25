@@ -128,6 +128,9 @@ async function runGameWithPlayers(baseUrl: string, playerCount: number, sendEmoj
 	const questionPromises = players.map((p) => p.waitForMessage('questionStart', 20_000).catch(() => {}));
 	await Promise.all(questionPromises);
 
+	// Wait for reading countdown to end before submitting answers
+	await players[0].waitForAnsweringPhase();
+
 	// All players submit answers (with timeout)
 	const answerPromises = players.map(async (player, index) => {
 		const startAnswer = Date.now();
@@ -373,6 +376,9 @@ describe('Concurrency Tests', () => {
 				// Start game and get to reveal phase
 				await host.startGame();
 				await Promise.all(players.map((p) => p.waitForMessage('questionStart', 20_000)));
+
+				// Wait for reading countdown to end before submitting answers
+				await players[0].waitForAnsweringPhase();
 
 				// All players submit answers (fire and forget, then wait)
 				for (const p of players) p.send({ type: 'submitAnswer', answerIndex: 0 });
