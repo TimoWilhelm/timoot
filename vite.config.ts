@@ -40,7 +40,7 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 				telemetry: false,
 			}),
 			VitePWA({
-				registerType: 'autoUpdate',
+				registerType: 'prompt',
 				manifest: {
 					id: 'a4b945bd-512a-4819-b8aa-f8cc393b5c10',
 					name: title,

@@ -8,6 +8,7 @@ import { HostPage } from '@/features/game/host/host-page';
 import { PlayerPage } from '@/features/game/player/player-page';
 import { HomePage } from '@/features/home/home-page';
 import { QuizEditorPage } from '@/features/quiz-editor/quiz-editor-page';
+import { usePwaUpdate } from '@/hooks/ui/use-pwa-update';
 import { queryClient } from '@/lib/clients/query-client';
 
 const router = createBrowserRouter([
@@ -39,6 +40,11 @@ const router = createBrowserRouter([
 	},
 ]);
 
+function PwaUpdateHandler() {
+	usePwaUpdate();
+	return <></>;
+}
+
 export function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -46,6 +52,7 @@ export function App() {
 				{({ reset }) => (
 					<ErrorBoundary key={String(reset)}>
 						<RouterProvider router={router} />
+						<PwaUpdateHandler />
 						<Toaster />
 					</ErrorBoundary>
 				)}

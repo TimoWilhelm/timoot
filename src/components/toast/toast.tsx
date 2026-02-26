@@ -3,8 +3,13 @@ import { toast as sonnerToast } from 'sonner';
 
 import { Button } from '../button/button';
 
+interface ToastOptions {
+	description?: string;
+	action?: { label: string; onClick: () => void };
+}
+
 export const toast = {
-	custom: (title: string, options?: { description?: string }) => {
+	custom: (title: string, options?: ToastOptions) => {
 		sonnerToast.custom((t) => (
 			<div
 				className="
@@ -21,10 +26,15 @@ export const toast = {
 						<X className="size-4" />
 					</Button>
 				</div>
+				{options?.action && (
+					<Button variant="default" size="sm" onClick={options.action.onClick}>
+						{options.action.label}
+					</Button>
+				)}
 			</div>
 		));
 	},
-	success: (title: string, options?: { description?: string }) => {
+	success: (title: string, options?: ToastOptions) => {
 		sonnerToast.custom((t) => (
 			<div
 				className="
@@ -41,10 +51,15 @@ export const toast = {
 						<X className="size-4" />
 					</Button>
 				</div>
+				{options?.action && (
+					<Button variant="default" size="sm" onClick={options.action.onClick}>
+						{options.action.label}
+					</Button>
+				)}
 			</div>
 		));
 	},
-	error: (title: string, options?: { description?: string }) => {
+	error: (title: string, options?: ToastOptions) => {
 		sonnerToast.custom((t) => (
 			<div
 				className="
@@ -61,10 +76,15 @@ export const toast = {
 						<X className="size-4" />
 					</Button>
 				</div>
+				{options?.action && (
+					<Button variant="default" size="sm" onClick={options.action.onClick}>
+						{options.action.label}
+					</Button>
+				)}
 			</div>
 		));
 	},
-	info: (title: string, options?: { description?: string }) => {
+	info: (title: string, options?: ToastOptions) => {
 		sonnerToast.custom((t) => (
 			<div
 				className="
@@ -81,10 +101,15 @@ export const toast = {
 						<X className="size-4" />
 					</Button>
 				</div>
+				{options?.action && (
+					<Button variant="default" size="sm" onClick={options.action.onClick}>
+						{options.action.label}
+					</Button>
+				)}
 			</div>
 		));
 	},
-	warning: (title: string, options?: { description?: string }) => {
+	warning: (title: string, options?: ToastOptions) => {
 		sonnerToast.custom((t) => (
 			<div
 				className="
@@ -101,6 +126,11 @@ export const toast = {
 						<X className="size-4" />
 					</Button>
 				</div>
+				{options?.action && (
+					<Button variant="default" size="sm" onClick={options.action.onClick}>
+						{options.action.label}
+					</Button>
+				)}
 			</div>
 		));
 	},
