@@ -105,7 +105,7 @@
 		"preview": "turbo run build:vite && vite preview --host 0.0.0.0 --port 4173",
 		"deploy": "turbo run build:vite && wrangler deploy",
 		"cf-typegen": "wrangler types",
-		"knip": "knip",
+		"knip": "knip --production",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},

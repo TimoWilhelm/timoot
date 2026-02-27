@@ -77,6 +77,7 @@ export function buildQuestionMessage(state: GameState): ServerMessage {
 /**
  * Build answer distribution counts for the current question.
  * Returns an array where each index represents an option and the value is the count.
+ * @internal Exported for testing only.
  */
 export function buildAnswerCounts(state: GameState): number[] {
 	const question = state.questions[state.currentQuestionIndex];

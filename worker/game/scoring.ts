@@ -18,6 +18,7 @@ export interface ScoreResult {
  * @param correctAnswerIndex - The correct answer index for the question
  * @param isDoublePoints - Whether the question has double points enabled
  * @returns Score result with correctness and points earned
+ * @internal Exported for testing only.
  */
 export function calculateAnswerScore(answer: Answer, correctAnswerIndex: number, isDoublePoints: boolean = false): ScoreResult {
 	const isCorrect = correctAnswerIndex === answer.answerIndex;

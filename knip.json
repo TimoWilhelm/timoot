@@ -6,8 +6,15 @@
 	},
 	"ignoreIssues": { "src/components/**": ["exports"] },
 	"tags": ["-lintignore"],
-	"entry": ["src/main.tsx", "worker/index.ts"],
+	"entry": ["src/main.tsx!", "worker/index.ts!"],
 	"ignoreDependencies": ["cloudflare", "@server/*"],
 	"ignoreBinaries": ["wrangler"],
-	"ignoreFiles": ["src/vite-environment.d.ts", "test/unit/environment.d.ts", "playwright.config.ts"]
+	"ignoreFiles": [
+		"src/vite-environment.d.ts",
+		"test/unit/environment.d.ts",
+		"playwright.config.ts",
+		"worker-configuration.d.ts",
+		"test/react/setup.ts",
+		"test/integration/utils/**"
+	]
 }

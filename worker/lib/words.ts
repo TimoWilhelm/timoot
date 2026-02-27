@@ -1,3 +1,4 @@
+/** @internal Exported for testing only. */
 export const adjectives = [
 	'Happy',
 	'Silly',
@@ -40,6 +41,7 @@ export const adjectives = [
 	'Dandy',
 	'Epic',
 ];
+/** @internal Exported for testing only. */
 export const colors = [
 	'Red',
 	'Blue',
@@ -72,6 +74,7 @@ export const colors = [
 	'Khaki',
 	'Plum',
 ];
+/** @internal Exported for testing only. */
 export const animals = [
 	'Lion',
 	'Tiger',
