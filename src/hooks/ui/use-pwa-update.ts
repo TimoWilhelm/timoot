@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-// eslint-disable-next-line import-x/no-unresolved
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 import { toast } from '@/components/toast';
