@@ -20,7 +20,9 @@ import {
 	broadcastGameEnd,
 	broadcastQuestionModifier,
 	broadcastQuestionStart,
+	broadcastReadingEnd,
 	getAttachment,
+	getReadyCountdownMs,
 	handleJoin,
 	handleNextState,
 	handlePlayerConnect,
@@ -84,19 +86,15 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				authenticated: true,
 			} satisfies WebSocketAttachment);
 
-			// Cancel any pending cleanup alarm since we have a new connection
-			await this.ctx.storage.deleteAlarm();
-
 			// Send connected message and current state immediately
 			const state = await this.getFullGameState();
 			if (state) {
+				// Re-schedule phase alarm (may have been overwritten by cleanup alarm)
+				await this.reschedulePhaseAlarmIfNeeded(state);
 				sendMessage(server, { type: 'connected', role: 'host' });
 				sendCurrentStateToHost(server, state, this.env);
-				// Re-schedule alarm if we're in a phase that needs one
-				if (state.phase === 'END_INTRO') {
-					await this.ctx.storage.setAlarm(Date.now() + END_REVEAL_DELAY_MS);
-				}
 			} else {
+				await this.ctx.storage.deleteAlarm();
 				sendMessage(server, { type: 'error', ...createError(ErrorCode.GAME_NOT_FOUND) });
 				server.close(4004, 'Game not found');
 			}
@@ -123,8 +121,9 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 				authenticated: false,
 			} satisfies WebSocketAttachment);
 
-			// Cancel any pending cleanup alarm since we have a new connection
-			await this.ctx.storage.deleteAlarm();
+			// Re-schedule phase alarm (may have been overwritten by cleanup alarm)
+			const playerState = await this.getFullGameState();
+			await (playerState ? this.reschedulePhaseAlarmIfNeeded(playerState) : this.ctx.storage.deleteAlarm());
 
 			return new Response(undefined, { status: 101, webSocket: client });
 		}
@@ -228,58 +227,115 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		const sockets = this.ctx.getWebSockets();
 		const state = await this.getFullGameState();
 
-		// Handle GET_READY -> QUESTION_MODIFIER or QUESTION transition
+		// Handle GET_READY -> QUESTION_MODIFIER or QUESTION_READING transition
 		if (state?.phase === 'GET_READY') {
 			if (questionHasModifiers(state)) {
 				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_WITH_MODIFIER');
 				state.phaseVersion++;
+				state.phaseEnteredAt = Date.now();
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionModifier(context, state);
-				// Schedule transition to QUESTION after modifier display
+				// Schedule transition to QUESTION_READING after modifier display
 				await this.ctx.storage.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 			} else {
 				state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_NO_MODIFIER');
 				state.phaseVersion++;
-				state.questionStartTime = Date.now() + QUESTION_READING_MS;
+				state.phaseEnteredAt = Date.now();
 				await this.ctx.storage.put('game_state', state);
 				broadcastQuestionStart(context, state);
-				// Schedule server-side question timeout as safety net
-				await this.ctx.storage.setAlarm(state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
+				// Schedule transition to QUESTION_ANSWERING after reading period
+				await this.ctx.storage.setAlarm(Date.now() + QUESTION_READING_MS);
 			}
 			return;
 		}
 
-		// Handle QUESTION_MODIFIER -> QUESTION transition
+		// Handle QUESTION_MODIFIER -> QUESTION_READING transition
 		if (state?.phase === 'QUESTION_MODIFIER') {
 			state.phase = gamePhaseMachine.transition(state.phase, 'TIMER_MODIFIER_DONE');
 			state.phaseVersion++;
-			state.questionStartTime = Date.now() + QUESTION_READING_MS;
+			state.phaseEnteredAt = Date.now();
 			await this.ctx.storage.put('game_state', state);
 			broadcastQuestionStart(context, state);
-			// Schedule server-side question timeout as safety net
+			// Schedule transition to QUESTION_ANSWERING after reading period
+			await this.ctx.storage.setAlarm(Date.now() + QUESTION_READING_MS);
+			return;
+		}
+
+		// Handle QUESTION_READING -> QUESTION_ANSWERING transition (reading period ended)
+		if (state?.phase === 'QUESTION:READING') {
+			state.phase = gamePhaseMachine.transition(state.phase, 'READING_DONE');
+			state.phaseVersion++;
+			state.phaseEnteredAt = Date.now();
+			state.questionStartTime = Date.now();
+			await this.ctx.storage.put('game_state', state);
+			broadcastReadingEnd(context, state);
+			// Schedule server-side question timeout
 			await this.ctx.storage.setAlarm(state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
 			return;
 		}
 
-		// Handle QUESTION -> REVEAL transition (all players answered or server-side timeout)
-		if (state?.phase === 'QUESTION') {
+		// Handle QUESTION_ANSWERING -> REVEAL transition (all players answered or server-side timeout)
+		if (state?.phase === 'QUESTION:ANSWERING') {
 			await advanceToReveal(context, state);
 			return;
 		}
 
 		// Handle END_INTRO -> END_REVEALED transition
-		if (state?.phase === 'END_INTRO') {
+		if (state?.phase === 'END:INTRO') {
 			state.phase = gamePhaseMachine.transition(state.phase, 'REVEAL_WINNER');
 			state.phaseVersion++;
+			state.phaseEnteredAt = Date.now();
 			await this.ctx.storage.put('game_state', state);
 			broadcastGameEnd(context, state, true);
 			return;
 		}
 
 		// Only cleanup if no active connections or game has ended
-		if (sockets.length === 0 || state?.phase === 'END_REVEALED') {
+		if (sockets.length === 0 || state?.phase === 'END:REVEALED') {
 			console.log(`Cleaning up game room: ${state?.id || 'unknown'}`);
 			await this.ctx.storage.deleteAll();
+		}
+	}
+
+	/**
+	 * Re-schedule any active phase transition alarm.
+	 * Called on (re)connection to ensure phase alarms are not lost — they may have been
+	 * overwritten by cleanup alarms when all connections dropped momentarily.
+	 */
+	private async reschedulePhaseAlarmIfNeeded(state: GameState): Promise<void> {
+		const now = Date.now();
+		const elapsed = now - (state.phaseEnteredAt || now);
+
+		switch (state.phase) {
+			case 'GET_READY': {
+				const remaining = getReadyCountdownMs(this.env) - elapsed;
+				await this.ctx.storage.setAlarm(now + Math.max(0, remaining));
+				break;
+			}
+			case 'QUESTION_MODIFIER': {
+				const remaining = QUESTION_MODIFIER_DURATION_MS - elapsed;
+				await this.ctx.storage.setAlarm(now + Math.max(0, remaining));
+				break;
+			}
+			case 'QUESTION:READING': {
+				const remaining = QUESTION_READING_MS - elapsed;
+				await this.ctx.storage.setAlarm(now + Math.max(0, remaining));
+				break;
+			}
+			case 'QUESTION:ANSWERING': {
+				const timeout = state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS;
+				await this.ctx.storage.setAlarm(Math.max(now, timeout));
+				break;
+			}
+			case 'END:INTRO': {
+				const remaining = END_REVEAL_DELAY_MS - elapsed;
+				await this.ctx.storage.setAlarm(now + Math.max(0, remaining));
+				break;
+			}
+			default: {
+				// No active phase alarm — cancel any leftover cleanup alarm
+				await this.ctx.storage.deleteAlarm();
+			}
 		}
 	}
 
@@ -314,6 +370,7 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 			questions: questions, // Store full questions data
 			currentQuestionIndex: 0,
 			questionStartTime: 0,
+			phaseEnteredAt: Date.now(),
 			answers: [],
 			hostSecret: crypto.randomUUID(),
 		};

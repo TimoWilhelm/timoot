@@ -20,7 +20,6 @@ const mockGameState: WebSocketGameState = {
 	totalQuestions: 10,
 	questionText: '',
 	options: [],
-	startTime: Date.now(),
 	timeLimitMs: 20_000,
 	readingDurationMs: 0,
 	isDoublePoints: false,
@@ -178,7 +177,7 @@ export const LeaderboardNotInTop: Story = {
 
 export const EndIntro: Story = {
 	args: {
-		phase: 'END_INTRO',
+		phase: 'END:INTRO',
 		answerResult: undefined,
 		playerId: 'player1',
 	},
@@ -186,7 +185,7 @@ export const EndIntro: Story = {
 
 export const EndRevealedFirstPlace: Story = {
 	args: {
-		phase: 'END_REVEALED',
+		phase: 'END:REVEALED',
 		answerResult: undefined,
 		finalScore: 5000,
 		playerId: 'player1',
@@ -200,7 +199,7 @@ export const EndRevealedFirstPlace: Story = {
 
 export const EndRevealedSecondPlace: Story = {
 	args: {
-		phase: 'END_REVEALED',
+		phase: 'END:REVEALED',
 		answerResult: undefined,
 		finalScore: 4800,
 		playerId: 'player1',
@@ -214,7 +213,7 @@ export const EndRevealedSecondPlace: Story = {
 
 export const EndRevealedThirdPlace: Story = {
 	args: {
-		phase: 'END_REVEALED',
+		phase: 'END:REVEALED',
 		answerResult: undefined,
 		finalScore: 4200,
 		playerId: 'player1',
@@ -228,7 +227,7 @@ export const EndRevealedThirdPlace: Story = {
 
 export const EndRevealedNotOnPodium: Story = {
 	args: {
-		phase: 'END_REVEALED',
+		phase: 'END:REVEALED',
 		answerResult: undefined,
 		finalScore: 2000,
 		playerId: 'player1',

@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useHostGameContext } from '@/features/game/host/host-game-context';
 import { ReadingCountdownBar } from '@/features/game/shared/reading-countdown-bar';
 import { shapeColors, shapePaths } from '@/features/game/shared/shapes';
-import { useReadingCountdown } from '@/features/game/shared/use-reading-countdown';
 import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { cn } from '@/lib/utilities';
 
@@ -148,13 +147,13 @@ function DoublePointsBadge() {
 }
 
 export function HostQuestion() {
-	const { gameState, onNextState, onPlaySound, onPlayCountdownTick } = useHostGameContext();
+	const { gameState, onPlaySound, onPlayCountdownTick } = useHostGameContext();
 	const {
+		phase,
 		questionText,
 		options,
 		questionIndex,
 		totalQuestions,
-		startTime,
 		timeLimitMs,
 		readingDurationMs,
 		answeredCount,
@@ -164,13 +163,13 @@ export function HostQuestion() {
 	} = gameState;
 
 	const totalPlayers = players.length;
-	const onTimeUp = () => onPlaySound('timeUp');
-	const timeLimitSec = timeLimitMs / 1000;
+	const timeLimitSec = Math.ceil(timeLimitMs / 1000);
+	const isReading = phase === 'QUESTION:READING';
 	const [timeLeft, setTimeLeft] = useState(timeLimitSec);
+	const [readingProgress, setReadingProgress] = useState(1);
 	const [imageError, setImageError] = useState(false);
 	const [previousBackgroundImage, setPreviousBackgroundImage] = useState(backgroundImage);
-
-	const { isReading, progress: readingProgress } = useReadingCountdown(startTime, readingDurationMs);
+	const [previousPhase, setPreviousPhase] = useState(phase);
 
 	// Reset image error state when backgroundImage changes (adjusting state during render)
 	if (backgroundImage !== previousBackgroundImage) {
@@ -178,25 +177,50 @@ export function HostQuestion() {
 		setImageError(false);
 	}
 
+	// Reset answer countdown when entering QUESTION_ANSWERING phase (adjusting state during render)
+	if (phase !== previousPhase) {
+		setPreviousPhase(phase);
+		if (phase === 'QUESTION:ANSWERING') {
+			setTimeLeft(timeLimitSec);
+		}
+	}
+
 	// Use refs for callbacks to prevent effect restart on parent re-renders
-	const onNextReference = useRef(onNextState);
 	const onCountdownTickReference = useRef(onPlayCountdownTick);
-	const onTimeUpReference = useRef(onTimeUp);
+	const onTimeUpReference = useRef(() => onPlaySound('timeUp'));
 
 	useEffect(() => {
-		onNextReference.current = onNextState;
 		onCountdownTickReference.current = onPlayCountdownTick;
-		onTimeUpReference.current = onTimeUp;
+		onTimeUpReference.current = () => onPlaySound('timeUp');
 	});
 
+	// Cosmetic reading progress bar animation (purely local timer, no cross-clock comparison)
 	useEffect(() => {
-		if (isReading) return;
+		if (!isReading || readingDurationMs <= 0) return;
+		const effectStartedAt = Date.now();
+
+		const timer = setInterval(() => {
+			const elapsed = Date.now() - effectStartedAt;
+			const remaining = Math.max(0, readingDurationMs - elapsed);
+			setReadingProgress(remaining / readingDurationMs);
+			if (remaining <= 0) {
+				clearInterval(timer);
+			}
+		}, 50);
+
+		return () => clearInterval(timer);
+	}, [isReading, readingDurationMs]);
+
+	// Answer countdown timer — starts when entering QUESTION_ANSWERING phase
+	// Server alarm is the authoritative timer; this is purely visual
+	useEffect(() => {
+		if (phase !== 'QUESTION:ANSWERING') return;
+		const effectStartedAt = Date.now();
 
 		let lastTickedSecond = -1;
 		const timer = setInterval(() => {
-			const elapsedMs = Date.now() - startTime;
-			const elapsedSeconds = Math.floor(elapsedMs / 1000);
-			const remaining = Math.max(0, timeLimitSec - elapsedSeconds);
+			const elapsedMs = Date.now() - effectStartedAt;
+			const remaining = Math.max(0, Math.ceil((timeLimitMs - elapsedMs) / 1000));
 			setTimeLeft(remaining);
 
 			// Play countdown tick sounds (once per second change)
@@ -208,11 +232,10 @@ export function HostQuestion() {
 			if (elapsedMs >= timeLimitMs) {
 				clearInterval(timer);
 				onTimeUpReference.current?.();
-				onNextReference.current();
 			}
 		}, 100);
 		return () => clearInterval(timer);
-	}, [startTime, timeLimitSec, timeLimitMs, isReading]);
+	}, [phase, timeLimitSec, timeLimitMs]);
 
 	return (
 		<div

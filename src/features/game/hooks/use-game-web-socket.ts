@@ -43,7 +43,6 @@ export interface WebSocketGameState {
 	totalQuestions: number;
 	questionText: string;
 	options: string[];
-	startTime: number;
 	timeLimitMs: number;
 	readingDurationMs: number;
 	isDoublePoints: boolean;
@@ -86,7 +85,6 @@ const initialGameState: WebSocketGameState = {
 	totalQuestions: 0,
 	questionText: '',
 	options: [],
-	startTime: 0,
 	timeLimitMs: 20_000,
 	readingDurationMs: 0,
 	isDoublePoints: false,
@@ -201,13 +199,13 @@ export function useGameWebSocket({
 					setSubmittedAnswer(undefined);
 					setGameState((previous) => ({
 						...previous,
-						phase: 'QUESTION',
+						// When readingDurationMs > 0, we're in reading phase; when 0, we're reconnecting during answering
+						phase: message.readingDurationMs > 0 ? 'QUESTION:READING' : 'QUESTION:ANSWERING',
 						phaseVersion: message.phaseVersion,
 						questionIndex: message.questionIndex,
 						totalQuestions: message.totalQuestions,
 						questionText: message.questionText,
 						options: message.options,
-						startTime: message.startTime,
 						timeLimitMs: message.timeLimitMs,
 						readingDurationMs: message.readingDurationMs,
 						isDoublePoints: message.isDoublePoints ?? false,
@@ -216,6 +214,17 @@ export function useGameWebSocket({
 						correctAnswerIndex: undefined,
 						playerResult: undefined,
 						answerCounts: [],
+					}));
+					setIsAdvancing(false);
+					break;
+				}
+
+				case 'readingEnd': {
+					setGameState((previous) => ({
+						...previous,
+						phase: 'QUESTION:ANSWERING',
+						phaseVersion: message.phaseVersion,
+						timeLimitMs: message.timeLimitMs,
 					}));
 					setIsAdvancing(false);
 					break;
@@ -278,7 +287,7 @@ export function useGameWebSocket({
 				case 'gameEnd': {
 					setGameState((previous) => ({
 						...previous,
-						phase: message.revealed ? 'END_REVEALED' : 'END_INTRO',
+						phase: message.revealed ? 'END:REVEALED' : 'END:INTRO',
 						phaseVersion: message.phaseVersion,
 						leaderboard: message.finalLeaderboard,
 						endRevealed: message.revealed,

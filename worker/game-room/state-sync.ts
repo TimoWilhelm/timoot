@@ -1,10 +1,13 @@
 import {
+	QUESTION_READING_MS,
+	QUESTION_TIME_LIMIT_MS,
 	buildGameEndMessage,
 	buildGetReadyMessage,
 	buildLeaderboardMessage,
 	buildLobbyMessage,
 	buildQuestionMessage,
 	buildQuestionModifierMessage,
+	buildReadingEndMessage,
 	buildRevealMessage,
 } from '../game';
 import { getReadyCountdownMs, sendMessage } from './broadcast-helpers';
@@ -28,8 +31,18 @@ export function sendCurrentStateToHost(ws: WebSocket, state: GameState, environm
 			sendMessage(ws, buildQuestionModifierMessage(state));
 			break;
 		}
-		case 'QUESTION': {
-			sendMessage(ws, buildQuestionMessage(state));
+		case 'QUESTION:READING': {
+			// Reading period still active — send remaining reading duration so the bar picks up mid-way on reconnect
+			const readingElapsed = Date.now() - (state.phaseEnteredAt || Date.now());
+			const remainingReading = Math.max(0, QUESTION_READING_MS - readingElapsed);
+			sendMessage(ws, buildQuestionMessage(state, remainingReading));
+			break;
+		}
+		case 'QUESTION:ANSWERING': {
+			// Answering period active — skip reading, send remaining answer time
+			sendMessage(ws, buildQuestionMessage(state, 0));
+			const remainingMs = Math.max(0, QUESTION_TIME_LIMIT_MS - (Date.now() - state.questionStartTime));
+			sendMessage(ws, buildReadingEndMessage(state, remainingMs));
 			break;
 		}
 		case 'REVEAL': {
@@ -40,11 +53,11 @@ export function sendCurrentStateToHost(ws: WebSocket, state: GameState, environm
 			sendMessage(ws, buildLeaderboardMessage(state));
 			break;
 		}
-		case 'END_INTRO': {
+		case 'END:INTRO': {
 			sendMessage(ws, buildGameEndMessage(state, false));
 			break;
 		}
-		case 'END_REVEALED': {
+		case 'END:REVEALED': {
 			sendMessage(ws, buildGameEndMessage(state, true));
 			break;
 		}
@@ -72,8 +85,18 @@ export function sendCurrentStateToPlayer(ws: WebSocket, state: GameState, player
 			sendMessage(ws, buildQuestionModifierMessage(state));
 			break;
 		}
-		case 'QUESTION': {
-			sendMessage(ws, buildQuestionMessage(state));
+		case 'QUESTION:READING': {
+			// Reading period still active — send remaining reading duration so reconnecting players see accurate state
+			const readingElapsed = Date.now() - (state.phaseEnteredAt || Date.now());
+			const remainingReading = Math.max(0, QUESTION_READING_MS - readingElapsed);
+			sendMessage(ws, buildQuestionMessage(state, remainingReading));
+			break;
+		}
+		case 'QUESTION:ANSWERING': {
+			// Answering period active — skip reading, send remaining answer time
+			sendMessage(ws, buildQuestionMessage(state, 0));
+			const remainingMs = Math.max(0, QUESTION_TIME_LIMIT_MS - (Date.now() - state.questionStartTime));
+			sendMessage(ws, buildReadingEndMessage(state, remainingMs));
 			// Check if player already answered
 			const existingAnswer = state.answers.find((a) => a.playerId === playerId);
 			if (existingAnswer) {
@@ -89,11 +112,11 @@ export function sendCurrentStateToPlayer(ws: WebSocket, state: GameState, player
 			sendMessage(ws, buildLeaderboardMessage(state));
 			break;
 		}
-		case 'END_INTRO': {
+		case 'END:INTRO': {
 			sendMessage(ws, buildGameEndMessage(state, false));
 			break;
 		}
-		case 'END_REVEALED': {
+		case 'END:REVEALED': {
 			sendMessage(ws, buildGameEndMessage(state, true));
 			break;
 		}

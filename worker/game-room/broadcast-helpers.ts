@@ -7,6 +7,7 @@ import {
 	buildLobbyMessage,
 	buildQuestionMessage,
 	buildQuestionModifierMessage,
+	buildReadingEndMessage,
 	buildRevealMessage,
 } from '../game';
 import { getAttachment } from './types';
@@ -95,6 +96,14 @@ export function broadcastQuestionModifier(context: BroadcastContext, state: Game
  */
 export function broadcastQuestionStart(context: BroadcastContext, state: GameState): void {
 	broadcastToAll(context, buildQuestionMessage(state));
+}
+
+/**
+ * Broadcast reading end message to all clients.
+ * Signals the transition from QUESTION_READING to QUESTION_ANSWERING.
+ */
+export function broadcastReadingEnd(context: BroadcastContext, state: GameState, remainingTimeLimitMs?: number): void {
+	broadcastToAll(context, buildReadingEndMessage(state, remainingTimeLimitMs));
 }
 
 /**

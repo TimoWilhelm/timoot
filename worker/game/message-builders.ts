@@ -56,8 +56,12 @@ export function questionHasModifiers(state: GameState): boolean {
 
 /**
  * Build a question start message for broadcasting to all clients.
+ *
+ * @param state - Current game state
+ * @param readingDurationMs - Reading period duration. Use QUESTION_READING_MS for fresh questions,
+ *                            0 when the reading period has already elapsed (e.g. reconnection during answering).
  */
-export function buildQuestionMessage(state: GameState): ServerMessage {
+export function buildQuestionMessage(state: GameState, readingDurationMs: number = QUESTION_READING_MS): ServerMessage {
 	const question = state.questions[state.currentQuestionIndex];
 	return {
 		type: 'questionStart',
@@ -65,11 +69,25 @@ export function buildQuestionMessage(state: GameState): ServerMessage {
 		totalQuestions: state.questions.length,
 		questionText: question.text,
 		options: question.options,
-		startTime: state.questionStartTime,
 		timeLimitMs: QUESTION_TIME_LIMIT_MS,
-		readingDurationMs: QUESTION_READING_MS,
+		readingDurationMs,
 		isDoublePoints: question.isDoublePoints,
 		backgroundImage: question.backgroundImage,
+		phaseVersion: state.phaseVersion,
+	};
+}
+
+/**
+ * Build a reading end message for when the reading period ends and the answering period begins.
+ *
+ * @param state - Current game state
+ * @param remainingTimeLimitMs - Remaining time for the answering period. Use QUESTION_TIME_LIMIT_MS for fresh transitions,
+ *                                or a computed value for reconnections during answering.
+ */
+export function buildReadingEndMessage(state: GameState, remainingTimeLimitMs: number = QUESTION_TIME_LIMIT_MS): ServerMessage {
+	return {
+		type: 'readingEnd',
+		timeLimitMs: remainingTimeLimitMs,
 		phaseVersion: state.phaseVersion,
 	};
 }

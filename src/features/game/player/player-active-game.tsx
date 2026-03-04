@@ -6,14 +6,13 @@ import { EmojiPicker } from '@/features/game/player/components/emoji-picker';
 import { PlayerAnswer } from '@/features/game/player/player-answer';
 import { usePlayerGameContext } from '@/features/game/player/player-game-context';
 import { PlayerWaiting } from '@/features/game/player/player-waiting';
-import { useReadingCountdown } from '@/features/game/shared/use-reading-countdown';
 import { phaseAllowsEmoji } from '@shared/phase-rules';
 
 export function PlayerActiveGame() {
 	const { gameState, nickname, score, hasInitialScoreSync, onSendEmoji } = usePlayerGameContext();
-	const { isReading } = useReadingCountdown(gameState.startTime, gameState.readingDurationMs);
 
-	const isQuestionPhase = gameState.phase === 'QUESTION';
+	const isQuestionPhase = gameState.phase === 'QUESTION:READING' || gameState.phase === 'QUESTION:ANSWERING';
+	const isReading = gameState.phase === 'QUESTION:READING';
 
 	const renderMain = () => {
 		if (isQuestionPhase && (isReading || gameState.options.length === 0)) {

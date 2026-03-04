@@ -25,6 +25,7 @@ import { HostGameProvider } from '@/features/game/host/host-game-provider';
 import { HostPageLayout } from '@/features/game/host/host-page-layout';
 import { useHostStore } from '@/lib/stores/host-store';
 import { isGamePhaseActive, phaseAllowsManualAdvance } from '@shared/phase-rules';
+import { phaseGroup } from '@shared/types';
 
 import type { EmojiReaction, GamePhase } from '@shared/types';
 
@@ -35,11 +36,12 @@ const phaseToMusicTrack: Record<GamePhase, MusicTrack | null> = {
 	LOBBY: 'lobby',
 	GET_READY: 'getReady',
 	QUESTION_MODIFIER: 'questionModifier',
-	QUESTION: 'question',
+	'QUESTION:READING': 'question',
+	'QUESTION:ANSWERING': 'question',
 	REVEAL: 'reveal',
 	LEADERBOARD: 'leaderboard',
-	END_INTRO: 'celebration',
-	END_REVEALED: 'celebration',
+	'END:INTRO': 'celebration',
+	'END:REVEALED': 'celebration',
 };
 
 const getMusicTrackForPhase = (phase: GamePhase): MusicTrack | null => {
@@ -70,13 +72,13 @@ export function HostPage() {
 		gameId: hasMissingSecret ? '' : gameId!, // Skip connection if no secret
 		role: 'host',
 		hostSecret,
-		onError: (message) => toast.error(message),
+		onError: (_code, message) => toast.error(message),
 		onEmojiReceived: handleEmojiReceived,
 	});
 
 	// Clear floating emojis when question starts
 	useEffect(() => {
-		if (gameState.phase === 'QUESTION') {
+		if (gameState.phase === 'QUESTION:READING') {
 			floatingEmojisReference.current?.clearAll();
 		}
 	}, [gameState.phase]);
@@ -173,11 +175,15 @@ export function HostPage() {
 					}
 					break;
 				}
-				case 'QUESTION': {
+				case 'QUESTION:READING': {
 					// Only play question start sound if coming from non-modifier phase
 					if (previousPhase !== 'QUESTION_MODIFIER') {
 						playSound('questionStart');
 					}
+					break;
+				}
+				case 'QUESTION:ANSWERING': {
+					// No specific sound — reading bar already set the mood
 					break;
 				}
 				case 'REVEAL': {
@@ -188,11 +194,11 @@ export function HostPage() {
 					playSound('leaderboard');
 					break;
 				}
-				case 'END_INTRO': {
+				case 'END:INTRO': {
 					playSound('gameEnd');
 					break;
 				}
-				case 'END_REVEALED': {
+				case 'END:REVEALED': {
 					// No sound for reveal transition
 					break;
 				}
@@ -290,7 +296,7 @@ export function HostPage() {
 
 			<AnimatePresence mode="wait">
 				<motion.main
-					key={gameState.phase}
+					key={phaseGroup(gameState.phase)}
 					initial={{ opacity: 0, scale: 0.9 }}
 					animate={{ opacity: 1, scale: 1 }}
 					exit={{ opacity: 0, scale: 0.95 }}

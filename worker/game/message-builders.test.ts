@@ -27,6 +27,7 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
 	],
 	currentQuestionIndex: 0,
 	questionStartTime: 1_700_000_000_000,
+	phaseEnteredAt: 1_700_000_000_000,
 	answers: [],
 	...overrides,
 });
@@ -97,7 +98,6 @@ describe('messageBuilders.ts', () => {
 			const message = buildQuestionMessage(state);
 
 			if (message.type === 'questionStart') {
-				expect(message.startTime).toBe(1_700_000_000_000);
 				expect(message.timeLimitMs).toBe(QUESTION_TIME_LIMIT_MS);
 				expect(message.readingDurationMs).toBe(QUESTION_READING_MS);
 			}

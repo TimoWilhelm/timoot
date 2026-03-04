@@ -15,6 +15,7 @@ function createMockState(players: Player[], answers: Answer[], questions: Questi
 		questions,
 		currentQuestionIndex: 0,
 		questionStartTime: Date.now(),
+		phaseEnteredAt: Date.now(),
 		answers,
 	};
 }

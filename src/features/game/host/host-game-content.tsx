@@ -20,7 +20,8 @@ export function HostGameContent() {
 		case 'QUESTION_MODIFIER': {
 			return <HostQuestionModifier />;
 		}
-		case 'QUESTION': {
+		case 'QUESTION:READING':
+		case 'QUESTION:ANSWERING': {
 			return <HostQuestion />;
 		}
 		case 'REVEAL': {
@@ -29,8 +30,8 @@ export function HostGameContent() {
 		case 'LEADERBOARD': {
 			return <HostLeaderboard />;
 		}
-		case 'END_INTRO':
-		case 'END_REVEALED': {
+		case 'END:INTRO':
+		case 'END:REVEALED': {
 			return <HostEnd />;
 		}
 		default: {

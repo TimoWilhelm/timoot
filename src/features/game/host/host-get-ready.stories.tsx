@@ -20,7 +20,6 @@ const mockGameState: WebSocketGameState = {
 	totalQuestions: 10,
 	questionText: '',
 	options: [],
-	startTime: 0,
 	timeLimitMs: 20_000,
 	readingDurationMs: 0,
 	isDoublePoints: false,

@@ -320,11 +320,16 @@ const wsQuestionStartSchema = z.object({
 	totalQuestions: z.number(),
 	questionText: z.string(),
 	options: z.array(z.string()),
-	startTime: z.number(),
 	timeLimitMs: z.number(),
 	readingDurationMs: z.number(),
 	isDoublePoints: z.boolean().optional(),
 	backgroundImage: z.string().optional(),
+	phaseVersion: z.number(),
+});
+
+const wsReadingEndSchema = z.object({
+	type: z.literal('readingEnd'),
+	timeLimitMs: z.number(),
 	phaseVersion: z.number(),
 });
 
@@ -400,6 +405,7 @@ export const wsServerMessageSchema = z.union([
 	wsGetReadySchema,
 	wsQuestionModifierSchema,
 	wsQuestionStartSchema,
+	wsReadingEndSchema,
 	wsAnswerReceivedSchema,
 	wsPlayerAnsweredSchema,
 	wsRevealSchema,

@@ -251,14 +251,19 @@ export class WsTestClient {
 		}
 	}
 
-	/** Wait for the reading countdown to end before answering. */
+	/** Wait for the reading countdown to end before answering.
+	 * In the new two-phase model, the server sends a `readingEnd` message when the reading period
+	 * is over. If the `questionStart` message already indicates no reading period
+	 * (`readingDurationMs === 0`), this returns immediately. */
 	async waitForAnsweringPhase(): Promise<void> {
 		const questionMessage = this.getMessagesByType('questionStart').at(-1);
 		if (!questionMessage) return;
-		const waitMs = questionMessage.startTime - Date.now();
-		if (waitMs > 0) {
-			await new Promise((resolve) => setTimeout(resolve, waitMs + 50));
-		}
+
+		// If the question was sent with no reading period (e.g. reconnect during answering), skip
+		if (questionMessage.readingDurationMs === 0) return;
+
+		// Otherwise wait for the server-driven readingEnd event
+		await this.waitForMessage('readingEnd', 15_000);
 	}
 
 	/** Submit an answer. Waits for the reading countdown to finish first. */

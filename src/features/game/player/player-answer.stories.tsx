@@ -10,7 +10,7 @@ import type { WebSocketGameState } from '@/features/game/hooks/use-game-web-sock
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockGameState: WebSocketGameState = {
-	phase: 'QUESTION',
+	phase: 'QUESTION:ANSWERING',
 	phaseVersion: 0,
 	gameId: 'ABC123',
 	pin: 'ABC123',
@@ -21,7 +21,6 @@ const mockGameState: WebSocketGameState = {
 	totalQuestions: 10,
 	questionText: 'Test Question',
 	options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
-	startTime: Date.now(),
 	timeLimitMs: 20_000,
 	readingDurationMs: 0,
 	isDoublePoints: false,

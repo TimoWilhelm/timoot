@@ -226,7 +226,7 @@ export function PlayerPage() {
 	// Handle reveal side effects (sound, score update) - only once per question
 	useEffect(() => {
 		// Reset processed reveal ref when a new question starts
-		if (gameState.phase === 'QUESTION') {
+		if (gameState.phase === 'QUESTION:READING' || gameState.phase === 'QUESTION:ANSWERING') {
 			processedRevealReference.current = undefined;
 			return;
 		}

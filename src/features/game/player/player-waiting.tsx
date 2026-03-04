@@ -124,7 +124,7 @@ export function PlayerWaiting() {
 
 	// Trigger confetti for podium finishes when revealed
 	useEffect(() => {
-		if (phase === 'END_REVEALED' && isOnPodium) {
+		if (phase === 'END:REVEALED' && isOnPodium) {
 			const colors = [
 				getThemeColor('--color-orange'),
 				getThemeColor('--color-gold'),
@@ -277,7 +277,7 @@ export function PlayerWaiting() {
 					</div>
 				);
 			}
-			case 'END_INTRO': {
+			case 'END:INTRO': {
 				return (
 					<div className="text-center">
 						<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex flex-col items-center gap-4`}>
@@ -296,7 +296,7 @@ export function PlayerWaiting() {
 					</div>
 				);
 			}
-			case 'END_REVEALED': {
+			case 'END:REVEALED': {
 				return (
 					<div className="text-center">
 						{isOnPodium ? (

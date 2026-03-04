@@ -10,7 +10,6 @@ import {
 	MAX_PLAYERS,
 	QUESTION_MODIFIER_DURATION_MS,
 	QUESTION_READING_MS,
-	QUESTION_TIMEOUT_BUFFER_MS,
 	QUESTION_TIME_LIMIT_MS,
 	processAnswersAndUpdateScores,
 	questionHasModifiers,
@@ -196,6 +195,7 @@ export async function handleStartGame(
 	// Transition to GET_READY phase with countdown before first question
 	state.phase = gamePhaseMachine.transition(state.phase, 'START_GAME');
 	state.phaseVersion++;
+	state.phaseEnteredAt = Date.now();
 	await context.storage.put('game_state', state);
 
 	// Broadcast get ready message to all clients
@@ -227,7 +227,7 @@ export async function handleSubmitAnswer(
 	}
 
 	const state = await getFullGameState();
-	if (!state || state.phase !== 'QUESTION') {
+	if (!state || state.phase !== 'QUESTION:ANSWERING') {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.NOT_IN_QUESTION_PHASE) });
 		return;
 	}
@@ -235,12 +235,6 @@ export async function handleSubmitAnswer(
 	const playerId = attachment.playerId;
 	if (state.answers.some((a) => a.playerId === playerId)) {
 		sendMessage(ws, { type: 'error', ...createError(ErrorCode.ALREADY_ANSWERED) });
-		return;
-	}
-
-	// Reject answers during reading countdown
-	if (Date.now() < state.questionStartTime) {
-		sendMessage(ws, { type: 'error', ...createError(ErrorCode.NOT_IN_QUESTION_PHASE) });
 		return;
 	}
 
@@ -356,6 +350,7 @@ export async function advanceToReveal(context: HandlerContext, state: GameState)
 	processAnswersAndUpdateScores(state);
 	state.phase = gamePhaseMachine.transition(state.phase, 'ALL_ANSWERED');
 	state.phaseVersion++;
+	state.phaseEnteredAt = Date.now();
 	await context.storage.put('game_state', state);
 
 	// Broadcast reveal with appropriate data for each role
@@ -393,7 +388,7 @@ export async function handleNextState(
 	}
 
 	switch (state.phase) {
-		case 'QUESTION': {
+		case 'QUESTION:ANSWERING': {
 			await advanceToReveal(context, state);
 			break;
 		}
@@ -404,6 +399,7 @@ export async function handleNextState(
 			const event: GamePhaseEvent = isLastQuestion ? 'REVEAL_FINAL' : 'REVEAL_NEXT';
 			state.phase = gamePhaseMachine.transition(state.phase, event);
 			state.phaseVersion++;
+			state.phaseEnteredAt = Date.now();
 			state.players.sort((a, b) => b.score - a.score);
 			await context.storage.put('game_state', state);
 			if (isLastQuestion) {
@@ -423,26 +419,27 @@ export async function handleNextState(
 				for (const p of state.players) p.answered = false;
 				// Check if next question has modifiers
 				if (questionHasModifiers(state)) {
-					// Note: FSM transitions to QUESTION, but we go to QUESTION_MODIFIER first
-					// This is an intermediate state before FSM's NEXT_QUESTION completes
+					// Go through QUESTION_MODIFIER before QUESTION_READING
 					state.phase = 'QUESTION_MODIFIER';
 					state.phaseVersion++;
+					state.phaseEnteredAt = Date.now();
 					await context.storage.put('game_state', state);
 					broadcastQuestionModifier(context, state);
-					// Schedule automatic transition to QUESTION after modifier display
+					// Schedule automatic transition to QUESTION_READING after modifier display
 					await context.setAlarm(Date.now() + QUESTION_MODIFIER_DURATION_MS);
 				} else {
 					state.phase = gamePhaseMachine.transition(state.phase, 'NEXT_QUESTION');
 					state.phaseVersion++;
-					state.questionStartTime = Date.now() + QUESTION_READING_MS;
+					state.phaseEnteredAt = Date.now();
 					await context.storage.put('game_state', state);
 					broadcastQuestionStart(context, state);
-					// Schedule server-side question timeout as safety net
-					await context.setAlarm(state.questionStartTime + QUESTION_TIME_LIMIT_MS + QUESTION_TIMEOUT_BUFFER_MS);
+					// Schedule transition to QUESTION_ANSWERING after reading period
+					await context.setAlarm(Date.now() + QUESTION_READING_MS);
 				}
 			} else {
 				state.phase = gamePhaseMachine.transition(state.phase, 'LEADERBOARD_FINAL');
 				state.phaseVersion++;
+				state.phaseEnteredAt = Date.now();
 				await context.storage.put('game_state', state);
 				broadcastGameEnd(context, state, false);
 				// Schedule transition to END_REVEALED after intro animation
@@ -453,8 +450,9 @@ export async function handleNextState(
 		case 'LOBBY':
 		case 'GET_READY':
 		case 'QUESTION_MODIFIER':
-		case 'END_INTRO':
-		case 'END_REVEALED': {
+		case 'QUESTION:READING':
+		case 'END:INTRO':
+		case 'END:REVEALED': {
 			break;
 		}
 		default: {

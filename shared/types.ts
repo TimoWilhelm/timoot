@@ -39,7 +39,28 @@ export interface Answer {
 	isCorrect?: boolean;
 	score?: number;
 }
-export type GamePhase = 'LOBBY' | 'GET_READY' | 'QUESTION_MODIFIER' | 'QUESTION' | 'REVEAL' | 'LEADERBOARD' | 'END_INTRO' | 'END_REVEALED';
+/**
+ * Game phases use colon-separated names to encode grouping.
+ * Phases sharing the same prefix before `:` belong to the same logical screen
+ * (e.g. `'QUESTION:READING'` and `'QUESTION:ANSWERING'` are both part of the `'QUESTION'` group).
+ * Use {@link phaseGroup} to extract the group from a phase.
+ */
+export type GamePhase =
+	| 'LOBBY'
+	| 'GET_READY'
+	| 'QUESTION_MODIFIER'
+	| 'QUESTION:READING'
+	| 'QUESTION:ANSWERING'
+	| 'REVEAL'
+	| 'LEADERBOARD'
+	| 'END:INTRO'
+	| 'END:REVEALED';
+
+/** Return the logical group for a phase (the part before `:`, or the whole string). */
+export function phaseGroup(phase: GamePhase): string {
+	const index = phase.indexOf(':');
+	return index === -1 ? phase : phase.slice(0, index);
+}
 
 // Question modifiers that can be applied
 export type QuestionModifier = 'doublePoints';
@@ -52,7 +73,10 @@ export interface GameState {
 	players: Player[];
 	questions: Question[];
 	currentQuestionIndex: number;
-	questionStartTime: number; // Unix timestamp in ms
+	/** Server-side timestamp (ms) when the answering period began. Used for scoring only. */
+	questionStartTime: number;
+	/** Server-side timestamp (ms) when the current phase was entered. Used for alarm re-scheduling on reconnection. */
+	phaseEnteredAt: number;
 	answers: Answer[];
 	hostSecret?: string;
 }
@@ -101,13 +125,13 @@ export type ServerMessage =
 			totalQuestions: number;
 			questionText: string;
 			options: string[];
-			startTime: number;
 			timeLimitMs: number;
 			readingDurationMs: number;
 			isDoublePoints?: boolean;
 			backgroundImage?: string;
 			phaseVersion: number;
 	  }
+	| { type: 'readingEnd'; timeLimitMs: number; phaseVersion: number }
 	| { type: 'answerReceived'; answerIndex: number }
 	| { type: 'playerAnswered'; playerId: string; answeredCount: number; totalPlayers: number }
 	| {

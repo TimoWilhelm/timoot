@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { phaseAllowsEmoji, isGamePhaseActive, phaseAllowsManualAdvance } from './phase-rules';
+import { phaseGroup } from './types';
 
 import type { GamePhase } from './types';
 
@@ -8,11 +9,12 @@ const ALL_PHASES: GamePhase[] = [
 	'LOBBY',
 	'GET_READY',
 	'QUESTION_MODIFIER',
-	'QUESTION',
+	'QUESTION:READING',
+	'QUESTION:ANSWERING',
 	'REVEAL',
 	'LEADERBOARD',
-	'END_INTRO',
-	'END_REVEALED',
+	'END:INTRO',
+	'END:REVEALED',
 ];
 
 describe('phase-rules.ts', () => {
@@ -36,8 +38,12 @@ describe('phase-rules.ts', () => {
 			expect(phaseAllowsEmoji.QUESTION_MODIFIER).toBe(false);
 		});
 
-		it('disallows emoji during QUESTION', () => {
-			expect(phaseAllowsEmoji.QUESTION).toBe(false);
+		it('disallows emoji during QUESTION:READING', () => {
+			expect(phaseAllowsEmoji['QUESTION:READING']).toBe(false);
+		});
+
+		it('disallows emoji during QUESTION:ANSWERING', () => {
+			expect(phaseAllowsEmoji['QUESTION:ANSWERING']).toBe(false);
 		});
 
 		it('allows emoji in REVEAL', () => {
@@ -49,8 +55,8 @@ describe('phase-rules.ts', () => {
 		});
 
 		it('allows emoji in END phases', () => {
-			expect(phaseAllowsEmoji.END_INTRO).toBe(true);
-			expect(phaseAllowsEmoji.END_REVEALED).toBe(true);
+			expect(phaseAllowsEmoji['END:INTRO']).toBe(true);
+			expect(phaseAllowsEmoji['END:REVEALED']).toBe(true);
 		});
 	});
 
@@ -69,14 +75,15 @@ describe('phase-rules.ts', () => {
 		it('game phases during play are active', () => {
 			expect(isGamePhaseActive.GET_READY).toBe(true);
 			expect(isGamePhaseActive.QUESTION_MODIFIER).toBe(true);
-			expect(isGamePhaseActive.QUESTION).toBe(true);
+			expect(isGamePhaseActive['QUESTION:READING']).toBe(true);
+			expect(isGamePhaseActive['QUESTION:ANSWERING']).toBe(true);
 			expect(isGamePhaseActive.REVEAL).toBe(true);
 			expect(isGamePhaseActive.LEADERBOARD).toBe(true);
 		});
 
 		it('END phases are not active', () => {
-			expect(isGamePhaseActive.END_INTRO).toBe(false);
-			expect(isGamePhaseActive.END_REVEALED).toBe(false);
+			expect(isGamePhaseActive['END:INTRO']).toBe(false);
+			expect(isGamePhaseActive['END:REVEALED']).toBe(false);
 		});
 	});
 
@@ -95,7 +102,8 @@ describe('phase-rules.ts', () => {
 		it('does not allow manual advance during automatic phases', () => {
 			expect(phaseAllowsManualAdvance.GET_READY).toBe(false);
 			expect(phaseAllowsManualAdvance.QUESTION_MODIFIER).toBe(false);
-			expect(phaseAllowsManualAdvance.QUESTION).toBe(false);
+			expect(phaseAllowsManualAdvance['QUESTION:READING']).toBe(false);
+			expect(phaseAllowsManualAdvance['QUESTION:ANSWERING']).toBe(false);
 		});
 
 		it('allows manual advance in REVEAL and LEADERBOARD', () => {
@@ -104,8 +112,42 @@ describe('phase-rules.ts', () => {
 		});
 
 		it('does not allow manual advance in END phases', () => {
-			expect(phaseAllowsManualAdvance.END_INTRO).toBe(false);
-			expect(phaseAllowsManualAdvance.END_REVEALED).toBe(false);
+			expect(phaseAllowsManualAdvance['END:INTRO']).toBe(false);
+			expect(phaseAllowsManualAdvance['END:REVEALED']).toBe(false);
+		});
+	});
+
+	describe('phaseGroup', () => {
+		it('returns the phase itself for phases without sub-phases', () => {
+			expect(phaseGroup('LOBBY')).toBe('LOBBY');
+			expect(phaseGroup('GET_READY')).toBe('GET_READY');
+			expect(phaseGroup('QUESTION_MODIFIER')).toBe('QUESTION_MODIFIER');
+			expect(phaseGroup('REVEAL')).toBe('REVEAL');
+			expect(phaseGroup('LEADERBOARD')).toBe('LEADERBOARD');
+		});
+
+		it('groups QUESTION:READING and QUESTION:ANSWERING together', () => {
+			expect(phaseGroup('QUESTION:READING')).toBe(phaseGroup('QUESTION:ANSWERING'));
+			expect(phaseGroup('QUESTION:READING')).toBe('QUESTION');
+		});
+
+		it('groups END:INTRO and END:REVEALED together', () => {
+			expect(phaseGroup('END:INTRO')).toBe(phaseGroup('END:REVEALED'));
+			expect(phaseGroup('END:INTRO')).toBe('END');
+		});
+
+		it('keeps distinct phases in separate groups', () => {
+			const distinctPhases: GamePhase[] = [
+				'LOBBY',
+				'GET_READY',
+				'QUESTION_MODIFIER',
+				'QUESTION:READING',
+				'REVEAL',
+				'LEADERBOARD',
+				'END:INTRO',
+			];
+			const groups = distinctPhases.map((p) => phaseGroup(p));
+			expect(new Set(groups).size).toBe(distinctPhases.length);
 		});
 	});
 
@@ -121,7 +163,8 @@ describe('phase-rules.ts', () => {
 
 		it('question phases should not allow emoji', () => {
 			// During question phases, players should focus on answering
-			expect(phaseAllowsEmoji.QUESTION).toBe(false);
+			expect(phaseAllowsEmoji['QUESTION:READING']).toBe(false);
+			expect(phaseAllowsEmoji['QUESTION:ANSWERING']).toBe(false);
 			expect(phaseAllowsEmoji.QUESTION_MODIFIER).toBe(false);
 		});
 	});
