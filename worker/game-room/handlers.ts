@@ -29,6 +29,7 @@ import {
 } from './broadcast-helpers';
 import { sendCurrentStateToPlayer } from './state-sync';
 import { type WebSocketAttachment, getAttachment } from './types';
+import { timingSafeEqual } from '../lib/utilities';
 
 import type { Answer, ClientMessage, EmojiReaction, GameState, Player } from '@shared/types';
 
@@ -78,7 +79,7 @@ export async function handlePlayerConnect(
 	// If reconnecting with valid playerId, verify the secure token
 	if (existingPlayer) {
 		// Validate player token for reconnection security
-		if (!playerToken || existingPlayer.token !== playerToken) {
+		if (!playerToken || !existingPlayer.token || !timingSafeEqual(existingPlayer.token, playerToken)) {
 			sendMessage(ws, { type: 'error', ...createError(ErrorCode.INVALID_SESSION_TOKEN) });
 			ws.close(4003, 'Invalid session token');
 			return;

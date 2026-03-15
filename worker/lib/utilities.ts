@@ -1,6 +1,28 @@
 import type { ApiResponse } from '@shared/types';
 import type { Context, TypedResponse } from 'hono';
 
+const encoder = new TextEncoder();
+
+/**
+ * Constant-time string comparison to prevent timing side-channel attacks.
+ * Uses crypto.subtle.timingSafeEqual under the hood.
+ * Returns false if either value is empty or if lengths differ.
+ */
+export function timingSafeEqual(a: string, b: string): boolean {
+	if (a.length === 0 || b.length === 0) {
+		return false;
+	}
+
+	const bufA = encoder.encode(a);
+	const bufB = encoder.encode(b);
+
+	if (bufA.byteLength !== bufB.byteLength) {
+		return false;
+	}
+
+	return crypto.subtle.timingSafeEqual(bufA, bufB);
+}
+
 /**
  * Rate limiter interface matching Cloudflare's Rate Limiting API
  */

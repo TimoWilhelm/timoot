@@ -33,6 +33,7 @@ import {
 	sendMessage,
 } from '../game-room/index';
 import { sendCurrentStateToHost } from '../game-room/state-sync';
+import { timingSafeEqual } from '../lib/utilities';
 
 import type { GameState, Question } from '@shared/types';
 
@@ -392,6 +393,6 @@ export class GameRoomDurableObject extends DurableObject<Env> {
 		if (!state || !state.hostSecret) {
 			return false;
 		}
-		return state.hostSecret === token;
+		return timingSafeEqual(state.hostSecret, token);
 	}
 }
