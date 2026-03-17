@@ -86,9 +86,6 @@ export function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChan
 	);
 }
 
-/** Button that opens the dialog. */
-export const DialogTrigger = DialogPrimitive.Trigger;
-
 /** Dialog content with animated overlay and panel. */
 export function DialogContent({ className, children, ref, onAnimationEnd, ...properties }: DialogContentProperties) {
 	const { open } = useContext(DialogContext);

@@ -29,21 +29,7 @@ export function CardTitle({ className, ref, ...properties }: React.HTMLAttribute
 }
 CardTitle.displayName = 'CardTitle';
 
-export function CardDescription({
-	className,
-	ref,
-	...properties
-}: React.HTMLAttributes<HTMLDivElement> & { ref?: React.Ref<HTMLDivElement> }) {
-	return <div ref={ref} className={cn('text-sm font-medium text-muted-foreground', className)} {...properties} />;
-}
-CardDescription.displayName = 'CardDescription';
-
 export function CardContent({ className, ref, ...properties }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.Ref<HTMLDivElement> }) {
 	return <div ref={ref} className={cn('p-6 pt-0', className)} {...properties} />;
 }
 CardContent.displayName = 'CardContent';
-
-export function CardFooter({ className, ref, ...properties }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.Ref<HTMLDivElement> }) {
-	return <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...properties} />;
-}
-CardFooter.displayName = 'CardFooter';

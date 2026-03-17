@@ -7,4 +7,3 @@ const OneTimePasswordField = {
 };
 
 export { OneTimePasswordField };
-export { Root as OTPField } from './otp-field';
