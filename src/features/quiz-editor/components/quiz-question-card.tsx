@@ -168,7 +168,7 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						<ChevronDown className="size-5" />
 					</Button>
 					<AlertDialog>
-						<AlertDialogTrigger asChild>
+						<AlertDialogTrigger>
 							<Button
 								type="button"
 								variant="ghost"
@@ -271,9 +271,9 @@ export function QuizQuestionCard({ index, id, move, remove, isFirst, isLast, onO
 						errors.questions?.[index]?.options || errors.questions?.[index]?.correctAnswerIndex ? `q${index}-answers-error` : undefined
 					}
 				>
-					<Label asChild>
-						<legend id={`q${index}-answers-label`}>Answers</legend>
-					</Label>
+					<legend id={`q${index}-answers-label`} className="text-sm leading-none font-medium">
+						Answers
+					</legend>
 					{/*
 						CSS Grid layout with RadioGroup component:
 						- DOM order controls tab navigation: move buttons → RadioGroup → inputs → delete buttons

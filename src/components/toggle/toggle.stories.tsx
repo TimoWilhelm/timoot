@@ -21,9 +21,6 @@ const meta = {
 		disabled: {
 			control: 'boolean',
 		},
-		asChild: {
-			control: 'boolean',
-		},
 		variant: {
 			control: 'select',
 			options: ['default', 'accent', 'danger', 'subtle', 'ghost', 'link'],

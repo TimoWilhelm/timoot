@@ -66,7 +66,7 @@ export function PlayerJoinGame() {
 					`}
 				>
 					<Popover open={showSuggestions && suggestions.length > 0 && !isComplete && currentPart.length > 0}>
-						<PopoverAnchor asChild>
+						<PopoverAnchor>
 							<div className="relative">
 								<input
 									ref={inputReference}
@@ -118,9 +118,7 @@ export function PlayerJoinGame() {
 							</div>
 						</PopoverAnchor>
 						<PopoverContent
-							className={`
-								w-(--radix-popover-trigger-width) border-black bg-zinc-dark p-0
-							`}
+							className={`w-(--anchor-width) border-black bg-zinc-dark p-0`}
 							align="start"
 							onOpenAutoFocus={(event) => event.preventDefault()}
 						>

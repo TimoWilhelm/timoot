@@ -1,7 +1,7 @@
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Dialog as DialogPrimitive } from 'radix-ui';
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useRef, useState } from 'react';
 
 import { buttonVariants } from '@/components/button';
 import { cn } from '@/lib/utilities';
@@ -12,8 +12,8 @@ import { cn } from '@/lib/utilities';
 
 const OVERLAY_CLASS_NAME = `
 	fixed inset-0 z-50 bg-black/50 backdrop-blur-xs
-	data-[state=closed]:animate-overlay-out
-	data-[state=open]:animate-overlay-in
+	data-[closed]:animate-overlay-out
+	data-[open]:animate-overlay-in
 `;
 
 const CONTENT_CLASS_NAME = `
@@ -39,21 +39,30 @@ const DialogContext = createContext<{ open: boolean }>({ open: false });
 // Types
 // ============================================================================
 
-interface DialogProperties extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
+interface DialogProperties {
 	readonly children?: React.ReactNode;
+	readonly open?: boolean;
+	readonly defaultOpen?: boolean;
+	readonly onOpenChange?: (open: boolean) => void;
 }
 
-interface DialogContentProperties extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
-	readonly ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Content>>;
+interface DialogContentProperties {
+	readonly ref?: React.Ref<HTMLDivElement>;
+	readonly className?: string;
+	readonly children?: React.ReactNode;
 	readonly onAnimationEnd?: () => void;
 }
 
-interface DialogTitleProperties extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> {
-	readonly ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Title>>;
+interface DialogTitleProperties {
+	readonly ref?: React.Ref<HTMLHeadingElement>;
+	readonly className?: string;
+	readonly children?: React.ReactNode;
 }
 
-interface DialogDescriptionProperties extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description> {
-	readonly ref?: React.Ref<React.ComponentRef<typeof DialogPrimitive.Description>>;
+interface DialogDescriptionProperties {
+	readonly ref?: React.Ref<HTMLParagraphElement>;
+	readonly className?: string;
+	readonly children?: React.ReactNode;
 }
 
 // ============================================================================
@@ -63,6 +72,7 @@ interface DialogDescriptionProperties extends React.ComponentPropsWithoutRef<typ
 /** Dialog root with controllable open state. */
 export function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChange, ...properties }: DialogProperties) {
 	const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen ?? false);
+	const actionsReference = useRef<DialogPrimitive.Root.Actions>(null);
 
 	const isControlled = controlledOpen !== undefined;
 	const open = isControlled ? controlledOpen : uncontrolledOpen;
@@ -79,7 +89,7 @@ export function Dialog({ children, open: controlledOpen, defaultOpen, onOpenChan
 
 	return (
 		<DialogContext.Provider value={{ open }}>
-			<DialogPrimitive.Root open={open} onOpenChange={handleOpenChange} {...properties}>
+			<DialogPrimitive.Root open={open} onOpenChange={handleOpenChange} actionsRef={actionsReference} {...properties}>
 				{children}
 			</DialogPrimitive.Root>
 		</DialogContext.Provider>
@@ -93,32 +103,36 @@ export function DialogContent({ className, children, ref, onAnimationEnd, ...pro
 	return (
 		<AnimatePresence>
 			{open && (
-				<DialogPrimitive.Portal forceMount>
-					<DialogPrimitive.Overlay forceMount className={OVERLAY_CLASS_NAME} />
+				<DialogPrimitive.Portal keepMounted>
+					<DialogPrimitive.Backdrop className={OVERLAY_CLASS_NAME} />
 					<div
 						className="
 							fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4
 						"
 					>
-						<DialogPrimitive.Content ref={ref} forceMount asChild {...properties}>
-							<motion.div
-								className={cn(CONTENT_CLASS_NAME, className)}
-								initial={MOTION_VARIANTS.initial}
-								animate={MOTION_VARIANTS.animate}
-								exit={MOTION_VARIANTS.exit}
-								transition={MOTION_VARIANTS.transition}
-								onAnimationComplete={() => !open && onAnimationEnd?.()}
-							>
-								{children}
-							</motion.div>
-						</DialogPrimitive.Content>
+						<DialogPrimitive.Popup
+							ref={ref}
+							render={
+								<motion.div
+									className={cn(CONTENT_CLASS_NAME, className)}
+									initial={MOTION_VARIANTS.initial}
+									animate={MOTION_VARIANTS.animate}
+									exit={MOTION_VARIANTS.exit}
+									transition={MOTION_VARIANTS.transition}
+									onAnimationComplete={() => !open && onAnimationEnd?.()}
+								/>
+							}
+							{...properties}
+						>
+							{children}
+						</DialogPrimitive.Popup>
 					</div>
 				</DialogPrimitive.Portal>
 			)}
 		</AnimatePresence>
 	);
 }
-DialogContent.displayName = DialogPrimitive.Content.displayName;
+DialogContent.displayName = 'DialogContent';
 
 /** Dialog header with title area and close button. */
 export function DialogHeader({ className, children, ...properties }: React.HTMLAttributes<HTMLDivElement>) {
@@ -157,10 +171,10 @@ export function DialogTitle({ className, ref, ...properties }: DialogTitleProper
 		/>
 	);
 }
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
+DialogTitle.displayName = 'DialogTitle';
 
 /** Dialog description text. */
 export function DialogDescription({ className, ref, ...properties }: DialogDescriptionProperties) {
 	return <DialogPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...properties} />;
 }
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
+DialogDescription.displayName = 'DialogDescription';

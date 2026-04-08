@@ -72,11 +72,15 @@ export function StartGameDialog({ open, onOpenChange, selectedQuiz }: StartGameD
 	if (!selectedQuiz) return;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog
+			open={open}
+			onOpenChange={(nextOpen) => {
+				// Prevent closing the dialog while the game is starting
+				if (!nextOpen && isGameStarting) return;
+				onOpenChange(nextOpen);
+			}}
+		>
 			<DialogContent
-				onInteractOutside={(event) => {
-					if (isGameStarting) event.preventDefault();
-				}}
 				className="
 					overflow-hidden border-4 border-black p-0
 					sm:max-w-106.25
