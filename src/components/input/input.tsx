@@ -2,10 +2,20 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utilities';
 
-export function Input({ className, type, ref, ...properties }: React.ComponentProps<'input'> & { ref?: React.Ref<HTMLInputElement> }) {
+export function Input({
+	className,
+	type,
+	ref,
+	onBlur,
+	...properties
+}: React.ComponentProps<'input'> & { ref?: React.Ref<HTMLInputElement> }) {
 	return (
 		<input
 			type={type}
+			onBlur={(event) => {
+				event.target.scrollLeft = 0;
+				onBlur?.(event);
+			}}
 			className={cn(
 				`
 					flex h-10 w-full overflow-hidden rounded-lg border-2 border-black bg-white

@@ -1,4 +1,5 @@
 import { ArrowLeft, Loader2, PlusCircle, Sparkles } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FormProvider, SubmitHandler } from 'react-hook-form';
@@ -28,6 +29,7 @@ import { useQuizForm } from '@/features/quiz-editor/hooks/use-quiz-form';
 import { useViewTransitionNavigate } from '@/hooks/ui/use-view-transition-navigate';
 import { useCreateQuiz, useCustomQuizzes, useGenerateQuestion, useQuizDetail, useUpdateQuiz } from '@/hooks/use-api';
 import { useUserId } from '@/hooks/use-user-id';
+import { cn } from '@/lib/utilities';
 import { LIMITS, type QuizFormInput } from '@shared/validation';
 
 import type { Question } from '@shared/types';
@@ -326,13 +328,34 @@ function QuizEditorForm({ quizId, initialData }: QuizEditorFormProperties) {
 									variant="accent"
 									onClick={generateQuestion}
 									disabled={isGeneratingQuestion}
-									className="
-										flex-1 py-4 text-base
-										sm:py-8 sm:text-lg
-									"
+									className={cn(
+										`
+											flex-1 overflow-hidden py-4 text-base
+											sm:py-8 sm:text-lg
+										`,
+										isGeneratingQuestion && 'cursor-wait opacity-100!',
+									)}
 								>
-									{isGeneratingQuestion ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
-									Generate Question
+									{isGeneratingQuestion && (
+										<>
+											<motion.div
+												aria-hidden="true"
+												className="pointer-events-none absolute inset-0 opacity-25"
+												style={{
+													backgroundImage:
+														'repeating-linear-gradient(45deg, rgba(0,0,0,0.18) 0, rgba(0,0,0,0.18) 6px, transparent 6px, transparent 14px)',
+													backgroundSize: '40px 40px',
+												}}
+												animate={{ backgroundPosition: ['0px 0px', '80px 0px'] }}
+												transition={{ duration: 1.2, ease: 'linear', repeat: Infinity }}
+											/>
+											<div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white/20" />
+										</>
+									)}
+									<span className="relative z-10 flex items-center">
+										{isGeneratingQuestion ? <Loader2 className="mr-2 size-5 animate-spin" /> : <Sparkles className="mr-2 size-5" />}
+										{isGeneratingQuestion ? 'Generating...' : 'Generate Question'}
+									</span>
 								</Button>
 							</div>
 						)}

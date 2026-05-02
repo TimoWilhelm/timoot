@@ -86,7 +86,7 @@ export function ErrorFallback({
 								<RefreshCw className="mr-2 size-4" />
 								Try Again
 							</Button>
-							<Button onClick={handleGoHome} variant="subtle" className="w-full">
+							<Button onClick={handleGoHome} className="w-full">
 								<Home className="mr-2 size-4" />
 								Go to Homepage
 							</Button>

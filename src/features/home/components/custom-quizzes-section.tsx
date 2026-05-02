@@ -244,7 +244,7 @@ export function CustomQuizzesSection({
 										rounded-lg border-2 border-black bg-purple p-3 shadow-brutal-sm
 									"
 								>
-									<Loader2 className="size-6 animate-spin text-white" />
+									<Loader2 className="size-6 animate-spin" />
 								</div>
 							</div>
 							<div className="relative z-10 w-full">
