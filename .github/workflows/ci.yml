@@ -239,7 +239,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install chromium
+        run: npx playwright install chromium
 
       - name: Run Storybook tests
         run: bun run test:storybook --run
@@ -335,7 +335,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install chromium
+        run: npx playwright install chromium
 
       - name: Start dev server
         run: |
