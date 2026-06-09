@@ -12,10 +12,7 @@ declare namespace Cloudflare {
 		VITE_TURNSTILE_SITE_KEY: string;
 		VITE_SENTRY_DSN: string;
 		SENTRY_AUTH_TOKEN: string;
-		CLOUDFLARE_ACCOUNT_ID: string;
-		CLOUDFLARE_AI_GATEWAY_ID: string;
-		CLOUDFLARE_AI_GATEWAY_API_TOKEN: string;
-		CLOUDFLARE_AI_GATEWAY_MODEL: string;
+		WORKERS_AI_MODEL: string;
 		TURNSTILE_SECRET_KEY: string;
 		GET_READY_COUNTDOWN_MS: string;
 		GAME_ROOM: DurableObjectNamespace<import("./worker/index").GameRoomDurableObject>;

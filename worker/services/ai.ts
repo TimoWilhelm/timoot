@@ -1,5 +1,4 @@
 import { experimental_MCPClient as MCPClient, experimental_createMCPClient as createMCPClient } from '@ai-sdk/mcp';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {
 	type LanguageModel,
@@ -14,6 +13,7 @@ import {
 } from 'ai';
 import { env, waitUntil } from 'cloudflare:workers';
 import { stripIndent } from 'common-tags';
+import { createWorkersAI } from 'workers-ai-provider';
 import { z } from 'zod';
 
 import type { GenerationStatus } from '@shared/types';
@@ -31,17 +31,13 @@ const webSearchMCP: () => Promise<MCPClient> = async () => {
 };
 
 function createModel(metadata?: Record<string, string>) {
-	const gateway = createOpenAICompatible({
-		name: 'cloudflare-ai-gateway',
-		baseURL: `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_ACCOUNT_ID}/${env.CLOUDFLARE_AI_GATEWAY_ID}/compat`,
-		supportsStructuredOutputs: true,
-		includeUsage: true,
-		headers: {
-			'cf-aig-authorization': `Bearer ${env.CLOUDFLARE_AI_GATEWAY_API_TOKEN}`,
-			'cf-aig-metadata': JSON.stringify(metadata ?? {}),
+	return createWorkersAI({
+		binding: env.AI,
+		gateway: {
+			id: 'default',
+			metadata: metadata ?? {},
 		},
-	});
-	return gateway.chatModel(`dynamic/${env.CLOUDFLARE_AI_GATEWAY_MODEL}`);
+	})(env.WORKERS_AI_MODEL);
 }
 
 // Default model for cases where metadata isn't available
@@ -232,7 +228,7 @@ export async function generateSingleQuestion(
 			? stripIndent`
 				
 				Existing questions in this quiz:
-				${existingQuestions.map((q, index) => `${index + 1}. ${q.text}\n   Options: ${q.options.map((opt, index) => (index === q.correctAnswerIndex ? `${opt} (correct)` : opt)).join(', ')}`).join('\n')}`
+				${existingQuestions.map((q, index) => `${index + 1}. ${q.text}\n   Options: ${q.options.join(', ')}\n   Correct answer index: ${q.correctAnswerIndex}`).join('\n')}`
 			: '';
 
 	const activeModel = metadata ? createModel(metadata) : model;

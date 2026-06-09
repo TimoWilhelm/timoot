@@ -38,7 +38,7 @@ Every game runs on its own Durable Object, keeping state synced across all playe
 | **Animations**    | Framer Motion                          |
 | **Backend**       | Cloudflare Workers, Hono               |
 | **Realtime**      | Cloudflare Durable Objects, WebSockets |
-| **AI**            | Cloudflare AI Gateway, Vercel AI SDK   |
+| **AI**            | Workers AI, Vercel AI SDK              |
 | **Storage**       | Durable Objects SQLite, KV             |
 | **Build**         | Vite, Bun, @cloudflare/vite-plugin     |
 | **Testing**       | Vitest, Playwright, Storybook          |

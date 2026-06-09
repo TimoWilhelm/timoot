@@ -53,17 +53,14 @@ export function UserImagesList({ userId, selectedImage, onSelectImage }: UserIma
 					<div key={img.id} className="group relative">
 						<Button
 							type="button"
-							variant="subtle"
+							variant="ghost"
 							onClick={() => onSelectImage(img.path)}
 							className={cn(
 								`
-									aspect-video h-auto w-full overflow-hidden p-0 ring-0 ring-transparent
-									ring-offset-0 transition-all duration-300 ease-spring
-									hover:translate-y-0 hover:shadow-none
-									hover:after:translate-y-0
-									active:translate-y-0 active:shadow-none
+									aspect-video h-auto w-full overflow-hidden border-0 p-0 ring-0
+									ring-transparent ring-offset-0 transition-all duration-300 ease-spring
 								`,
-								selectedImage === img.path ? `ring-3 ring-orange ring-offset-2 ring-offset-background` : 'bg-muted text-muted-foreground',
+								selectedImage === img.path ? `ring-3 ring-orange ring-offset-2` : 'bg-muted text-muted-foreground',
 							)}
 							aria-label={img.name}
 						>

@@ -73,7 +73,7 @@ export const imageRoutes = new Hono<{ Bindings: never }>()
 				const formContentType = formRequest.headers.get('content-type') || 'multipart/form-data';
 
 				// @ts-expect-error model types not available
-				const response = await env.AI.run('@cf/black-forest-labs/flux-2-dev', {
+				const response = await env.AI.run('@cf/black-forest-labs/flux-2-klein-9b', {
 					multipart: {
 						body: formStream,
 						contentType: formContentType,
