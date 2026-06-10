@@ -40,9 +40,6 @@ function createModel(metadata?: Record<string, string>) {
 	})(env.WORKERS_AI_MODEL);
 }
 
-// Default model for cases where metadata isn't available
-const model = createModel();
-
 // Schema for AI-generated quiz questions
 const QuestionSchema = z.object({
 	text: z.string().describe('The question text'),
@@ -73,7 +70,7 @@ export async function generateQuizFromPrompt(
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
 	const mcpServers = await Promise.all([getCloudflareDocumentationMCP(), webSearchMCP()]);
-	const activeModel = metadata ? createModel(metadata) : model;
+	const activeModel = createModel(metadata);
 
 	try {
 		const researchAgent = await createResearchAgent(activeModel, mcpServers, onStatusUpdate);
@@ -231,7 +228,7 @@ export async function generateSingleQuestion(
 				${existingQuestions.map((q, index) => `${index + 1}. ${q.text}\n   Options: ${q.options.join(', ')}\n   Correct answer index: ${q.correctAnswerIndex}`).join('\n')}`
 			: '';
 
-	const activeModel = metadata ? createModel(metadata) : model;
+	const activeModel = createModel(metadata);
 	const { output } = await generateText({
 		model: activeModel,
 		output: Output.object({
