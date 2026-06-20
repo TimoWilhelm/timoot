@@ -47,6 +47,29 @@ export async function consumeSSEStream<T extends { event: string; data: unknown 
 	const decoder = new TextDecoder();
 	let buffer = '';
 
+	// `currentEvent` must persist across reads: an SSE event is sent as two
+	// lines (`event: ...` then `data: ...`), and a network chunk boundary can
+	// fall between them. Resetting it on every read would silently drop the
+	// `data:` line — and with it events like `complete`.
+	let currentEvent = '';
+
+	const processLine = (line: string) => {
+		if (line.startsWith('event: ')) {
+			currentEvent = line.slice(7);
+		} else if (line.startsWith('data: ')) {
+			if (currentEvent) {
+				try {
+					const data: unknown = JSON.parse(line.slice(6));
+					const event = schema.parse({ event: currentEvent, data });
+					callbacks.onEvent(event);
+				} catch (error) {
+					callbacks.onError?.(error instanceof Error ? error : new Error(`Failed to parse SSE data: ${line.slice(6)}`));
+				}
+			}
+			currentEvent = '';
+		}
+	};
+
 	try {
 		while (true) {
 			const { done, value } = await reader.read();
@@ -56,22 +79,17 @@ export async function consumeSSEStream<T extends { event: string; data: unknown 
 			const lines = buffer.split('\n');
 			buffer = lines.pop() || '';
 
-			let currentEvent = '';
 			for (const line of lines) {
-				if (line.startsWith('event: ')) {
-					currentEvent = line.slice(7);
-				} else if (line.startsWith('data: ')) {
-					if (currentEvent) {
-						try {
-							const data: unknown = JSON.parse(line.slice(6));
-							const event = schema.parse({ event: currentEvent, data });
-							callbacks.onEvent(event);
-						} catch (error) {
-							callbacks.onError?.(error instanceof Error ? error : new Error(`Failed to parse SSE data: ${line.slice(6)}`));
-						}
-					}
-					currentEvent = '';
-				}
+				processLine(line);
+			}
+		}
+
+		// Flush any remaining buffered content once the stream closes, in case
+		// the final event was not newline-terminated before the stream ended.
+		buffer += decoder.decode();
+		if (buffer.length > 0) {
+			for (const line of buffer.split('\n')) {
+				processLine(line);
 			}
 		}
 	} finally {
