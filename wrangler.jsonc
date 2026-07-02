@@ -62,6 +62,7 @@
 	],
 	"vars": {
 		"GET_READY_COUNTDOWN_MS": 6000,
+		"WORKERS_AI_MODEL": "@cf/google/gemma-4-26b-a4b-it",
 	},
 	"ratelimits": [
 		{
