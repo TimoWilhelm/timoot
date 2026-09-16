@@ -17,6 +17,7 @@ import { createWorkersAI } from 'workers-ai-provider';
 import { z } from 'zod';
 
 import { type AvailableMCPResource, loadAvailableMCPResources } from './mcp-clients';
+import { runWithResearchFallback } from './research-fallback';
 
 import type { GenerationStatus } from '@shared/types';
 
@@ -26,9 +27,9 @@ const getCloudflareDocumentationMCP: () => Promise<MCPClient> = async () => {
 	});
 };
 
-const webSearchMCP: () => Promise<MCPClient> = async () => {
+const getWikimediaMCP: () => Promise<MCPClient> = async () => {
 	return await createMCPClient({
-		transport: new StreamableHTTPClientTransport(new URL('https://mcp.exa.ai/mcp')),
+		transport: new StreamableHTTPClientTransport(new URL('https://mcp.toolforge.org/')),
 	});
 };
 
@@ -73,24 +74,31 @@ export async function generateQuizFromPrompt(
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
 	const mcpServers = await loadAvailableMCPResources([
 		{ name: 'cloudflare-documentation', load: getCloudflareDocumentationMCP },
-		{ name: 'exa-web-search', load: webSearchMCP },
+		{ name: 'wikimedia', load: getWikimediaMCP },
 	]);
 	const activeModel = createModel(metadata);
 
 	try {
-		const researchAgent = await createResearchAgent(activeModel, mcpServers, onStatusUpdate);
-
-		const { output: researchOutput } = await researchAgent.generate({
-			messages: [
-				{
-					role: 'user',
-					content: stripIndent`
-						Research the following topic and provide detailed information:
-						${prompt}
-					`,
-				},
-			],
+		const researchOutput = await runWithResearchFallback({
 			abortSignal,
+			fallback: 'External research was unavailable. Use your existing knowledge of the requested topic.',
+			operation: async () => {
+				const researchAgent = await createResearchAgent(activeModel, mcpServers, onStatusUpdate);
+				const { output } = await researchAgent.generate({
+					messages: [
+						{
+							role: 'user',
+							content: stripIndent`
+								Research the following topic and provide detailed information:
+								${prompt}
+							`,
+						},
+					],
+					abortSignal,
+				});
+				return output;
+			},
+			source: 'research-agent',
 		});
 
 		onStatusUpdate?.({ stage: 'generating', detail: 'Creating quiz questions' });
@@ -160,10 +168,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
-// Helper to check if arguments object has a query string property
+// Helper to get the query property used by the available research tools
 const getQuery = (arguments_: unknown): string | undefined => {
-	if (isRecord(arguments_) && typeof arguments_.query === 'string') {
+	if (!isRecord(arguments_)) {
+		return undefined;
+	}
+
+	if (typeof arguments_.query === 'string') {
 		return arguments_.query;
+	}
+	if (typeof arguments_.title === 'string') {
+		return arguments_.title;
 	}
 	return undefined;
 };
@@ -171,8 +186,12 @@ const getQuery = (arguments_: unknown): string | undefined => {
 async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMCPResource<MCPClient>[], onStatusUpdate?: OnStatusUpdate) {
 	const mcpToolSets = await loadAvailableMCPResources(mcpServers.map(({ name, value: mcp }) => ({ name, load: () => mcp.tools() })));
 	const mcpTools: ToolSet = {};
-	for (const { value: tools } of mcpToolSets) {
-		Object.assign(mcpTools, tools);
+	for (const { name, value: tools } of mcpToolSets) {
+		const availableTools =
+			name === 'wikimedia'
+				? Object.fromEntries(Object.entries(tools).filter(([toolName]) => ['search-wikipedia', 'get-article-metadata'].includes(toolName)))
+				: tools;
+		Object.assign(mcpTools, availableTools);
 	}
 
 	// Wrap tools to intercept calls and report status
@@ -188,11 +207,16 @@ async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMC
 				if (name === 'search_cloudflare_documentation') {
 					const query = getQuery(arguments_);
 					onStatusUpdate?.({ stage: 'reading_docs', detail: query || 'Cloudflare docs' });
-				} else if (name === 'web_search_exa') {
+				} else if (name === 'search-wikipedia' || name === 'get-article-metadata') {
 					const query = getQuery(arguments_);
-					onStatusUpdate?.({ stage: 'searching_web', detail: query || 'the web' });
+					onStatusUpdate?.({ stage: 'searching_web', detail: query || 'Wikipedia' });
 				}
-				return tool.execute?.(arguments_, options);
+				return await runWithResearchFallback({
+					abortSignal: options.abortSignal,
+					fallback: `The ${name} research tool is temporarily unavailable. Continue with other sources and your own knowledge.`,
+					operation: () => tool.execute?.(arguments_, options),
+					source: name,
+				});
 			},
 		};
 	}
@@ -201,7 +225,8 @@ async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMC
 		You are a professional researcher.
 		
 		Generate an information-rich response based on the information you have found and your own knowledge.
-		Use the tools to look up additional information, but only if they are very relevant to the research prompt.
+		Use the Wikimedia tools for factual topics and the Cloudflare documentation tool for Cloudflare-specific topics when relevant.
+		If one research source is unavailable, continue with the other available tools and your own knowledge.
 	`;
 
 	const agent = new ToolLoopAgent({
