@@ -274,7 +274,7 @@ jobs:
 
       - name: Start dev server
         run: |
-          bun run dev &
+          bunx vite --host 127.0.0.1 --port 3000 > "$RUNNER_TEMP/timoot-dev-server.log" 2>&1 &
           echo "DEV_SERVER_PID=$!" >> $GITHUB_ENV
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -284,13 +284,29 @@ jobs:
       - name: Wait for server to be ready
         run: |
           echo "Waiting for server..."
-          timeout 60 bash -c 'until curl -sf http://localhost:3000/api/health > /dev/null 2>&1; do sleep 2; done'
-          echo "Server is ready!"
+          for attempt in {1..30}; do
+            if curl -sf http://127.0.0.1:3000/api/health > /dev/null; then
+              echo "Server is ready!"
+              exit 0
+            fi
+
+            if ! kill -0 "$DEV_SERVER_PID" 2>/dev/null; then
+              echo "::error::Dev server exited before becoming ready"
+              cat "$RUNNER_TEMP/timoot-dev-server.log"
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          echo "::error::Dev server did not become ready within 60 seconds"
+          cat "$RUNNER_TEMP/timoot-dev-server.log"
+          exit 1
 
       - name: Run integration tests
         run: bun run test:integration
         env:
-          TEST_BASE_URL: 'http://localhost:3000'
+          TEST_BASE_URL: 'http://127.0.0.1:3000'
 
       - name: Stop dev server
         if: always()
@@ -339,7 +355,7 @@ jobs:
 
       - name: Start dev server
         run: |
-          bun run dev &
+          bunx vite --host 127.0.0.1 --port 3000 > "$RUNNER_TEMP/timoot-dev-server.log" 2>&1 &
           echo "DEV_SERVER_PID=$!" >> $GITHUB_ENV
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -349,15 +365,31 @@ jobs:
       - name: Wait for server to be ready
         run: |
           echo "Waiting for server..."
-          timeout 60 bash -c 'until curl -sf http://localhost:3000/api/health > /dev/null 2>&1; do sleep 2; done'
-          echo "Server is ready!"
+          for attempt in {1..30}; do
+            if curl -sf http://127.0.0.1:3000/api/health > /dev/null; then
+              echo "Server is ready!"
+              exit 0
+            fi
+
+            if ! kill -0 "$DEV_SERVER_PID" 2>/dev/null; then
+              echo "::error::Dev server exited before becoming ready"
+              cat "$RUNNER_TEMP/timoot-dev-server.log"
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          echo "::error::Dev server did not become ready within 60 seconds"
+          cat "$RUNNER_TEMP/timoot-dev-server.log"
+          exit 1
 
       - name: Run E2E tests
         id: e2e
         run: |
           xvfb-run --auto-servernum -- bun run test:e2e
         env:
-          TEST_BASE_URL: 'http://localhost:3000'
+          TEST_BASE_URL: 'http://127.0.0.1:3000'
 
       - name: Stop dev server
         if: always()

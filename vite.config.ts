@@ -32,7 +32,7 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 			devtoolsJson(),
 			tailwindcss(),
 			react(),
-			cloudflare(),
+			cloudflare({ remoteBindings: process.env.CI !== 'true' }),
 			sentryVitePlugin({
 				authToken: environment.SENTRY_AUTH_TOKEN,
 				org: 'daxo',
