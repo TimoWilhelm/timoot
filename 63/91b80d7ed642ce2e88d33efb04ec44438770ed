@@ -1,0 +1,21 @@
+.github/workflows/ci.yml
+  s_fc2488ec18ef10::t_7ec0caff8f2c48 277,287-304,309,358,368-385,392
+vite.config.ts
+  s_fc2488ec18ef10::t_faf90f83044db1 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6391b80d7ed642ce2e88d33efb04ec44438770ed",
+  "prompts": {},
+  "sessions": {
+    "s_fc2488ec18ef10": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ac56-3ac4-72f1-9ebd-f257ce15bb85",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
