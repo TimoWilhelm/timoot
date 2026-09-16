@@ -16,6 +16,8 @@ import { stripIndent } from 'common-tags';
 import { createWorkersAI } from 'workers-ai-provider';
 import { z } from 'zod';
 
+import { type AvailableMCPResource, loadAvailableMCPResources } from './mcp-clients';
+
 import type { GenerationStatus } from '@shared/types';
 
 const getCloudflareDocumentationMCP: () => Promise<MCPClient> = async () => {
@@ -69,7 +71,10 @@ export async function generateQuizFromPrompt(
 	metadata?: Record<string, string>,
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
-	const mcpServers = await Promise.all([getCloudflareDocumentationMCP(), webSearchMCP()]);
+	const mcpServers = await loadAvailableMCPResources([
+		{ name: 'cloudflare-documentation', load: getCloudflareDocumentationMCP },
+		{ name: 'exa-web-search', load: webSearchMCP },
+	]);
 	const activeModel = createModel(metadata);
 
 	try {
@@ -146,7 +151,7 @@ export async function generateQuizFromPrompt(
 
 		return quizOutput;
 	} finally {
-		waitUntil(Promise.allSettled(mcpServers.map((mcp) => mcp.close())));
+		waitUntil(Promise.allSettled(mcpServers.map(({ value: mcp }) => mcp.close())));
 	}
 }
 
@@ -163,10 +168,10 @@ const getQuery = (arguments_: unknown): string | undefined => {
 	return undefined;
 };
 
-async function createResearchAgent(model: LanguageModel, mcpServers: MCPClient[], onStatusUpdate?: OnStatusUpdate) {
-	const mcpToolSets = await Promise.all(mcpServers.flatMap((mcp) => mcp.tools()));
+async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMCPResource<MCPClient>[], onStatusUpdate?: OnStatusUpdate) {
+	const mcpToolSets = await loadAvailableMCPResources(mcpServers.map(({ name, value: mcp }) => ({ name, load: () => mcp.tools() })));
 	const mcpTools: ToolSet = {};
-	for (const tools of mcpToolSets) {
+	for (const { value: tools } of mcpToolSets) {
 		Object.assign(mcpTools, tools);
 	}
 
