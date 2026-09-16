@@ -1,0 +1,33 @@
+.env.example
+  s_fc2488ec18ef10::t_846ff4be71b074 17
+README.md
+  s_fc2488ec18ef10::t_3b0ddd3ac506ab 78-79
+worker-configuration.d.ts
+  s_fc2488ec18ef10::t_a3d40ff5714fc8 2-3,12,18,516,519,2104-2105,2398
+worker/services/ai.ts
+  s_fc2488ec18ef10::t_2e477c18ce3c6a 13,21-22,32-36,38-42,87,92,94-111,181,183-187,190-192,216,220-225,230-245,250-251
+worker/services/research-fallback.test.ts
+  s_fc2488ec18ef10::t_8a2d5751f534ef 1-44
+worker/services/research-fallback.ts
+  s_fc2488ec18ef10::t_12330ee836467b 1-27
+worker/services/wikipedia-research.test.ts
+  s_fc2488ec18ef10::t_1be41b5957aba0 1-47
+worker/services/wikipedia-research.ts
+  s_fc2488ec18ef10::t_58a2f1d85ab19a 1-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4139348e261bc4cde156e3f7b5f2115971d907f6",
+  "prompts": {},
+  "sessions": {
+    "s_fc2488ec18ef10": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ac56-3ac4-72f1-9ebd-f257ce15bb85",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
