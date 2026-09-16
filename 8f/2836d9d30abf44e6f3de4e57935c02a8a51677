@@ -1,0 +1,23 @@
+worker/services/ai.ts
+  s_fc2488ec18ef10::t_779dc2a8a04c02 19-20,74-77,154,171-172,174
+worker/services/mcp-clients.test.ts
+  s_fc2488ec18ef10::t_496f34ecb34ab8 1-27
+worker/services/mcp-clients.ts
+  s_fc2488ec18ef10::t_45eb852e0241d2 1-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8f2836d9d30abf44e6f3de4e57935c02a8a51677",
+  "prompts": {},
+  "sessions": {
+    "s_fc2488ec18ef10": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ac56-3ac4-72f1-9ebd-f257ce15bb85",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
