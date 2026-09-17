@@ -19,14 +19,15 @@ export interface GeneratedBackgroundImage extends AIImageMetadata {
 
 export function buildBackgroundImagePrompt(topic: string): string {
 	return oneLine`
-		Create a wide panoramic quiz background about this exact topic: "${topic}".
+		Create a wide panoramic, edge-to-edge digital illustration.
+		Visually express this exact subject using imagery only: ${topic}.
 		Make the topic immediately recognizable by featuring concrete, iconic visual elements that are directly associated with it.
 		Topic accuracy and relevance are the highest priority.
 		Represent the topic using relevant objects, artifacts, symbols, environments, architecture, landscapes, scientific imagery, or abstract visual motifs.
 		Do not include people or characters.
 		Use a vibrant digital art style, an energetic and fun atmosphere, rich color, and soft lighting.
-		Keep the center visually simple for readable quiz text, with richer detail toward the edges.
-		Do not include written words, letters, logos, watermarks, frames, or interface elements.
+		Keep the center visually simple and unmarked, with richer detail toward the edges.
+		The finished artwork must be completely typography-free: zero words, letters, numbers, captions, labels, signs, logos, watermarks, frames, title cards, or interface elements.
 	`;
 }
 
