@@ -1,0 +1,25 @@
+src/components/input/input.stories.tsx
+  s_0d13754a1959d6::t_08528a665dfdf6 93-100
+src/index.css
+  s_0d13754a1959d6::t_3a2047bb574962 198-203
+worker/services/magic-quiz.test.ts
+  s_0d13754a1959d6::t_dd658f639d3884 27-35,45
+worker/services/magic-quiz.ts
+  s_0d13754a1959d6::t_86a8ecbff48daa 35-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b4a464b3a2bffecc32a46bb524c0ec44c873628e",
+  "prompts": {},
+  "sessions": {
+    "s_0d13754a1959d6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0accd-4dfe-7373-a9d6-db54e5cd9e6e",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
