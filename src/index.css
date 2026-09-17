@@ -92,6 +92,7 @@
 	--animate-modal-out: modal-out 0.1s ease-in forwards;
 	--animate-popover-in: popover-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 	--animate-popover-out: popover-out 0.1s ease-in forwards;
+	--animate-shimmer-text: shimmer-text 3s infinite ease;
 
 	--ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
@@ -153,6 +154,31 @@
 			transform: scale(0.95);
 		}
 	}
+
+	@keyframes shimmer-text {
+		from {
+			background-position: -100% top;
+		}
+
+		to {
+			background-position: 250% top;
+		}
+	}
+}
+
+/* Synced with the sibling neob library's shimmer-text utility. */
+@utility shimmer-text {
+	position: relative;
+	display: inline-block;
+	overflow: hidden;
+	color: transparent;
+	white-space: nowrap;
+	background-color: var(--color-muted-foreground);
+	background-image: linear-gradient(to right, var(--color-muted-foreground), var(--color-foreground), var(--color-muted-foreground));
+	background-repeat: no-repeat;
+	background-size: 50% 100%;
+	background-clip: text;
+	animation: var(--animate-shimmer-text);
 }
 
 @layer base {

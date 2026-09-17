@@ -21,15 +21,19 @@ import { runWithResearchFallback } from './research-fallback';
 
 import type { GenerationStatus } from '@shared/types';
 
-const getCloudflareDocumentationMCP: () => Promise<MCPClient> = async () => {
+const MCP_DISCOVERY_TIMEOUT_MS = 3000;
+const RESEARCH_TIMEOUT_MS = 12_000;
+const RESEARCH_MAX_STEPS = 4;
+
+const getCloudflareDocumentationMCP = async (abortSignal?: AbortSignal): Promise<MCPClient> => {
 	return await createMCPClient({
-		transport: new StreamableHTTPClientTransport(new URL('https://docs.mcp.cloudflare.com/mcp')),
+		transport: new StreamableHTTPClientTransport(new URL('https://docs.mcp.cloudflare.com/mcp'), { requestInit: { signal: abortSignal } }),
 	});
 };
 
-const getWikimediaMCP: () => Promise<MCPClient> = async () => {
+const getWikimediaMCP = async (abortSignal?: AbortSignal): Promise<MCPClient> => {
 	return await createMCPClient({
-		transport: new StreamableHTTPClientTransport(new URL('https://mcp.toolforge.org/')),
+		transport: new StreamableHTTPClientTransport(new URL('https://mcp.toolforge.org/'), { requestInit: { signal: abortSignal } }),
 	});
 };
 
@@ -61,6 +65,30 @@ export type GeneratedQuestion = z.infer<typeof QuestionSchema>;
 
 export type OnStatusUpdate = (status: GenerationStatus) => void;
 
+async function withGenerationTiming<Result>(stage: string, operation: () => Promise<Result>): Promise<Result> {
+	const startedAt = performance.now();
+
+	try {
+		const result = await operation();
+		console.info({
+			event: 'magic_quiz_generation_stage',
+			stage,
+			outcome: 'success',
+			durationMs: Math.round(performance.now() - startedAt),
+		});
+		return result;
+	} catch (error) {
+		console.warn({
+			event: 'magic_quiz_generation_stage',
+			stage,
+			outcome: 'error',
+			durationMs: Math.round(performance.now() - startedAt),
+			error: error instanceof Error ? error.message : String(error),
+		});
+		throw error;
+	}
+}
+
 /**
  * Generate a quiz using AI based on a user prompt
  */
@@ -72,46 +100,55 @@ export async function generateQuizFromPrompt(
 	metadata?: Record<string, string>,
 ): Promise<GeneratedQuiz> {
 	onStatusUpdate?.({ stage: 'researching', detail: prompt });
-	const mcpServers = await loadAvailableMCPResources([
-		{ name: 'cloudflare-documentation', load: getCloudflareDocumentationMCP },
-		{ name: 'wikimedia', load: getWikimediaMCP },
-	]);
+	const mcpServers = await withGenerationTiming('research_client_setup', () =>
+		loadAvailableMCPResources(
+			[
+				{ name: 'cloudflare-documentation', load: getCloudflareDocumentationMCP },
+				{ name: 'wikimedia', load: getWikimediaMCP },
+			],
+			{ abortSignal, timeoutMs: MCP_DISCOVERY_TIMEOUT_MS },
+		),
+	);
 	const activeModel = createModel(metadata);
 
 	try {
-		const researchOutput = await runWithResearchFallback({
-			abortSignal,
-			fallback: 'External research was unavailable. Use your existing knowledge of the requested topic.',
-			operation: async () => {
-				const researchAgent = await createResearchAgent(activeModel, mcpServers, onStatusUpdate);
-				const { output } = await researchAgent.generate({
-					messages: [
-						{
-							role: 'user',
-							content: stripIndent`
-								Research the following topic and provide detailed information:
-								${prompt}
-							`,
-						},
-					],
-					abortSignal,
-				});
-				return output;
-			},
-			source: 'research-agent',
-		});
+		const researchOutput = await withGenerationTiming('research', () =>
+			runWithResearchFallback({
+				abortSignal,
+				fallback: 'External research was unavailable. Use your existing knowledge of the requested topic.',
+				operation: async () => {
+					const researchAbortSignal = AbortSignal.any([abortSignal, AbortSignal.timeout(RESEARCH_TIMEOUT_MS)]);
+					const researchAgent = await createResearchAgent(activeModel, mcpServers, researchAbortSignal, onStatusUpdate);
+					const { output } = await researchAgent.generate({
+						messages: [
+							{
+								role: 'user',
+								content: stripIndent`
+									Research the following topic and summarize only the facts needed for a five-question quiz:
+									${prompt}
+								`,
+							},
+						],
+						abortSignal: researchAbortSignal,
+					});
+					return output;
+				},
+				source: 'research-agent',
+			}),
+		);
 
 		onStatusUpdate?.({ stage: 'generating', detail: 'Creating quiz questions' });
 
-		const { output: quizOutput } = await generateText({
-			model: activeModel,
-			output: Output.object({
-				schema: QuizSchema,
-			}),
-			messages: [
-				{
-					role: 'system',
-					content: stripIndent`
+		const { output: quizOutput } = await withGenerationTiming('questions', () =>
+			generateText({
+				model: activeModel,
+				output: Output.object({
+					schema: QuizSchema,
+				}),
+				messages: [
+					{
+						role: 'system',
+						content: stripIndent`
 						You are an expert quiz maker.
 						
 						Create exactly ${numberQuestions} multiple-choice questions. Each question should:
@@ -126,26 +163,27 @@ export async function generateQuizFromPrompt(
 						
 						Also create a catchy title for the quiz that reflects the topic.
 					`,
-				},
-				{
-					role: 'user',
-					content: stripIndent`
+					},
+					{
+						role: 'user',
+						content: stripIndent`
 						Create a quiz based on the following topic:
 
 						${prompt}
 					`,
-				},
-				{
-					role: 'assistant',
-					content: stripIndent`
+					},
+					{
+						role: 'assistant',
+						content: stripIndent`
 						Information about the topic:
 
 						${researchOutput}
 					`,
-				},
-			],
-			abortSignal,
-		});
+					},
+				],
+				abortSignal,
+			}),
+		);
 
 		if (!quizOutput) {
 			throw new Error('Failed to generate quiz - no output returned');
@@ -183,8 +221,16 @@ const getQuery = (arguments_: unknown): string | undefined => {
 	return undefined;
 };
 
-async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMCPResource<MCPClient>[], onStatusUpdate?: OnStatusUpdate) {
-	const mcpToolSets = await loadAvailableMCPResources(mcpServers.map(({ name, value: mcp }) => ({ name, load: () => mcp.tools() })));
+async function createResearchAgent(
+	model: LanguageModel,
+	mcpServers: AvailableMCPResource<MCPClient>[],
+	abortSignal: AbortSignal,
+	onStatusUpdate?: OnStatusUpdate,
+) {
+	const mcpToolSets = await loadAvailableMCPResources(
+		mcpServers.map(({ name, value: mcp }) => ({ name, load: () => mcp.tools() })),
+		{ abortSignal, timeoutMs: MCP_DISCOVERY_TIMEOUT_MS },
+	);
 	const mcpTools: ToolSet = {};
 	for (const { name, value: tools } of mcpToolSets) {
 		const availableTools =
@@ -224,8 +270,9 @@ async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMC
 	const instructions = stripIndent`
 		You are a professional researcher.
 		
-		Generate an information-rich response based on the information you have found and your own knowledge.
+		Return a concise research brief of at most 400 words based on the information you find and your own knowledge.
 		Use the Wikimedia tools for factual topics and the Cloudflare documentation tool for Cloudflare-specific topics when relevant.
+		Use no more than two tool calls total. Skip tools when your own knowledge is enough for a reliable general-audience quiz.
 		If one research source is unavailable, continue with the other available tools and your own knowledge.
 	`;
 
@@ -235,7 +282,7 @@ async function createResearchAgent(model: LanguageModel, mcpServers: AvailableMC
 		instructions,
 		tools: instrumentedTools,
 		experimental_repairToolCall: repairToolCall(model),
-		stopWhen: stepCountIs(10),
+		stopWhen: stepCountIs(RESEARCH_MAX_STEPS),
 	});
 
 	return agent;

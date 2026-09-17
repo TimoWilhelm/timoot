@@ -24,4 +24,29 @@ describe('loadAvailableMCPResources', () => {
 
 		expect(clients).toEqual([]);
 	});
+
+	it('stops waiting for an unresponsive research server', async () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const clients = await loadAvailableMCPResources([{ name: 'sleepy', load: () => new Promise(() => {}) }], { timeoutMs: 5 });
+
+		expect(clients).toEqual([]);
+		expect(warn).toHaveBeenCalledWith('[AI Research MCP Unavailable]', {
+			server: 'sleepy',
+			error: 'sleepy timed out after 5ms',
+		});
+	});
+
+	it('propagates cancellation to resource loaders', async () => {
+		const controller = new AbortController();
+		const load = vi.fn((abortSignal?: AbortSignal) => {
+			return new Promise<never>((_resolve, reject) => abortSignal?.addEventListener('abort', () => reject(abortSignal.reason)));
+		});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		const clientsPromise = loadAvailableMCPResources([{ name: 'cancelled', load }], { abortSignal: controller.signal });
+		controller.abort(new Error('request cancelled'));
+
+		await expect(clientsPromise).rejects.toThrow('request cancelled');
+		expect(load).toHaveBeenCalledWith(expect.any(AbortSignal));
+	});
 });

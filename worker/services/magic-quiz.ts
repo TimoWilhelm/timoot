@@ -23,6 +23,30 @@ function getErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
 
+async function withStageTiming<Result>(stage: string, operation: () => Promise<Result>): Promise<Result> {
+	const startedAt = performance.now();
+
+	try {
+		const result = await operation();
+		console.info({
+			event: 'magic_quiz_stage',
+			stage,
+			outcome: 'success',
+			durationMs: Math.round(performance.now() - startedAt),
+		});
+		return result;
+	} catch (error) {
+		console.warn({
+			event: 'magic_quiz_stage',
+			stage,
+			outcome: 'error',
+			durationMs: Math.round(performance.now() - startedAt),
+			error: getErrorMessage(error),
+		});
+		throw error;
+	}
+}
+
 export async function generateMagicQuizFromPrompt(
 	prompt: string,
 	numberQuestions: number,
@@ -32,8 +56,10 @@ export async function generateMagicQuizFromPrompt(
 	metadata?: Record<string, string>,
 	dependencies: MagicQuizDependencies = defaultDependencies,
 ): Promise<GeneratedMagicQuiz> {
-	const backgroundPromise = dependencies.generateBackground(prompt, userId);
-	const quizPromise = dependencies.generateQuiz(prompt, numberQuestions, abortSignal, onStatusUpdate, metadata);
+	const backgroundPromise = withStageTiming('background', () => dependencies.generateBackground(prompt, userId));
+	const quizPromise = withStageTiming('quiz', () =>
+		dependencies.generateQuiz(prompt, numberQuestions, abortSignal, onStatusUpdate, metadata),
+	);
 	const [quizResult, backgroundResult] = await Promise.allSettled([quizPromise, backgroundPromise]);
 
 	if (quizResult.status === 'rejected') {

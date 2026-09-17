@@ -36,21 +36,25 @@ export async function generateAndStoreBackgroundImage(prompt: string, userId: st
 
 	const form = new FormData();
 	form.append('prompt', augmentedPrompt);
-	form.append('width', '1920');
-	form.append('height', '1024');
+	form.append('width', '1280');
+	form.append('height', '768');
 
 	const formRequest = new Request('http://dummy', {
 		method: 'POST',
 		body: form,
 	});
 
-	// @ts-expect-error model types not available
-	const response = await env.AI.run('@cf/black-forest-labs/flux-2-klein-9b', {
-		multipart: {
-			body: formRequest.body,
-			contentType: formRequest.headers.get('content-type') || 'multipart/form-data',
+	const response = await env.AI.run(
+		// @ts-expect-error model types do not include this current Workers AI model yet
+		'@cf/black-forest-labs/flux-2-klein-4b',
+		{
+			multipart: {
+				body: formRequest.body,
+				contentType: formRequest.headers.get('content-type') || 'multipart/form-data',
+			},
 		},
-	});
+		{ tags: ['magic-quiz-background'] },
+	);
 
 	const parsedResponse = fluxResponseSchema.safeParse(response);
 	if (!parsedResponse.success) {

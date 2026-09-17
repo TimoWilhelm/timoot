@@ -15,28 +15,9 @@ import { hcWithType } from '@/lib/clients/api-client';
 import { consumeSSEStream } from '@/lib/clients/sse-client';
 import { aiPromptSchema, LIMITS, quizGenerateSSEEventSchema } from '@shared/validation';
 
-import type { Quiz } from '@shared/types';
+import { MagicQuizStatus } from './magic-quiz-status';
 
-function getStatusMessage(status: { stage: string; detail?: string } | undefined): string {
-	if (!status) return 'Preparing...';
-	switch (status.stage) {
-		case 'researching': {
-			return `Researching ${status.detail || 'topic'}...`;
-		}
-		case 'reading_docs': {
-			return `Reading documentation for ${status.detail || 'topic'}...`;
-		}
-		case 'searching_web': {
-			return `Searching the web for ${status.detail || 'relevant information'}...`;
-		}
-		case 'generating': {
-			return 'Generating quiz questions...';
-		}
-		default: {
-			return 'Processing...';
-		}
-	}
-}
+import type { GenerationStatus, Quiz } from '@shared/types';
 
 interface CustomQuizzesSectionProperties {
 	quizzes: Quiz[];
@@ -66,7 +47,7 @@ export function CustomQuizzesSection({
 	const [aiPrompt, setAiPrompt] = useState('');
 	const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [generationStatus, setGenerationStatus] = useState<{ stage: string; detail?: string } | undefined>();
+	const [generationStatus, setGenerationStatus] = useState<GenerationStatus | undefined>();
 	const [generatingPrompt, setGeneratingPrompt] = useState<string | undefined>();
 	const generatingCardReference = useRef<HTMLDivElement | null>(null);
 
@@ -249,7 +230,7 @@ export function CustomQuizzesSection({
 							</div>
 							<div className="relative z-10 w-full">
 								<h3 className="line-clamp-2 font-display text-xl/tight font-bold">Generating: {generatingPrompt ?? '...'}</h3>
-								<p className="mt-1 font-mono text-sm text-muted-foreground">{getStatusMessage(generationStatus)}</p>
+								<MagicQuizStatus prompt={generatingPrompt ?? ''} status={generationStatus} className="mt-1 font-mono text-sm" />
 							</div>
 						</div>
 					</motion.div>
