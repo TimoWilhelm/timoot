@@ -1,0 +1,26 @@
+worker/services/research-fallback.test.ts
+  s_fc2488ec18ef10::t_8a2d5751f534ef 1-44
+worker/services/research-fallback.ts
+  s_fc2488ec18ef10::t_12330ee836467b 1-27
+worker/services/ai.ts
+  s_fc2488ec18ef10::t_2e477c18ce3c6a 20,30,32,77,82,84-101,171,173-177,180-182,210,212,214-219,228-229
+  s_fc2488ec18ef10::t_779dc2a8a04c02 189
+  s_fc2488ec18ef10::t_5cefc4fd346624 190-192
+  s_fc2488ec18ef10::t_374c26e154c024 193-194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "649087ff9eefe91fd292d65c0680fb75460d7e10",
+  "prompts": {},
+  "sessions": {
+    "s_fc2488ec18ef10": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ac56-3ac4-72f1-9ebd-f257ce15bb85",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
