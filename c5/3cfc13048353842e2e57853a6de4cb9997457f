@@ -1,0 +1,27 @@
+README.md
+  s_0d13754a1959d6::t_f143d89cbb0911 23
+worker/routes/image-routes.ts
+  s_0d13754a1959d6::t_37b0a1f40051ca 9,11,41,45
+worker/routes/quiz-routes.ts
+  s_0d13754a1959d6::t_44e2007618de3b 13-14,138
+worker/services/image-generation.ts
+  s_0d13754a1959d6::t_b5088eeff2e32c 1-80
+worker/services/magic-quiz.ts
+  s_0d13754a1959d6::t_c53b8064db60f9 1-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c53cfc13048353842e2e57853a6de4cb9997457f",
+  "prompts": {},
+  "sessions": {
+    "s_0d13754a1959d6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0accd-4dfe-7373-a9d6-db54e5cd9e6e",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
