@@ -1,0 +1,29 @@
+src/components/toast/toast.test.tsx
+  s_479cc1dc5c0c13::t_fa95bea7ebad61 1-45
+src/components/toast/toast.tsx
+  s_479cc1dc5c0c13::t_1ea3a1d293c690 4-5,13-39,41-49,51-75
+src/components/toast/toaster.tsx
+  s_479cc1dc5c0c13::t_ba940872724f53 20
+src/features/home/components/custom-quizzes-section.tsx
+  s_479cc1dc5c0c13::t_9ed325ba5bc74a 3,117-120,169-177,181,185,192-193,198,200,204-209,211-242,245-256,260-264,267,269-270,272-379,381,384-391,393-401,403-429,432-435
+test/integration/api.integration.test.ts
+  s_479cc1dc5c0c13::t_1dff0973b31450 26-27,136-162
+worker/durable/user-store.ts
+  s_479cc1dc5c0c13::t_43c99baebc6f63 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "308d00600586b4c5c97a746ac5b19c9ad9f77226",
+  "prompts": {},
+  "sessions": {
+    "s_479cc1dc5c0c13": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b012-0499-7f30-b59c-848a28e499bd",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
