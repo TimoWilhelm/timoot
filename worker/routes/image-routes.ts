@@ -1,27 +1,15 @@
 import { zValidator } from '@hono/zod-validator';
 import { waitUntil, env } from 'cloudflare:workers';
-import { oneLine } from 'common-tags';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { imagePromptSchema } from '@shared/validation';
 
 import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
+import { aiImageMetadataSchema, generateAndStoreBackgroundImage } from '../services/image-generation';
 
+import type { AIImageMetadata } from '../services/image-generation';
 import type { ApiResponse } from '@shared/types';
-
-// Zod schemas for validation
-const fluxResponseSchema = z.union([z.object({ result: z.object({ image: z.string() }) }), z.object({ image: z.string() })]);
-
-const aiImageMetadataSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	prompt: z.string(),
-	createdAt: z.string(),
-});
-
-// AI Image types
-type AIImageMetadata = z.infer<typeof aiImageMetadataSchema>;
 
 interface AIImageListItem {
 	id: string;
@@ -49,76 +37,12 @@ export const imageRoutes = new Hono<{ Bindings: never }>()
 		async (c) => {
 			try {
 				const { prompt } = c.req.valid('json');
-
-				// Augment prompt for background image suitability
-				const augmentedPrompt = oneLine`
-				${prompt}, vibrant digital art style, energetic and fun atmosphere, wide panoramic composition,
-				colorful, soft lighting, frame composition with richer detail toward edges and fewer busy elements in the center,
-				no people, no characters, scenery only,
-				8k resolution, high definition, aesthetically pleasing background
-			`;
-
-				// Generate image using flux-2-dev model
-				const form = new FormData();
-				form.append('prompt', augmentedPrompt);
-				form.append('steps', '15');
-				form.append('width', '2048');
-				form.append('height', '1024');
-
-				const formRequest = new Request('http://dummy', {
-					method: 'POST',
-					body: form,
-				});
-				const formStream = formRequest.body;
-				const formContentType = formRequest.headers.get('content-type') || 'multipart/form-data';
-
-				// @ts-expect-error model types not available
-				const response = await env.AI.run('@cf/black-forest-labs/flux-2-klein-9b', {
-					multipart: {
-						body: formStream,
-						contentType: formContentType,
-					},
-				});
-
-				// Handle different response structures
-				const parsedResponse = fluxResponseSchema.safeParse(response);
-				if (!parsedResponse.success) {
-					throw new Error(`Invalid AI response: ${JSON.stringify(response)}`);
-				}
-				const data = parsedResponse.data;
-				const image = 'result' in data ? data.result.image : data.image;
-
-				if (!image) {
-					throw new Error(`No image returned from AI. Response: ${JSON.stringify(response)}`);
-				}
-
-				// Generate unique ID for the image
-				const imageId = crypto.randomUUID();
 				const kvUserId = getUserId(c);
-				const imagePath = `/api/images/${kvUserId}/${imageId}`;
-
-				// Decode base64 to binary
-				const binaryString = atob(image);
-				const bytes = new Uint8Array(binaryString.length);
-				for (let index = 0; index < binaryString.length; index++) {
-					bytes[index] = binaryString.codePointAt(index) ?? 0;
-				}
-
-				// Store image in KV with metadata
-				const metadata: AIImageMetadata = {
-					id: imageId,
-					name: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
-					prompt,
-					createdAt: new Date().toISOString(),
-				};
-
-				await env.KV_IMAGES.put(`user:${kvUserId}:image:${imageId}`, bytes, {
-					metadata,
-				});
+				const generatedImage = await generateAndStoreBackgroundImage(prompt, kvUserId);
 
 				return c.json({
 					success: true,
-					data: { path: imagePath, ...metadata },
+					data: generatedImage,
 				} satisfies ApiResponse<{ path: string } & AIImageMetadata>);
 			} catch (error) {
 				console.error('[AI Image Generation Error]', error);

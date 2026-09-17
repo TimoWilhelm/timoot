@@ -10,7 +10,8 @@ import { PREDEFINED_QUIZZES } from '../lib/quizzes';
 import { withRetry } from '../lib/retry-proxy';
 import { checkRateLimit } from '../lib/utilities';
 import { userIdHeaderSchema, protectedHeaderSchema, getUserId, verifyTurnstile } from '../lib/validators';
-import { type GeneratedQuestion, generateQuizFromPrompt, generateSingleQuestion } from '../services/ai';
+import { type GeneratedQuestion, generateSingleQuestion } from '../services/ai';
+import { generateMagicQuizFromPrompt } from '../services/magic-quiz';
 
 import type { UserStoreDurableObject } from '../durable/user-store';
 import type { ApiResponse, GenerationStatus, Quiz, QuizGenerateSSEEvent } from '@shared/types';
@@ -134,7 +135,7 @@ export const quizRoutes = new Hono<{ Bindings: never }>()
 						void writeSSEEvent(stream, { event: 'status', data: status });
 					};
 
-					const generatedQuiz = await generateQuizFromPrompt(prompt, numQuestions, c.req.raw.signal, onStatusUpdate, {
+					const generatedQuiz = await generateMagicQuizFromPrompt(prompt, numQuestions, userId, c.req.raw.signal, onStatusUpdate, {
 						connecting_ip: c.req.header('CF-Connecting-IP') ?? 'unknown',
 					});
 
