@@ -24,8 +24,15 @@ describe('generateMagicQuizFromPrompt', () => {
 	it('generates the quiz and background concurrently and applies one image to every question', async () => {
 		const quizDeferred = Promise.withResolvers<GeneratedQuiz>();
 		const backgroundDeferred = Promise.withResolvers<GeneratedBackgroundImage>();
-		const generateQuiz = vi.fn().mockReturnValue(quizDeferred.promise);
-		const generateBackground = vi.fn().mockReturnValue(backgroundDeferred.promise);
+		const callOrder: string[] = [];
+		const generateQuiz = vi.fn(() => {
+			callOrder.push('quiz');
+			return quizDeferred.promise;
+		});
+		const generateBackground = vi.fn(() => {
+			callOrder.push('background');
+			return backgroundDeferred.promise;
+		});
 
 		const resultPromise = generateMagicQuizFromPrompt('Space', 3, 'user-id', new AbortController().signal, undefined, undefined, {
 			generateQuiz,
@@ -35,6 +42,7 @@ describe('generateMagicQuizFromPrompt', () => {
 
 		expect(generateQuiz).toHaveBeenCalledOnce();
 		expect(generateBackground).toHaveBeenCalledOnce();
+		expect(callOrder).toEqual(['background', 'quiz']);
 		quizDeferred.resolve(quiz);
 		backgroundDeferred.resolve(background);
 

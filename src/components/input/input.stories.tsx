@@ -90,3 +90,11 @@ export const FullWidth: Story = {
 		</div>
 	),
 };
+
+export const LongPlaceholder: Story = {
+	render: () => (
+		<div className="w-48">
+			<Input placeholder="This placeholder is much longer than the available input field width" />
+		</div>
+	),
+};

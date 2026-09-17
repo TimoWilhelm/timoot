@@ -17,18 +17,25 @@ export interface GeneratedBackgroundImage extends AIImageMetadata {
 	path: string;
 }
 
-export async function generateAndStoreBackgroundImage(prompt: string, userId: string): Promise<GeneratedBackgroundImage> {
-	const augmentedPrompt = oneLine`
-		${prompt}, vibrant digital art style, energetic and fun atmosphere, wide panoramic composition,
-		colorful, soft lighting, frame composition with richer detail toward edges and fewer busy elements in the center,
-		no people, no characters, scenery only,
-		8k resolution, high definition, aesthetically pleasing background
+export function buildBackgroundImagePrompt(topic: string): string {
+	return oneLine`
+		Create a wide panoramic quiz background about this exact topic: "${topic}".
+		Make the topic immediately recognizable by featuring concrete, iconic visual elements that are directly associated with it.
+		Topic accuracy and relevance are the highest priority.
+		Represent the topic using relevant objects, artifacts, symbols, environments, architecture, landscapes, scientific imagery, or abstract visual motifs.
+		Do not include people or characters.
+		Use a vibrant digital art style, an energetic and fun atmosphere, rich color, and soft lighting.
+		Keep the center visually simple for readable quiz text, with richer detail toward the edges.
+		Do not include written words, letters, logos, watermarks, frames, or interface elements.
 	`;
+}
+
+export async function generateAndStoreBackgroundImage(prompt: string, userId: string): Promise<GeneratedBackgroundImage> {
+	const augmentedPrompt = buildBackgroundImagePrompt(prompt);
 
 	const form = new FormData();
 	form.append('prompt', augmentedPrompt);
-	form.append('steps', '15');
-	form.append('width', '2048');
+	form.append('width', '1920');
 	form.append('height', '1024');
 
 	const formRequest = new Request('http://dummy', {

@@ -32,10 +32,9 @@ export async function generateMagicQuizFromPrompt(
 	metadata?: Record<string, string>,
 	dependencies: MagicQuizDependencies = defaultDependencies,
 ): Promise<GeneratedMagicQuiz> {
-	const [quizResult, backgroundResult] = await Promise.allSettled([
-		dependencies.generateQuiz(prompt, numberQuestions, abortSignal, onStatusUpdate, metadata),
-		dependencies.generateBackground(prompt, userId),
-	]);
+	const backgroundPromise = dependencies.generateBackground(prompt, userId);
+	const quizPromise = dependencies.generateQuiz(prompt, numberQuestions, abortSignal, onStatusUpdate, metadata);
+	const [quizResult, backgroundResult] = await Promise.allSettled([quizPromise, backgroundPromise]);
 
 	if (quizResult.status === 'rejected') {
 		if (backgroundResult.status === 'fulfilled') {

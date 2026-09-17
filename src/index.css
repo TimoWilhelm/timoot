@@ -195,6 +195,12 @@
 		@apply border-border;
 	}
 
+	input[placeholder] {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	html {
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
