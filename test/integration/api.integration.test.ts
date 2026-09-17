@@ -23,6 +23,8 @@ const quizSchema = z.object({
 	questions: z.array(questionSchema),
 });
 
+const customQuizSchema = quizSchema.omit({ type: true });
+
 const createGameDataSchema = z.object({
 	id: z.string(),
 	hostSecret: z.string(),
@@ -128,6 +130,33 @@ describe('REST API Integration Tests', () => {
 			const result = await parseJson(response, apiResponseSchema(createGameDataSchema));
 			expect(result.success).toBe(true);
 			expect(result.data!.id).toBeTruthy();
+		});
+	});
+
+	describe('Custom Quizzes API', () => {
+		it('returns newly created quizzes first', async () => {
+			const userId = `quiz-order-${Date.now()}`;
+			const headers = { 'Content-Type': 'application/json', 'x-user-id': userId };
+			const createQuiz = (title: string) =>
+				fetch(`${BASE_URL}/api/quizzes/custom`, {
+					method: 'POST',
+					headers,
+					body: JSON.stringify({
+						title,
+						questions: [{ text: 'Question?', options: ['Yes', 'No'], correctAnswerIndex: 0 }],
+					}),
+				});
+
+			const firstResponse = await createQuiz('First quiz');
+			const newestResponse = await createQuiz('Newest quiz');
+
+			expect(firstResponse.status).toBe(201);
+			expect(newestResponse.status).toBe(201);
+
+			const response = await fetch(`${BASE_URL}/api/quizzes/custom`, { headers: { 'x-user-id': userId } });
+			const result = await parseJson(response, apiResponseSchema(z.array(customQuizSchema)));
+
+			expect(result.data?.map((quiz) => quiz.title)).toEqual(['Newest quiz', 'First quiz']);
 		});
 	});
 

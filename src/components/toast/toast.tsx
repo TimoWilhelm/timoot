@@ -1,6 +1,8 @@
 import { X } from 'lucide-react';
 import { toast as sonnerToast } from 'sonner';
 
+import { cn } from '@/lib/utilities';
+
 import { Button } from '../button/button';
 
 interface ToastOptions {
@@ -8,130 +10,67 @@ interface ToastOptions {
 	action?: { label: string; onClick: () => void };
 }
 
+type ToastTone = 'custom' | 'success' | 'error' | 'info' | 'warning';
+
+const toastToneClasses: Record<ToastTone, { container: string; title: string; description: string }> = {
+	custom: { container: 'bg-white', title: 'text-black', description: 'text-muted-foreground' },
+	success: { container: 'bg-green-light', title: 'text-green-dark', description: 'text-green-dark' },
+	error: { container: 'bg-red-light', title: 'text-red-dark', description: 'text-red-dark' },
+	info: { container: 'bg-blue-light', title: 'text-blue-dark', description: 'text-blue-dark' },
+	warning: { container: 'bg-yellow-light', title: 'text-yellow-dark', description: 'text-yellow-dark' },
+};
+
+function showToast(tone: ToastTone, title: string, options?: ToastOptions) {
+	const toneClasses = toastToneClasses[tone];
+
+	sonnerToast.custom((toastId) => (
+		<div
+			className={cn(
+				`
+					flex w-full min-w-80 flex-col gap-2 rounded-lg border-2 border-black p-5
+					font-sans shadow-brutal select-none
+				`,
+				toneClasses.container,
+			)}
+		>
+			<div className="flex items-start justify-between gap-4">
+				<div className="flex flex-col gap-1">
+					<h3 className={cn('text-lg/tight font-bold', toneClasses.title)}>{title}</h3>
+					{options?.description && <p className={cn('text-sm/snug', toneClasses.description)}>{options.description}</p>}
+				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="size-10 shrink-0 rounded-md"
+					onClick={() => sonnerToast.dismiss(toastId)}
+					aria-label="Dismiss notification"
+				>
+					<X className="size-5" />
+				</Button>
+			</div>
+			{options?.action && (
+				<Button
+					variant="default"
+					size="sm"
+					onClick={() => {
+						try {
+							options.action?.onClick();
+						} finally {
+							sonnerToast.dismiss(toastId);
+						}
+					}}
+				>
+					{options.action.label}
+				</Button>
+			)}
+		</div>
+	));
+}
+
 export const toast = {
-	custom: (title: string, options?: ToastOptions) => {
-		sonnerToast.custom((t) => (
-			<div
-				className="
-					flex w-full min-w-80 flex-col gap-2 rounded-lg border-2 border-black
-					bg-white p-5 font-sans shadow-brutal select-none
-				"
-			>
-				<div className="flex items-start justify-between gap-4">
-					<div className="flex flex-col gap-1">
-						<h3 className="text-lg/tight font-bold text-black">{title}</h3>
-						{options?.description && <p className="text-sm/snug text-muted-foreground">{options.description}</p>}
-					</div>
-					<Button variant="default" size="icon" className="size-8 shrink-0 rounded-md" onClick={() => sonnerToast.dismiss(t)}>
-						<X className="size-4" />
-					</Button>
-				</div>
-				{options?.action && (
-					<Button variant="default" size="sm" onClick={options.action.onClick}>
-						{options.action.label}
-					</Button>
-				)}
-			</div>
-		));
-	},
-	success: (title: string, options?: ToastOptions) => {
-		sonnerToast.custom((t) => (
-			<div
-				className="
-					flex w-full min-w-80 flex-col gap-2 rounded-lg border-2 border-black
-					bg-green-light p-5 font-sans shadow-brutal select-none
-				"
-			>
-				<div className="flex items-start justify-between gap-4">
-					<div className="flex flex-col gap-1">
-						<h3 className="text-lg/tight font-bold text-green-dark">{title}</h3>
-						{options?.description && <p className="text-sm/snug text-green-dark">{options.description}</p>}
-					</div>
-					<Button variant="default" size="icon" className="size-8 shrink-0 rounded-md" onClick={() => sonnerToast.dismiss(t)}>
-						<X className="size-4" />
-					</Button>
-				</div>
-				{options?.action && (
-					<Button variant="default" size="sm" onClick={options.action.onClick}>
-						{options.action.label}
-					</Button>
-				)}
-			</div>
-		));
-	},
-	error: (title: string, options?: ToastOptions) => {
-		sonnerToast.custom((t) => (
-			<div
-				className="
-					flex w-full min-w-80 flex-col gap-2 rounded-lg border-2 border-black
-					bg-red-light p-5 font-sans shadow-brutal select-none
-				"
-			>
-				<div className="flex items-start justify-between gap-4">
-					<div className="flex flex-col gap-1">
-						<h3 className="text-lg/tight font-bold text-red-dark">{title}</h3>
-						{options?.description && <p className="text-sm/snug text-red-dark">{options.description}</p>}
-					</div>
-					<Button variant="default" size="icon" className="size-8 shrink-0 rounded-md" onClick={() => sonnerToast.dismiss(t)}>
-						<X className="size-4" />
-					</Button>
-				</div>
-				{options?.action && (
-					<Button variant="default" size="sm" onClick={options.action.onClick}>
-						{options.action.label}
-					</Button>
-				)}
-			</div>
-		));
-	},
-	info: (title: string, options?: ToastOptions) => {
-		sonnerToast.custom((t) => (
-			<div
-				className="
-					flex w-full min-w-80 flex-col gap-2 rounded-lg border-2 border-black
-					bg-blue-light p-5 font-sans shadow-brutal select-none
-				"
-			>
-				<div className="flex items-start justify-between gap-4">
-					<div className="flex flex-col gap-1">
-						<h3 className="text-lg/tight font-bold text-blue-dark">{title}</h3>
-						{options?.description && <p className="text-sm/snug text-blue-dark">{options.description}</p>}
-					</div>
-					<Button variant="default" size="icon" className="size-8 shrink-0 rounded-md" onClick={() => sonnerToast.dismiss(t)}>
-						<X className="size-4" />
-					</Button>
-				</div>
-				{options?.action && (
-					<Button variant="default" size="sm" onClick={options.action.onClick}>
-						{options.action.label}
-					</Button>
-				)}
-			</div>
-		));
-	},
-	warning: (title: string, options?: ToastOptions) => {
-		sonnerToast.custom((t) => (
-			<div
-				className="
-					flex w-full min-w-80 flex-col gap-2 rounded-lg border-2 border-black
-					bg-yellow-light p-5 font-sans shadow-brutal select-none
-				"
-			>
-				<div className="flex items-start justify-between gap-4">
-					<div className="flex flex-col gap-1">
-						<h3 className="text-lg/tight font-bold text-yellow-dark">{title}</h3>
-						{options?.description && <p className="text-sm/snug text-yellow-dark">{options.description}</p>}
-					</div>
-					<Button variant="default" size="icon" className="size-8 shrink-0 rounded-md" onClick={() => sonnerToast.dismiss(t)}>
-						<X className="size-4" />
-					</Button>
-				</div>
-				{options?.action && (
-					<Button variant="default" size="sm" onClick={options.action.onClick}>
-						{options.action.label}
-					</Button>
-				)}
-			</div>
-		));
-	},
+	custom: (title: string, options?: ToastOptions) => showToast('custom', title, options),
+	success: (title: string, options?: ToastOptions) => showToast('success', title, options),
+	error: (title: string, options?: ToastOptions) => showToast('error', title, options),
+	info: (title: string, options?: ToastOptions) => showToast('info', title, options),
+	warning: (title: string, options?: ToastOptions) => showToast('warning', title, options),
 };

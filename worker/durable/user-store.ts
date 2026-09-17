@@ -90,7 +90,7 @@ export class UserStoreDurableObject extends DurableObject<Env> {
 
 		// Create new quiz
 		const newQuiz: Quiz = { ...quizData, id: quizData.id || crypto.randomUUID() };
-		quizzes.push(newQuiz);
+		quizzes.unshift(newQuiz);
 		await this.ctx.storage.put('custom_quizzes', quizzes);
 		return newQuiz;
 	}
