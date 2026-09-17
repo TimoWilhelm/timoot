@@ -24,6 +24,7 @@ export function buildGetReadyMessage(state: GameState, countdownMs: number): Ser
 		type: 'getReady',
 		countdownMs,
 		totalQuestions: state.questions.length,
+		preloadBackgroundImage: state.questions[0]?.backgroundImage,
 		phaseVersion: state.phaseVersion,
 	};
 }
@@ -63,6 +64,7 @@ export function questionHasModifiers(state: GameState): boolean {
  */
 export function buildQuestionMessage(state: GameState, readingDurationMs: number = QUESTION_READING_MS): ServerMessage {
 	const question = state.questions[state.currentQuestionIndex];
+	const nextQuestion = state.questions[state.currentQuestionIndex + 1];
 	return {
 		type: 'questionStart',
 		questionIndex: state.currentQuestionIndex,
@@ -73,6 +75,7 @@ export function buildQuestionMessage(state: GameState, readingDurationMs: number
 		readingDurationMs,
 		isDoublePoints: question.isDoublePoints,
 		backgroundImage: question.backgroundImage,
+		preloadBackgroundImage: nextQuestion?.backgroundImage,
 		phaseVersion: state.phaseVersion,
 	};
 }

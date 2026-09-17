@@ -303,6 +303,7 @@ const wsGetReadySchema = z.object({
 	type: z.literal('getReady'),
 	countdownMs: z.number(),
 	totalQuestions: z.number(),
+	preloadBackgroundImage: z.string().optional(),
 	phaseVersion: z.number(),
 });
 
@@ -324,6 +325,7 @@ const wsQuestionStartSchema = z.object({
 	readingDurationMs: z.number(),
 	isDoublePoints: z.boolean().optional(),
 	backgroundImage: z.string().optional(),
+	preloadBackgroundImage: z.string().optional(),
 	phaseVersion: z.number(),
 });
 

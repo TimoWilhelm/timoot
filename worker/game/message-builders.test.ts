@@ -4,6 +4,7 @@ import { QUESTION_READING_MS, QUESTION_TIME_LIMIT_MS } from './constants';
 import {
 	buildAnswerCounts,
 	buildGameEndMessage,
+	buildGetReadyMessage,
 	buildLeaderboardMessage,
 	buildLobbyMessage,
 	buildQuestionMessage,
@@ -22,8 +23,14 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
 		{ id: 'p2', name: 'Bob', score: 50, answered: false },
 	],
 	questions: [
-		{ text: 'Question 1?', options: ['A', 'B', 'C', 'D'], correctAnswerIndex: 0 },
-		{ text: 'Question 2?', options: ['X', 'Y', 'Z'], correctAnswerIndex: 2, isDoublePoints: true },
+		{ text: 'Question 1?', options: ['A', 'B', 'C', 'D'], correctAnswerIndex: 0, backgroundImage: '/images/one.webp' },
+		{
+			text: 'Question 2?',
+			options: ['X', 'Y', 'Z'],
+			correctAnswerIndex: 2,
+			isDoublePoints: true,
+			backgroundImage: '/images/two.webp',
+		},
 	],
 	currentQuestionIndex: 0,
 	questionStartTime: 1_700_000_000_000,
@@ -33,6 +40,16 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
 });
 
 describe('messageBuilders.ts', () => {
+	describe('buildGetReadyMessage', () => {
+		it('preloads the first question background during the countdown', () => {
+			const message = buildGetReadyMessage(createMockState(), 3000);
+
+			if (message.type === 'getReady') {
+				expect(message.preloadBackgroundImage).toBe('/images/one.webp');
+			}
+		});
+	});
+
 	describe('buildLobbyMessage', () => {
 		it('returns correct message type', () => {
 			const state = createMockState();
@@ -120,6 +137,16 @@ describe('messageBuilders.ts', () => {
 				expect(message.questionText).toBe('Question 2?');
 				expect(message.options).toEqual(['X', 'Y', 'Z']);
 				expect(message.questionIndex).toBe(1);
+			}
+		});
+
+		it('includes the next question background for preloading', () => {
+			const firstMessage = buildQuestionMessage(createMockState({ currentQuestionIndex: 0 }));
+			const lastMessage = buildQuestionMessage(createMockState({ currentQuestionIndex: 1 }));
+
+			if (firstMessage.type === 'questionStart' && lastMessage.type === 'questionStart') {
+				expect(firstMessage.preloadBackgroundImage).toBe('/images/two.webp');
+				expect(lastMessage.preloadBackgroundImage).toBeUndefined();
 			}
 		});
 	});

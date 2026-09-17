@@ -47,6 +47,7 @@ export interface WebSocketGameState {
 	readingDurationMs: number;
 	isDoublePoints: boolean;
 	backgroundImage: string | undefined;
+	preloadBackgroundImage?: string;
 	// Answer tracking (for host)
 	answeredCount: number;
 	// Reveal phase
@@ -89,6 +90,7 @@ const initialGameState: WebSocketGameState = {
 	readingDurationMs: 0,
 	isDoublePoints: false,
 	backgroundImage: undefined,
+	preloadBackgroundImage: undefined,
 	answeredCount: 0,
 	correctAnswerIndex: undefined,
 	playerResult: undefined,
@@ -168,6 +170,7 @@ export function useGameWebSocket({
 						phaseVersion: message.phaseVersion,
 						getReadyCountdownMs: message.countdownMs,
 						totalQuestions: message.totalQuestions,
+						preloadBackgroundImage: message.preloadBackgroundImage,
 					}));
 					setIsAdvancing(false);
 					break;
@@ -210,6 +213,7 @@ export function useGameWebSocket({
 						readingDurationMs: message.readingDurationMs,
 						isDoublePoints: message.isDoublePoints ?? false,
 						backgroundImage: message.backgroundImage,
+						preloadBackgroundImage: message.preloadBackgroundImage,
 						answeredCount: 0,
 						correctAnswerIndex: undefined,
 						playerResult: undefined,

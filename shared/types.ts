@@ -111,7 +111,7 @@ export type ServerMessage =
 	| { type: 'connected'; role: ClientRole; playerId?: string; playerToken?: string }
 	| { type: 'error'; code: ErrorCodeType; message: string }
 	| { type: 'lobbyUpdate'; players: { id: string; name: string }[]; pin: string; gameId: string; phaseVersion: number }
-	| { type: 'getReady'; countdownMs: number; totalQuestions: number; phaseVersion: number }
+	| { type: 'getReady'; countdownMs: number; totalQuestions: number; preloadBackgroundImage?: string; phaseVersion: number }
 	| {
 			type: 'questionModifier';
 			questionIndex: number;
@@ -129,6 +129,7 @@ export type ServerMessage =
 			readingDurationMs: number;
 			isDoublePoints?: boolean;
 			backgroundImage?: string;
+			preloadBackgroundImage?: string;
 			phaseVersion: number;
 	  }
 	| { type: 'readingEnd'; timeLimitMs: number; phaseVersion: number }

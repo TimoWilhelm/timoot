@@ -171,7 +171,7 @@ export function CustomQuizzesSection({
 				"
 			>
 				{/* Create New Card */}
-				<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
+				<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="h-56 bg-white">
 					<Button
 						type="button"
 						onClick={handleCreateClick}
@@ -198,7 +198,12 @@ export function CustomQuizzesSection({
 				</motion.div>
 
 				{isGenerating ? (
-					<motion.div ref={generatingCardReference} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+					<motion.div
+						ref={generatingCardReference}
+						initial={{ opacity: 0, scale: 0.95 }}
+						animate={{ opacity: 1, scale: 1 }}
+						className="h-56"
+					>
 						<div
 							className={`
 								relative flex size-full flex-col items-start justify-between
@@ -235,7 +240,7 @@ export function CustomQuizzesSection({
 						</div>
 					</motion.div>
 				) : (
-					<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white">
+					<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="h-56 bg-white">
 						<Button
 							type="button"
 							onClick={handleMagicQuizClick}
@@ -332,7 +337,7 @@ export function CustomQuizzesSection({
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: index * 0.05 }}
-						className="bg-white"
+						className="h-56 bg-white"
 					>
 						<div
 							role="button"

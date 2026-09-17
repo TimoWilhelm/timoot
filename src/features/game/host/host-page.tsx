@@ -23,6 +23,7 @@ import { type MusicTrack, useHostSound } from '@/features/game/hooks/use-host-so
 import { FloatingEmojis, type FloatingEmojisHandle } from '@/features/game/host/components/floating-emojis';
 import { HostGameProvider } from '@/features/game/host/host-game-provider';
 import { HostPageLayout } from '@/features/game/host/host-page-layout';
+import { getOptimizedImageUrl } from '@/lib/image-optimization';
 import { useHostStore } from '@/lib/stores/host-store';
 import { isGamePhaseActive, phaseAllowsManualAdvance } from '@shared/phase-rules';
 import { phaseGroup } from '@shared/types';
@@ -75,6 +76,9 @@ export function HostPage() {
 		onError: (_code, message) => toast.error(message),
 		onEmojiReceived: handleEmojiReceived,
 	});
+	const preloadBackgroundImage = gameState.preloadBackgroundImage
+		? getOptimizedImageUrl(gameState.preloadBackgroundImage, { width: 1920 })
+		: undefined;
 
 	// Clear floating emojis when question starts
 	useEffect(() => {
@@ -283,6 +287,7 @@ export function HostPage() {
 		<HostPageLayout>
 			<Helmet>
 				<title>Host Game - Timoot</title>
+				{preloadBackgroundImage && <link rel="preload" as="image" href={preloadBackgroundImage} fetchPriority="low" />}
 			</Helmet>
 			{/* Sound toggle button - fixed position, responsive spacing */}
 			<div
