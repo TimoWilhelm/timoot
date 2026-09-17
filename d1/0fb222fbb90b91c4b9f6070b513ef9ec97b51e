@@ -1,0 +1,21 @@
+worker/services/image-generation.test.ts
+  s_0d13754a1959d6::t_5103d29e510348 7-11,15
+worker/services/image-generation.ts
+  s_0d13754a1959d6::t_8380e43c679eee 22-23,29-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d10fb222fbb90b91c4b9f6070b513ef9ec97b51e",
+  "prompts": {},
+  "sessions": {
+    "s_0d13754a1959d6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0accd-4dfe-7373-a9d6-db54e5cd9e6e",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
