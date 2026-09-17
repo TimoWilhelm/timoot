@@ -1,0 +1,35 @@
+shared/types.ts
+  s_479cc1dc5c0c13::t_205b8eb7f78c1b 114,132
+shared/validation.ts
+  s_479cc1dc5c0c13::t_c3ae0fe6ad7d91 306,328
+src/features/game/hooks/use-game-web-socket.ts
+  s_479cc1dc5c0c13::t_e03884e177c323 50,93,173,216
+src/features/game/host/host-page.tsx
+  s_479cc1dc5c0c13::t_ef77f447577d7e 26,79-81,290
+src/features/home/components/custom-quizzes-section.tsx
+  s_479cc1dc5c0c13::t_91c598c4549e68 174,201-206,243,340
+src/features/home/components/magic-quiz-status.test.tsx
+  s_479cc1dc5c0c13::t_88795ad0293c2c 21,28-30,32,35
+src/features/home/components/magic-quiz-status.tsx
+  s_479cc1dc5c0c13::t_9e824ee35de23a 1,10-11,46-64
+worker/game/message-builders.test.ts
+  s_479cc1dc5c0c13::t_ebd382f52db64a 7,26-33,43-52,142-151
+worker/game/message-builders.ts
+  s_479cc1dc5c0c13::t_fa8621519167ab 27,67,78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "04f010552e7878d4df694a064f87d0dee37eeb0a",
+  "prompts": {},
+  "sessions": {
+    "s_479cc1dc5c0c13": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b012-0499-7f30-b59c-848a28e499bd",
+        "model": "unknown"
+      },
+      "human_author": "Timo Wilhelm <twilhelm@cloudflare.com>"
+    }
+  }
+}
