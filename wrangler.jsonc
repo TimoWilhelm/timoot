@@ -26,6 +26,7 @@
 		"run_worker_first": ["/api/*", "!/api/docs/*"],
 	},
 	"observability": {
+		"issues": { "enabled": true },
 		"logs": {
 			"enabled": true,
 		},
