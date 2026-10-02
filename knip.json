@@ -5,9 +5,8 @@
 		"type": true
 	},
 	"tags": ["-lintignore"],
-	"entry": ["src/main.tsx!", "worker/index.ts!"],
+	"entry": ["src/main.tsx!", "worker/index.ts!", "cloudflare.config.ts!"],
 	"ignoreDependencies": ["cloudflare", "@server/*"],
-	"ignoreBinaries": ["wrangler"],
 	"ignoreFiles": [
 		"src/vite-environment.d.ts",
 		"test/unit/environment.d.ts",

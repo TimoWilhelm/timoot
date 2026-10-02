@@ -10,7 +10,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default function defineViteConfig({ mode }: { mode: string }): UserConfig {
-	const environment = loadEnv(mode, process.cwd(), '');
+	const localValidation = process.env.CF_LOCAL_VALIDATION === 'true';
+	const environment = localValidation ? {} : loadEnv(mode, process.cwd(), '');
 	// SEO Constants
 	const title = 'Timoot';
 	const description = 'A fun multiplayer quiz game';
@@ -28,18 +29,22 @@ export default function defineViteConfig({ mode }: { mode: string }): UserConfig
 	};
 
 	return defineConfig({
+		envDir: localValidation ? false : undefined,
+		publicDir: 'public',
 		plugins: [
 			devtoolsJson(),
 			tailwindcss(),
 			react(),
-			cloudflare({ remoteBindings: process.env.CI !== 'true' }),
+			cloudflare({ remoteBindings: !localValidation && process.env.CI !== 'true' }),
 			sentryVitePlugin({
+				disable: localValidation,
 				authToken: environment.SENTRY_AUTH_TOKEN,
 				org: 'daxo',
 				project: 'timoot',
 				telemetry: false,
 			}),
 			VitePWA({
+				outDir: '.cloudflare/output/v0/workers/default/assets',
 				registerType: 'prompt',
 				manifest: {
 					id: 'a4b945bd-512a-4819-b8aa-f8cc393b5c10',

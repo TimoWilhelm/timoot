@@ -49,6 +49,7 @@ Every game runs on its own Durable Object, keeping state synced across all playe
 ### Prerequisites
 
 - [Bun](https://bun.sh/) — fast JS runtime and package manager
+- Node.js 24 (see `.nvmrc`); the pinned Cloudflare `cf` CLI requires Node.js 22 or newer
 - A [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier works)
 
 ### Setup
@@ -62,7 +63,7 @@ cd timoot
 bun install
 
 # Log into Cloudflare
-bunx wrangler login
+bunx cf auth login
 ```
 
 ### Environment
@@ -74,6 +75,19 @@ cp .env.example .env.local
 ```
 
 For production, configure runtime variables in your [Cloudflare Dashboard](https://dash.cloudflare.com/) under `Workers & Pages → Settings → Variables` and any build-time variables in your CI/CD system (e.g. GitHub Actions).
+
+### Local build validation
+
+For credential-free validation, use an isolated checkout/export without ignored `.env*` or `.dev.vars*` files, a sanitized environment, and a separate `HOME`. Bun can load environment files before the Vite configuration runs.
+
+```bash
+CF_LOCAL_VALIDATION=true CI=true bun run build
+bunx cf deploy --prebuilt --mode production --dry-run
+```
+
+`CF_LOCAL_VALIDATION=true` disables Vite environment-file loading, the Sentry build plugin, and remote bindings for the build. Normal builds retain the existing environment and Sentry behavior. The deployment dry run validates `.cloudflare/output` without credentials, uploads, or API requests; it does not verify live resources.
+
+`cloudflare.config.ts` is the active Worker configuration. `bun run cf-typegen` generates `.cloudflare/types/index.d.ts`; builds and typechecks generate it before using it. The original `wrangler.jsonc` and `worker-configuration.d.ts` remain unchanged for reference. The two current SQLite Durable Object classes are declared in `worker.exports`; completed Wrangler migration history is not replayed. Before any real deployment, verify the live namespaces against these declarations.
 
 ## Deploy
 

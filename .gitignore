@@ -1,5 +1,6 @@
 node_modules
 .wrangler
+.cloudflare
 .turbo
 dist
 dev-dist

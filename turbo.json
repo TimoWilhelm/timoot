@@ -3,12 +3,12 @@
 	"globalPassThroughEnv": ["SENTRY_AUTH_TOKEN"],
 	"tasks": {
 		"build:worker-types": {
-			"outputs": ["dist/worker/**"],
-			"inputs": ["worker/**/*.ts", "shared/**/*.ts", "tsconfig.worker.json", "tsconfig.json"]
+			"outputs": ["dist/worker/**", ".cloudflare/types/**"],
+			"inputs": ["worker/**/*.ts", "shared/**/*.ts", "cloudflare.config.ts", "tsconfig.worker.json", "tsconfig.node.json", "tsconfig.json"]
 		},
 		"build:vite": {
 			"dependsOn": ["build:worker-types"],
-			"outputs": ["dist/**"],
+			"outputs": [".cloudflare/output/**", ".cloudflare/types/**"],
 			"inputs": [
 				"src/**",
 				"worker/**",
@@ -16,11 +16,12 @@
 				"public/**",
 				"index.html",
 				"vite.config.ts",
+				"cloudflare.config.ts",
 				"tailwind.config.ts",
 				"postcss.config.js",
 				"tsconfig.*.json"
 			],
-			"env": ["VITE_TURNSTILE_SITE_KEY", "VITE_SENTRY_DSN", "NODE_ENV"]
+			"env": ["VITE_TURNSTILE_SITE_KEY", "VITE_SENTRY_DSN", "NODE_ENV", "CF_LOCAL_VALIDATION", "CI"]
 		},
 		"typecheck:app": {
 			"dependsOn": ["build:worker-types"],
@@ -28,7 +29,8 @@
 			"cache": true
 		},
 		"typecheck:node": {
-			"inputs": ["vite.config.ts", "tsconfig.node.json", "tsconfig.json"],
+			"dependsOn": ["build:worker-types"],
+			"inputs": ["cloudflare.config.ts", "vite.config.ts", "tsconfig.node.json", "tsconfig.json"],
 			"cache": true
 		},
 		"typecheck:worker": {

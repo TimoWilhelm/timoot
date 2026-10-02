@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-		"types": ["./worker-configuration.d.ts", "vite/client"],
+		"types": ["./.cloudflare/types/index.d.ts", "vite/client"],
 		"target": "ES2024",
 		"lib": ["ES2024"],
 		"module": "ESNext",
@@ -28,5 +28,13 @@
 			"@shared/*": ["./shared/*"]
 		}
 	},
-	"include": ["vite.config.ts", "playwright.config.ts", "eslint.config.js", "lint-staged.config.js", "test", ".storybook"]
+	"include": [
+		"cloudflare.config.ts",
+		"vite.config.ts",
+		"playwright.config.ts",
+		"eslint.config.js",
+		"lint-staged.config.js",
+		"test",
+		".storybook"
+	]
 }

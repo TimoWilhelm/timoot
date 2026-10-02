@@ -66,7 +66,7 @@ const DEFAULT_GET_READY_COUNTDOWN_MS = 6000;
  * Get the GET_READY countdown duration from environment.
  */
 export function getReadyCountdownMs(environment: Env): number {
-	const parsed = Number.parseInt(environment.GET_READY_COUNTDOWN_MS, 10);
+	const parsed = Number.parseInt(String(environment.GET_READY_COUNTDOWN_MS), 10);
 	return Number.isNaN(parsed) ? DEFAULT_GET_READY_COUNTDOWN_MS : parsed;
 }
 
