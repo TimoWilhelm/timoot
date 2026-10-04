@@ -1,54 +1,72 @@
-import { useEffect } from 'react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { toast } from '@/components/toast';
-
-// Grace period to distinguish a pre-existing waiting SW from a mid-session update
-const INITIAL_LOAD_GRACE_MS = 2000;
-const pageLoadedAt = Date.now();
+import { useRegisterSW } from '@/lib/pwa-register';
 
 export function usePwaUpdate() {
+	const updateIntervalReference = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+	const isMountedReference = useRef(true);
+	const isActivationRequestedReference = useRef(false);
+	const hasNotifiedUpdateReference = useRef(false);
+
 	const {
 		needRefresh: [needRefresh],
 		updateServiceWorker,
 	} = useRegisterSW({
 		onRegisteredSW(swUrl, registration) {
-			if (registration) {
+			if (registration && isMountedReference.current) {
 				const intervalMs = 5 * 60 * 1000;
-				setInterval(async () => {
-					if (!(!registration.installing && navigator)) return;
+				clearInterval(updateIntervalReference.current);
+				updateIntervalReference.current = setInterval(async () => {
+					if (registration.installing || !navigator.onLine) return;
 
-					if ('connection' in navigator && !navigator.onLine) return;
+					try {
+						const response = await fetch(swUrl, {
+							cache: 'no-store',
+							headers: { cache: 'no-store' },
+						});
 
-					const response = await fetch(swUrl, {
-						cache: 'no-store',
-						headers: { cache: 'no-store' },
-					});
-
-					if (response.ok) {
-						await registration.update();
+						if (response.ok) {
+							await registration.update();
+						}
+					} catch {
+						return;
 					}
 				}, intervalMs);
 			}
 		},
 	});
 
+	const activateUpdate = useCallback(() => {
+		if (!isMountedReference.current || isActivationRequestedReference.current) return;
+		isActivationRequestedReference.current = true;
+		void updateServiceWorker(true).catch(() => {
+			isActivationRequestedReference.current = false;
+		});
+	}, [updateServiceWorker]);
+
 	useEffect(() => {
-		if (!needRefresh) return;
+		isMountedReference.current = true;
+		return () => {
+			isMountedReference.current = false;
+			clearInterval(updateIntervalReference.current);
+		};
+	}, []);
 
-		const isInitialLoad = Date.now() - pageLoadedAt < INITIAL_LOAD_GRACE_MS;
-
-		if (isInitialLoad) {
-			void updateServiceWorker(true);
+	useEffect(() => {
+		if (!needRefresh) {
+			hasNotifiedUpdateReference.current = false;
 			return;
 		}
+		if (hasNotifiedUpdateReference.current) return;
+		hasNotifiedUpdateReference.current = true;
 
 		toast.info('New version available', {
 			description: 'Tap reload to update the app.',
 			action: {
 				label: 'Reload',
-				onClick: () => updateServiceWorker(true),
+				onClick: activateUpdate,
 			},
 		});
-	}, [needRefresh, updateServiceWorker]);
+	}, [activateUpdate, needRefresh]);
 }
