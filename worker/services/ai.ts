@@ -1,5 +1,6 @@
-import { experimental_MCPClient as MCPClient, experimental_createMCPClient as createMCPClient } from '@ai-sdk/mcp';
+import { type MCPClient, createMCPClient } from '@ai-sdk/mcp';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { createAI } from 'agents/models/ai-sdk';
 import {
 	type LanguageModel,
 	NoSuchToolError,
@@ -9,11 +10,10 @@ import {
 	ToolLoopAgent,
 	type ToolSet,
 	generateText,
-	stepCountIs,
+	isStepCount,
 } from 'ai';
 import { env, waitUntil } from 'cloudflare:workers';
 import { stripIndent } from 'common-tags';
-import { createWorkersAI } from 'workers-ai-provider';
 import { z } from 'zod';
 
 import { type AvailableMCPResource, loadAvailableMCPResources } from './mcp-clients';
@@ -38,12 +38,10 @@ const getWikimediaMCP = async (abortSignal?: AbortSignal): Promise<MCPClient> =>
 };
 
 function createModel(metadata?: Record<string, string>) {
-	return createWorkersAI({
+	return createAI({
 		binding: env.AI,
-		gateway: {
-			id: 'default',
-			metadata: metadata ?? {},
-		},
+		id: 'default',
+		metadata: metadata ?? {},
 	})(env.WORKERS_AI_MODEL);
 }
 
@@ -145,25 +143,22 @@ export async function generateQuizFromPrompt(
 				output: Output.object({
 					schema: QuizSchema,
 				}),
-				messages: [
-					{
-						role: 'system',
-						content: stripIndent`
-						You are an expert quiz maker.
-						
-						Create exactly ${numberQuestions} multiple-choice questions. Each question should:
-						- Have exactly 4 answer options
-						- Have one clearly correct answer
-						- Be interesting and educational
-						- Vary in difficulty
+				instructions: stripIndent`
+				You are an expert quiz maker.
 
-						- The quiz question must be a single sentence with less than 120 characters
-						- The quiz options should be as concise as possible and must have less than 75 characters
-						- Make sure there are no full stops at the end of the sentences
-						
-						Also create a catchy title for the quiz that reflects the topic.
-					`,
-					},
+				Create exactly ${numberQuestions} multiple-choice questions. Each question should:
+				- Have exactly 4 answer options
+				- Have one clearly correct answer
+				- Be interesting and educational
+				- Vary in difficulty
+
+				- The quiz question must be a single sentence with less than 120 characters
+				- The quiz options should be as concise as possible and must have less than 75 characters
+				- Make sure there are no full stops at the end of the sentences
+
+				Also create a catchy title for the quiz that reflects the topic.
+`,
+				messages: [
 					{
 						role: 'user',
 						content: stripIndent`
@@ -246,10 +241,7 @@ async function createResearchAgent(
 	for (const [name, tool] of Object.entries(mcpTools)) {
 		instrumentedTools[name] = {
 			...tool,
-			description: tool.description ?? undefined,
-			strict: tool.strict ?? undefined,
-			inputSchema: tool.inputSchema,
-			execute: async (arguments_: unknown, options: ToolExecutionOptions) => {
+			execute: async (arguments_: unknown, options: ToolExecutionOptions<unknown>) => {
 				if (name === 'search_cloudflare_documentation') {
 					const query = getQuery(arguments_);
 					onStatusUpdate?.({ stage: 'reading_docs', detail: query || 'Cloudflare docs' });
@@ -282,7 +274,7 @@ async function createResearchAgent(
 		instructions,
 		tools: instrumentedTools,
 		experimental_repairToolCall: repairToolCall(model),
-		stopWhen: stepCountIs(RESEARCH_MAX_STEPS),
+		stopWhen: isStepCount(RESEARCH_MAX_STEPS),
 	});
 
 	return agent;
@@ -311,24 +303,21 @@ export async function generateSingleQuestion(
 		output: Output.object({
 			schema: QuestionSchema,
 		}),
-		messages: [
-			{
-				role: 'system',
-				content: stripIndent`
-					You are a quiz question generator.
-					
-					Generate exactly 1 multiple-choice question. The question should:
-					- Have exactly 4 answer options
-					- Have one clearly correct answer
-					- Be interesting and educational
-					- Be different from any existing questions provided
-					- Match the theme/topic of the quiz title
+		instructions: stripIndent`
+			You are a quiz question generator.
 
-					- The quiz question must be a single sentence with less than 120 characters
-					- The quiz options should be as concise as possible and must have less than 75 characters
-					- Make sure there are no full stops at the end of the sentences
-				`,
-			},
+			Generate exactly 1 multiple-choice question. The question should:
+			- Have exactly 4 answer options
+			- Have one clearly correct answer
+			- Be interesting and educational
+			- Be different from any existing questions provided
+			- Match the theme/topic of the quiz title
+
+			- The quiz question must be a single sentence with less than 120 characters
+			- The quiz options should be as concise as possible and must have less than 75 characters
+			- Make sure there are no full stops at the end of the sentences
+`,
+		messages: [
 			{
 				role: 'user',
 				content: stripIndent`

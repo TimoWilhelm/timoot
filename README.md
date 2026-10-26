@@ -76,6 +76,8 @@ cp .env.example .env.local
 
 For production, configure runtime variables in your [Cloudflare Dashboard](https://dash.cloudflare.com/) under `Workers & Pages → Settings → Variables` and any build-time variables in your CI/CD system (e.g. GitHub Actions).
 
+Model calls use `createAI` from `agents/models/ai-sdk` with AI SDK 7, the existing `AI` binding, and the `default` AI Gateway. Request metadata continues to be attached to gateway logs.
+
 ### Local build validation
 
 For credential-free validation, use an isolated checkout/export without ignored `.env*` or `.dev.vars*` files, a sanitized environment, and a separate `HOME`. Bun can load environment files before the Vite configuration runs.
